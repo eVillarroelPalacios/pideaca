@@ -17,10 +17,10 @@
 
         <div style="background:#b0b0b0;height:2px;"></div>
         {{-- NAV --}}
-        <nav style="background:linear-gradient(180deg,#1f2937 0%,#111827 100%);position:sticky;top:0;z-index:50;overflow:visible;">
+        <nav style="background:linear-gradient(180deg,#123b73 0%,#0a2440 100%);position:sticky;top:0;z-index:50;overflow:visible;">
             <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:2px 2px;display:flex;align-items:center;justify-content:flex-end;gap:8px;position:relative;">
                 <a href="/" onclick="window.location.reload(true);return false;" style="margin-right:auto;z-index:60;">
-                    <img class="logo-img" src="{{ asset('images/logo.png') }}" alt="PideAca" style="width:190px;height:75px;border-radius:0;object-fit:contain;mix-blend-mode:multiply;" />
+                    <img class="logo-img" src="{{ asset('images/logo.png') }}" alt="PideAca" style="width:190px;height:75px;border-radius:0;object-fit:contain;" />
                 </a>
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
                 <a href="#" class="nav-link" style="padding:8px 16px;color:white;font-size:14px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
@@ -43,8 +43,8 @@
                     Contactos
                 </a>
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" class="header-btn" style="padding:2px 10px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
-                <a href="#" class="header-btn" style="padding:2px 10px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
+                <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
+                <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
                 <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:8px 16px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
@@ -79,28 +79,28 @@
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Gastronomía y Comercio a tu alcance</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Pizzerías, rotiserías, kioscos y tiendas de conveniencia. Todo en un solo lugar.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Explorar Comercios</button>
+                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Explorar Comercios</button>
                                 </div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:380px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
+                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
                                 </div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:380px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
+                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
                                 </div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:380px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#ea580c;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Programar Pedido</button>
+                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Programar Pedido</button>
                                 </div>
                             </div>
                         </div>
@@ -143,7 +143,7 @@
 
         </main>
         <div style="background:white;height:15px;"></div>
-        <footer style="background:#030712;color:white;padding:10px 0;">
+        <footer style="background:#0a2440;color:white;padding:10px 0;">
             <div style="text-align:center;">               
                 <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>               
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
@@ -156,8 +156,8 @@
         html, body { height: 100%; }
         .header-btn:hover, .cta-btn:hover {
             background: #ffffff !important;
-            color: #ea580c !important;
-            border: 1px solid #ea580c !important;
+            color: #D24C19 !important;
+            border: 1px solid #D24C19 !important;
         }
         .nav-link {
             position: relative;
@@ -183,7 +183,7 @@
             .nav-container > div:last-child { justify-content: flex-end !important; }
             .service-cards { max-width: 100% !important; gap: 12px !important; margin-top: -20px !important; padding: 0 8px !important; grid-template-columns: repeat(4, 1fr) !important; }
             .service-card { flex-direction: column !important; text-align: center !important; padding: 10px 4px !important; border-radius: 12px !important; transition: border-color 0.3s ease !important; }
-            .service-card:hover { border-color: #ea580c !important; }
+            .service-card:hover { border-color: #D24C19 !important; }
             .card-icon { width: 32px !important; height: 32px !important; min-width: 32px !important; font-size: 16px !important; margin: 0 !important; }
             .service-card h4 { font-size: 9px !important; }
             .service-card p { font-size: 7px !important; display: none !important; }
@@ -198,7 +198,7 @@
             .header-btn { padding: 6px 12px !important; font-size: 11px !important; }
             .service-cards { gap: 10px !important; margin-top: -18px !important; padding: 0 6px !important; grid-template-columns: repeat(4, 1fr) !important; }
             .service-card { padding: 8px 2px !important; transition: border-color 0.3s ease !important; }
-            .service-card:hover { border-color: #ea580c !important; }
+            .service-card:hover { border-color: #D24C19 !important; }
             .card-icon { width: 28px !important; height: 28px !important; min-width: 28px !important; font-size: 14px !important; }
             .service-card h4 { font-size: 8px !important; margin-bottom: 0 !important; }
             .service-card p { font-size: 7px !important; }
@@ -215,7 +215,7 @@
             border: 1px solid rgba(255,255,255,0.6);
         }
         .service-card:hover {
-            border-color: #ea580c !important;
+            border-color: #D24C19 !important;
         }
     </style>
     <script>
