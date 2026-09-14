@@ -561,7 +561,7 @@
         .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
         .ad-body { padding-bottom: 36px; }
         .ad-grid-zone { width: 100%; box-sizing: border-box; }
-        .provider-grid { align-items: stretch; }
+        .provider-grid { align-items: stretch; grid-template-rows: repeat(2, 1fr); height: 700px; overflow: hidden; }
         #ad-pagination { width: 100%; box-sizing: border-box; }
         .card-action-icon { position: absolute; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background-color: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
         .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
@@ -578,7 +578,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; grid-template-rows: repeat(2, 1fr) !important; height: 400px !important; overflow: hidden !important; }
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
@@ -599,7 +599,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; grid-template-rows: repeat(2, 1fr) !important; height: 360px !important; overflow: hidden !important; }
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
