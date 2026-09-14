@@ -138,7 +138,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127829;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzeria Los Hermanos</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
@@ -157,7 +157,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128722;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferreteria El Tornillo</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
@@ -176,7 +176,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomeria Rapida Perez</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
@@ -195,7 +195,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#9889;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
@@ -214,7 +214,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128662;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gruas Aurora 24h</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
@@ -233,7 +233,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128260;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomeria RuedasBien</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.4</span>
@@ -252,7 +252,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128167;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
@@ -271,7 +271,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128276;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
@@ -290,7 +290,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Rotiseria Don Carlos</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
@@ -309,7 +309,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127967;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Kiosco Express 24hs</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.3</span>
@@ -328,7 +328,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127912;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pinturas La Brocha</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
@@ -347,7 +347,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#10052;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Clima Total SAC</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
@@ -366,7 +366,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Mecanica Rapida SRL</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
@@ -385,7 +385,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128737;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Auxilio 24 Horas</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
@@ -404,7 +404,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#129382;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Verduleria Don Pepe</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
@@ -423,7 +423,7 @@
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
+                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Panaderia La Especial</h4>
                                             <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
