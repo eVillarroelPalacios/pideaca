@@ -132,305 +132,305 @@
 
                             {{-- COMERCIO 1 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127829;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127829;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzeria Los Hermanos</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzeria Los Hermanos</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miercoles.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miercoles.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- COMERCIO 2 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128722;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128722;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferreteria El Tornillo</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferreteria El Tornillo</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pinturas, herramientas y articulos de bazar. Entrega a domicilio.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pinturas, herramientas y articulos de bazar. Entrega a domicilio.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- HOGAR 1 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomeria Rapida Perez</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomeria Rapida Perez</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- HOGAR 2 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#9889;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#9889;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalaciones, reparaciones y certificacion de artefactos electricos.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalaciones, reparaciones y certificacion de artefactos electricos.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- AUXILIO VIAL 1 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128662;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128662;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gruas Aurora 24h</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gruas Aurora 24h</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- AUXILIO VIAL 2 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128260;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128260;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomeria RuedasBien</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomeria RuedasBien</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.4</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Reparacion de pinchaduras y recambios a domicilio, con traslado.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Reparacion de pinchaduras y recambios a domicilio, con traslado.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- ABASTOS 1 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128167;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128167;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- ABASTOS 2 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128276;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128276;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Garrafas de 10 y 45 kg, soda y entrega en el dia solicitada por la app.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Garrafas de 10 y 45 kg, soda y entrega en el dia solicitada por la app.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- COMERCIO 3 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/rotiseria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/rotiseria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Rotiseria Don Carlos</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Rotiseria Don Carlos</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Comida casera, guisos y porciones. Envio gratis en pedidos mayores a $5000.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Comida casera, guisos y porciones. Envio gratis en pedidos mayores a $5000.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- COMERCIO 4 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/kiosco.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/kiosco.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127967;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127967;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Kiosco Express 24hs</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Kiosco Express 24hs</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.3</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Snacks, bebidas, cigarrillos y articulos de higiene. Abierto las 24 horas.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Snacks, bebidas, cigarrillos y articulos de higiene. Abierto las 24 horas.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- HOGAR 3 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pintor.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pintor.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127912;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127912;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pinturas La Brocha</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pinturas La Brocha</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pintura interior y exterior, presupuesto sin cargo y colorimetria digital.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pintura interior y exterior, presupuesto sin cargo y colorimetria digital.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- HOGAR 4 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/tecnico-ac.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/tecnico-ac.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#10052;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#10052;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Clima Total SAC</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Clima Total SAC</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalacion, limpieza y reparacion de aires acondicionados. Certificado.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalacion, limpieza y reparacion de aires acondicionados. Certificado.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- AUXILIO VIAL 3 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/mecanica.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/mecanica.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Mecanica Rapida SRL</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Mecanica Rapida SRL</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Service mecanico express, cambios de aceite y frenos. Taller movil.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Service mecanico express, cambios de aceite y frenos. Taller movil.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- AUXILIO VIAL 4 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/service.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/service.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128737;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128737;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Auxilio 24 Horas</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Auxilio 24 Horas</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Apertura de vehiculos, cambio de bateria y asistencia en ruta.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Apertura de vehiculos, cambio de bateria y asistencia en ruta.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- ABASTOS 3 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/verduleria.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/verduleria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#129382;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#129382;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Verduleria Don Pepe</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Verduleria Don Pepe</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Frutas y verduras frescas del dia. Pedidos programados y combo semanal.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Frutas y verduras frescas del dia. Pedidos programados y combo semanal.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
                             {{-- ABASTOS 4 --}}
                             <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/panaderia.jpg') }}') center/cover no-repeat;">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/panaderia.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
                                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
+                                        <div class="ad-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127838;</div>
                                         <div>
-                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Panaderia La Especial</h4>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Panaderia La Especial</h4>
                                             <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
                                         </div>
                                     </div>
-                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pan fresco, tortas y facturas. Reservas con 24hs de anticipacion.</p>
-                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pan fresco, tortas y facturas. Reservas con 24hs de anticipacion.</p>
+                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
@@ -491,6 +491,12 @@
             transform: scale(1.1) translateZ(10px);
             text-shadow: 0 2px 8px rgba(255,255,255,0.4);
         }
+        .ad-banner { height: 180px; }
+        .ad-body { padding: 14px; }
+        .ad-avatar { width: 36px; height: 36px; min-width: 36px; font-size: 16px; }
+        .ad-title { font-size: 14px; }
+        .ad-desc { font-size: 12px; }
+        .ad-btn { padding: 9px; font-size: 12px; }
         @media (max-width: 768px) {
             .nav-link { display: none !important; }
             .nav-separator { display: none !important; }
@@ -505,6 +511,12 @@
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
             .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; padding: 4px 16px !important; }
+            .ad-banner { height: 130px !important; }
+            .ad-body { padding: 10px !important; }
+            .ad-avatar { width: 30px !important; height: 30px !important; min-width: 30px !important; font-size: 14px !important; }
+            .ad-title { font-size: 12px !important; }
+            .ad-desc { font-size: 11px !important; }
+            .ad-btn { padding: 7px !important; font-size: 11px !important; }
         }
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
@@ -515,6 +527,12 @@
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
             .provider-grid { grid-template-columns: 1fr !important; gap: 10px !important; padding: 4px 12px !important; }
+            .ad-banner { height: 110px !important; }
+            .ad-body { padding: 8px !important; }
+            .ad-avatar { width: 28px !important; height: 28px !important; min-width: 28px !important; font-size: 12px !important; }
+            .ad-title { font-size: 11px !important; }
+            .ad-desc { font-size: 10px !important; }
+            .ad-btn { padding: 6px !important; font-size: 10px !important; }
         }
         @media (min-width: 769px) {
             #mobile-menu { display: none !important; }
