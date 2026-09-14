@@ -68,7 +68,7 @@
         {{-- SECTION --}}
         <main style="flex:1;">
             <div style="background:#D24C19;height:2px;"></div>
-            {{-- CAROUSEL + SERVICIOS SOBREMONTADOS --}}
+            {{-- CAROUSEL --}}
             <section style="padding:0;">
                 <div style="width:100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
@@ -128,161 +128,157 @@
                             <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;cursor:pointer;">Abastos</span>
                         </div>
 
-                        <div class="provider-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;padding:4px 28px;box-sizing:border-box;">
+                        <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px 28px;box-sizing:border-box;">
 
-                            {{-- COMERCIO --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#D24C19;background:rgba(210,76,25,0.1);padding:2px 8px;border-radius:10px;">COMERCIO</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- COMERCIO 1 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#127829;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzería Los Hermanos</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#127829;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzeria Los Hermanos</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miércoles.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miercoles.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#D24C19;background:rgba(210,76,25,0.1);padding:2px 8px;border-radius:10px;">COMERCIO</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- COMERCIO 2 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128722;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferretería El Tornillo</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#D24C19;background:rgba(210,76,25,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(210,76,25,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128722;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferreteria El Tornillo</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Pinturas, herramientas y artículos de bazar. Entrega a domicilio.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pinturas, herramientas y articulos de bazar. Entrega a domicilio.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            {{-- HOGAR --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#2563eb;background:rgba(37,99,235,0.1);padding:2px 8px;border-radius:10px;">HOGAR</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- HOGAR 1 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128295;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomería Rápida Pérez</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128295;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomeria Rapida Perez</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#2563eb;background:rgba(37,99,235,0.1);padding:2px 8px;border-radius:10px;">HOGAR</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- HOGAR 2 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#9889;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#2563eb;background:rgba(37,99,235,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(37,99,235,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#9889;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Instalaciones, reparaciones y certificación de artefactos eléctricos.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalaciones, reparaciones y certificacion de artefactos electricos.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            {{-- AUXILIO VIAL --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#0d9488;background:rgba(13,148,136,0.1);padding:2px 8px;border-radius:10px;">AUXILIO VIAL</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- AUXILIO VIAL 1 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128662;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Grúas Aurora 24h</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128662;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gruas Aurora 24h</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#0d9488;background:rgba(13,148,136,0.1);padding:2px 8px;border-radius:10px;">AUXILIO VIAL</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- AUXILIO VIAL 2 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128260;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomería RuedasBien</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.4</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#0d9488;background:rgba(13,148,136,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128260;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomeria RuedasBien</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.4</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Reparación de pinchaduras y recambios a domicilio, con traslado.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Reparacion de pinchaduras y recambios a domicilio, con traslado.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            {{-- ABASTOS --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#d97706;background:rgba(217,119,6,0.1);padding:2px 8px;border-radius:10px;">ABASTOS</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- ABASTOS 1 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128167;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128167;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;padding:14px;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                    <span style="font-size:10px;font-weight:bold;color:#d97706;background:rgba(217,119,6,0.1);padding:2px 8px;border-radius:10px;">ABASTOS</span>
-                                    <span style="font-size:9px;font-weight:bold;letter-spacing:0.5px;color:#ffffff;background:#D24C19;padding:2px 8px;border-radius:10px;">PUBLICIDAD</span>
+                            {{-- ABASTOS 2 --}}
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
+                                    <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <div style="width:42px;height:42px;min-width:42px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128276;</div>
-                                    <div>
-                                        <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
-                                        <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
+                                <div style="padding:14px;position:relative;z-index:1;background:white;">
+                                    <span style="display:inline-block;font-size:10px;font-weight:700;color:#d97706;background:rgba(217,119,6,0.1);padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">&#128276;</div>
+                                        <div>
+                                            <h4 style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
+                                            <span style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;">Garrafas de 10 y 45 kg, soda y entrega en el día solicitada por la app.</p>
-                                <div style="display:flex;gap:8px;">
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Ver más</span>
-                                    <span style="flex:1;text-align:center;padding:7px;border-radius:8px;font-size:11px;font-weight:600;background:#25D366;color:white;cursor:pointer;">&#128172; Consultar</span>
+                                    <p style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Garrafas de 10 y 45 kg, soda y entrega en el dia solicitada por la app.</p>
+                                    <button style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
                                 </div>
                             </div>
 
@@ -319,8 +315,8 @@
         </main>
         <div style="background:white;height:15px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
-            <div style="text-align:center;">               
-                <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>               
+            <div style="text-align:center;">
+                <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>
@@ -356,7 +352,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; padding: 4px 16px !important; }
         }
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
@@ -366,7 +362,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 10px !important; padding: 4px 12px !important; }
         }
         @media (min-width: 769px) {
             #mobile-menu { display: none !important; }
