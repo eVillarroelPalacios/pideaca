@@ -73,7 +73,7 @@
                 <div style="width:100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
                         <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:linear-gradient(135deg,#0c2a4d 0%,#123b73 55%,#0c2a4d 100%);">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:linear-gradient(135deg,#0c2a4d 0%,#123b73 55%,#0c2a4d 100%);">
                                 <div class="carousel-text" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:20px;">
                                     <div style="text-align:center;max-width:680px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
                                         <div id="ex-icon" style="font-size:42px;line-height:1;">&#128269;</div>
@@ -84,21 +84,21 @@
                                     <span style="margin-top:10px;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.6);">&#9654; ASÍ FUNCIONA PIDEACA</span>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
@@ -566,7 +566,7 @@
             .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
             .nav-container > div:first-child { display: none !important; }
             .nav-container > div:last-child { justify-content: flex-end !important; }
-            .carousel-slide { height: 200px !important; }
+            .carousel-slide { height: 160px !important; }
             .carousel-text { padding: 20px 16px !important; }
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
@@ -587,7 +587,7 @@
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
             .header-btn { padding: 6px 12px !important; font-size: 11px !important; }
-            .carousel-slide { height: 160px !important; }
+            .carousel-slide { height: 130px !important; }
             .carousel-text { padding: 16px 12px !important; }
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
