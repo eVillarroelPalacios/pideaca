@@ -543,17 +543,17 @@
             transform: scale(1.1) translateZ(10px);
             text-shadow: 0 2px 8px rgba(255,255,255,0.4);
         }
-        .ad-banner { height: 85px; }
-        .ad-body { padding: 6px; }
+        .ad-banner { height: 85px; width: 100%; overflow: hidden; }
+        .ad-body { padding: 6px; display: flex; flex-direction: column; flex-grow: 1; }
         .ad-avatar { width: 22px; height: 22px; min-width: 22px; font-size: 10px; }
-        .ad-title { font-size: 10px; }
-        .ad-desc { font-size: 9px; line-height: 1.2; margin: 0 0 4px; padding-right: 28px; }
+        .ad-title { font-size: 10px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; min-height: 21px; }
+        .ad-desc { font-size: 9px; line-height: 1.2; margin: 0 0 4px; padding-right: 28px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px; }
         .ad-btn { padding: 4px; font-size: 9px; }
         .ad-badge { font-size: 8px !important; padding: 2px 6px !important; margin-bottom: 4px !important; }
         .ad-rating { font-size: 9px !important; }
         .ad-card-info { gap: 6px !important; margin-bottom: 4px !important; }
-        .ad-card-link { text-decoration: none; color: inherit; display: block; }
-        .ad-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; }
+        .ad-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+        .ad-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; display: flex; flex-direction: column; height: 100%; }
         .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
         .ad-body { padding-bottom: 36px; }
         .card-action-icon { position: absolute; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background-color: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
@@ -575,8 +575,8 @@
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
-            .ad-title { font-size: 10px !important; }
-            .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; padding-right: 24px !important; }
+            .ad-title { font-size: 10px !important; min-height: 15px !important; }
+            .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; padding-right: 24px !important; min-height: 22px !important; }
             .ad-btn { padding: 4px !important; font-size: 9px !important; }
             .card-action-icon { width: 24px !important; height: 24px !important; bottom: 8px !important; right: 8px !important; }
             .card-action-icon svg { width: 14px !important; height: 14px !important; }
@@ -596,8 +596,8 @@
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
-            .ad-title { font-size: 9px !important; }
-            .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; padding-right: 20px !important; }
+            .ad-title { font-size: 9px !important; min-height: 14px !important; }
+            .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; padding-right: 20px !important; min-height: 19px !important; }
             .ad-btn { padding: 3px !important; font-size: 8px !important; }
             .card-action-icon { width: 22px !important; height: 22px !important; bottom: 6px !important; right: 6px !important; }
             .card-action-icon svg { width: 12px !important; height: 12px !important; }
