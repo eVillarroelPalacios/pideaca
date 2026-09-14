@@ -710,7 +710,7 @@
         (function fixGridHeight() {
             const grid = document.querySelector('.provider-grid');
             if (!grid) return;
-            grid.style.overflow = 'hidden';
+            grid.style.overflow = 'visible';
             function setHeight() {
                 const cards = grid.querySelectorAll('.ad-card');
                 if (!cards.length) return;
