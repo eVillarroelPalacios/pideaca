@@ -484,10 +484,10 @@
 
                         </a></div>
 
-                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 28px;box-sizing:border-box;">
-                            <button id="prev-page" onclick="adPage(1)" style="border:1px solid #d1d5db;background:white;color:#374151;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">← Anterior</button>
+                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 28px;box-sizing:border-box;">
+                            <button id="prev-page" onclick="adPage(1)" style="background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);color:#374151;">&#10094;</button>
                             <div id="page-dots" style="display:flex;gap:6px;"></div>
-                            <button id="next-page" onclick="adPage(2)" style="border:1px solid #d1d5db;background:white;color:#374151;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Siguiente →</button>
+                            <button id="next-page" onclick="adPage(2)" style="background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);color:#374151;">&#10095;</button>
                         </div>
                     </div>
                     <div id="section-quienes-somos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
@@ -578,7 +578,7 @@
             .card-action-icon svg { width: 14px !important; height: 14px !important; }
             .ad-body { padding-bottom: 28px !important; }
             #ad-pagination { padding: 2px 12px !important; gap: 4px !important; margin-top: -2px !important; }
-            #ad-pagination button { padding: 5px 10px !important; font-size: 11px !important; }
+            #ad-pagination button { width: 28px !important; height: 28px !important; font-size: 14px !important; }
         }
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
@@ -599,7 +599,7 @@
             .card-action-icon svg { width: 12px !important; height: 12px !important; }
             .ad-body { padding-bottom: 24px !important; }
             #ad-pagination { padding: 2px 8px !important; gap: 3px !important; margin-top: -2px !important; }
-            #ad-pagination button { padding: 4px 8px !important; font-size: 10px !important; }
+            #ad-pagination button { width: 26px !important; height: 26px !important; font-size: 13px !important; }
         }
         @media (min-width: 769px) {
             #mobile-menu { display: none !important; }
