@@ -513,7 +513,7 @@
             </section>
 
         </main>
-        <div style="background:white;height:15px;"></div>
+        <div style="background:white;height:8px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
             <div style="text-align:center;">
                 <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>
@@ -576,6 +576,9 @@
             .ad-btn { padding: 4px !important; font-size: 9px !important; }
             .card-action-icon { width: 24px !important; height: 24px !important; bottom: 8px !important; right: 8px !important; }
             .card-action-icon svg { width: 14px !important; height: 14px !important; }
+            .ad-body { padding-bottom: 28px !important; }
+            #ad-pagination { padding: 6px 12px !important; gap: 4px !important; }
+            #ad-pagination button { padding: 5px 10px !important; font-size: 11px !important; }
         }
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
@@ -594,6 +597,9 @@
             .ad-btn { padding: 3px !important; font-size: 8px !important; }
             .card-action-icon { width: 22px !important; height: 22px !important; bottom: 6px !important; right: 6px !important; }
             .card-action-icon svg { width: 12px !important; height: 12px !important; }
+            .ad-body { padding-bottom: 24px !important; }
+            #ad-pagination { padding: 4px 8px !important; gap: 3px !important; }
+            #ad-pagination button { padding: 4px 8px !important; font-size: 10px !important; }
         }
         @media (min-width: 769px) {
             #mobile-menu { display: none !important; }
