@@ -128,7 +128,7 @@
                             <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Abastos</span>
                         </div>
 
-                        <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px 28px;box-sizing:border-box;">
+                        <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:4px 28px;box-sizing:border-box;">
 
                             {{-- COMERCIO 1 --}}
                             <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
@@ -484,7 +484,7 @@
 
                         </a></div>
 
-                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:18px 28px;box-sizing:border-box;">
+                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 28px;box-sizing:border-box;">
                             <button id="prev-page" onclick="adPage(1)" style="border:1px solid #d1d5db;background:white;color:#374151;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">← Anterior</button>
                             <div id="page-dots" style="display:flex;gap:6px;"></div>
                             <button id="next-page" onclick="adPage(2)" style="border:1px solid #d1d5db;background:white;color:#374151;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Siguiente →</button>
@@ -567,7 +567,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; padding: 4px 16px !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; }
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
@@ -585,7 +585,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 10px !important; padding: 4px 12px !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; }
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
