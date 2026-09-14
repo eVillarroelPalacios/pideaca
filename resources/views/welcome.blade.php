@@ -491,12 +491,12 @@
             transform: scale(1.1) translateZ(10px);
             text-shadow: 0 2px 8px rgba(255,255,255,0.4);
         }
-        .ad-banner { height: 110px; }
-        .ad-body { padding: 8px; }
-        .ad-avatar { width: 26px; height: 26px; min-width: 26px; font-size: 12px; }
-        .ad-title { font-size: 11px; }
-        .ad-desc { font-size: 10px; line-height: 1.3; margin: 0 0 6px; }
-        .ad-btn { padding: 5px; font-size: 10px; }
+        .ad-banner { height: 85px; }
+        .ad-body { padding: 6px; }
+        .ad-avatar { width: 22px; height: 22px; min-width: 22px; font-size: 10px; }
+        .ad-title { font-size: 10px; }
+        .ad-desc { font-size: 9px; line-height: 1.2; margin: 0 0 4px; }
+        .ad-btn { padding: 4px; font-size: 9px; }
         .ad-badge { font-size: 8px !important; padding: 2px 6px !important; margin-bottom: 4px !important; }
         .ad-rating { font-size: 9px !important; }
         .ad-card-info { gap: 6px !important; margin-bottom: 4px !important; }
