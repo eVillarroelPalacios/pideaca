@@ -131,7 +131,7 @@
                         <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px 28px;box-sizing:border-box;">
 
                             {{-- COMERCIO 1 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -145,12 +145,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miercoles.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- COMERCIO 2 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- COMERCIO 2 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -164,12 +167,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pinturas, herramientas y articulos de bazar. Entrega a domicilio.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- HOGAR 1 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- HOGAR 1 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -183,12 +189,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- HOGAR 2 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- HOGAR 2 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -202,12 +211,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalaciones, reparaciones y certificacion de artefactos electricos.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- AUXILIO VIAL 1 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- AUXILIO VIAL 1 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -221,12 +233,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- AUXILIO VIAL 2 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- AUXILIO VIAL 2 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -240,12 +255,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Reparacion de pinchaduras y recambios a domicilio, con traslado.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- ABASTOS 1 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- ABASTOS 1 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -259,12 +277,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- ABASTOS 2 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- ABASTOS 2 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -278,12 +299,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Garrafas de 10 y 45 kg, soda y entrega en el dia solicitada por la app.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- COMERCIO 3 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- COMERCIO 3 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/rotiseria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -297,12 +321,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Comida casera, guisos y porciones. Envio gratis en pedidos mayores a $5000.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- COMERCIO 4 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- COMERCIO 4 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/kiosco.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -316,12 +343,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Snacks, bebidas, cigarrillos y articulos de higiene. Abierto las 24 horas.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- HOGAR 3 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- HOGAR 3 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pintor.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -335,12 +365,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pintura interior y exterior, presupuesto sin cargo y colorimetria digital.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- HOGAR 4 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- HOGAR 4 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/tecnico-ac.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -354,12 +387,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalacion, limpieza y reparacion de aires acondicionados. Certificado.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- AUXILIO VIAL 3 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- AUXILIO VIAL 3 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/mecanica.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -373,12 +409,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Service mecanico express, cambios de aceite y frenos. Taller movil.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- AUXILIO VIAL 4 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- AUXILIO VIAL 4 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/service.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -392,12 +431,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Apertura de vehiculos, cambio de bateria y asistencia en ruta.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- ABASTOS 3 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- ABASTOS 3 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/verduleria.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -411,12 +453,15 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Frutas y verduras frescas del dia. Pedidos programados y combo semanal.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                            {{-- ABASTOS 4 --}}
-                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            </a>{{-- ABASTOS 4 --}}
+                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/panaderia.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
@@ -430,11 +475,14 @@
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pan fresco, tortas y facturas. Reservas con 24hs de anticipacion.</p>
-                                    <button class="ad-btn" style="width:100%;padding:9px;border:1px solid #d1d5db;background:#f3f4f6;color:#374151;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Ver detalles</button>
+                                    <div class="card-action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </div>
+                                    
                                 </div>
                             </div>
 
-                        </div>
+                        </a></div>
 
                         <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:18px 28px;box-sizing:border-box;">
                             <button id="prev-page" onclick="adPage(1)" style="border:1px solid #d1d5db;background:white;color:#374151;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">← Anterior</button>
@@ -500,6 +548,12 @@
         .ad-badge { font-size: 8px !important; padding: 2px 6px !important; margin-bottom: 4px !important; }
         .ad-rating { font-size: 9px !important; }
         .ad-card-info { gap: 6px !important; margin-bottom: 4px !important; }
+        .ad-card-link { text-decoration: none; color: inherit; display: block; }
+        .ad-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; }
+        .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
+        .ad-body { padding-bottom: 36px; }
+        .card-action-icon { position: absolute; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background-color: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
+        .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
         @media (max-width: 768px) {
             .nav-link { display: none !important; }
             .nav-separator { display: none !important; }
@@ -520,6 +574,8 @@
             .ad-title { font-size: 10px !important; }
             .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; }
             .ad-btn { padding: 4px !important; font-size: 9px !important; }
+            .card-action-icon { width: 24px !important; height: 24px !important; bottom: 8px !important; right: 8px !important; }
+            .card-action-icon svg { width: 14px !important; height: 14px !important; }
         }
         @media (max-width: 480px) {
             .logo-img { width: 120px !important; height: 48px !important; }
@@ -536,6 +592,8 @@
             .ad-title { font-size: 9px !important; }
             .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; }
             .ad-btn { padding: 3px !important; font-size: 8px !important; }
+            .card-action-icon { width: 22px !important; height: 22px !important; bottom: 6px !important; right: 6px !important; }
+            .card-action-icon svg { width: 12px !important; height: 12px !important; }
         }
         @media (min-width: 769px) {
             #mobile-menu { display: none !important; }
