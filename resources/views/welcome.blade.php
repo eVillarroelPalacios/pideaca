@@ -131,7 +131,7 @@
                         <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px 28px;box-sizing:border-box;">
 
                             {{-- COMERCIO 1 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -150,7 +150,7 @@
                             </div>
 
                             {{-- COMERCIO 2 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -169,7 +169,7 @@
                             </div>
 
                             {{-- HOGAR 1 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -188,7 +188,7 @@
                             </div>
 
                             {{-- HOGAR 2 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -207,7 +207,7 @@
                             </div>
 
                             {{-- AUXILIO VIAL 1 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -226,7 +226,7 @@
                             </div>
 
                             {{-- AUXILIO VIAL 2 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -245,7 +245,7 @@
                             </div>
 
                             {{-- ABASTOS 1 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -264,7 +264,7 @@
                             </div>
 
                             {{-- ABASTOS 2 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -283,7 +283,7 @@
                             </div>
 
                             {{-- COMERCIO 3 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/rotiseria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -302,7 +302,7 @@
                             </div>
 
                             {{-- COMERCIO 4 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/kiosco.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -321,7 +321,7 @@
                             </div>
 
                             {{-- HOGAR 3 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pintor.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -340,7 +340,7 @@
                             </div>
 
                             {{-- HOGAR 4 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/tecnico-ac.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -359,7 +359,7 @@
                             </div>
 
                             {{-- AUXILIO VIAL 3 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/mecanica.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -378,7 +378,7 @@
                             </div>
 
                             {{-- AUXILIO VIAL 4 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/service.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -397,7 +397,7 @@
                             </div>
 
                             {{-- ABASTOS 3 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/verduleria.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
@@ -416,7 +416,7 @@
                             </div>
 
                             {{-- ABASTOS 4 --}}
-                            <div class="ad-card" style="position:relative;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/panaderia.jpg') }}') center/cover no-repeat;">
                                     <div style="position:absolute;top:12px;right:-32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:700;padding:5px 36px;transform:rotate(45deg);text-align:center;box-shadow:0 2px 8px rgba(245,158,11,0.4);z-index:2;white-space:nowrap;letter-spacing:0.5px;">PideAca PREMIUM</div>
                                 </div>
