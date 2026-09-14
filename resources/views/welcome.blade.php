@@ -543,7 +543,7 @@
         .ad-body { padding: 6px; }
         .ad-avatar { width: 22px; height: 22px; min-width: 22px; font-size: 10px; }
         .ad-title { font-size: 10px; }
-        .ad-desc { font-size: 9px; line-height: 1.2; margin: 0 0 4px; }
+        .ad-desc { font-size: 9px; line-height: 1.2; margin: 0 0 4px; padding-right: 28px; }
         .ad-btn { padding: 4px; font-size: 9px; }
         .ad-badge { font-size: 8px !important; padding: 2px 6px !important; margin-bottom: 4px !important; }
         .ad-rating { font-size: 9px !important; }
@@ -572,7 +572,7 @@
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
             .ad-title { font-size: 10px !important; }
-            .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; }
+            .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; padding-right: 24px !important; }
             .ad-btn { padding: 4px !important; font-size: 9px !important; }
             .card-action-icon { width: 24px !important; height: 24px !important; bottom: 8px !important; right: 8px !important; }
             .card-action-icon svg { width: 14px !important; height: 14px !important; }
@@ -590,7 +590,7 @@
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
             .ad-title { font-size: 9px !important; }
-            .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; }
+            .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; padding-right: 20px !important; }
             .ad-btn { padding: 3px !important; font-size: 8px !important; }
             .card-action-icon { width: 22px !important; height: 22px !important; bottom: 6px !important; right: 6px !important; }
             .card-action-icon svg { width: 12px !important; height: 12px !important; }
