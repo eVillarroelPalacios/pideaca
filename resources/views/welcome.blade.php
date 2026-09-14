@@ -707,6 +707,29 @@
             document.getElementById('next-page').style.pointerEvents = adCurrentPage === totalPages ? 'none' : 'auto';
         }
 
+        (function fixGridHeight() {
+            const grid = document.querySelector('.provider-grid');
+            if (!grid) return;
+            grid.style.overflow = 'hidden';
+            function setHeight() {
+                const cards = grid.querySelectorAll('.ad-card');
+                if (!cards.length) return;
+                const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+                const rows = 2;
+                const perPage = cols * rows;
+                let maxH = 0;
+                for (let i = 0; i < perPage && i < cards.length; i++) {
+                    cards[i].style.display = '';
+                    const h = cards[i].offsetHeight;
+                    if (h > maxH) maxH = h;
+                }
+                const gap = parseInt(window.getComputedStyle(grid).gap) || 0;
+                grid.style.height = (maxH * rows + gap * (rows - 1)) + 'px';
+            }
+            setHeight();
+            window.addEventListener('resize', setHeight);
+        })();
+
         function adPage(dir) {
             const perPage = adGetPerPage();
             const totalPages = Math.ceil(adCards.length / perPage);
