@@ -106,8 +106,8 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="carousel-nav-btn" onclick="moveCarousel(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#D24C19;border:1px solid #D24C19;border-radius:4px;width:36px;height:36px;font-size:16px;cursor:pointer;color:white;">&#10094;</button>
-                        <button class="carousel-nav-btn" onclick="moveCarousel(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#D24C19;border:1px solid #D24C19;border-radius:4px;width:36px;height:36px;font-size:16px;cursor:pointer;color:white;">&#10095;</button>
+                        <button class="carousel-nav-btn" onclick="moveCarousel(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#D24C19;border:1px solid #D24C19;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:white;">&#10094;</button>
+                        <button class="carousel-nav-btn" onclick="moveCarousel(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:#D24C19;border:1px solid #D24C19;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:white;">&#10095;</button>
                     </div>
                 </div>
 
@@ -485,9 +485,9 @@
                         </a></div>
 
                         <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 28px;box-sizing:border-box;">
-                            <button id="prev-page" class="pagination-nav-btn" onclick="adPage(1)" style="background:#D24C19;border:1px solid #D24C19;border-radius:4px;width:32px;height:32px;font-size:14px;cursor:pointer;color:white;">&#10094;</button>
+                            <button id="prev-page" class="pagination-nav-btn" onclick="adPage(1)" style="background:#D24C19;border:1px solid #D24C19;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:white;">&#10094;</button>
                             <div id="page-dots" style="display:flex;gap:6px;"></div>
-                            <button id="next-page" class="pagination-nav-btn" onclick="adPage(2)" style="background:#D24C19;border:1px solid #D24C19;border-radius:4px;width:32px;height:32px;font-size:14px;cursor:pointer;color:white;">&#10095;</button>
+                            <button id="next-page" class="pagination-nav-btn" onclick="adPage(2)" style="background:#D24C19;border:1px solid #D24C19;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:white;">&#10095;</button>
                         </div>
                     </div>
                     <div id="section-quienes-somos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
