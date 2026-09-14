@@ -128,6 +128,7 @@
                             <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Abastos</span>
                         </div>
 
+                        <div class="ad-grid-zone" style="width:100%;box-sizing:border-box;">
                         <div class="provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:4px 28px;box-sizing:border-box;">
 
                             {{-- COMERCIO 1 --}}
@@ -483,11 +484,14 @@
                             </div>
 
                         </a></div>
+                        </div>
 
-                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 28px;box-sizing:border-box;">
-                            <button id="prev-page" class="pagination-nav-btn" onclick="adPage(1)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10094;</button>
-                            <div id="page-dots" style="display:flex;gap:6px;"></div>
-                            <button id="next-page" class="pagination-nav-btn" onclick="adPage(2)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10095;</button>
+                        <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;width:100%;min-height:56px;padding:8px 28px;box-sizing:border-box;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <button id="prev-page" class="pagination-nav-btn" onclick="adPage(1)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10094;</button>
+                                <div id="page-dots" style="display:flex;gap:6px;"></div>
+                                <button id="next-page" class="pagination-nav-btn" onclick="adPage(2)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10095;</button>
+                            </div>
                         </div>
                     </div>
                     <div id="section-quienes-somos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
@@ -556,7 +560,9 @@
         .ad-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; display: flex; flex-direction: column; height: 100%; }
         .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
         .ad-body { padding-bottom: 36px; }
-        .provider-grid { align-items: stretch; min-height: 820px; }
+        .ad-grid-zone { width: 100%; box-sizing: border-box; }
+        .provider-grid { grid-template-rows: repeat(2, 355px); align-items: stretch; overflow: hidden; }
+        #ad-pagination { min-height: 56px; width: 100%; box-sizing: border-box; }
         .card-action-icon { position: absolute; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background-color: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
         .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
         @media (max-width: 768px) {
@@ -572,7 +578,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; min-height: auto !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; grid-template-rows: repeat(2, 195px) !important; overflow: hidden !important; }
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
@@ -593,7 +599,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; min-height: auto !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; grid-template-rows: repeat(2, 170px) !important; overflow: hidden !important; }
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
