@@ -724,7 +724,7 @@
                     if (h > maxH) maxH = h;
                 }
                 const gap = parseInt(window.getComputedStyle(grid).gap) || 0;
-                grid.style.height = (maxH * rows + gap * (rows - 1)) + 'px';
+                grid.style.height = (maxH * rows + gap * (rows - 1) + 4) + 'px';
             }
             setHeight();
             window.addEventListener('resize', setHeight);
