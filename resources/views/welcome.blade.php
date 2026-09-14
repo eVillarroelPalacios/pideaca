@@ -691,7 +691,9 @@
             for (let p = 1; p <= totalPages; p++) {
                 const d = document.createElement('span');
                 d.textContent = p;
-                d.style.cssText = 'width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === adCurrentPage ? 'background:#D24C19;color:white;' : 'background:white;color:#6b7280;border:1px solid #d1d5db;');
+                d.style.cssText = 'width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === adCurrentPage ? 'background:#D24C19;color:white;box-shadow:0 2px 6px rgba(210,76,25,0.3);' : 'background:transparent;color:#9ca3af;');
+                d.onmouseenter = function () { if (p !== adCurrentPage) this.style.color = '#374151'; };
+                d.onmouseleave = function () { if (p !== adCurrentPage) this.style.color = '#9ca3af'; };
                 d.onclick = function () { adCurrentPage = p; adRenderPage(); };
                 dots.appendChild(d);
             }
