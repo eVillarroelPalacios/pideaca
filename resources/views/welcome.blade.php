@@ -571,7 +571,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; grid-template-rows: repeat(2, auto) !important; overflow: hidden !important; }
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
@@ -592,7 +592,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; grid-template-rows: repeat(4, auto) !important; overflow: hidden !important; }
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
@@ -670,8 +670,9 @@
 
         function adGetPerPage() {
             const grid = document.querySelector('.provider-grid');
-            if (!grid) return 8;
+            if (!grid) return 4;
             const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+            if (cols <= 2) return 4;
             return cols * 2;
         }
 
@@ -705,6 +706,15 @@
             document.getElementById('prev-page').style.pointerEvents = adCurrentPage === 1 ? 'none' : 'auto';
             document.getElementById('next-page').style.opacity = adCurrentPage === totalPages ? '0.4' : '1';
             document.getElementById('next-page').style.pointerEvents = adCurrentPage === totalPages ? 'none' : 'auto';
+
+            var grid = document.querySelector('.provider-grid');
+            if (grid) {
+                var visibleCards = grid.querySelectorAll('.ad-card:not([style*="display: none"])');
+                var totalH = 0;
+                var gap = parseInt(window.getComputedStyle(grid).gap) || 0;
+                visibleCards.forEach(function(c, i) { totalH += c.offsetHeight; if (i > 0) totalH += gap; });
+                grid.style.height = totalH + 'px';
+            }
         }
 
         function adPage(dir) {
