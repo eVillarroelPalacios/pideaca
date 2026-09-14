@@ -571,7 +571,7 @@
             .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
             .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; }
+            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; min-height: 340px !important; }
             .ad-banner { height: 80px !important; }
             .ad-body { padding: 6px !important; }
             .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
@@ -592,7 +592,7 @@
             .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
             .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
             .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; }
+            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; min-height: 300px !important; }
             .ad-banner { height: 70px !important; }
             .ad-body { padding: 5px !important; }
             .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
