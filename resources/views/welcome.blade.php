@@ -553,7 +553,7 @@
                     </div>
                     <div id="login-error" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
                     <div style="display:flex;flex-direction:column;gap:8px;">
-                        <button type="submit" id="login-submit" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
+                        <button type="submit" id="login-submit" class="header-btn" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
                         <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#1d4ed8;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
                     </div>
                 </form>
