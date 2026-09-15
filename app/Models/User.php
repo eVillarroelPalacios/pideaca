@@ -51,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(UserStatus::class, 'user_status_id');
     }
+
+    public function typeUser()
+    {
+        return $this->belongsTo(TypeUser::class, 'type_user_id');
+    }
+
+    public function pages()
+    {
+        return $this->belongsToMany(Page::class, 'page_user', 'user_id', 'page_id');
+    }
 }
