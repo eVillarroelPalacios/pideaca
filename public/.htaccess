@@ -4,6 +4,7 @@
     </IfModule>
 
     RewriteEngine On
+    RewriteBase /pideaca
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

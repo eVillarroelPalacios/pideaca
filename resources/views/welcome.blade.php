@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>PideAca</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|inter:400,500,600,700,800" rel="stylesheet" />
@@ -44,7 +45,7 @@
                 </a>
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
                 <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
-                <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
+                <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
                 <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
@@ -525,6 +526,33 @@
             </div>
         </footer>
 
+        {{-- LOGIN MODAL --}}
+        <div id="login-overlay" class="login-overlay" style="display:none;">
+            <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                    <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">Iniciar Sesión</h2>
+                    <button onclick="closeLogin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;line-height:1;">&times;</button>
+                </div>
+                <form id="login-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                    <div>
+                        <label for="login-email" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Correo</label>
+                        <input type="email" id="login-email" name="email" placeholder="tucorreo@ejemplo.com" required
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                    </div>
+                    <div>
+                        <label for="login-password" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Clave</label>
+                        <input type="password" id="login-password" name="password" placeholder="Ingresá tu clave" required
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                    </div>
+                    <div id="login-error" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <button type="submit" id="login-submit" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
+                        <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#1d4ed8;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </body>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -660,6 +688,17 @@
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }
     }
+
+    .login-overlay {
+        position: fixed; inset: 0; z-index: 200;
+        background: rgba(7, 26, 48, 0.6);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .login-box { animation: loginPop 0.25s ease; }
+    @keyframes loginPop {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
 </style>
    <script>
     let carouselIndex = 0;
@@ -768,5 +807,84 @@
 
     adRenderPage();
     window.addEventListener('resize', adRenderPage);
+
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+
+    function openLogin() {
+        loginError.style.display = 'none';
+        loginOverlay.style.display = 'flex';
+        document.getElementById('login-email').focus();
+    }
+
+    function closeLogin() {
+        loginOverlay.style.display = 'none';
+    }
+
+    loginOverlay.addEventListener('click', function (e) {
+        if (e.target === loginOverlay) closeLogin();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && loginOverlay.style.display === 'flex') closeLogin();
+    });
+
+    loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('login-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verificando...';
+        loginError.style.display = 'none';
+
+        fetch('{{ url('/login') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            })
+        })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (r) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Iniciar';
+            if (r.ok && r.data.success) {
+                loginError.style.display = 'block';
+                loginError.style.color = '#16a34a';
+                loginError.style.background = '#f0fdf4';
+                loginError.style.border = '1px solid #bbf7d0';
+                loginError.textContent = r.data.message;
+                setTimeout(closeLogin, 1200);
+            } else {
+                loginError.style.color = '#dc2626';
+                loginError.style.background = '#fef2f2';
+                loginError.style.border = '1px solid #fecaca';
+                loginError.style.display = 'block';
+                loginError.textContent = (r.data && r.data.message) ? r.data.message : 'Error al iniciar sesión.';
+            }
+        })
+        .catch(function () {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Iniciar';
+            loginError.style.color = '#dc2626';
+            loginError.style.background = '#fef2f2';
+            loginError.style.border = '1px solid #fecaca';
+            loginError.style.display = 'block';
+            loginError.textContent = 'Error de conexión. Intentá de nuevo.';
+        });
+    });
+
+    function recoverPassword() {
+        loginError.style.color = '#1d4ed8';
+        loginError.style.background = '#eff6ff';
+        loginError.style.border = '1px solid #bfdbfe';
+        loginError.style.display = 'block';
+        loginError.textContent = 'Próximamente enviaremos un enlace de recuperación a tu correo.';
+    }
 </script>
 </html>
