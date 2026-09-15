@@ -46,4 +46,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function status()
+    {
+        return $this->belongsTo(UserStatus::class, 'user_status_id');
+    }
 }

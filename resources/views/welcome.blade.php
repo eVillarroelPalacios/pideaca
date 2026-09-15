@@ -859,7 +859,8 @@
                 loginError.style.background = '#f0fdf4';
                 loginError.style.border = '1px solid #bbf7d0';
                 loginError.textContent = r.data.message;
-                setTimeout(closeLogin, 1200);
+                if (r.data.user) sessionStorage.setItem('pideaca_user', JSON.stringify(r.data.user));
+                setTimeout(function () { window.open('{{ url('/dashboard') }}', '_blank'); closeLogin(); }, 600);
             } else {
                 loginError.style.color = '#dc2626';
                 loginError.style.background = '#fef2f2';

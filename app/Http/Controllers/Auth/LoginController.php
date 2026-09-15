@@ -27,6 +27,11 @@ class LoginController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Sesión iniciada correctamente.',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
             ]);
         }
 
@@ -34,5 +39,13 @@ class LoginController extends Controller
             'success' => false,
             'message' => 'Credenciales incorrectas.',
         ], 422);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
     }
 }
