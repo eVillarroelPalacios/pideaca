@@ -60,10 +60,7 @@
                     </div>
                 </div>
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <form action="{{ route('logout') }}" method="POST" style="margin:0;">
-                    @csrf
-                    <button type="submit" class="header-btn" style="padding:2px 10px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.5);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">Cerrar Sesión</button>
-                </form>
+                <button type="button" onclick="doLogout()" class="header-btn" style="padding:2px 10px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.5);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">Cerrar Sesión</button>
                 <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
@@ -84,10 +81,7 @@
                     <a href="#" onclick="showDashSection('pedidos')" style="color:#1f2937;text-decoration:none;font-size:13px;font-weight:600;padding:6px 0;">Mis Pedidos</a>
                     <a href="#" onclick="showDashSection('notificaciones')" style="color:#1f2937;text-decoration:none;font-size:13px;font-weight:600;padding:6px 0;">Notificaciones</a>
                     <div style="width:100%;height:1px;background:#e5e7eb;"></div>
-                    <form action="{{ route('logout') }}" method="POST" style="margin:0;width:100%;text-align:center;">
-                        @csrf
-                        <button type="submit" style="background:none;border:none;color:#D24C19;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
-                    </form>
+                    <button type="button" onclick="doLogout()" style="background:none;border:none;color:#D24C19;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
                 </div>
             </div>
         </nav>
@@ -194,6 +188,19 @@
         });
         var menu = document.getElementById('mobile-menu');
         if (menu) menu.style.display = 'none';
+    }
+
+    function doLogout() {
+        fetch('{{ route('logout') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        }).then(function () {
+            window.close();
+            setTimeout(function () { window.location.href = '{{ url('/') }}'; }, 500);
+        });
     }
 </script>
 </html>
