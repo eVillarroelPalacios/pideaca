@@ -529,12 +529,12 @@
         {{-- LOGIN MODAL --}}
         <div id="login-overlay" class="login-overlay" style="display:none;">
             <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
-                    <h2 style="font-size:18px;font-weight:700;color:white;margin:0;">Iniciar Sesión</h2>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);border-bottom:2px solid #D24C19;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <img src="{{ asset('images/logo.png') }}" alt="PideAca" style="height:36px;object-fit:contain;" />
-                        <button onclick="closeLogin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:rgba(255,255,255,0.7);line-height:1;">&times;</button>
+                        <h2 style="font-size:18px;font-weight:700;color:white;margin:0;">Iniciar Sesión</h2>
                     </div>
+                    <button onclick="closeLogin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:rgba(255,255,255,0.7);line-height:1;">&times;</button>
                 </div>
                 <form id="login-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
                     <div>
