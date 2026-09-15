@@ -536,13 +536,13 @@
                 <form id="login-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
                     <div>
                         <label for="login-email" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Correo</label>
-                        <input type="email" id="login-email" name="email" placeholder="tucorreo@ejemplo.com" required
+                        <input type="email" id="login-email" name="email" placeholder="Ingrese el correo"
                             style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
                     </div>
                     <div>
                         <label for="login-password" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Clave</label>
                         <div style="position:relative;">
-                            <input type="password" id="login-password" name="password" placeholder="Ingresá tu clave" required
+                            <input type="password" id="login-password" name="password" placeholder="Ingrese su contraseña"
                                 style="width:100%;box-sizing:border-box;padding:9px 36px 9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
                             <button type="button" onclick="togglePassword()" id="eye-toggle"
                                 style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;color:#6b7280;line-height:1;">
@@ -843,6 +843,11 @@
 
     loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        var email = document.getElementById('login-email').value.trim();
+        var pass = document.getElementById('login-password').value.trim();
+        if (!email) { loginError.style.display='block'; loginError.style.color='#dc2626'; loginError.style.background='#fef2f2'; loginError.style.border='1px solid #fecaca'; loginError.textContent='Ingrese el correo'; return; }
+        if (!pass) { loginError.style.display='block'; loginError.style.color='#dc2626'; loginError.style.background='#fef2f2'; loginError.style.border='1px solid #fecaca'; loginError.textContent='Ingrese su contraseña'; return; }
+        loginError.style.display = 'none';
         const submitBtn = document.getElementById('login-submit');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Verificando...';
@@ -872,10 +877,7 @@
                 loginError.textContent = r.data.message;
                 if (r.data.user) sessionStorage.setItem('pideaca_user', JSON.stringify(r.data.user));
                 setTimeout(function () {
-                    window.open('{{ url('/dashboard') }}', '_blank');
-                    closeLogin();
-                    window.open('', '_self');
-                    window.close();
+                    window.location.href = '{{ url("/dashboard") }}';
                 }, 600);
             } else {
                 loginError.style.color = '#dc2626';
