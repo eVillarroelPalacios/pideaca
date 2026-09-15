@@ -526,218 +526,247 @@
         </footer>
 
     </body>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        .header-btn:hover, .cta-btn:hover {
-            background: #ffffff !important;
-            color: #D24C19 !important;
-            border: 1px solid #D24C19 !important;
-        }
-        .carousel-nav-btn:hover, .pagination-nav-btn:hover {
-            border: 1px solid #D24C19 !important;
-            color: #D24C19 !important;
-        }
-        .nav-link {
-            position: relative;
-            text-decoration: none;
-            transition: transform 0.2s ease, text-shadow 0.2s ease;
-        }
-        .nav-link:hover {
-            transform: scale(1.1) translateZ(10px);
-            text-shadow: 0 2px 8px rgba(255,255,255,0.4);
-        }
-        .ad-banner { height: 85px; width: 100%; overflow: hidden; background-size: cover; background-position: center; }
-        .ad-body { padding: 6px; display: flex; flex-direction: column; flex-grow: 1; }
-        .ad-avatar { width: 22px; height: 22px; min-width: 22px; font-size: 10px; }
-        .ad-title { font-size: 10px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 37px; }
-        .ad-desc { font-size: 9px; line-height: 1.5; margin: 0 0 4px; padding-right: 28px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 36px; }
-        .ad-btn { padding: 4px; font-size: 9px; }
-        .ad-badge { font-size: 8px !important; padding: 2px 6px !important; margin-bottom: 4px !important; }
-        .ad-rating { font-size: 9px !important; }
-        .ad-card-info { gap: 6px !important; margin-bottom: 4px !important; }
-        .ad-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-        .ad-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: pointer; display: flex; flex-direction: column; height: 100%; }
-        .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
-        .ad-body { padding-bottom: 36px; }
-        .ad-grid-zone { width: 100%; box-sizing: border-box; }
-        .provider-grid { align-items: stretch; grid-template-rows: repeat(2, 1fr); overflow: hidden; }
-        #ad-pagination { width: 100%; box-sizing: border-box; }
-        .card-action-icon { position: absolute; bottom: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; background-color: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
-        .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
-        @media (max-width: 768px) {
-            .nav-link { display: none !important; }
-            .nav-separator { display: none !important; }
-            #menu-toggle { display: block !important; }
-            .logo-img { width: 140px !important; height: 52px !important; }
-            .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
-            .nav-container > div:first-child { display: none !important; }
-            .nav-container > div:last-child { justify-content: flex-end !important; }
-            .carousel-slide { height: 160px !important; }
-            .carousel-text { padding: 20px 16px !important; }
-            .carousel-text h2 { font-size: 20px !important; line-height: 1.2 !important; }
-            .carousel-text p { font-size: 13px !important; max-width: 90% !important; margin-bottom: 12px !important; }
-            .carousel-text button { padding: 10px 24px !important; font-size: 13px !important; }
-            .provider-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; padding: 4px 12px !important; grid-template-rows: repeat(2, 1fr) !important; overflow: hidden !important; }
-            .ad-banner { height: 80px !important; }
-            .ad-body { padding: 6px !important; }
-            .ad-avatar { width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 10px !important; }
-            .ad-title { font-size: 10px !important; line-height: 1.3 !important; height: 26px !important; }
-            .ad-desc { font-size: 9px !important; line-height: 1.2 !important; margin: 0 0 4px !important; padding-right: 24px !important; height: 22px !important; }
-            .ad-btn { padding: 4px !important; font-size: 9px !important; }
-            .card-action-icon { width: 24px !important; height: 24px !important; bottom: 8px !important; right: 8px !important; }
-            .card-action-icon svg { width: 14px !important; height: 14px !important; }
-            .ad-body { padding-bottom: 28px !important; }
-            #ad-pagination { padding: 2px 12px !important; gap: 4px !important; margin-top: -2px !important; }
-            #ad-pagination button { width: 28px !important; height: 28px !important; font-size: 14px !important; }
-        }
-        @media (max-width: 480px) {
-            .logo-img { width: 120px !important; height: 48px !important; }
-            .header-btn { padding: 6px 12px !important; font-size: 11px !important; }
-            .carousel-slide { height: 130px !important; }
-            .carousel-text { padding: 16px 12px !important; }
-            .carousel-text h2 { font-size: 17px !important; line-height: 1.2 !important; }
-            .carousel-text p { font-size: 11px !important; max-width: 95% !important; margin-bottom: 10px !important; }
-            .carousel-text button { padding: 8px 20px !important; font-size: 12px !important; }
-            .provider-grid { grid-template-columns: 1fr !important; gap: 6px !important; padding: 4px 10px !important; grid-template-rows: repeat(2, 1fr) !important; overflow: hidden !important; }
-            .ad-banner { height: 70px !important; }
-            .ad-body { padding: 5px !important; }
-            .ad-avatar { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 9px !important; }
-            .ad-title { font-size: 9px !important; line-height: 1.3 !important; height: 24px !important; }
-            .ad-desc { font-size: 8px !important; line-height: 1.2 !important; margin: 0 0 3px !important; padding-right: 20px !important; height: 19px !important; }
-            .ad-btn { padding: 3px !important; font-size: 8px !important; }
-            .card-action-icon { width: 22px !important; height: 22px !important; bottom: 6px !important; right: 6px !important; }
-            .card-action-icon svg { width: 12px !important; height: 12px !important; }
-            .ad-body { padding-bottom: 24px !important; }
-            #ad-pagination { padding: 2px 8px !important; gap: 3px !important; margin-top: -2px !important; }
-            #ad-pagination button { width: 26px !important; height: 26px !important; font-size: 13px !important; }
-        }
-        @media (min-width: 769px) {
-            #mobile-menu { display: none !important; }
-        }
-    </style>
-    <script>
-        let carouselIndex = 0;
-        const track = document.getElementById('carousel-track');
-        const totalSlides = track.children.length;
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    
+    .header-btn:hover, .cta-btn:hover {
+        background: #ffffff !important;
+        color: #D24C19 !important;
+        border: 1px solid #D24C19 !important;
+    }
+    .carousel-nav-btn:hover, .pagination-nav-btn:hover {
+        border: 1px solid #D24C19 !important;
+        color: #D24C19 !important;
+    }
+    .nav-link {
+        position: relative;
+        text-decoration: none;
+        transition: transform 0.2s ease, text-shadow 0.2s ease;
+    }
+    .nav-link:hover {
+        transform: scale(1.1) translateZ(10px);
+        text-shadow: 0 2px 8px rgba(255,255,255,0.4);
+    }
 
-        function moveCarousel(direction) {
-            carouselIndex += direction;
-            if (carouselIndex < 0) carouselIndex = totalSlides - 1;
-            if (carouselIndex >= totalSlides) carouselIndex = 0;
-            track.style.transform = 'translateX(-' + (carouselIndex * 100) + '%)';
-        }
+    /* GRILLA LIMPIA SIN FRANJAS NI ALTURAS FORZADAS POR JS */
+    .ad-grid-zone { width: 100%; box-sizing: border-box; }
+    
+    .provider-grid { 
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 12px !important;
+        padding: 4px 28px !important;
+        box-sizing: border-box !important;
+        align-items: stretch !important;
+        height: auto !important; /* IMPORTANTE: Cancela la altura forzada por JS */
+    }
 
-        function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        }
+    .ad-card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+    
+    .ad-card { 
+        position: relative; 
+        background: #ffffff; 
+        border-radius: 12px; 
+        border: 1px solid #e5e7eb; 
+        overflow: hidden; 
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; 
+        cursor: pointer; 
+        display: flex; 
+        flex-direction: column; 
+        height: 100%; 
+    }
+    .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
 
-        function showSection(key) {
-            const sections = ['inicio', 'quienes-somos', 'servicios', 'contactos'];
-            sections.forEach(function (k) {
-                const el = document.getElementById('section-' + k);
-                if (el) el.style.display = (k === key) ? 'block' : 'none';
-            });
-            const target = document.getElementById('section-' + key);
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            const menu = document.getElementById('mobile-menu');
-            if (menu) menu.style.display = 'none';
-        }
+    .ad-banner { height: 110px !important; width: 100%; overflow: hidden; background-size: cover; background-position: center; }
+    
+    .ad-body { 
+        padding: 12px; 
+        display: flex; 
+        flex-direction: column; 
+        flex-grow: 1; 
+        position: relative;
+        padding-bottom: 36px !important;
+    }
 
-        const exSteps = [
-            { icon: '🔍', title: 'Buscá tu prestador', desc: 'Elegí qué necesitás: comercios, hogar, auxilio vial o abastos.' },
-            { icon: '🤝', title: 'Elegí el mejor', desc: 'Compará prestadores, precios y valoraciones de tu comunidad.' },
-            { icon: '📲', title: 'Confirmá el servicio', desc: 'Programá o solicitá con un toque y pago seguro desde la app.' },
-            { icon: '🚚', title: 'Recibilo en tu casa', desc: 'Seguimiento en tiempo real hasta tu puerta, sin perder tiempo.' }
-        ];
-        let exIndex = 0;
-        function exUpdate() {
-            const s = exSteps[exIndex];
-            document.getElementById('ex-icon').textContent = s.icon;
-            document.getElementById('ex-title').textContent = s.title;
-            document.getElementById('ex-desc').textContent = s.desc;
-            const dots = document.getElementById('ex-dots');
-            dots.innerHTML = '';
-            exSteps.forEach(function (step, i) {
-                const d = document.createElement('span');
-                d.style.cssText = 'width:8px;height:8px;border-radius:50%;' + (i === exIndex ? 'background:#D24C19;transform:scale(1.2);' : 'background:rgba(255,255,255,0.4);') + 'transition:background 0.3s ease,transform 0.3s ease;';
-                dots.appendChild(d);
-            });
+    .ad-badge { font-size: 9px !important; padding: 2px 6px !important; margin-bottom: 6px !important; }
+    .ad-rating { font-size: 10px !important; }
+    .ad-card-info { gap: 6px !important; margin-bottom: 6px !important; }
+
+    .ad-title { 
+        font-size: 13px !important; 
+        line-height: 1.3 !important; 
+        font-weight: bold;
+        color: #1f2937;
+        margin: 0;
+        height: 34px !important; 
+        display: -webkit-box; 
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical; 
+        overflow: hidden; 
+    }
+
+    .ad-desc { 
+        font-size: 11px !important; 
+        line-height: 1.4 !important; 
+        color: #6b7280;
+        margin: 0; 
+        padding-right: 20px; 
+        height: 32px !important; 
+        display: -webkit-box; 
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical; 
+        overflow: hidden; 
+    }
+
+    .card-action-icon { 
+        position: absolute; 
+        bottom: 10px; 
+        right: 10px; 
+        width: 28px; 
+        height: 28px; 
+        border-radius: 50%; 
+        background-color: #fff7ed; 
+        color: #ea580c; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; 
+    }
+    .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
+
+    @media (max-width: 768px) {
+        .nav-link, .nav-separator { display: none !important; }
+        #menu-toggle { display: block !important; }
+        .logo-img { width: 140px !important; height: 52px !important; }
+        .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
+        .carousel-slide { height: 160px !important; }
+        
+        .provider-grid { 
+            grid-template-columns: repeat(2, 1fr) !important; 
+            gap: 10px !important; 
+            padding: 4px 12px !important; 
         }
-        setInterval(function () {
-            exIndex = (exIndex + 1) % exSteps.length;
-            exUpdate();
-        }, 3000);
+        .ad-banner { height: 90px !important; }
+        .ad-title { height: 30px !important; font-size: 11px !important; }
+        .ad-desc { height: 28px !important; font-size: 10px !important; }
+    }
+
+    @media (max-width: 480px) {
+        .provider-grid { 
+            grid-template-columns: 1fr !important; 
+        }
+    }
+    @media (min-width: 769px) {
+        #mobile-menu { display: none !important; }
+    }
+</style>
+   <script>
+    let carouselIndex = 0;
+    const track = document.getElementById('carousel-track');
+    const totalSlides = track.children.length;
+
+    function moveCarousel(direction) {
+        carouselIndex += direction;
+        if (carouselIndex < 0) carouselIndex = totalSlides - 1;
+        if (carouselIndex >= totalSlides) carouselIndex = 0;
+        track.style.transform = 'translateX(-' + (carouselIndex * 100) + '%)';
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById('mobile-menu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function showSection(key) {
+        const sections = ['inicio', 'quienes-somos', 'servicios', 'contactos'];
+        sections.forEach(function (k) {
+            const el = document.getElementById('section-' + k);
+            if (el) el.style.display = (k === key) ? 'block' : 'none';
+        });
+        const target = document.getElementById('section-' + key);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const menu = document.getElementById('mobile-menu');
+        if (menu) menu.style.display = 'none';
+    }
+
+    const exSteps = [
+        { icon: '🔍', title: 'Buscá tu prestador', desc: 'Elegí qué necesitás: comercios, hogar, auxilio vial o abastos.' },
+        { icon: '🤝', title: 'Elegí el mejor', desc: 'Compará prestadores, precios y valoraciones de tu comunidad.' },
+        { icon: '📲', title: 'Confirmá el servicio', desc: 'Programá o solicitá con un toque y pago seguro desde la app.' },
+        { icon: '🚚', title: 'Recibilo en tu casa', desc: 'Seguimiento en tiempo real hasta tu puerta, sin perder tiempo.' }
+    ];
+    let exIndex = 0;
+    function exUpdate() {
+        const s = exSteps[exIndex];
+        document.getElementById('ex-icon').textContent = s.icon;
+        document.getElementById('ex-title').textContent = s.title;
+        document.getElementById('ex-desc').textContent = s.desc;
+        const dots = document.getElementById('ex-dots');
+        dots.innerHTML = '';
+        exSteps.forEach(function (step, i) {
+            const d = document.createElement('span');
+            d.style.cssText = 'width:8px;height:8px;border-radius:50%;' + (i === exIndex ? 'background:#D24C19;transform:scale(1.2);' : 'background:rgba(255,255,255,0.4);') + 'transition:background 0.3s ease,transform 0.3s ease;';
+            dots.appendChild(d);
+        });
+    }
+    setInterval(function () {
+        exIndex = (exIndex + 1) % exSteps.length;
         exUpdate();
+    }, 3000);
+    exUpdate();
 
-        let adCurrentPage = 1;
-        const adCards = document.querySelectorAll('.ad-card');
-        const paginationWrap = document.getElementById('ad-pagination');
+    let adCurrentPage = 1;
+    const adCards = document.querySelectorAll('.ad-card');
+    const paginationWrap = document.getElementById('ad-pagination');
 
-        function adGetPerPage() {
-            const grid = document.querySelector('.provider-grid');
-            if (!grid) return 8;
-            const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').length;
-            return cols * 2;
+    function adGetPerPage() {
+        const grid = document.querySelector('.provider-grid');
+        if (!grid) return 8;
+        const cols = window.getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+        return cols * 2;
+    }
+
+    function adRenderPage() {
+        const perPage = adGetPerPage();
+        const totalPages = Math.ceil(adCards.length / perPage);
+        if (adCurrentPage > totalPages) adCurrentPage = totalPages;
+        if (adCurrentPage < 1) adCurrentPage = 1;
+
+        adCards.forEach(function (c, i) {
+            const start = (adCurrentPage - 1) * perPage;
+            const end = start + perPage;
+            c.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+
+        if (totalPages <= 1) { paginationWrap.style.display = 'none'; return; }
+        paginationWrap.style.display = 'flex';
+
+        const dots = document.getElementById('page-dots');
+        dots.innerHTML = '';
+        for (let p = 1; p <= totalPages; p++) {
+            const d = document.createElement('span');
+            d.textContent = p;
+            d.style.cssText = 'padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === adCurrentPage ? 'color:#D24C19;' : 'color:#9ca3af;');
+            d.onmouseenter = function () { if (p !== adCurrentPage) this.style.color = '#374151'; };
+            d.onmouseleave = function () { if (p !== adCurrentPage) this.style.color = '#9ca3af'; };
+            d.onclick = function () { adCurrentPage = p; adRenderPage(); };
+            dots.appendChild(d);
         }
+        document.getElementById('prev-page').style.opacity = adCurrentPage === 1 ? '0.4' : '1';
+        document.getElementById('prev-page').style.pointerEvents = adCurrentPage === 1 ? 'none' : 'auto';
+        document.getElementById('next-page').style.opacity = adCurrentPage === totalPages ? '0.4' : '1';
+        document.getElementById('next-page').style.pointerEvents = adCurrentPage === totalPages ? 'none' : 'auto';
+    }
 
-        function adRenderPage() {
-            const perPage = adGetPerPage();
-            const totalPages = Math.ceil(adCards.length / perPage);
-            if (adCurrentPage > totalPages) adCurrentPage = totalPages;
-            if (adCurrentPage < 1) adCurrentPage = 1;
+    function adPage(dir) {
+        const perPage = adGetPerPage();
+        const totalPages = Math.ceil(adCards.length / perPage);
+        if (dir === 1 && adCurrentPage > 1) { adCurrentPage--; adRenderPage(); }
+        if (dir === 2 && adCurrentPage < totalPages) { adCurrentPage++; adRenderPage(); }
+    }
 
-            adCards.forEach(function (c, i) {
-                const start = (adCurrentPage - 1) * perPage;
-                const end = start + perPage;
-                c.style.display = (i >= start && i < end) ? '' : 'none';
-            });
-
-            if (totalPages <= 1) { paginationWrap.style.display = 'none'; return; }
-            paginationWrap.style.display = 'flex';
-
-            const dots = document.getElementById('page-dots');
-            dots.innerHTML = '';
-            for (let p = 1; p <= totalPages; p++) {
-                const d = document.createElement('span');
-                d.textContent = p;
-                d.style.cssText = 'padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === adCurrentPage ? 'color:#D24C19;' : 'color:#9ca3af;');
-                d.onmouseenter = function () { if (p !== adCurrentPage) this.style.color = '#374151'; };
-                d.onmouseleave = function () { if (p !== adCurrentPage) this.style.color = '#9ca3af'; };
-                d.onclick = function () { adCurrentPage = p; adRenderPage(); };
-                dots.appendChild(d);
-            }
-            document.getElementById('prev-page').style.opacity = adCurrentPage === 1 ? '0.4' : '1';
-            document.getElementById('prev-page').style.pointerEvents = adCurrentPage === 1 ? 'none' : 'auto';
-            document.getElementById('next-page').style.opacity = adCurrentPage === totalPages ? '0.4' : '1';
-            document.getElementById('next-page').style.pointerEvents = adCurrentPage === totalPages ? 'none' : 'auto';
-        }
-
-        function adPage(dir) {
-            const perPage = adGetPerPage();
-            const totalPages = Math.ceil(adCards.length / perPage);
-            if (dir === 1 && adCurrentPage > 1) { adCurrentPage--; adRenderPage(); }
-            if (dir === 2 && adCurrentPage < totalPages) { adCurrentPage++; adRenderPage(); }
-        }
-
-        adRenderPage();
-        window.addEventListener('resize', adRenderPage);
-
-        function fixGridHeight() {
-            var grid = document.querySelector('.provider-grid');
-            if (!grid) return;
-            var cards = grid.querySelectorAll('.ad-card');
-            if (!cards.length) return;
-            var maxH = 0;
-            cards.forEach(function(c) {
-                if (c.offsetHeight > maxH) maxH = c.offsetHeight;
-            });
-            var gap = parseInt(window.getComputedStyle(grid).gap) || 0;
-            grid.style.height = (maxH * 2 + gap) + 'px';
-        }
-        fixGridHeight();
-        window.addEventListener('resize', fixGridHeight);
-
-    </script>
+    adRenderPage();
+    window.addEventListener('resize', adRenderPage);
+</script>
 </html>
