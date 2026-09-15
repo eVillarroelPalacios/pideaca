@@ -23,6 +23,7 @@ return new class extends Migration
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
             $table->string('description');
+            $table->string('url')->nullable();
             $table->foreignId('module_id')->constrained('modules')->cascadeOnDelete();
             $table->timestamps();
         });
