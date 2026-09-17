@@ -17,6 +17,33 @@
     <body style="margin:0;padding:0;background:#ffffff;min-height:100vh;display:flex;flex-direction:column;">
 
         <div style="background:#D24C19;height:2px;"></div>
+        <div style="background:#f3f4f6;padding:10px 0;">
+            <div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <a href="#" title="Facebook" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#1877F2'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                    <a href="#" title="Instagram" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#E4405F'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                    <a href="#" title="X / Twitter" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="#" title="YouTube" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#FF0000'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                    <a href="#" title="WhatsApp" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#25D366'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    </a>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <a href="tel:+595981234567" style="color:#6b7280;font-size:12px;text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;" onmouseover="this.style.color='#1f2937'" onmouseout="this.style.color='#6b7280'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                        +595 981 234567
+                    </a>
+                </div>
+            </div>
+        </div>
         {{-- NAV --}}
         <nav style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);position:sticky;top:0;z-index:50;overflow:visible;">
             <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
@@ -68,38 +95,31 @@
 
         {{-- SECTION --}}
         <main style="flex:1;">
-            <div style="background:#D24C19;height:2px;"></div>
             {{-- CAROUSEL --}}
             <section style="padding:0;">
-                <div style="width:100%;">
+                <div style="width:CAROUSEL100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
                         <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:linear-gradient(135deg,#0c2a4d 0%,#123b73 55%,#0c2a4d 100%);">
-                                <div class="carousel-text" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:20px;">
-                                    <div style="text-align:center;max-width:680px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-                                        <div id="ex-icon" style="font-size:42px;line-height:1;">&#128269;</div>
-                                        <h2 id="ex-title" style="font-size:26px;font-weight:bold;margin:0;">Buscá tu prestador</h2>
-                                        <p id="ex-desc" style="font-size:14px;margin:0;max-width:540px;">Elegí qué necesitás: comercios, hogar, auxilio vial o abastos.</p>
-                                    </div>
-                                    <div id="ex-dots" style="display:flex;gap:6px;margin-top:14px;"></div>
-                                    <span style="margin-top:10px;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.6);">&#9654; ASÍ FUNCIONA PIDEACA</span>
-                                </div>
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;overflow:hidden;background:white;">
+                                <video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;">
+                                    <source src="{{ asset('images/videos/video1.mp4') }}" type="video/mp4">
+                                </video>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
@@ -528,8 +548,8 @@
 
         {{-- LOGIN MODAL --}}
         <div id="login-overlay" class="login-overlay" style="display:none;">
-            <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);border:2px solid #D24C19;">
+            <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                     <img src="{{ asset('images/logo.png') }}" alt="PideAca" style="height:36px;object-fit:contain;" />
                     <button onclick="closeLogin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:rgba(255,255,255,0.7);line-height:1;">&times;</button>
                 </div>
@@ -552,6 +572,9 @@
                         </div>
                     </div>
                     <div id="login-error" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
+                    <div id="login-spinner-overlay" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:transparent;z-index:10;align-items:center;justify-content:center;border-radius:0;">
+                        <div class="spinner-ring"></div>
+                    </div>
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         <button type="submit" id="login-submit" class="header-btn" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
                         <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#1d4ed8;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
@@ -569,6 +592,18 @@
         background: #ffffff !important;
         color: #D24C19 !important;
         border: 1px solid #D24C19 !important;
+    }
+
+    .spinner-ring {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #D24C19;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
     .carousel-nav-btn:hover, .pagination-nav-btn:hover {
         border: 1px solid #D24C19 !important;
@@ -699,7 +734,8 @@
     .login-overlay {
         position: fixed; inset: 0; z-index: 200;
         background: rgba(7, 26, 48, 0.6);
-        display: flex; align-items: center; justify-content: center;
+        display: flex; align-items: flex-start; justify-content: center;
+        padding-top: 180px;
     }
     .login-box { animation: loginPop 0.25s ease; }
     @keyframes loginPop {
@@ -708,6 +744,7 @@
     }
 </style>
    <script>
+    if (window.location.search || window.location.hash) history.replaceState(null, '', window.location.pathname);
     let carouselIndex = 0;
     const track = document.getElementById('carousel-track');
     const totalSlides = track.children.length;
@@ -735,32 +772,6 @@
         const menu = document.getElementById('mobile-menu');
         if (menu) menu.style.display = 'none';
     }
-
-    const exSteps = [
-        { icon: '🔍', title: 'Buscá tu prestador', desc: 'Elegí qué necesitás: comercios, hogar, auxilio vial o abastos.' },
-        { icon: '🤝', title: 'Elegí el mejor', desc: 'Compará prestadores, precios y valoraciones de tu comunidad.' },
-        { icon: '📲', title: 'Confirmá el servicio', desc: 'Programá o solicitá con un toque y pago seguro desde la app.' },
-        { icon: '🚚', title: 'Recibilo en tu casa', desc: 'Seguimiento en tiempo real hasta tu puerta, sin perder tiempo.' }
-    ];
-    let exIndex = 0;
-    function exUpdate() {
-        const s = exSteps[exIndex];
-        document.getElementById('ex-icon').textContent = s.icon;
-        document.getElementById('ex-title').textContent = s.title;
-        document.getElementById('ex-desc').textContent = s.desc;
-        const dots = document.getElementById('ex-dots');
-        dots.innerHTML = '';
-        exSteps.forEach(function (step, i) {
-            const d = document.createElement('span');
-            d.style.cssText = 'width:8px;height:8px;border-radius:50%;' + (i === exIndex ? 'background:#D24C19;transform:scale(1.2);' : 'background:rgba(255,255,255,0.4);') + 'transition:background 0.3s ease,transform 0.3s ease;';
-            dots.appendChild(d);
-        });
-    }
-    setInterval(function () {
-        exIndex = (exIndex + 1) % exSteps.length;
-        exUpdate();
-    }, 3000);
-    exUpdate();
 
     let adCurrentPage = 1;
     const adCards = document.querySelectorAll('.ad-card');
@@ -818,6 +829,7 @@
     const loginOverlay = document.getElementById('login-overlay');
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
+    const loginSpinnerOverlay = document.getElementById('login-spinner-overlay');
 
     function openLogin() {
         loginError.style.display = 'none';
@@ -848,10 +860,9 @@
         if (!email) { loginError.style.display='block'; loginError.style.color='#dc2626'; loginError.style.background='#fef2f2'; loginError.style.border='1px solid #fecaca'; loginError.textContent='Ingrese el correo'; return; }
         if (!pass) { loginError.style.display='block'; loginError.style.color='#dc2626'; loginError.style.background='#fef2f2'; loginError.style.border='1px solid #fecaca'; loginError.textContent='Ingrese su contraseña'; return; }
         loginError.style.display = 'none';
+        loginSpinnerOverlay.style.display = 'none';
         const submitBtn = document.getElementById('login-submit');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verificando...';
-        loginError.style.display = 'none';
 
         fetch('{{ url('/login') }}', {
             method: 'POST',
@@ -868,17 +879,13 @@
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (r) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Iniciar';
             if (r.ok && r.data.success) {
-                loginError.style.display = 'block';
-                loginError.style.color = '#16a34a';
-                loginError.style.background = '#f0fdf4';
-                loginError.style.border = '1px solid #bbf7d0';
-                loginError.textContent = r.data.message;
+                loginError.style.display = 'none';
+                loginSpinnerOverlay.style.display = 'flex';
                 if (r.data.user) sessionStorage.setItem('pideaca_user', JSON.stringify(r.data.user));
                 setTimeout(function () {
                     window.location.href = '{{ url("/dashboard") }}';
-                }, 600);
+                }, 1000);
             } else {
                 loginError.style.color = '#dc2626';
                 loginError.style.background = '#fef2f2';
@@ -890,7 +897,6 @@
         })
         .catch(function () {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Iniciar';
             loginError.style.color = '#dc2626';
             loginError.style.background = '#fef2f2';
             loginError.style.border = '1px solid #fecaca';

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Module;
+use App\Models\Group;
 
-class ModuleController extends Controller
+class GroupController extends Controller
 {
     public function index()
     {
@@ -14,9 +14,9 @@ class ModuleController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        $modules = Module::withCount('pages')->orderBy('description')->get();
+        $groups = Group::orderBy('description')->get();
 
-        return response()->json($modules);
+        return response()->json($groups);
     }
 
     public function store(Request $request)
@@ -26,67 +26,63 @@ class ModuleController extends Controller
         }
 
         $request->validate([
-            'description' => 'required|string|max:255|unique:modules,description',
+            'description' => 'required|string|max:255|unique:groups,description',
             'icon' => 'nullable|string',
         ]);
 
-        $module = Module::create([
+        $group = Group::create([
             'description' => $request->description,
             'icon' => $request->icon,
         ]);
 
-        $module->loadCount('pages');
-
         return response()->json([
             'success' => true,
-            'message' => 'Módulo creado correctamente.',
-            'module' => $module,
+            'message' => 'Grupo creado correctamente.',
+            'group' => $group,
         ]);
     }
 
-    public function update(Request $request, Module $module)
+    public function update(Request $request, Group $group)
     {
         if (!Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $request->validate([
-            'description' => 'required|string|max:255|unique:modules,description,' . $module->id,
+            'description' => 'required|string|max:255|unique:groups,description,' . $group->id,
             'icon' => 'nullable|string',
         ]);
 
-        $module->update([
+        $group->update([
             'description' => $request->description,
             'icon' => $request->icon,
         ]);
 
-        $module->loadCount('pages');
-
         return response()->json([
             'success' => true,
-            'message' => 'Módulo actualizado correctamente.',
-            'module' => $module,
+            'message' => 'Grupo actualizado correctamente.',
+            'group' => $group,
         ]);
     }
 
-    public function destroy(Module $module)
+    public function destroy(Group $group)
     {
         if (!Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        if ($module->pages()->count() > 0) {
+        if ($group->subgroups()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se puede eliminar el módulo porque tiene páginas asociadas.',
+                'message' => 'No se puede eliminar el grupo porque tiene sub grupos asociados.',
             ]);
         }
 
-        $module->delete();
+        $group->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Módulo eliminado correctamente.',
+            'message' => 'Grupo eliminado correctamente.',
         ]);
     }
 }

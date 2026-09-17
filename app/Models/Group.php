@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Module extends Model
+class Group extends Model
 {
     protected $fillable = ['description', 'icon'];
 
-    public function pages()
+    public function subgroups()
     {
-        return $this->hasMany(Page::class, 'module_id');
+        return $this->hasMany(SubGroup::class);
     }
 }

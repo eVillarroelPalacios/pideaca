@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Module;
+use App\Models\TypeUser;
 
-class ModuleController extends Controller
+class TypeUserController extends Controller
 {
     public function index()
     {
@@ -14,9 +14,9 @@ class ModuleController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        $modules = Module::withCount('pages')->orderBy('description')->get();
+        $typeUsers = TypeUser::orderBy('description')->get();
 
-        return response()->json($modules);
+        return response()->json($typeUsers);
     }
 
     public function store(Request $request)
@@ -26,67 +26,59 @@ class ModuleController extends Controller
         }
 
         $request->validate([
-            'description' => 'required|string|max:255|unique:modules,description',
-            'icon' => 'nullable|string',
+            'description' => 'required|string|max:255|unique:type_users,description',
         ]);
 
-        $module = Module::create([
+        $typeUser = TypeUser::create([
             'description' => $request->description,
-            'icon' => $request->icon,
         ]);
-
-        $module->loadCount('pages');
 
         return response()->json([
             'success' => true,
-            'message' => 'Módulo creado correctamente.',
-            'module' => $module,
+            'message' => 'Tipo de usuario creado correctamente.',
+            'type_user' => $typeUser,
         ]);
     }
 
-    public function update(Request $request, Module $module)
+    public function update(Request $request, TypeUser $typeUser)
     {
         if (!Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $request->validate([
-            'description' => 'required|string|max:255|unique:modules,description,' . $module->id,
-            'icon' => 'nullable|string',
+            'description' => 'required|string|max:255|unique:type_users,description,' . $typeUser->id,
         ]);
 
-        $module->update([
+        $typeUser->update([
             'description' => $request->description,
-            'icon' => $request->icon,
         ]);
-
-        $module->loadCount('pages');
 
         return response()->json([
             'success' => true,
-            'message' => 'Módulo actualizado correctamente.',
-            'module' => $module,
+            'message' => 'Tipo de usuario actualizado correctamente.',
+            'type_user' => $typeUser,
         ]);
     }
 
-    public function destroy(Module $module)
+    public function destroy(TypeUser $typeUser)
     {
         if (!Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        if ($module->pages()->count() > 0) {
+        if ($typeUser->users()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se puede eliminar el módulo porque tiene páginas asociadas.',
+                'message' => 'No se puede eliminar el tipo de usuario porque tiene usuarios asociados.',
             ]);
         }
 
-        $module->delete();
+        $typeUser->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Módulo eliminado correctamente.',
+            'message' => 'Tipo de usuario eliminado correctamente.',
         ]);
     }
 }
