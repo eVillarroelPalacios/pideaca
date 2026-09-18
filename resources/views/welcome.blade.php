@@ -143,368 +143,43 @@
 
                         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;">
                             <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#D24C19;color:white;cursor:pointer;">Todos</span>
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Comercio</span>
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Hogar</span>
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Auxilio Vial</span>
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">Abastos</span>
+                            @foreach($providers->pluck('category')->unique()->sort() as $cat)
+                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">{{ strtoupper($cat) }}</span>
+                            @endforeach
                         </div>
 
                         <div class="ad-grid-zone" style="width:100%;box-sizing:border-box;">
                         <div class="provider-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:4px 28px;box-sizing:border-box;">
 
-                            {{-- COMERCIO 1 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pizzeria.jpg') }}') center/cover no-repeat;">
+                            @foreach($providers as $idx => $provider)
+                            <div class="flip-card" data-idx="{{ $idx }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ $provider['banner_url'] ? asset('storage/' . $provider['banner_url']) : asset('images/publicidad/default.jpg') }}') center/cover no-repeat;">
                                     
                                 </div>
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
+                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ strtoupper($provider['category']) }}</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                                         
                                         <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pizzeria Los Hermanos</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
+                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">{{ $provider['name'] }}</h4>
+                                            @php
+                                                $rating = $provider['rating'] ?? 4.5;
+                                                $fullStars = (int) floor($rating);
+                                                $halfStar = ($rating - $fullStars) >= 0.5;
+                                                $emptyStar = 5 - $fullStars - ($halfStar ? 1 : 0);
+                                                $starsHtml = str_repeat('&#9733;', $fullStars) . ($halfStar ? '&#9734;' : '') . str_repeat('&#9734;', $emptyStar);
+                                            @endphp
+                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">{!! $starsHtml !!}</span> <span style="font-size:11px;color:#6b7280;">{{ number_format($rating, 1) }}</span>
                                         </div>
                                     </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pizza a la piedra, empanadas y delivery por zona. Promo 2x1 los miercoles.</p>
+                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $provider['description'] }}</p>
                                     <div class="card-action-icon">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                                     </div>
                                     
                                 </div>
-                            </div>
-
-                            </a>{{-- COMERCIO 2 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/ferreteria.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Ferreteria El Tornillo</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pinturas, herramientas y articulos de bazar. Entrega a domicilio.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- HOGAR 1 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/plomeria.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Plomeria Rapida Perez</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Destapaciones, cambios de canillas y termotanques. Certificado, 24 hs.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- HOGAR 2 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/electricidad.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Electricidad Total</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalaciones, reparaciones y certificacion de artefactos electricos.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- AUXILIO VIAL 1 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/grua.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gruas Aurora 24h</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Remolque, arranque con pinas y auxilio en ruta con GPS en tiempo real.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- AUXILIO VIAL 2 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gomeria.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gomeria RuedasBien</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.4</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Reparacion de pinchaduras y recambios a domicilio, con traslado.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- ABASTOS 1 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/agua.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Agua Pura Distribuidora</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Bidones de agua y hielo en granel. Pedidos programados semanales.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- ABASTOS 2 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/gas.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Gas Paz Gas</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Garrafas de 10 y 45 kg, soda y entrega en el dia solicitada por la app.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- COMERCIO 3 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/rotiseria.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Rotiseria Don Carlos</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Comida casera, guisos y porciones. Envio gratis en pedidos mayores a $5000.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- COMERCIO 4 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/kiosco.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">COMERCIO</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Kiosco Express 24hs</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.3</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Snacks, bebidas, cigarrillos y articulos de higiene. Abierto las 24 horas.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- HOGAR 3 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/pintor.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Pinturas La Brocha</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.8</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pintura interior y exterior, presupuesto sin cargo y colorimetria digital.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- HOGAR 4 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/tecnico-ac.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">HOGAR</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Clima Total SAC</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.5</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Instalacion, limpieza y reparacion de aires acondicionados. Certificado.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- AUXILIO VIAL 3 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/mecanica.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Mecanica Rapida SRL</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.7</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Service mecanico express, cambios de aceite y frenos. Taller movil.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- AUXILIO VIAL 4 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/service.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">AUXILIO VIAL</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Auxilio 24 Horas</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Apertura de vehiculos, cambio de bateria y asistencia en ruta.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- ABASTOS 3 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/verduleria.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Verduleria Don Pepe</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <span style="font-size:11px;color:#6b7280;">4.9</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Frutas y verduras frescas del dia. Pedidos programados y combo semanal.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                            </a>{{-- ABASTOS 4 --}}
-                            <a href="#" class="ad-card-link"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ asset('images/publicidad/panaderia.jpg') }}') center/cover no-repeat;">
-                                    
-                                </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">ABASTOS</span>
-                                    <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
-                                        <div>
-                                            <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">Panaderia La Especial</h4>
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9734;</span> <span style="font-size:11px;color:#6b7280;">4.6</span>
-                                        </div>
-                                    </div>
-                                    <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Pan fresco, tortas y facturas. Reservas con 24hs de anticipacion.</p>
-                                    <div class="card-action-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-
-                        </a></div>
+                            </div></div><div class="flip-face flip-back"></div></div></div>
+                            @endforeach
                         </div>
 
                         <div id="ad-pagination" style="display:flex;justify-content:center;align-items:center;width:100%;min-height:56px;padding:8px 28px;box-sizing:border-box;">
@@ -696,14 +371,102 @@
         width: 28px; 
         height: 28px; 
         border-radius: 50%; 
-        background-color: #fff7ed; 
-        color: #ea580c; 
+        background-color: #D24C19; 
+        border: 1px solid #D24C19; 
+        color: #ffffff; 
         display: flex; 
         align-items: center; 
         justify-content: center; 
-        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease; 
+        transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease, border-color 0.2s ease; 
     }
-    .ad-card:hover .card-action-icon { background-color: #ea580c; color: #ffffff; transform: translate(2px, -2px); }
+    .ad-card:hover .card-action-icon { background-color: #ffffff; color: #D24C19; border-color: #D24C19; transform: translate(2px, -2px); }
+
+    .flip-card {
+        position: relative;
+        height: 100%;
+        cursor: pointer;
+        perspective: 1000px;
+    }
+    .flip-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
+    .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+    .flip-face {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+    .flip-front {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 4px 8px rgba(0,0,0,0.10);
+        transform: translateY(-2px);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .flip-front .ad-card:hover { transform: none; box-shadow: none; }
+    .flip-card:hover .ad-card { border-color: #f97316 !important; }
+    .flip-back {
+        position: absolute; inset: 0;
+        transform: rotateY(180deg);
+        background: linear-gradient(180deg, #fff7ed 0%, #ffffff 45%);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        padding: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.20), 0 4px 8px rgba(0,0,0,0.12);
+    }
+    .flip-back::-webkit-scrollbar { width: 4px; }
+    .flip-back::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 4px; }
+
+    .fb-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .fb-heading { min-width: 0; }
+    .fb-name { font-size: 14px; font-weight: bold; color: #0f172a; margin: 0; line-height: 1.25; }
+    .fb-close {
+        flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+        border: 1px solid #e5e7eb; background: #ffffff; color: #0f172a;
+        font-size: 12px; line-height: 1; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .fb-close:hover { background: #e85d04; border-color: #e85d04; color: #ffffff; }
+    .fb-block { margin: 0 0 8px; }
+    .fb-block-title {
+        font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800;
+        color: #e85d04; margin: 0 0 5px;
+    }
+    .fb-services { list-style: none; margin: 0; padding: 0; }
+    .fb-services li {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 11px; color: #374151; line-height: 1.35; padding: 2px 0;
+    }
+    .fb-services svg { flex-shrink: 0; color: #e85d04; }
+    .fb-promo {
+        display: flex; align-items: center; gap: 6px;
+        background: #ffffff; border: 1px solid #fed7aa; border-left: 3px solid #e85d04;
+        border-radius: 8px; padding: 6px 8px; font-size: 11px; color: #9a3412;
+        margin-bottom: 8px; font-weight: 600;
+    }
+    .fb-promo-label {
+        flex-shrink: 0; background: #e85d04; color: #ffffff;
+        font-size: 8px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+        padding: 2px 6px; border-radius: 5px;
+    }
+    .fb-meta { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .fb-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #374151; }
+    .fb-meta-row svg { flex-shrink: 0; color: #0f172a; }
+
+    @media (max-width: 768px) {
+        .flip-card, .flip-inner, .flip-face { border-radius: 0; }
+        .fb-name { font-size: 12px; }
+        .fb-services li, .fb-meta-row, .fb-promo { font-size: 10px; }
+        .fb-promo { padding: 5px 7px; }
+    }
 
     @media (max-width: 768px) {
         .nav-link, .nav-separator { display: none !important; }
@@ -774,7 +537,7 @@
     }
 
     let adCurrentPage = 1;
-    const adCards = document.querySelectorAll('.ad-card');
+    const adCards = document.querySelectorAll('.flip-card');
     const paginationWrap = document.getElementById('ad-pagination');
 
     function adGetPerPage() {
@@ -822,6 +585,70 @@
         if (dir === 1 && adCurrentPage > 1) { adCurrentPage--; adRenderPage(); }
         if (dir === 2 && adCurrentPage < totalPages) { adCurrentPage++; adRenderPage(); }
     }
+
+    var adFlipData = {!! json_encode($providers->map(fn($p) => [
+        'cat' => strtoupper($p['category']),
+        'name' => $p['name'],
+        'rating' => $p['rating'] ?? 4.5,
+        'desc' => $p['description'],
+        'services' => $p['services'],
+        'promo' => $p['promo'],
+        'hours' => $p['hours'],
+        'phone' => $p['phone'],
+        'zone' => $p['zone'],
+        'wa' => $p['whatsapp'],
+    ])) !!};
+
+    function flipCheck() {
+        return '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    }
+    function buildFlipBack(d) {
+        if (!d) return '';
+        var li = [];
+        d.services.forEach(function (s) { li.push('<li>' + flipCheck() + '<span>' + s + '</span></li>'); });
+        return ''
+            + '<div class="fb-top">'
+            +   '<div class="fb-heading">'
+            +       '<h4 class="fb-name">' + d.name + '</h4>'
+            +   '</div>'
+            +   '<button type="button" class="fb-close" aria-label="Volver" title="Volver" onclick="event.stopPropagation(); flipCardBack(this);">&#10005;</button>'
+            + '</div>'
+            + '<div class="fb-block">'
+            +   '<p class="fb-block-title">Servicios</p>'
+            +   '<ul class="fb-services">' + li.join('') + '</ul>'
+            + '</div>'
+            + (d.promo ? '<div class="fb-promo"><span class="fb-promo-label">Promo</span><span>' + d.promo + '</span></div>' : '')
+            + '<div class="fb-meta">'
+            +   '<div class="fb-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>' + d.hours + '</span></div>'
+            +   '<div class="fb-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>' + d.phone + '</span></div>'
+            +   '<div class="fb-meta-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg><span>' + d.zone + '</span></div>'
+            + '</div>';
+    }
+
+    function initFlipBacks() {
+        document.querySelectorAll('.flip-card').forEach(function (card) {
+            var d = adFlipData[parseInt(card.getAttribute('data-idx'), 10)];
+            var back = card.querySelector('.flip-back');
+            if (d && back) back.innerHTML = buildFlipBack(d);
+        });
+    }
+    initFlipBacks();
+
+    function flipCard(card) {
+        if (card) card.classList.toggle('flipped');
+    }
+    function flipCardBack(el) {
+        var card = el.closest ? el.closest('.flip-card') : null;
+        if (card) card.classList.remove('flipped');
+    }
+
+    document.addEventListener('click', function (e) {
+        var card = e.target && e.target.closest ? e.target.closest('.flip-card') : null;
+        if (!card) return;
+        var back = card.querySelector('.flip-back');
+        if (back && back.contains(e.target)) return;
+        card.classList.toggle('flipped');
+    });
 
     adRenderPage();
     window.addEventListener('resize', adRenderPage);

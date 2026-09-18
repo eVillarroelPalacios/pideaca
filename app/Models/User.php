@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_status_id',
+        'type_user_id',
     ];
 
     /**
@@ -60,5 +62,23 @@ class User extends Authenticatable
     public function pages()
     {
         return $this->belongsToMany(Page::class, 'page_user', 'user_id', 'page_id');
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function primaryAddress()
+    {
+        return $this->hasOne(Address::class)
+            ->wherePrimary()
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
+    public function provider()
+    {
+        return $this->hasOne(Provider::class);
     }
 }

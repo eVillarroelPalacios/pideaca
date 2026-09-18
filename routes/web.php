@@ -9,10 +9,11 @@ use App\Http\Controllers\TypeUserController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SubGroupController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProviderServiceController;
+use App\Http\Controllers\AdvertisingController;
 
-Route::get('/', function () {
-    return response()->view('welcome')->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')->header('Pragma', 'no-cache');
-});
+Route::get('/', [AdvertisingController::class, 'index']);
 
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -48,3 +49,21 @@ Route::get('/subgroups', [SubGroupController::class, 'index'])->name('subgroups.
 Route::post('/subgroups', [SubGroupController::class, 'store'])->name('subgroups.store');
 Route::put('/subgroups/{subgroup}', [SubGroupController::class, 'update'])->name('subgroups.update');
 Route::delete('/subgroups/{subgroup}', [SubGroupController::class, 'destroy'])->name('subgroups.destroy');
+
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+Route::put('/profile/provider', [ProfileController::class, 'updateProvider'])->name('profile.provider.update');
+Route::get('/profile/services', [ProviderServiceController::class, 'index'])->name('profile.services.index');
+Route::post('/profile/services', [ProviderServiceController::class, 'store'])->name('profile.services.store');
+Route::put('/profile/services/reorder', [ProviderServiceController::class, 'reorder'])->name('profile.services.reorder');
+Route::put('/profile/services/{service}', [ProviderServiceController::class, 'update'])->name('profile.services.update');
+Route::delete('/profile/services/{service}', [ProviderServiceController::class, 'destroy'])->name('profile.services.destroy');
+Route::post('/profile/images', [ProfileController::class, 'storeImage'])->name('profile.images.store');
+Route::delete('/profile/images/{image}', [ProfileController::class, 'destroyImage'])->name('profile.images.destroy');
+Route::get('/profile/subgroups', [ProfileController::class, 'getProviderSubgroups'])->name('profile.subgroups.index');
+Route::post('/profile/subgroups/toggle', [ProfileController::class, 'toggleProviderSubgroup'])->name('profile.subgroups.toggle');
+Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('profile.address.index');
+Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
+Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
+Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.index');
