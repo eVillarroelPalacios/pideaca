@@ -47,9 +47,24 @@
         {{-- NAV --}}
         <nav style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);position:sticky;top:0;z-index:50;overflow:visible;">
             <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
-                <a href="/" onclick="window.location.reload(true);return false;" style="margin-right:auto;z-index:60;">
+                <a href="/" onclick="window.location.reload(true);return false;" style="flex-shrink:0;z-index:60;">
                     <img class="logo-img" src="{{ asset('images/logo.png') }}" alt="PideAca" style="width:170px;height:58px;border-radius:0;object-fit:contain;" />
                 </a>
+
+                {{-- SEARCH BAR --}}
+                <div class="ad-search-wrap" style="flex:1 1 300px;max-width:520px;margin:0 auto;position:relative;z-index:80;">
+                    <div class="ad-search-inner">
+                        <input id="adSearchInput" type="text" placeholder="Buscar productos, servicios o comercios..." autocomplete="off" spellcheck="false"
+                            oninput="adOnInput()" onfocus="adOnFocus()" onkeydown="adOnKey(event)" />
+                        <button id="adClearBtn" type="button" title="Limpiar" aria-label="Limpiar búsqueda" onclick="adClear()">&#10005;</button>
+                        <button id="adSubmitBtn" type="button" title="Buscar" aria-label="Buscar" onclick="adSubmit()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                    <div id="adSuggestBox" class="ad-suggest-box"></div>
+                </div>
+                {{-- END SEARCH BAR --}}
+
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
                 <a href="#" onclick="window.location.reload()" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
@@ -100,26 +115,26 @@
                 <div style="width:CAROUSEL100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
                         <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;overflow:hidden;background:white;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;overflow:hidden;background:white;">
                                 <video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;">
                                     <source src="{{ asset('images/videos/video1.mp4') }}" type="video/mp4">
                                 </video>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:260px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
@@ -135,26 +150,45 @@
                 <section style="background:#f5f7fa;padding:0;">
                     <div id="section-inicio" class="page-section" style="display:block;max-width:100%;margin:0;background:white;border-radius:0;padding:0;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
 
-                        <div style="max-width:620px;margin:0 auto 16px;position:relative;">
-                            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;">&#128269;</span>
-                            <input type="text" placeholder="Buscá por nombre, servicio o categoría..." readonly
-                                style="width:100%;box-sizing:border-box;padding:12px 14px 12px 40px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;color:#6b7280;background:#f9fafb;outline:none;cursor:not-allowed;">
-                        </div>
-
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;">
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#D24C19;color:white;cursor:pointer;">Todos</span>
-                            @foreach($providers->pluck('category')->unique()->sort() as $cat)
-                            <span style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#374151;cursor:pointer;">{{ strtoupper($cat) }}</span>
+                        <div id="adFilterBar" style="display:flex;align-items:center;gap:0;border-bottom:2px solid #e5e7eb;margin:0;padding:0 28px;overflow-x:auto;">
+                            <span class="ad-filter-tab active" onclick="adSetCategory('Todos')" data-cat="Todos" title="Todos">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                                <span class="ad-tab-label">Todos</span>
+                            </span>
+                            @php
+                                $groupIcons = [
+                                    'Comercio & Gastronomía' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+                                    'Auxilio Vial & Mecánica' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                                    'Abastos Recurrentes' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+                                ];
+                            @endphp
+                            @foreach($allGroups as $grp)
+                            <span class="ad-filter-tab" onclick="adSetCategory('{{ strtoupper($grp->description) }}')" data-cat="{{ strtoupper($grp->description) }}" title="{{ strtoupper($grp->description) }}">
+                                {!! $groupIcons[$grp->description] ?? '' !!}
+                                <span class="ad-tab-label">{{ strtoupper($grp->description) }}</span>
+                            </span>
                             @endforeach
+                            <div style="margin-left:auto;padding:8px 0;font-size:11px;color:#9ca3af;white-space:nowrap;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
                         </div>
 
                         <div class="ad-grid-zone" style="width:100%;box-sizing:border-box;">
                         <div class="provider-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:4px 28px;box-sizing:border-box;">
 
                             @foreach($providers as $idx => $provider)
-                            <div class="flip-card" data-idx="{{ $idx }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
-                                <div class="ad-banner" style="position:relative;height:180px;overflow:hidden;background:url('{{ $provider['banner_url'] ? asset('storage/' . $provider['banner_url']) : asset('images/publicidad/default.jpg') }}') center/cover no-repeat;">
-                                    
+                            @php
+                                $searchTerms = strtolower(implode(' ', array_filter([
+                                    $provider['name'],
+                                    $provider['category'],
+                                    $provider['description'],
+                                    $provider['zone'] ?? '',
+                                ])));
+                                $svcList = is_array($provider['services']) ? implode(' ', $provider['services']) : ($provider['services'] ?? '');
+                                $searchTerms .= ' ' . strtolower($svcList);
+                            @endphp
+                            <div class="flip-card" data-idx="{{ $idx }}" data-category="{{ strtoupper($provider['category']) }}" data-groups="{{ strtoupper(implode(',', $provider['groups'])) }}" data-search="{{ $searchTerms }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                <div class="ad-banner" style="position:relative;overflow:hidden;background:#f9fafb;height:150px;">
+                                    <img src="{{ $provider['banner_url'] ? asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) : asset('images/publicidad/default.jpg') }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
                                 </div>
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ strtoupper($provider['category']) }}</span>
@@ -323,7 +357,7 @@
     }
     .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
 
-    .ad-banner { height: 110px !important; width: 100%; overflow: hidden; background-size: cover; background-position: center; }
+    .ad-banner { width: 100%; height: 200px; overflow: hidden; background: #f9fafb; }
     
     .ad-body { 
         padding: 12px; 
@@ -344,7 +378,8 @@
         font-weight: bold;
         color: #1f2937;
         margin: 0;
-        height: 34px !important; 
+        height: auto !important; 
+        max-height: 36px !important;
         display: -webkit-box; 
         -webkit-line-clamp: 2; 
         -webkit-box-orient: vertical; 
@@ -460,6 +495,48 @@
     .fb-meta { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
     .fb-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #374151; }
     .fb-meta-row svg { flex-shrink: 0; color: #0f172a; }
+    .ad-hidden { display: none !important; }
+    .ad-filter-tab { display: inline-flex; align-items: center; gap: 6px; padding: 12px 16px; font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; white-space: nowrap; user-select: none; margin-bottom: -2px; letter-spacing: 0.02em; position: relative; }
+    .ad-filter-tab svg { flex-shrink: 0; }
+    .ad-filter-tab:hover { color: #374151; background: #f9fafb; }
+    .ad-filter-tab.active { color: #D24C19; border-bottom-color: #D24C19; }
+    .ad-tab-label { transition: transform 0.2s ease, text-shadow 0.2s ease; display: inline-block; transform-origin: left center; }
+    .ad-filter-tab:hover .ad-tab-label { transform: scale(1.1); text-shadow: 0 2px 8px rgba(210,76,25,0.3); }
+    .ad-filter-tab:hover { z-index: 10; }
+
+    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.28); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s ease; height: 32px; }
+    .ad-search-inner:focus-within { border-color: #D24C19; }
+    #adSearchInput { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 6px 10px; font-size: 12px; color: #111827; font-family: inherit; border-radius: 0; }
+    #adSearchInput::placeholder { color: #9ca3af; }
+    #adClearBtn { display: none; align-items: center; justify-content: center; background: none; border: none; padding: 0 4px; color: #6b7280; cursor: pointer; line-height: 1; font-size: 14px; }
+    #adClearBtn:hover { color: #111827; }
+    #adSubmitBtn { width: 36px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: 1px solid #D24C19; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; margin: 2px; box-sizing: border-box; transition: all 0.2s ease; }
+    #adSubmitBtn:hover { background: #fff; color: #D24C19; }
+    .ad-search-wrap { flex: 1 1 300px; max-width: 520px; min-width: 100px; margin: 0 auto; position: relative; z-index: 80; }
+
+    .ad-suggest-box { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 130; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; max-height: 420px; overflow: auto; display: none; padding: 8px; box-sizing: border-box; }
+    .sug-sec { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b7280; padding: 8px 10px 4px; }
+    .sug-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #1f2937; }
+    .sug-row svg { flex-shrink: 0; color: #6b7280; }
+    .sug-row:hover { background: #f3f4f6; }
+    .sug-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sug-count { font-size: 11px; color: #9ca3af; flex-shrink: 0; }
+    .sug-badge { flex-shrink: 0; font-size: 9px; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.03em; }
+    .sug-empty { padding: 18px; text-align: center; font-size: 12px; color: #6b7280; }
+
+    @media (max-width: 768px) {
+        .nav-container { flex-wrap: nowrap !important; }
+        .logo-img { width: 100px !important; height: 40px !important; }
+        .ad-search-wrap { flex: 1 1 0; min-width: 80px; max-width: none; margin: 0 4px; }
+        .ad-search-inner { height: 30px; }
+        #adSearchInput { padding: 5px 6px; font-size: 11px; }
+        #adSubmitBtn { width: 28px; height: 24px; }
+        .nav-link { font-size: 0 !important; padding: 4px 6px !important; gap: 0 !important; }
+        .nav-link svg { margin: 0 !important; }
+        .nav-separator { display: none !important; }
+        .header-btn { padding: 3px 8px !important; font-size: 10px !important; }
+        .ad-suggest-box { max-height: 320px; }
+    }
 
     @media (max-width: 768px) {
         .flip-card, .flip-inner, .flip-face { border-radius: 0; }
@@ -473,14 +550,18 @@
         #menu-toggle { display: block !important; }
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
-        .carousel-slide { height: 160px !important; }
+        .carousel-slide { height: 100px !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
             gap: 10px !important; 
             padding: 4px 12px !important; 
         }
-        .ad-banner { height: 90px !important; }
+        .ad-filter-tab { font-size: 0 !important; padding: 10px 10px !important; gap: 0 !important; }
+        .ad-filter-tab svg { width: 16px !important; height: 16px !important; }
+        .ad-tab-label { display: none !important; }
+        .ad-filter-tab:hover .ad-tab-label { display: inline !important; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; font-size: 10px !important; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: 50; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .ad-banner { height: 160px !important; }
         .ad-title { height: 30px !important; font-size: 11px !important; }
         .ad-desc { height: 28px !important; font-size: 10px !important; }
     }
@@ -537,8 +618,10 @@
     }
 
     let adCurrentPage = 1;
-    const adCards = document.querySelectorAll('.flip-card');
+    let adActiveCategory = 'Todos';
+    const adAllCards = document.querySelectorAll('.flip-card');
     const paginationWrap = document.getElementById('ad-pagination');
+    const adSearchInput = document.getElementById('adSearchInput');
 
     function adGetPerPage() {
         const grid = document.querySelector('.provider-grid');
@@ -547,31 +630,69 @@
         return cols * 2;
     }
 
+    function adFilterProviders() {
+        var query = (adSearchInput.value || '').toLowerCase().trim();
+        adCurrentPage = 1;
+        var visibleCount = 0;
+
+        adAllCards.forEach(function (card) {
+            var groups = (card.getAttribute('data-groups') || '').split(',');
+            var search = card.getAttribute('data-search') || '';
+            var matchCat = (adActiveCategory === 'Todos') || groups.indexOf(adActiveCategory) !== -1;
+            var matchSearch = !query || search.indexOf(query) !== -1;
+            var show = matchCat && matchSearch;
+            card.classList.toggle('ad-hidden', !show);
+            if (show) visibleCount++;
+        });
+
+        var countEl = document.getElementById('adResultCount');
+        if (countEl) countEl.textContent = visibleCount;
+
+        adRenderPage();
+    }
+
+    function adSetCategory(cat) {
+        adActiveCategory = cat;
+        document.querySelectorAll('.ad-filter-tab').forEach(function (btn) {
+            var isActive = btn.getAttribute('data-cat') === cat;
+            btn.classList.toggle('active', isActive);
+        });
+        adFilterProviders();
+    }
+
     function adRenderPage() {
-        const perPage = adGetPerPage();
-        const totalPages = Math.ceil(adCards.length / perPage);
+        var perPage = adGetPerPage();
+        var visibleCards = [];
+        adAllCards.forEach(function (c) {
+            if (!c.classList.contains('ad-hidden')) visibleCards.push(c);
+        });
+        var totalPages = Math.ceil(visibleCards.length / perPage);
         if (adCurrentPage > totalPages) adCurrentPage = totalPages;
         if (adCurrentPage < 1) adCurrentPage = 1;
 
-        adCards.forEach(function (c, i) {
-            const start = (adCurrentPage - 1) * perPage;
-            const end = start + perPage;
-            c.style.display = (i >= start && i < end) ? '' : 'none';
-        });
+        adAllCards.forEach(function (c) { c.style.display = 'none'; });
+
+        var start = (adCurrentPage - 1) * perPage;
+        var end = start + perPage;
+        for (var i = start; i < end && i < visibleCards.length; i++) {
+            visibleCards[i].style.display = '';
+        }
 
         if (totalPages <= 1) { paginationWrap.style.display = 'none'; return; }
         paginationWrap.style.display = 'flex';
 
-        const dots = document.getElementById('page-dots');
+        var dots = document.getElementById('page-dots');
         dots.innerHTML = '';
-        for (let p = 1; p <= totalPages; p++) {
-            const d = document.createElement('span');
-            d.textContent = p;
-            d.style.cssText = 'padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === adCurrentPage ? 'color:#D24C19;' : 'color:#9ca3af;');
-            d.onmouseenter = function () { if (p !== adCurrentPage) this.style.color = '#374151'; };
-            d.onmouseleave = function () { if (p !== adCurrentPage) this.style.color = '#9ca3af'; };
-            d.onclick = function () { adCurrentPage = p; adRenderPage(); };
-            dots.appendChild(d);
+        for (var p = 1; p <= totalPages; p++) {
+            (function (pg) {
+                var d = document.createElement('span');
+                d.textContent = pg;
+                d.style.cssText = 'padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (pg === adCurrentPage ? 'color:#D24C19;' : 'color:#9ca3af;');
+                d.onmouseenter = function () { if (pg !== adCurrentPage) this.style.color = '#374151'; };
+                d.onmouseleave = function () { if (pg !== adCurrentPage) this.style.color = '#9ca3af'; };
+                d.onclick = function () { adCurrentPage = pg; adRenderPage(); };
+                dots.appendChild(d);
+            })(p);
         }
         document.getElementById('prev-page').style.opacity = adCurrentPage === 1 ? '0.4' : '1';
         document.getElementById('prev-page').style.pointerEvents = adCurrentPage === 1 ? 'none' : 'auto';
@@ -580,14 +701,119 @@
     }
 
     function adPage(dir) {
-        const perPage = adGetPerPage();
-        const totalPages = Math.ceil(adCards.length / perPage);
+        var perPage = adGetPerPage();
+        var visibleCards = [];
+        adAllCards.forEach(function (c) {
+            if (!c.classList.contains('ad-hidden')) visibleCards.push(c);
+        });
+        var totalPages = Math.ceil(visibleCards.length / perPage);
         if (dir === 1 && adCurrentPage > 1) { adCurrentPage--; adRenderPage(); }
         if (dir === 2 && adCurrentPage < totalPages) { adCurrentPage++; adRenderPage(); }
     }
 
+    var adSuggestBox = document.getElementById('adSuggestBox');
+    var adClearBtn = document.getElementById('adClearBtn');
+
+    var adCatColors = { 'GASTRONOMÍA': '#ea580c', 'COMERCIO': '#ea580c', 'PIZZERÍAS': '#ea580c', 'ROTISERÍAS': '#ea580c', 'KIOSCOS': '#ea580c', 'PANADERÍAS': '#ea580c', 'HOGAR': '#2563eb', 'SERVICIOS DEL HOGAR & CUIDADO PERSONAL': '#2563eb', 'PLOMEROS': '#2563eb', 'ELECTRICISTAS': '#2563eb', 'CERRAJEROS': '#2563eb', 'GASISTAS MATRICULADOS': '#2563eb', 'ARREGLO DE AIRES ACONDICIONADOS': '#2563eb', 'HELADERAS': '#2563eb', 'LAVARROPAS': '#2563eb', 'COMPUTADORAS Y CELULARES': '#2563eb', 'LIMPIEZA PROFUNDA': '#2563eb', 'FUMIGACIÓN': '#2563eb', 'JARDINERÍA Y MANTENIMIENTO DE PILETAS': '#2563eb', 'AUXILIO VIAL': '#0d9488', 'AUXILIO VIAL & MECÁNICA': '#0d9488', 'SERVICIO DE GRÚAS': '#0d9488', 'MECÁNICA LIGERA Y GOMERÍA MÓVIL': '#0d9488', 'ABASTOS': '#d97706', 'ABASTOS RECURRENTES': '#d97706', 'GARRAFAS DE GAS': '#d97706', 'REPARTO DE AGUA EMBOTELLADA/DISPENSERS & SODA': '#d97706', 'GENERAL': '#6b7280' };
+    var ICON_CLOCK = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    var ICON_TAG = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>';
+    var ICON_STORE = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9M5 9v11h14V9"/><path d="M3 13h18M8 20v-6h8v6"/></svg>';
+
+    function adEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function adCatColor(c) { return adCatColors[c] || '#6b7280'; }
+    function adHistory() { try { return JSON.parse(localStorage.getItem('pideaca_search_history') || '[]'); } catch (e) { return []; } }
+    function adSaveHistory(q) {
+        q = (q || '').trim();
+        if (!q) return;
+        var h = adHistory().filter(function (x) { return x !== q; });
+        h.unshift(q);
+        try { localStorage.setItem('pideaca_search_history', JSON.stringify(h.slice(0, 5))); } catch (e) {}
+    }
+    function adToggleClear() { adClearBtn.style.display = adSearchInput.value ? 'flex' : 'none'; }
+    function adCloseSuggest() { if (adSuggestBox) adSuggestBox.style.display = 'none'; }
+
+    function adOnInput() { adToggleClear(); adFilterProviders(); adOpenSuggest(); }
+    function adOnFocus() { adOpenSuggest(); }
+    function adOnKey(e) {
+        if (e.key === 'Enter') { e.preventDefault(); adSubmit(); }
+        if (e.key === 'Escape') { adCloseSuggest(); adSearchInput.blur(); }
+    }
+    function adClear() {
+        adSearchInput.value = '';
+        adToggleClear();
+        adFilterProviders();
+        adOpenSuggest();
+        adSearchInput.focus();
+    }
+    function adSubmit() {
+        adSaveHistory(adSearchInput.value);
+        adCloseSuggest();
+        adFilterProviders();
+        showSection('inicio');
+    }
+    function adPick(el) {
+        var v = el.getAttribute('data-v') || adSearchInput.value;
+        adSearchInput.value = v;
+        adToggleClear();
+        adSaveHistory(v);
+        adSetCategory('Todos');
+        adFilterProviders();
+        adCloseSuggest();
+        showSection('inicio');
+    }
+
+    function adOpenSuggest() {
+        var q = (adSearchInput.value || '').toLowerCase().trim();
+        var hist = adHistory();
+        var cats = {}, providers = [];
+        adFlipData.forEach(function (d, i) { var k = d.cat; cats[k] = (cats[k] || 0) + 1; providers.push({ name: d.name, cat: d.cat, i: i }); });
+
+        var html = '', hasData = false;
+
+        if (hist.length) {
+            var hh = q ? hist.filter(function (x) { return x.toLowerCase().indexOf(q) !== -1; }).slice(0, 5) : hist.slice(0, 5);
+            if (hh.length) {
+                html += '<div class="sug-sec">Recientes</div>';
+                hh.forEach(function (x) { html += '<div class="sug-row" data-v="' + adEsc(x) + '" onclick="adPick(this)">' + ICON_CLOCK + '<span class="sug-label">' + adEsc(x) + '</span></div>'; });
+                hasData = true;
+            }
+        }
+
+        var catKeys = Object.keys(cats).filter(function (c) {
+            if (!q) return true;
+            if (c.toLowerCase().indexOf(q) !== -1) return true;
+            return [].concat.apply([], adFlipData.filter(function (d) { return d.cat === c; }).map(function (d) { return d.services; })).join(' ').toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 4);
+        if (catKeys.length) {
+            html += '<div class="sug-sec">Categorías de servicios</div>';
+            catKeys.forEach(function (c) { html += '<div class="sug-row" data-v="' + adEsc(c) + '" onclick="adPick(this)">' + ICON_TAG + '<span class="sug-label">' + adEsc(c) + '</span><span class="sug-count">' + cats[c] + '</span></div>'; });
+            hasData = true;
+        }
+
+        var bp = providers.filter(function (p) {
+            if (!q) return true;
+            if (p.name.toLowerCase().indexOf(q) !== -1) return true;
+            return adFlipData[p.i].services.join(' ').toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 6);
+        if (bp.length) {
+            html += '<div class="sug-sec">Comercios</div>';
+            bp.forEach(function (p) { html += '<div class="sug-row" data-v="' + adEsc(p.name) + '" onclick="adPick(this)">' + ICON_STORE + '<span class="sug-label">' + adEsc(p.name) + '</span><span class="sug-badge" style="background:' + adCatColor(p.cat) + '">' + adEsc(p.cat) + '</span></div>'; });
+            hasData = true;
+        }
+
+        if (!hasData) html = '<div class="sug-empty">Sin resultados para &ldquo;' + adEsc(q) + '&rdquo;</div>';
+        adSuggestBox.innerHTML = html;
+        adSuggestBox.style.display = 'block';
+    }
+
+    document.addEventListener('click', function (e) {
+        var wrap = document.querySelector('.ad-search-wrap');
+        if (wrap && !wrap.contains(e.target)) adCloseSuggest();
+    });
+
     var adFlipData = {!! json_encode($providers->map(fn($p) => [
         'cat' => strtoupper($p['category']),
+        'group' => strtoupper($p['group'] ?? 'General'),
         'name' => $p['name'],
         'rating' => $p['rating'] ?? 4.5,
         'desc' => $p['description'],
@@ -652,6 +878,7 @@
 
     adRenderPage();
     window.addEventListener('resize', adRenderPage);
+    adToggleClear();
 
     const loginOverlay = document.getElementById('login-overlay');
     const loginForm = document.getElementById('login-form');

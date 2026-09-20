@@ -145,33 +145,36 @@ class ProfileController extends Controller
         }
 
         $request->validate([
-            'image' => 'required|image|max:5120',
-            'image_type' => 'required|string|in:banner,logo,gallery',
+            'image' => 'required|image:mimes:jpg,jpeg,png|max:5120',
         ]);
 
         $file = $request->file('image');
-        $filename = 'provider_' . $user->provider->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('public/providers', $filename);
+        $ext = strtolower($file->getClientOriginalExtension());
+        $filename = 'provider_' . $user->provider->id . '.' . $ext;
+        $destDir = public_path('images/publicidad');
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+        $file->move($destDir, $filename);
 
-        $maxOrder = ProviderImage::where('provider_id', $user->provider->id)
-            ->where('image_type', $request->image_type)
-            ->max('sort_order');
+        $fullPath = $destDir . '/' . $filename;
+        $this->resizeImage($fullPath, $ext, 200);
 
-        $isFirst = !ProviderImage::where('provider_id', $user->provider->id)
-            ->where('image_type', $request->image_type)
-            ->exists();
+        ProviderImage::where('provider_id', $user->provider->id)
+            ->where('image_type', 'publicidad')
+            ->delete();
 
         $image = ProviderImage::create([
             'provider_id' => $user->provider->id,
-            'image_path' => 'providers/' . $filename,
-            'image_type' => $request->image_type,
-            'is_primary' => $isFirst,
-            'sort_order' => ($maxOrder ?? 0) + 1,
+            'image_path' => $filename,
+            'image_type' => 'publicidad',
+            'is_primary' => true,
+            'sort_order' => 1,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Imagen subida correctamente.',
+            'message' => 'Imagen publicitaria subida correctamente.',
             'image' => $image,
         ]);
     }
@@ -188,7 +191,7 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'Imagen no encontrada.'], 404);
         }
 
-        $fullPath = storage_path('app/' . $image->image_path);
+        $fullPath = public_path('images/publicidad/' . $image->image_path);
         if (file_exists($fullPath)) {
             unlink($fullPath);
         }
@@ -339,5 +342,38 @@ class ProfileController extends Controller
             ->get(['id', 'name', 'type']);
 
         return response()->json($regions);
+    }
+
+    private function resizeImage(string $path, string $ext, int $maxWidth)
+    {
+        $info = @getimagesize($path);
+        if (!$info) return;
+
+        $origW = $info[0];
+        $origH = $info[1];
+        if ($origW <= $maxWidth) return;
+
+        $newW = $maxWidth;
+        $newH = (int) round($origH * ($maxWidth / $origW));
+
+        $src = match ($ext) {
+            'jpg', 'jpeg' => imagecreatefromjpeg($path),
+            'png' => imagecreatefrompng($path),
+            'webp' => imagecreatefromwebp($path),
+            default => null,
+        };
+        if (!$src) return;
+
+        $dst = imagecreatetruecolor($newW, $newH);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+
+        match ($ext) {
+            'jpg', 'jpeg' => imagejpeg($dst, $path, 85),
+            'png' => imagepng($dst, $path, 6),
+            'webp' => imagewebp($dst, $path, 85),
+        };
+
+        imagedestroy($src);
+        imagedestroy($dst);
     }
 }

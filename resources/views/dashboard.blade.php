@@ -172,7 +172,7 @@
                             </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('imagenes')" class="sidebar-link" data-panel="imagenes" id="sidebar-link-imagenes">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
-                                <span>Galería de Imágenes</span>
+                                <span>Imagen Publicitaria</span>
                             </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('categorias')" class="sidebar-link" data-panel="categorias" id="sidebar-link-categorias">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
@@ -262,26 +262,20 @@
 
                                 <div class="profile-panel" data-panel="imagenes">
                                     <div class="pcard">
-                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg> Galería de Imágenes</h3>
-                                        <p class="pcard-sub">Subí el banner y fotos de tu local. Podés arrastrar y soltar o hacer clic para elegir.</p>
-                                        <div class="img-zones" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-                                            <div class="dropzone" id="dropzone-banner">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg> Imagen Publicitaria</h3>
+                                        <p class="pcard-sub">Subí la imagen que se mostrará en la página de publicidad. Se permite una sola imagen por proveedor.</p>
+                                        <div style="max-width:400px;">
+                                            <div class="dropzone" id="dropzone-publicidad" style="width:100%;">
                                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="1.6"><path d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"/></svg>
-                                                <span class="dropzone-title">Banner principal</span>
+                                                <span class="dropzone-title">Mi imagen publicitaria</span>
                                                 <span class="dropzone-hint">Arrastrá y soltá acá o hacé clic para elegir</span>
-                                                <input type="file" id="image-upload-banner" accept="image/*" style="display:none;" />
-                                            </div>
-                                            <div class="dropzone" id="dropzone-gallery">
-                                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="1.6"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Z"/></svg>
-                                                <span class="dropzone-title">Fotos del local</span>
-                                                <span class="dropzone-hint">Arrastrá y soltá acá o hacé clic para elegir</span>
-                                                <input type="file" id="image-upload-gallery" accept="image/*" style="display:none;" />
+                                                <input type="file" id="image-upload-publicidad" accept="image/jpeg,image/png" style="display:none;" />
                                             </div>
                                         </div>
                                         <span class="save-msg err" id="images-msg" style="display:none;margin-top:12px;"></span>
-                                        <div id="images-loading" style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">Cargando imágenes...</div>
-                                        <div id="images-empty" style="display:none;text-align:center;padding:20px;color:#94a3b8;font-size:12px;border:1px dashed #e2e8f0;border-radius:1rem;margin-top:16px;">No tenés imágenes cargadas.</div>
-                                        <div id="images-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px;"></div>
+                                        <div id="images-loading" style="text-align:center;padding:16px;color:#94a3b8;font-size:12px;">Cargando imagen...</div>
+                                        <div id="images-empty" style="display:none;text-align:center;padding:20px;color:#94a3b8;font-size:12px;border:1px dashed #e2e8f0;border-radius:1rem;margin-top:16px;">No tenés imagen publicitaria cargada.</div>
+                                        <div id="images-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;"></div>
                                     </div>
                                 </div>
 
@@ -2346,7 +2340,7 @@
         negocio: 'Datos del Negocio',
         horarios: 'Horarios de Atención',
         servicios: 'Mis Servicios',
-        imagenes: 'Galería de Imágenes',
+        imagenes: 'Imagen Publicitaria',
         categorias: 'Mis Categorías',
         direccion: 'Mi Dirección',
         cuenta: 'Configuración de Cuenta'
@@ -2503,6 +2497,13 @@
         var container = document.getElementById('hours-list');
         if (!container) return;
         container.innerHTML = '';
+        var hoursStyle = document.getElementById('hours-toggle-style');
+        if (!hoursStyle) {
+            hoursStyle = document.createElement('style');
+            hoursStyle.id = 'hours-toggle-style';
+            hoursStyle.textContent = '.hours-toggle:checked + span { background:#22c55e !important; } .hours-toggle:checked + span > span { transform:translateX(20px); }';
+            document.head.appendChild(hoursStyle);
+        }
         var hours = (profileProvider && profileProvider.hours) ? profileProvider.hours : {};
 
         PROFILE_DAYS.forEach(function(day) {
@@ -2536,9 +2537,6 @@
             slider.appendChild(sliderBefore);
             toggleWrap.appendChild(toggle);
             toggleWrap.appendChild(slider);
-            var style = document.createElement('style');
-            style.textContent = '.hours-toggle:checked + span { background:#22c55e; } .hours-toggle:checked + span::before { transform:translateX(20px); }';
-            toggleWrap.appendChild(style);
             row.appendChild(toggleWrap);
 
             var statusLabel = document.createElement('span');
@@ -3011,11 +3009,27 @@
         var grid = document.getElementById('images-grid');
         var loading = document.getElementById('images-loading');
         var empty = document.getElementById('images-empty');
+        var dropzone = document.getElementById('dropzone-publicidad');
+        var publicidadSection = document.getElementById('publicidad-limit-msg');
+
+        if (!publicidadSection) {
+            var dz = document.getElementById('dropzone-publicidad');
+            if (dz) {
+                var msg = document.createElement('div');
+                msg.id = 'publicidad-limit-msg';
+                msg.style.cssText = 'display:none;margin-top:12px;padding:10px 14px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#9a3412;';
+                msg.innerHTML = '&#9432; Solo se permite una imagen publicitaria. Eliminá la actual para subir una nueva.';
+                dz.parentNode.insertBefore(msg, dz.nextSibling);
+                publicidadSection = msg;
+            }
+        }
 
         if (!profileProvider || !profileProvider.images || profileProvider.images.length === 0) {
             loading.style.display = 'none';
             empty.style.display = 'block';
             grid.style.display = 'none';
+            if (dropzone) dropzone.style.display = '';
+            if (publicidadSection) publicidadSection.style.display = 'none';
             return;
         }
 
@@ -3024,22 +3038,23 @@
         grid.style.display = 'grid';
         grid.innerHTML = '';
 
+        if (dropzone) dropzone.style.display = 'none';
+        if (publicidadSection) publicidadSection.style.display = 'block';
+
         profileProvider.images.forEach(function(img) {
             var card = document.createElement('div');
             card.style.cssText = 'position:relative;border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;background:#fff;';
-            var src = '{{ asset("storage/") }}/' + img.image_path;
-            var typeLabel = img.image_type === 'banner' ? 'Banner' : (img.image_type === 'gallery' ? 'Fotos local' : 'Logo');
-            card.innerHTML = '<img src="' + src + '" style="width:100%;height:100px;object-fit:cover;display:block;" />' +
+            var src = '{{ asset("images/publicidad/") }}/' + img.image_path + '?v=' + Date.now();
+            var typeLabel = 'Publicidad';
+            card.innerHTML = '<img src="' + src + '" style="width:100%;height:180px;object-fit:cover;display:block;" />' +
                 '<span class="img-type-badge">' + typeLabel + '</span>' +
-                (img.is_primary ? '<span class="img-star">★</span>' : '') +
-                '<button type="button" onclick="deleteImage(' + img.id + ')" style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,0.95);color:#fff;border:none;border-radius:8px;width:24px;height:24px;font-size:11px;cursor:pointer;line-height:1;">✕</button>';
+                '<button type="button" onclick="deleteImage(' + img.id + ')" style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,0.95);color:#fff;border:none;border-radius:8px;width:24px;height:24px;font-size:11px;cursor:pointer;line-height:1;">&#10005;</button>';
             grid.appendChild(card);
         });
     }
 
     function setupImageDropzones() {
-        setupDropzone('dropzone-banner', 'banner', 'image-upload-banner');
-        setupDropzone('dropzone-gallery', 'gallery', 'image-upload-gallery');
+        setupDropzone('dropzone-publicidad', 'publicidad', 'image-upload-publicidad');
     }
 
     function setupDropzone(zoneId, type, inputId) {
