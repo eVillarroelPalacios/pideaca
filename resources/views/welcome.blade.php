@@ -216,78 +216,159 @@
                     </div>
                     </div>
                     <div id="section-quienes-somos" class="page-section" style="display:none;">
-                        <section class="quienes-somos-container">
-                            <div class="quienes-somos-content">
-                                <div class="text-column">
-                                    <span class="badge-tag">Conectando tu comunidad</span>
-                                    <h2>Qui&#233;nes Somos en <span class="brand-name">pideaca.com</span></h2>
-                                    <p class="paragraph">
-                                        <strong>pideaca.com</strong> nace con la misi&#243;n de transformar y modernizar la manera en que las comunidades locales interact&#250;an con los negocios y servicios de su entorno. Dise&#241;amos una soluci&#243;n integral que re&#250;ne en una sola aplicaci&#243;n todo lo que un hogar necesita: desde realizar un pedido gastron&#243;mico o abastecerse de insumos cotidianos, hasta encontrar un t&#233;cnico de confianza para urgencias del hogar o solicitar auxilio vial inmediato mediante geolocalizaci&#243;n en tiempo real.
-                                    </p>
-                                    <p class="paragraph">
-                                        Construimos nuestra plataforma sobre una <strong>filosof&#237;a de valor bidireccional (&#8220;Ganar-Ganar&#8221;)</strong>: brindamos a los usuarios una experiencia centralizada, r&#225;pida y segura con perfiles y profesionales verificados; al mismo tiempo, impulsamos la digitalizaci&#243;n del comercio local y de los trabajadores independientes mediante esquemas de cobro accesibles, justos y transparentes. En <strong>pideaca.com</strong>, conectar a los vecinos con el trabajo y el talento local es el motor que fortalece la econom&#237;a de nuestras ciudades.
-                                    </p>
-                                    <div class="stats-row">
-                                        <div class="stat-item">
-                                            <span class="stat-number">100%</span>
-                                            <span class="stat-label">Comercio Local</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-number">Win-Win</span>
-                                            <span class="stat-label">Modelo Justo</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="image-column">
-                                    <div class="illustration-card">
-                                        <svg viewBox="0 0 500 400" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <section class="quienes-somos-section">
+                            <div class="qs-container">
+
+                                <!-- COLUMNA IZQUIERDA: Ilustraci&#243;n Visual Vectorial -->
+                                <div class="qs-image-col">
+                                    <div class="illustration-wrapper">
+                                        <svg viewBox="0 0 500 550" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
-                                                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                                                     <stop offset="0%" stop-color="#f8fafc"/>
                                                     <stop offset="100%" stop-color="#edf2f7"/>
-                                                </linearGradient>
-                                                <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" stop-color="#e65100"/>
-                                                    <stop offset="100%" stop-color="#ff9800"/>
                                                 </linearGradient>
                                                 <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                                                     <stop offset="0%" stop-color="#0b2545"/>
                                                     <stop offset="100%" stop-color="#1e3a8a"/>
                                                 </linearGradient>
-                                                <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                                                <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" stop-color="#e65100"/>
+                                                    <stop offset="100%" stop-color="#ff9800"/>
+                                                </linearGradient>
+                                                <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
                                                     <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.08"/>
                                                 </filter>
                                             </defs>
-                                            <rect width="500" height="400" rx="20" fill="url(#bgGrad)"/>
-                                            <g filter="url(#shadow)">
-                                                <circle cx="250" cy="180" r="110" fill="#ffffff"/>
-                                                <path d="M250,90 C205,90 170,125 170,170 C170,225 250,300 250,300 C250,300 330,225 330,170 C330,125 295,90 250,90 Z" fill="url(#accentGrad)"/>
-                                                <circle cx="250" cy="165" r="35" fill="#ffffff"/>
+
+                                            <rect width="500" height="550" rx="24" fill="url(#bgGradient)"/>
+
+                                            <g filter="url(#softShadow)">
+                                                <circle cx="250" cy="240" r="130" fill="#ffffff"/>
+                                                <path d="M250,130 C195,130 150,175 150,230 C150,300 250,390 250,390 C250,390 350,300 350,230 C350,175 305,130 250,130 Z" fill="url(#accentGrad)"/>
+                                                <circle cx="250" cy="220" r="40" fill="#ffffff"/>
                                             </g>
-                                            <g filter="url(#shadow)" class="floating-card">
-                                                <rect x="50" y="70" width="120" height="70" rx="12" fill="#ffffff"/>
-                                                <circle cx="85" cy="105" r="18" fill="#fff3e0"/>
-                                                <path d="M85 93 L97 113 H73 Z" fill="#e65100"/>
-                                                <circle cx="85" cy="104" r="2" fill="#ffffff"/>
-                                                <rect x="112" y="95" width="45" height="6" rx="3" fill="#0b2545"/>
-                                                <rect x="112" y="107" width="30" height="5" rx="2.5" fill="#94a3b8"/>
+
+                                            <g filter="url(#softShadow)" class="floating-item">
+                                                <rect x="35" y="80" width="150" height="65" rx="12" fill="#ffffff"/>
+                                                <circle cx="65" cy="112" r="18" fill="#fff3e0"/>
+                                                <path d="M65 100 L77 120 H53 Z" fill="#e65100"/>
+                                                <text x="95" y="110" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Gastronom&#237;a</text>
+                                                <text x="95" y="125" font-family="sans-serif" font-size="10" fill="#64748b">Fast Delivery</text>
                                             </g>
-                                            <g filter="url(#shadow)" class="floating-card-delay">
-                                                <rect x="330" y="80" width="130" height="70" rx="12" fill="#ffffff"/>
-                                                <circle cx="365" cy="115" r="18" fill="#e0f2fe"/>
-                                                <path d="M360 108 L370 118 M368 108 L360 118" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
-                                                <rect x="392" y="105" width="50" height="6" rx="3" fill="#0b2545"/>
-                                                <rect x="392" y="117" width="35" height="5" rx="2.5" fill="#94a3b8"/>
+
+                                            <g filter="url(#softShadow)" class="floating-item-delay">
+                                                <rect x="315" y="90" width="150" height="65" rx="12" fill="#ffffff"/>
+                                                <circle cx="345" cy="122" r="18" fill="#e0f2fe"/>
+                                                <path d="M340 115 L350 125 M348 115 L340 125" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+                                                <text x="375" y="120" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Servicios Hogar</text>
+                                                <text x="375" y="135" font-family="sans-serif" font-size="10" fill="#64748b">T&#233;cnicos 24/7</text>
                                             </g>
-                                            <g filter="url(#shadow)">
-                                                <rect x="140" y="310" width="220" height="55" rx="28" fill="url(#primaryGrad)"/>
-                                                <circle cx="170" cy="337" r="16" fill="#ffffff"/>
-                                                <path d="M164 337 L168 341 L176 333" stroke="#e65100" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                                <text x="195" y="342" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="13">Ecosistema Win-Win</text>
+
+                                            <g filter="url(#softShadow)" class="floating-item">
+                                                <rect x="35" y="380" width="150" height="65" rx="12" fill="#ffffff"/>
+                                                <circle cx="65" cy="412" r="18" fill="#fce7f3"/>
+                                                <circle cx="65" cy="412" r="8" stroke="#db2777" stroke-width="3" fill="none"/>
+                                                <text x="95" y="410" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Auxilio Vial</text>
+                                                <text x="95" y="425" font-family="sans-serif" font-size="10" fill="#64748b">GPS en Vivo</text>
+                                            </g>
+
+                                            <g filter="url(#softShadow)" class="floating-item-delay">
+                                                <rect x="315" y="370" width="150" height="65" rx="12" fill="#ffffff"/>
+                                                <circle cx="345" cy="402" r="18" fill="#dcfce7"/>
+                                                <rect x="340" y="394" width="10" height="16" rx="2" fill="#16a34a"/>
+                                                <text x="375" y="400" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Abastos Agua/Gas</text>
+                                                <text x="375" y="415" font-family="sans-serif" font-size="10" fill="#64748b">Programables</text>
+                                            </g>
+
+                                            <g filter="url(#softShadow)">
+                                                <rect x="125" y="475" width="250" height="50" rx="25" fill="url(#primaryGrad)"/>
+                                                <circle cx="155" cy="500" r="14" fill="#ffffff"/>
+                                                <path d="M150 500 L154 504 L162 496" stroke="#e65100" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <text x="180" y="505" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="13">Ecosistema Win-Win Garantizado</text>
                                             </g>
                                         </svg>
                                     </div>
                                 </div>
+
+                                <!-- COLUMNA DERECHA: Redacci&#243;n Institucional -->
+                                <div class="qs-text-col">
+                                    <span class="qs-badge">El Ecosistema Local</span>
+                                    <h2>Sobre <span class="qs-brand">pideaca.com</span></h2>
+
+                                    <p class="qs-lead">
+                                        <strong>pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos una aplicaci&#243;n web multiservicio que integra en un &#250;nico lugar todo lo que un hogar o conductor necesita para resolver compras, urgencias o agendas diarias de forma &#225;gil y segura.
+                                    </p>
+
+                                    <div class="qs-section-block">
+                                        <h3>Nuestra Filosof&#237;a: El Modelo &#8220;Ganar - Ganar&#8221;</h3>
+                                        <p>
+                                            Creemos firmemente en el valor bidireccional y arm&#243;nico. Mientras resolvemos las necesidades inmediatas de los usuarios mediante soluciones centralizadas y perfiles verificados, impulsamos el crecimiento comercial y laboral de los prestadores locales a trav&#233;s de esquemas de cobro justos y transparentes.
+                                        </p>
+
+                                        <div class="qs-winwin-grid">
+                                            <div class="winwin-card">
+                                                <h4>Para el Usuario (Quien pide)</h4>
+                                                <ul>
+                                                    <li><strong>Soluci&#243;n Integral:</strong> Desde una pizza hasta un plomero o una gr&#250;a en una sola plataforma.</li>
+                                                    <li><strong>Seguridad:</strong> Perfiles comprobados, matr&#237;culas validadas y calificaciones reales.</li>
+                                                    <li><strong>Ahorro de Tiempo:</strong> Proceso &#225;gil con geolocalizaci&#243;n precisa.</li>
+                                                </ul>
+                                            </div>
+                                            <div class="winwin-card">
+                                                <h4>Para el Comercio / Prestador (Quien ofrece)</h4>
+                                                <ul>
+                                                    <li><strong>Alta Visibilidad:</strong> Canal digital directo para captar nuevos clientes.</li>
+                                                    <li><strong>Comisiones Justas:</strong> Suscripciones fijas y modelos flexibles para proteger tus ganancias.</li>
+                                                    <li><strong>Digitalizaci&#243;n Simple:</strong> Herramientas para gestionar productos, agendas y WhatsApp.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="qs-section-block">
+                                        <h3>Estructura de Servicios</h3>
+                                        <div class="qs-modules-grid">
+                                            <div class="module-item">
+                                                <span class="mod-icon">&#127869;</span>
+                                                <div>
+                                                    <strong>Comercio &amp; Gastronom&#237;a</strong>
+                                                    <p>Pizzer&#237;as, rotiser&#237;as y tiendas con carrito interactivo.</p>
+                                                </div>
+                                            </div>
+                                            <div class="module-item">
+                                                <span class="mod-icon">&#128295;</span>
+                                                <div>
+                                                    <strong>Servicios del Hogar &amp; Bienestar</strong>
+                                                    <p>Plomeros, electricistas, t&#233;cnicos 24/7 y belleza a domicilio.</p>
+                                                </div>
+                                            </div>
+                                            <div class="module-item">
+                                                <span class="mod-icon">&#128680;</span>
+                                                <div>
+                                                    <strong>Auxilio Vial &amp; Mec&#225;nica</strong>
+                                                    <p>Gr&#250;as y auxilio inmediato por GPS en tiempo real.</p>
+                                                </div>
+                                            </div>
+                                            <div class="module-item">
+                                                <span class="mod-icon">&#128167;</span>
+                                                <div>
+                                                    <strong>Abastos Recurrentes</strong>
+                                                    <p>Suscripci&#243;n de agua, garrafas de gas y hielo.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="qs-section-block">
+                                        <h3>Monetizaci&#243;n Sostenible y Equitativa</h3>
+                                        <p class="qs-small-text">
+                                            Para garantizar la sostenibilidad sin encarecer los precios finales, implementamos tarifas planas para profesionales, costos m&#237;nimos por contacto y comisiones reducidas para el sector gastron&#243;mico.
+                                        </p>
+                                    </div>
+
+                                </div>
+
                             </div>
                         </section>
                     </div>
@@ -372,72 +453,134 @@
         --text-muted: #64748b;
     }
 
-    .quienes-somos-container {
+    :root {
+        --qs-primary: #0b2545;
+        --qs-accent: #e65100;
+        --qs-text: #334155;
+        --qs-muted: #64748b;
+        --qs-bg-light: #f8fafc;
+    }
+    .quienes-somos-section {
         padding: 60px 20px;
         background-color: #ffffff;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        color: var(--qs-text);
     }
-    .quienes-somos-content {
+    .qs-container {
         max-width: 1200px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
+        grid-template-columns: 0.85fr 1.15fr;
         gap: 50px;
-        align-items: center;
+        align-items: start;
     }
-    .badge-tag {
-        color: var(--accent-orange);
+    .qs-image-col {
+        position: sticky;
+        top: 30px;
+        width: 100%;
+    }
+    .illustration-wrapper {
+        width: 100%;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+    .floating-item { animation: floatAnim 4s ease-in-out infinite; }
+    .floating-item-delay { animation: floatAnim 4s ease-in-out 2s infinite; }
+    @keyframes floatAnim {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-7px); }
+    }
+    .qs-badge {
+        color: var(--qs-accent);
         background-color: #fff3e0;
         padding: 6px 14px;
         border-radius: 20px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
         display: inline-block;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
-    .text-column h2 {
-        color: var(--primary-dark);
+    .qs-text-col h2 {
         font-size: 2.2rem;
-        margin: 0 0 20px 0;
-        line-height: 1.2;
+        color: var(--qs-primary);
+        margin: 0 0 15px 0;
     }
-    .brand-name { color: var(--accent-orange); }
-    .paragraph {
-        color: var(--text-main);
+    .qs-brand { color: var(--qs-accent); }
+    .qs-lead {
         font-size: 1.05rem;
-        line-height: 1.65;
-        margin-bottom: 18px;
+        line-height: 1.6;
+        margin-bottom: 30px;
     }
-    .paragraph strong { color: var(--primary-dark); }
-    .stats-row {
+    .qs-section-block { margin-bottom: 30px; }
+    .qs-section-block h3 {
+        font-size: 1.3rem;
+        color: var(--qs-primary);
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+    }
+    .qs-winwin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .winwin-card {
+        background-color: var(--qs-bg-light);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+    .winwin-card h4 {
+        margin: 0 0 10px 0;
+        color: var(--qs-accent);
+        font-size: 0.95rem;
+    }
+    .winwin-card ul {
+        margin: 0;
+        padding-left: 15px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+    .winwin-card li { margin-bottom: 6px; }
+    .qs-modules-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    .module-item {
         display: flex;
-        gap: 30px;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid #e2e8f0;
+        align-items: flex-start;
+        gap: 12px;
+        background: #ffffff;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
-    .stat-item { display: flex; flex-direction: column; }
-    .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); }
-    .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
-    .image-column { width: 100%; display: flex; justify-content: center; }
-    .illustration-card {
-        width: 100%;
-        max-width: 480px;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    .mod-icon { font-size: 1.5rem; }
+    .module-item strong {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--qs-primary);
     }
-    .floating-card { animation: float 4s ease-in-out infinite; }
-    .floating-card-delay { animation: float 4s ease-in-out 2s infinite; }
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
+    .module-item p {
+        margin: 2px 0 0 0;
+        font-size: 0.8rem;
+        color: var(--qs-muted);
+    }
+    .qs-small-text {
+        font-size: 0.9rem;
+        color: var(--qs-muted);
+        line-height: 1.5;
     }
     @media (max-width: 900px) {
-        .quienes-somos-content { grid-template-columns: 1fr; gap: 40px; }
-        .text-column h2 { font-size: 1.8rem; }
+        .qs-container { grid-template-columns: 1fr; }
+        .qs-winwin-grid, .qs-modules-grid { grid-template-columns: 1fr; }
+        .qs-image-col { position: relative; top: 0; }
     }
     
     .header-btn:hover, .cta-btn:hover {
