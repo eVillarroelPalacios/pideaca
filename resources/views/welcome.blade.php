@@ -159,7 +159,7 @@
                                 </div>
                                 <div id="adSuggestBox" class="ad-suggest-box"></div>
                             </div>
-                            <div id="adResultCount-wrap" style="margin-left:auto;padding:8px 0;font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
+                            <div id="adResultCount-wrap" style="margin-left:auto;padding:8px 0;font-size:11px;color:#374151;font-weight:600;white-space:nowrap;flex-shrink:0;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
                         </div>
 
                         <div class="ad-grid-zone" style="width:100%;box-sizing:border-box;">
@@ -213,6 +213,7 @@
                                 <button id="next-page" class="pagination-nav-btn" onclick="adPage(2)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10095;</button>
                             </div>
                         </div>
+                    </div>
                     </div>
                     <div id="section-quienes-somos" class="page-section" style="display:none;">
                         <section class="quienes-somos-container">
@@ -640,18 +641,18 @@
     .ad-hidden { display: none !important; }
     .ad-filter-tab { display: inline-flex; align-items: center; gap: 6px; padding: 12px 16px; font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; white-space: nowrap; user-select: none; margin-bottom: -2px; letter-spacing: 0.02em; position: relative; }
     .ad-filter-tab svg { flex-shrink: 0; }
-    .ad-filter-tab:hover { color: #374151; background: #d1d5db; }
+    .ad-filter-tab:hover { color: #374151; background: #9ca3af; }
     .ad-filter-tab.active { color: #D24C19; border-bottom-color: #D24C19; }
     .ad-filter-tab:hover { z-index: 10; }
 
-    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.28); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s ease; height: 28px; }
+    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #d1d5db; transition: border-color 0.15s ease; height: 28px; }
     .ad-search-inner:focus-within { border-color: #D24C19; }
     #adSearchInput { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 4px 10px; font-size: 12px; color: #111827; font-family: inherit; border-radius: 0; }
     #adSearchInput::placeholder { color: #9ca3af; }
     #adClearBtn { display: none; align-items: center; justify-content: center; background: none; border: none; padding: 0 4px; color: #6b7280; cursor: pointer; line-height: 1; font-size: 14px; }
     #adClearBtn:hover { color: #111827; }
-    #adSubmitBtn { width: 32px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: none; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease; }
-    #adSubmitBtn:hover { background: #fff; color: #D24C19; border: 1px solid #D24C19; }
+    #adSubmitBtn { width: 32px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: none; border-left: 1px solid #d1d5db; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease; padding: 0 0 0 4px; }
+    #adSubmitBtn:hover { background: #fff; color: #D24C19; border-left: 1px solid #D24C19; }
     .ad-search-wrap { flex: 0 0 auto; min-width: 260px; position: relative; z-index: 1; }
 
     .ad-suggest-box { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 40; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; max-height: 420px; overflow: auto; display: none; padding: 8px; box-sizing: border-box; }
