@@ -46,55 +46,35 @@
         </div>
         {{-- NAV --}}
         <nav style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);position:sticky;top:0;z-index:50;overflow:visible;">
-            <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
+            <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:space-between;gap:6px;position:relative;">
                 <a href="/" onclick="window.location.reload(true);return false;" style="flex-shrink:0;z-index:60;">
                     <img class="logo-img" src="{{ asset('images/logo.png') }}" alt="PideAca" style="width:170px;height:58px;border-radius:0;object-fit:contain;" />
                 </a>
 
-                {{-- SEARCH BAR --}}
-                <div class="ad-search-wrap" style="flex:1 1 300px;max-width:520px;margin:0 auto;position:relative;z-index:80;">
-                    <div class="ad-search-inner">
-                        <input id="adSearchInput" type="text" placeholder="Buscar productos, servicios o comercios..." autocomplete="off" spellcheck="false"
-                            oninput="adOnInput()" onfocus="adOnFocus()" onkeydown="adOnKey(event)" />
-                        <button id="adClearBtn" type="button" title="Limpiar" aria-label="Limpiar búsqueda" onclick="adClear()">&#10005;</button>
-                        <button id="adSubmitBtn" type="button" title="Buscar" aria-label="Buscar" onclick="adSubmit()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </button>
-                    </div>
-                    <div id="adSuggestBox" class="ad-suggest-box"></div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                    <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
+                    <a href="#" onclick="showSection('quienes-somos')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
+                        Quienes Somos
+                    </a>
+                    <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
+                    <a href="#" onclick="showSection('servicios')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75a4.5 4.5 0 0 1-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 1 1-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 0 1 6.336-4.486l-3.276 3.276a3.004 3.004 0 0 0 2.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
+                        Servicios
+                    </a>
+                    <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
+                    <a href="#" onclick="showSection('contactos')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                        Contactos
+                    </a>
+                    <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
+                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
+                    <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
+                    <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
                 </div>
-                {{-- END SEARCH BAR --}}
-
-                <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" onclick="window.location.reload()" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-                    Inicio
-                </a>
-                <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" onclick="showSection('quienes-somos')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
-                    Quienes Somos
-                </a>
-                <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" onclick="showSection('servicios')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75a4.5 4.5 0 0 1-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 1 1-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 0 1 6.336-4.486l-3.276 3.276a3.004 3.004 0 0 0 2.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>
-                    Servicios
-                </a>
-                <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" onclick="showSection('contactos')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
-                    Contactos
-                </a>
-                <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
-                <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
-                <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                 <div style="display:flex;justify-content:center;align-items:center;gap:32px;">
-                    <a href="#" onclick="window.location.reload()" style="color:#1f2937;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:6px;" title="Inicio">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-                    </a>
                     <a href="#" onclick="showSection('quienes-somos')" style="color:#1f2937;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:6px;" title="Quienes Somos">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
                     </a>
@@ -150,26 +130,36 @@
                 <section style="background:#f5f7fa;padding:0;">
                     <div id="section-inicio" class="page-section" style="display:block;max-width:100%;margin:0;background:white;border-radius:0;padding:0;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
 
-                        <div id="adFilterBar" style="display:flex;align-items:center;gap:0;border-bottom:2px solid #e5e7eb;margin:0;padding:0 28px;overflow-x:auto;">
+                        <div id="adFilterBar" style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #e5e7eb;margin:0;padding:0 28px;overflow-x:auto;background:#f3f4f6;">
                             <span class="ad-filter-tab active" onclick="adSetCategory('Todos')" data-cat="Todos" title="Todos">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                                <span class="ad-tab-label">Todos</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                             </span>
                             @php
                                 $groupIcons = [
-                                    'Comercio & Gastronomía' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-                                    'Auxilio Vial & Mecánica' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-                                    'Abastos Recurrentes' => '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+                                    'Comercio & Gastronomía' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                                    'Auxilio Vial & Mecánica' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>',
+                                    'Abastos Recurrentes' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
                                 ];
                             @endphp
                             @foreach($allGroups as $grp)
-                            <span class="ad-filter-tab" onclick="adSetCategory('{{ strtoupper($grp->description) }}')" data-cat="{{ strtoupper($grp->description) }}" title="{{ strtoupper($grp->description) }}">
+                            <span class="ad-filter-tab" onclick="adSetCategory('{{ mb_strtoupper($grp->description) }}')" data-cat="{{ mb_strtoupper($grp->description) }}" title="{{ $grp->description }}">
                                 {!! $groupIcons[$grp->description] ?? '' !!}
-                                <span class="ad-tab-label">{{ strtoupper($grp->description) }}</span>
                             </span>
                             @endforeach
-                            <div style="margin-left:auto;padding:8px 0;font-size:11px;color:#9ca3af;white-space:nowrap;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
+                            <div style="width:1px;height:20px;background:#d1d5db;flex-shrink:0;"></div>
+                            <div class="ad-search-wrap" style="flex:0 0 auto;position:relative;">
+                                <div class="ad-search-inner">
+                                    <input id="adSearchInput" type="text" placeholder="Buscar..." autocomplete="off" spellcheck="false"
+                                        oninput="adOnInput()" onfocus="adOnFocus()" onkeydown="adOnKey(event)" />
+                                    <button id="adClearBtn" type="button" title="Limpiar" aria-label="Limpiar búsqueda" onclick="adClear()">&#10005;</button>
+                                    <button id="adSubmitBtn" type="button" title="Buscar" aria-label="Buscar" onclick="adSubmit()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    </button>
+                                </div>
+                                <div id="adSuggestBox" class="ad-suggest-box"></div>
+                            </div>
+                            <div id="adResultCount-wrap" style="margin-left:auto;padding:8px 0;font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
                         </div>
 
                         <div class="ad-grid-zone" style="width:100%;box-sizing:border-box;">
@@ -186,12 +176,12 @@
                                 $svcList = is_array($provider['services']) ? implode(' ', $provider['services']) : ($provider['services'] ?? '');
                                 $searchTerms .= ' ' . strtolower($svcList);
                             @endphp
-                            <div class="flip-card" data-idx="{{ $idx }}" data-category="{{ strtoupper($provider['category']) }}" data-groups="{{ strtoupper(implode(',', $provider['groups'])) }}" data-search="{{ $searchTerms }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                            <div class="flip-card" data-idx="{{ $idx }}" data-category="{{ mb_strtoupper($provider['category']) }}" data-groups="{{ mb_strtoupper(implode(',', $provider['groups'])) }}" data-search="{{ $searchTerms }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 <div class="ad-banner" style="position:relative;overflow:hidden;background:#f9fafb;height:150px;">
                                     <img src="{{ $provider['banner_url'] ? asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) : asset('images/publicidad/default.jpg') }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
                                 </div>
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ strtoupper($provider['category']) }}</span>
+                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ mb_strtoupper($provider['category']) }}</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                                         
                                         <div>
@@ -250,7 +240,12 @@
         <div style="background:white;height:8px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
             <div style="text-align:center;">
-                <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>
+                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                </div>
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>
@@ -329,7 +324,7 @@
     }
 
     /* GRILLA LIMPIA SIN FRANJAS NI ALTURAS FORZADAS POR JS */
-    .ad-grid-zone { width: 100%; box-sizing: border-box; }
+    .ad-grid-zone { width: 100%; box-sizing: border-box; padding-top: 6px; }
     
     .provider-grid { 
         display: grid !important;
@@ -498,23 +493,21 @@
     .ad-hidden { display: none !important; }
     .ad-filter-tab { display: inline-flex; align-items: center; gap: 6px; padding: 12px 16px; font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; white-space: nowrap; user-select: none; margin-bottom: -2px; letter-spacing: 0.02em; position: relative; }
     .ad-filter-tab svg { flex-shrink: 0; }
-    .ad-filter-tab:hover { color: #374151; background: #f9fafb; }
+    .ad-filter-tab:hover { color: #374151; background: #d1d5db; }
     .ad-filter-tab.active { color: #D24C19; border-bottom-color: #D24C19; }
-    .ad-tab-label { transition: transform 0.2s ease, text-shadow 0.2s ease; display: inline-block; transform-origin: left center; }
-    .ad-filter-tab:hover .ad-tab-label { transform: scale(1.1); text-shadow: 0 2px 8px rgba(210,76,25,0.3); }
     .ad-filter-tab:hover { z-index: 10; }
 
-    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.28); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s ease; height: 32px; }
+    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.28); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s ease; height: 28px; }
     .ad-search-inner:focus-within { border-color: #D24C19; }
-    #adSearchInput { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 6px 10px; font-size: 12px; color: #111827; font-family: inherit; border-radius: 0; }
+    #adSearchInput { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 4px 10px; font-size: 12px; color: #111827; font-family: inherit; border-radius: 0; }
     #adSearchInput::placeholder { color: #9ca3af; }
     #adClearBtn { display: none; align-items: center; justify-content: center; background: none; border: none; padding: 0 4px; color: #6b7280; cursor: pointer; line-height: 1; font-size: 14px; }
     #adClearBtn:hover { color: #111827; }
-    #adSubmitBtn { width: 36px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: 1px solid #D24C19; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; margin: 2px; box-sizing: border-box; transition: all 0.2s ease; }
-    #adSubmitBtn:hover { background: #fff; color: #D24C19; }
-    .ad-search-wrap { flex: 1 1 300px; max-width: 520px; min-width: 100px; margin: 0 auto; position: relative; z-index: 80; }
+    #adSubmitBtn { width: 32px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: none; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease; }
+    #adSubmitBtn:hover { background: #fff; color: #D24C19; border: 1px solid #D24C19; }
+    .ad-search-wrap { flex: 0 0 auto; min-width: 260px; position: relative; z-index: 1; }
 
-    .ad-suggest-box { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 130; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; max-height: 420px; overflow: auto; display: none; padding: 8px; box-sizing: border-box; }
+    .ad-suggest-box { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 40; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; max-height: 420px; overflow: auto; display: none; padding: 8px; box-sizing: border-box; }
     .sug-sec { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b7280; padding: 8px 10px 4px; }
     .sug-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #1f2937; }
     .sug-row svg { flex-shrink: 0; color: #6b7280; }
@@ -527,10 +520,10 @@
     @media (max-width: 768px) {
         .nav-container { flex-wrap: nowrap !important; }
         .logo-img { width: 100px !important; height: 40px !important; }
-        .ad-search-wrap { flex: 1 1 0; min-width: 80px; max-width: none; margin: 0 4px; }
-        .ad-search-inner { height: 30px; }
-        #adSearchInput { padding: 5px 6px; font-size: 11px; }
-        #adSubmitBtn { width: 28px; height: 24px; }
+        .ad-search-wrap { flex: 0 0 auto; min-width: 80px; max-width: none; }
+        .ad-search-inner { height: 26px; }
+        #adSearchInput { padding: 3px 6px; font-size: 11px; }
+        #adSubmitBtn { width: 28px; height: 22px; }
         .nav-link { font-size: 0 !important; padding: 4px 6px !important; gap: 0 !important; }
         .nav-link svg { margin: 0 !important; }
         .nav-separator { display: none !important; }
@@ -557,19 +550,26 @@
             gap: 10px !important; 
             padding: 4px 12px !important; 
         }
-        .ad-filter-tab { font-size: 0 !important; padding: 10px 10px !important; gap: 0 !important; }
+        #adFilterBar { padding: 0 8px !important; gap: 2px !important; flex-wrap: nowrap !important; overflow: hidden !important; }
+        .ad-filter-tab { font-size: 0 !important; padding: 8px 6px !important; gap: 0 !important; }
         .ad-filter-tab svg { width: 16px !important; height: 16px !important; }
-        .ad-tab-label { display: none !important; }
-        .ad-filter-tab:hover .ad-tab-label { display: inline !important; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; font-size: 10px !important; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: 50; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .ad-banner { height: 160px !important; }
-        .ad-title { height: 30px !important; font-size: 11px !important; }
-        .ad-desc { height: 28px !important; font-size: 10px !important; }
+        .ad-search-wrap { min-width: 0 !important; flex: 0 1 160px !important; }
+        .ad-search-inner { height: 26px; }
+        #adSearchInput { padding: 3px 6px; font-size: 11px; }
+        #adSubmitBtn { width: 26px; height: 22px; }
+        #adResultCount-wrap { font-size: 9px !important; white-space: nowrap !important; padding: 8px 0 !important; }
+        .ad-banner { height: 120px !important; }
+        .ad-title { height: 26px !important; font-size: 11px !important; }
+        .ad-desc { height: 24px !important; font-size: 10px !important; }
+        .ad-card-info { margin-bottom: 4px !important; }
+        .ad-card .ad-body { padding: 10px !important; }
     }
 
     @media (max-width: 480px) {
         .provider-grid { 
             grid-template-columns: 1fr !important; 
         }
+        .ad-banner { height: 100px !important; }
     }
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }
@@ -812,8 +812,8 @@
     });
 
     var adFlipData = {!! json_encode($providers->map(fn($p) => [
-        'cat' => strtoupper($p['category']),
-        'group' => strtoupper($p['group'] ?? 'General'),
+        'cat' => mb_strtoupper($p['category']),
+        'group' => mb_strtoupper($p['group'] ?? 'General'),
         'name' => $p['name'],
         'rating' => $p['rating'] ?? 4.5,
         'desc' => $p['description'],
