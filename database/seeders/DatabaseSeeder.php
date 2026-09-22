@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             CountriesAndRegionsSeeder::class,
+            UsuariosPageSeeder::class,
         ]);
     }
 }

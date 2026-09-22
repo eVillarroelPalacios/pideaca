@@ -7,6 +7,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\TypeUserController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +35,12 @@ Route::get('/type-users', [TypeUserController::class, 'index'])->name('type-user
 Route::post('/type-users', [TypeUserController::class, 'store'])->name('type-users.store');
 Route::put('/type-users/{typeUser}', [TypeUserController::class, 'update'])->name('type-users.update');
 Route::delete('/type-users/{typeUser}', [TypeUserController::class, 'destroy'])->name('type-users.destroy');
+
+Route::get('/admin/users', [UsuarioController::class, 'index'])->name('admin.users.index');
+Route::get('/admin/users/{user}', [UsuarioController::class, 'show'])->name('admin.users.show');
+Route::post('/admin/users', [UsuarioController::class, 'store'])->name('admin.users.store');
+Route::put('/admin/users/{user}', [UsuarioController::class, 'update'])->name('admin.users.update');
+Route::delete('/admin/users/{user}', [UsuarioController::class, 'destroy'])->name('admin.users.destroy');
 
 Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
 Route::post('/pages', [PageController::class, 'store'])->name('pages.store');

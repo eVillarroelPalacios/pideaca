@@ -132,6 +132,21 @@
                     .img-type-badge{position:absolute;bottom:6px;left:6px;background:rgba(15,23,42,0.85);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:0;padding:3px 7px;}
                     .img-star{position:absolute;top:6px;left:6px;color:#fbbf24;font-size:14px;}
                     .status-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#eef2f7;color:#334155;font-size:12px;font-weight:600;}
+                    .user-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f8fafc;padding:0 8px;overflow-x:auto;}
+                    .user-tab{position:relative;display:inline-flex;align-items:center;gap:8px;padding:14px 18px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:color .15s,background .15s;}
+                    .user-tab:hover{color:#0f172a;background:rgba(255,255,255,0.7);}
+                    .user-tab.active{color:#D24C19;background:#fff;}
+                    .user-tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;background:#D24C19;border-radius:3px 3px 0 0;}
+                    .user-tab svg{flex-shrink:0;opacity:.85;}
+                    .user-tab.active svg{opacity:1;}
+                    .user-tab-panel{display:none;padding:20px 24px;}
+                    .user-tab-panel.active{display:block;animation:tabFade .18s ease;}
+                    @keyframes tabFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+                    .user-demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+                    .user-demo-label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+                    .user-demo-value{font-size:13px;color:#0f172a;font-weight:500;}
+                    .user-demo-section-title{font-size:13px;font-weight:700;color:#0f172a;margin:0 0 14px;text-transform:uppercase;letter-spacing:.4px;}
+                    .user-demo-empty-tab{padding:36px 16px;text-align:center;color:#64748b;font-size:13px;background:#f8fafc;border:1px dashed #e2e8f0;}
                     @media (max-width:768px){
                         .profile-field-grid{grid-template-columns:1fr;}
                         .img-zones{grid-template-columns:1fr !important;}
@@ -862,6 +877,226 @@
                     </div>
                 </div>
             </div>
+                    @elseif($page->url === 'usuarios')
+            <section id="dash-usuarios" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                    <button type="button" onclick="openUserSelectModal()" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                        Seleccionar usuario
+                    </button>
+                </div>
+
+                <div id="user-demo-empty" style="background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <div style="width:56px;height:56px;border-radius:50%;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                    </div>
+                    <p style="font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;">Ningún usuario seleccionado</p>
+                    <p style="font-size:13px;color:#64748b;margin:0;">Elegí un usuario para ver su demografía y trabajar con él.</p>
+                </div>
+
+                <div id="user-demo-panel" style="display:none;background:white;border:1px solid #e5e7eb;">
+                    <div style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;">
+                        <div id="user-demo-avatar" style="width:52px;height:52px;border-radius:50%;background:#D24C19;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;"></div>
+                        <div style="flex:1;min-width:180px;">
+                            <div id="user-demo-name" style="font-size:16px;font-weight:700;color:#0f172a;"></div>
+                            <div id="user-demo-email" style="font-size:13px;color:#64748b;"></div>
+                            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                                <span id="user-demo-status" class="status-badge"></span>
+                                <span id="user-demo-type" class="status-badge" style="background:#eff6ff;color:#1d4ed8;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-tabs" id="user-tabs">
+                        <button type="button" class="user-tab active" data-user-tab="demografia" onclick="switchUserTab('demografia')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                            Demografía
+                        </button>
+                        <button type="button" class="user-tab" data-user-tab="direcciones" onclick="switchUserTab('direcciones')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            Direcciones
+                        </button>
+                        <button type="button" class="user-tab" data-user-tab="negocio" onclick="switchUserTab('negocio')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                            Negocio
+                        </button>
+                        <button type="button" class="user-tab" data-user-tab="cuenta" onclick="switchUserTab('cuenta')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.646.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            Cuenta
+                        </button>
+                    </div>
+
+                    <div id="user-tab-demografia" class="user-tab-panel active">
+                        <h3 class="user-demo-section-title">Demografía del usuario</h3>
+                        <div class="user-demo-grid">
+                            <div>
+                                <div class="user-demo-label">Nombre completo</div>
+                                <div id="user-demo-f-name" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Email</div>
+                                <div id="user-demo-f-email" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Estado</div>
+                                <div id="user-demo-f-status" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Tipo de usuario</div>
+                                <div id="user-demo-f-type" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Registro</div>
+                                <div id="user-demo-f-created" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Email verificado</div>
+                                <div id="user-demo-f-verified" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Teléfono</div>
+                                <div id="user-demo-f-phone" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">WhatsApp</div>
+                                <div id="user-demo-f-whatsapp" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Negocio</div>
+                                <div id="user-demo-f-business" class="user-demo-value">-</div>
+                            </div>
+                            <div>
+                                <div class="user-demo-label">Zona</div>
+                                <div id="user-demo-f-zone" class="user-demo-value">-</div>
+                            </div>
+                            <div style="grid-column:1 / -1;">
+                                <div class="user-demo-label">Dirección principal</div>
+                                <div id="user-demo-f-address" class="user-demo-value">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="user-tab-direcciones" class="user-tab-panel">
+                        <h3 class="user-demo-section-title">Direcciones</h3>
+                        <div id="user-demo-addresses"></div>
+                    </div>
+
+                    <div id="user-tab-negocio" class="user-tab-panel">
+                        <h3 class="user-demo-section-title">Negocio / Proveedor</h3>
+                        <div id="user-demo-provider"></div>
+                    </div>
+
+                    <div id="user-tab-cuenta" class="user-tab-panel">
+                        <h3 class="user-demo-section-title">Gestión de cuenta</h3>
+                        <div id="user-demo-account"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="user-select-overlay" onclick="if(event.target===this)closeUserSelectModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:860px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Seleccionar usuario</h3>
+                        <button onclick="closeUserSelectModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <div style="padding:16px 20px 0;">
+                        <input type="text" id="user-search" placeholder="Buscar por nombre o email..." oninput="filterUsers()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                    </div>
+                    <div style="padding:12px 20px 20px;overflow:auto;flex:1;">
+                        <div style="background:white;border:1px solid #e5e7eb;overflow:hidden;">
+                            <div id="users-loading" style="padding:40px;text-align:center;">
+                                <p style="font-size:13px;color:#6b7280;">Cargando usuarios...</p>
+                            </div>
+                            <div id="users-empty" style="display:none;padding:40px;text-align:center;">
+                                <p style="font-size:13px;color:#6b7280;">No se encontraron usuarios.</p>
+                            </div>
+                            <div id="users-table-wrap" style="display:none;overflow-x:auto;">
+                            <table id="users-table" style="width:100%;border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Nombre</th>
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Email</th>
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Estado</th>
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Tipo</th>
+                                        <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody"></tbody>
+                            </table>
+                            </div>
+                            <div id="users-pagination" style="display:none;justify-content:center;align-items:center;width:100%;min-height:48px;padding:8px;border-top:1px solid #e5e7eb;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <button id="users-prev-page" class="pagination-nav-btn" onclick="userPage(1)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10094;</button>
+                                    <div id="users-page-dots" style="display:flex;gap:6px;"></div>
+                                    <button id="users-next-page" class="pagination-nav-btn" onclick="userPage(2)" style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;">&#10095;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="user-modal-overlay" onclick="if(event.target===this)closeUserModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:210;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:460px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 id="user-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Usuario</h3>
+                        <button onclick="closeUserModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <form id="user-form" onsubmit="submitUser(event)" style="padding:20px;">
+                        @csrf
+                        <input type="hidden" id="user-id" value="" />
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Nombre <span style="color:#dc2626;">*</span></label>
+                            <input type="text" id="user-name" maxlength="255" placeholder="Nombre completo" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                            <p id="user-name-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Email <span style="color:#dc2626;">*</span></label>
+                            <input type="email" id="user-email" maxlength="255" placeholder="correo@ejemplo.com" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                            <p id="user-email-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Contraseña <span id="user-password-required" style="color:#dc2626;">*</span></label>
+                            <input type="password" id="user-password" minlength="8" placeholder="Mínimo 8 caracteres" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                            <p id="user-password-hint" style="font-size:11px;color:#6b7280;margin:4px 0 0;display:none;">Dejar en blanco para no cambiarla.</p>
+                            <p id="user-password-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Estado</label>
+                            <select id="user-status-id" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
+                                <option value="">-- Sin estado --</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Tipo de usuario</label>
+                            <select id="user-type-id" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
+                                <option value="">-- Sin tipo --</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;">
+                            <button type="button" onclick="closeUserModal()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                            <button type="submit" id="user-submit-btn" class="btn-orange" style="padding:8px 16px;background:#D24C19;border:1px solid #D24C19;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="user-delete-overlay" onclick="if(event.target===this)closeUserDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:220;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminaci&oacute;n</h3>
+                    </div>
+                    <div style="padding:20px;">
+                        <p style="font-size:13px;color:#374151;margin:0;">&iquest;Est&aacute;s seguro de eliminar al usuario <strong id="user-delete-name"></strong>?</p>
+                        <p id="user-delete-warning" style="font-size:11px;color:#dc2626;margin:8px 0 0;display:none;"></p>
+                    </div>
+                    <div style="padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end;">
+                        <button onclick="closeUserDelete()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                        <button id="user-delete-btn" onclick="confirmDeleteUser()" style="padding:8px 16px;background:#dc2626;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
                     @else
             <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
                 <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin-bottom:12px;">{{ $page->description }}</h2>
@@ -878,7 +1113,12 @@
         <div style="background:white;height:8px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
             <div style="text-align:center;">
-                <p style="font-size:11px;color:#d1d5db;margin:0;">Gastronomía, Hogar, Auxilio Vial y Abastos.</p>
+                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                </div>
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>
@@ -1680,6 +1920,7 @@
             if (key === 'sub-grupos') loadSubGroups();
             if (key === 'estados-usuarios') loadUserStatuses();
             if (key === 'tipo-usuarios') loadTypeUsers();
+            if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();
             if (key === 'perfil') loadProfile();
         };
@@ -2121,8 +2362,516 @@
         });
     }
 
+    var allUsers = [];
+    var deleteUserId = null;
+    var selectedUser = null;
+    var userCurrentPage = 1;
+    var userPerPage = 10;
     var allUserStatuses = [];
     var deleteUserStatusId = null;
+
+    function loadUsers() {
+        userCurrentPage = 1;
+        document.getElementById('users-loading').style.display = 'block';
+        document.getElementById('users-empty').style.display = 'none';
+        document.getElementById('users-table-wrap').style.display = 'none';
+        document.getElementById('users-pagination').style.display = 'none';
+
+        fetch('{{ url("/admin/users") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            allUsers = data;
+            allUsers._filtered = data;
+            renderUsers(data);
+            loadUserStatusOptions();
+            loadTypeUserOptions();
+            if (selectedUser) {
+                var fresh = allUsers.find(function(x) { return x.id === selectedUser.id; });
+                if (fresh) renderUserDemographic(fresh);
+                else clearUserDemographic();
+            }
+        })
+        .catch(function() {
+            document.getElementById('users-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar usuarios.</p>';
+        });
+    }
+
+    function openUserSelectModal() {
+        document.getElementById('user-select-overlay').style.display = 'flex';
+        var search = document.getElementById('user-search');
+        search.value = '';
+        if (!allUsers.length) {
+            loadUsers();
+        } else {
+            userCurrentPage = 1;
+            allUsers._filtered = allUsers;
+            renderUsers(allUsers);
+        }
+        setTimeout(function() { search.focus(); }, 50);
+    }
+
+    function closeUserSelectModal() {
+        document.getElementById('user-select-overlay').style.display = 'none';
+    }
+
+    function selectUser(id) {
+        var u = allUsers.find(function(x) { return x.id === id; });
+        if (!u) return;
+        selectedUser = u;
+        renderUserDemographic(u);
+        closeUserSelectModal();
+        fetch('{{ url("/admin/users") }}/' + id, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(fresh) {
+            if (!fresh || fresh.error) return;
+            if (!selectedUser || selectedUser.id !== fresh.id) return;
+            selectedUser = fresh;
+            var idx = allUsers.findIndex(function(x) { return x.id === fresh.id; });
+            if (idx !== -1) allUsers[idx] = fresh;
+            allUsers._filtered = allUsers;
+            renderUserDemographic(fresh);
+        })
+        .catch(function() {});
+    }
+
+    function switchUserTab(tab) {
+        document.querySelectorAll('#user-tabs .user-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-user-tab') === tab);
+        });
+        document.querySelectorAll('.user-tab-panel').forEach(function(panel) {
+            panel.classList.toggle('active', panel.id === 'user-tab-' + tab);
+        });
+    }
+
+    function formatAddressParts(addr) {
+        if (!addr) return '';
+        var parts = [
+            [addr.street, addr.number].filter(Boolean).join(' '),
+            addr.floor_apartment,
+            addr.postal_code,
+            addr.region && addr.region.name,
+            addr.province && addr.province.name,
+            addr.country && addr.country.name
+        ].filter(Boolean);
+        return parts.join(', ');
+    }
+
+    function renderUserAddresses(u) {
+        var el = document.getElementById('user-demo-addresses');
+        var list = u.addresses || [];
+        if (!list.length) {
+            el.innerHTML = '<div class="user-demo-empty-tab">Este usuario no tiene direcciones registradas.</div>';
+            return;
+        }
+        el.innerHTML = list.map(function(a, i) {
+            var text = formatAddressParts(a) || 'Sin datos';
+            var primary = a.is_primary ? '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:9999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-size:11px;font-weight:700;margin-left:8px;">Principal</span>' : '';
+            return '<div style="background:#fff;border:1px solid #e5e7eb;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;">' +
+                '<div style="width:32px;height:32px;border-radius:50%;background:#fff7ed;color:#D24C19;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>' +
+                '</div>' +
+                '<div style="min-width:0;">' +
+                '<div style="font-size:13px;font-weight:600;color:#0f172a;">' + (i + 1) + '. Dirección' + primary + '</div>' +
+                '<div style="font-size:13px;color:#64748b;margin-top:4px;">' + text + '</div>' +
+                (a.notes ? '<div style="font-size:12px;color:#94a3b8;margin-top:4px;">Nota: ' + a.notes + '</div>' : '') +
+                '</div></div>';
+        }).join('');
+    }
+
+    function renderUserProvider(u) {
+        var el = document.getElementById('user-demo-provider');
+        var p = u.provider || null;
+        if (!p) {
+            el.innerHTML = '<div class="user-demo-empty-tab">Este usuario no tiene negocio/proveedor asociado.</div>';
+            return;
+        }
+        var fields = [
+            ['Nombre comercial', p.business_name],
+            ['Descripción', p.description],
+            ['Teléfono', p.phone],
+            ['WhatsApp', p.whatsapp],
+            ['Zona', p.zone],
+            ['Categoría', p.category && (p.category.description || p.category.name)],
+            ['Activo', p.is_active ? 'Sí' : 'No'],
+            ['Rating', p.rating]
+        ].filter(function(f) { return f[1] !== null && f[1] !== undefined && f[1] !== ''; });
+        if (!fields.length) {
+            el.innerHTML = '<div class="user-demo-empty-tab">Sin datos de negocio cargados.</div>';
+            return;
+        }
+        el.innerHTML = '<div class="user-demo-grid">' + fields.map(function(f) {
+            return '<div><div class="user-demo-label">' + f[0] + '</div><div class="user-demo-value">' + f[1] + '</div></div>';
+        }).join('') + '</div>';
+    }
+
+    function renderUserAccount(u) {
+        var el = document.getElementById('user-demo-account');
+        el.innerHTML =
+            '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;">' +
+                '<button type="button" class="btn-primary" onclick="openUserModal(' + u.id + ')">Editar usuario</button>' +
+                '<button type="button" class="btn-danger" onclick="openUserDelete(' + u.id + ', ' + JSON.stringify(String(u.name || '')).replace(/"/g, '&quot;') + ')">Eliminar usuario</button>' +
+            '</div>' +
+            '<div class="user-demo-grid">' +
+                '<div><div class="user-demo-label">ID</div><div class="user-demo-value">' + u.id + '</div></div>' +
+                '<div><div class="user-demo-label">Email</div><div class="user-demo-value">' + (u.email || '-') + '</div></div>' +
+                '<div><div class="user-demo-label">Cuenta creada</div><div class="user-demo-value">' + (u.created_at ? new Date(u.created_at).toLocaleString('es-AR') : '-') + '</div></div>' +
+                '<div><div class="user-demo-label">Última actualización</div><div class="user-demo-value">' + (u.updated_at ? new Date(u.updated_at).toLocaleString('es-AR') : '-') + '</div></div>' +
+            '</div>';
+    }
+
+    function clearUserDemographic() {
+        selectedUser = null;
+        document.getElementById('user-demo-empty').style.display = 'block';
+        document.getElementById('user-demo-panel').style.display = 'none';
+        switchUserTab('demografia');
+    }
+
+    function renderUserDemographic(u) {
+        document.getElementById('user-demo-empty').style.display = 'none';
+        document.getElementById('user-demo-panel').style.display = 'block';
+        switchUserTab('demografia');
+
+        var typeObj = u.type_user || u.typeUser || null;
+        var statusObj = u.status || null;
+        var statusText = (statusObj && (statusObj.status || statusObj.description)) || 'Sin estado';
+        var typeText = (typeObj && typeObj.description) || 'Sin tipo';
+        var statusColor = /inactiv/i.test(statusText) ? '#dc2626' : (/activ/i.test(statusText) ? '#16a34a' : '#6b7280');
+        var initial = (u.name || '?').charAt(0).toUpperCase();
+
+        document.getElementById('user-demo-avatar').textContent = initial;
+        document.getElementById('user-demo-name').textContent = u.name || '';
+        document.getElementById('user-demo-email').textContent = u.email || '';
+
+        var stBadge = document.getElementById('user-demo-status');
+        stBadge.textContent = statusText;
+        stBadge.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:' + (/activ/i.test(statusText) ? '#ecfdf5;border:1px solid #a7f3d0;color:#047857;' : '#fef2f2;border:1px solid #fecaca;color:#b91c1c;') + 'font-size:12px;font-weight:600;';
+
+        var tyBadge = document.getElementById('user-demo-type');
+        tyBadge.textContent = typeText;
+
+        document.getElementById('user-demo-f-name').textContent = u.name || '-';
+        document.getElementById('user-demo-f-email').textContent = u.email || '-';
+        document.getElementById('user-demo-f-status').textContent = statusText;
+        document.getElementById('user-demo-f-type').textContent = typeText;
+        document.getElementById('user-demo-f-created').textContent = u.created_at ? new Date(u.created_at).toLocaleDateString('es-AR') : '-';
+        document.getElementById('user-demo-f-verified').textContent = u.email_verified_at ? 'Sí' : 'No';
+
+        var provider = u.provider || null;
+        document.getElementById('user-demo-f-phone').textContent = (provider && provider.phone) || '-';
+        document.getElementById('user-demo-f-whatsapp').textContent = (provider && provider.whatsapp) || '-';
+        document.getElementById('user-demo-f-business').textContent = (provider && provider.business_name) || '-';
+        document.getElementById('user-demo-f-zone').textContent = (provider && provider.zone) || '-';
+
+        var addr = u.primary_address || null;
+        var addrText = '-';
+        if (addr) {
+            var parts = [
+                [addr.street, addr.number].filter(Boolean).join(' '),
+                addr.floor_apartment,
+                addr.postal_code,
+                addr.region && addr.region.name,
+                addr.province && addr.province.name,
+                addr.country && addr.country.name
+            ].filter(Boolean);
+            addrText = parts.join(', ') || '-';
+        }
+        document.getElementById('user-demo-f-address').textContent = addrText || '-';
+
+        renderUserAddresses(u);
+        renderUserProvider(u);
+        renderUserAccount(u);
+    }
+
+    function loadUserStatusOptions() {
+        fetch('{{ url("/user-statuses") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var select = document.getElementById('user-status-id');
+            select.innerHTML = '<option value="">-- Sin estado --</option>';
+            data.forEach(function(s) {
+                var opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.status;
+                select.appendChild(opt);
+            });
+        })
+        .catch(function() {});
+    }
+
+    function loadTypeUserOptions() {
+        fetch('{{ url("/type-users") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var select = document.getElementById('user-type-id');
+            select.innerHTML = '<option value="">-- Sin tipo --</option>';
+            data.forEach(function(t) {
+                var opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.description;
+                select.appendChild(opt);
+            });
+        })
+        .catch(function() {});
+    }
+
+    function renderUsers(users) {
+        var tbody = document.getElementById('users-tbody');
+        var loading = document.getElementById('users-loading');
+        var empty = document.getElementById('users-empty');
+        var tableWrap = document.getElementById('users-table-wrap');
+        var pagination = document.getElementById('users-pagination');
+
+        loading.style.display = 'none';
+        tbody.innerHTML = '';
+
+        if (users.length === 0) {
+            empty.style.display = 'block';
+            tableWrap.style.display = 'none';
+            pagination.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tableWrap.style.display = 'block';
+
+        var totalPages = Math.ceil(users.length / userPerPage);
+        if (userCurrentPage > totalPages) userCurrentPage = totalPages;
+        if (userCurrentPage < 1) userCurrentPage = 1;
+
+        var start = (userCurrentPage - 1) * userPerPage;
+        var end = start + userPerPage;
+        var pageItems = users.slice(start, end);
+
+        pageItems.forEach(function(u) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-id', u.id);
+            tr.style.borderBottom = '1px solid #f3f4f6';
+            var statusText = (u.status && (u.status.status || u.status.description)) || 'Sin estado';
+            var typeObj = u.type_user || u.typeUser || null;
+            var typeText = (typeObj && (typeObj.description || typeObj.status)) || 'Sin tipo';
+            var statusColor = /inactiv/i.test(statusText) ? '#dc2626' : (/activ/i.test(statusText) ? '#16a34a' : '#6b7280');
+            tr.innerHTML =
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(u.name) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(u.email) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;font-weight:600;color:' + statusColor + ';">' + escapeHtml(statusText) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(typeText) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;">' +
+                    '<button onclick="selectUser(' + u.id + ')" title="Seleccionar" style="background:#D24C19;border:1px solid #D24C19;border-radius:4px;padding:4px 10px;cursor:pointer;color:#fff;font-size:12px;font-weight:600;transition:all 0.2s;">Seleccionar</button>' +
+                '</td>';
+            tbody.appendChild(tr);
+        });
+
+        if (totalPages <= 1) { pagination.style.display = 'none'; return; }
+        pagination.style.display = 'flex';
+
+        var dots = document.getElementById('users-page-dots');
+        dots.innerHTML = '';
+        for (var p = 1; p <= totalPages; p++) {
+            var d = document.createElement('span');
+            d.textContent = p;
+            d.style.cssText = 'padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;' + (p === userCurrentPage ? 'color:#D24C19;' : 'color:#9ca3af;');
+            d.onmouseenter = function () { if (parseInt(this.textContent) !== userCurrentPage) this.style.color = '#374151'; };
+            d.onmouseleave = function () { if (parseInt(this.textContent) !== userCurrentPage) this.style.color = '#9ca3af'; };
+            d.onclick = function () { userCurrentPage = parseInt(this.textContent); renderUsers(allUsers._filtered || allUsers); };
+            dots.appendChild(d);
+        }
+        document.getElementById('users-prev-page').style.opacity = userCurrentPage === 1 ? '0.4' : '1';
+        document.getElementById('users-prev-page').style.pointerEvents = userCurrentPage === 1 ? 'none' : 'auto';
+        document.getElementById('users-next-page').style.opacity = userCurrentPage === totalPages ? '0.4' : '1';
+        document.getElementById('users-next-page').style.pointerEvents = userCurrentPage === totalPages ? 'none' : 'auto';
+    }
+
+    function userPage(dir) {
+        var data = allUsers._filtered || allUsers;
+        var totalPages = Math.ceil(data.length / userPerPage);
+        if (dir === 1 && userCurrentPage > 1) { userCurrentPage--; renderUsers(data); }
+        if (dir === 2 && userCurrentPage < totalPages) { userCurrentPage++; renderUsers(data); }
+    }
+
+    function filterUsers() {
+        userCurrentPage = 1;
+        var q = document.getElementById('user-search').value.toLowerCase();
+        var filtered = allUsers.filter(function(u) {
+            return u.name.toLowerCase().indexOf(q) !== -1 || u.email.toLowerCase().indexOf(q) !== -1;
+        });
+        allUsers._filtered = filtered;
+        renderUsers(filtered);
+    }
+
+    function openUserModal(id) {
+        var u = id ? allUsers.find(function(x) { return x.id === id; }) : null;
+        document.getElementById('user-id').value = u ? u.id : '';
+        document.getElementById('user-name').value = u ? u.name : '';
+        document.getElementById('user-email').value = u ? u.email : '';
+        document.getElementById('user-password').value = '';
+        document.getElementById('user-name-error').style.display = 'none';
+        document.getElementById('user-email-error').style.display = 'none';
+        document.getElementById('user-password-error').style.display = 'none';
+        document.getElementById('user-password-required').style.display = u ? 'none' : 'inline';
+        document.getElementById('user-password-hint').style.display = u ? 'block' : 'none';
+        document.getElementById('user-modal-title').textContent = u ? 'Editar Usuario' : 'Nuevo Usuario';
+        document.getElementById('user-submit-btn').textContent = u ? 'Actualizar' : 'Guardar';
+        setTimeout(function() {
+            document.getElementById('user-status-id').value = u ? (u.user_status_id || '') : '';
+            document.getElementById('user-type-id').value = u ? (u.type_user_id || '') : '';
+        }, 50);
+        document.getElementById('user-modal-overlay').style.display = 'flex';
+        document.getElementById('user-name').focus();
+    }
+
+    function closeUserModal() {
+        document.getElementById('user-modal-overlay').style.display = 'none';
+    }
+
+    function editUser(id) {
+        openUserModal(id);
+    }
+
+    function submitUser(e) {
+        e.preventDefault();
+        var id = document.getElementById('user-id').value;
+        var name = document.getElementById('user-name').value.trim();
+        var email = document.getElementById('user-email').value.trim();
+        var password = document.getElementById('user-password').value;
+        var statusId = document.getElementById('user-status-id').value;
+        var typeId = document.getElementById('user-type-id').value;
+        var nameErr = document.getElementById('user-name-error');
+        var emailErr = document.getElementById('user-email-error');
+        var passErr = document.getElementById('user-password-error');
+        var submitBtn = document.getElementById('user-submit-btn');
+
+        nameErr.style.display = 'none';
+        emailErr.style.display = 'none';
+        passErr.style.display = 'none';
+
+        if (!name) {
+            nameErr.textContent = 'El nombre es obligatorio.';
+            nameErr.style.display = 'block';
+            return;
+        }
+        if (!email) {
+            emailErr.textContent = 'El email es obligatorio.';
+            emailErr.style.display = 'block';
+            return;
+        }
+        if (!id && password.length < 8) {
+            passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+            passErr.style.display = 'block';
+            return;
+        }
+        if (id && password && password.length < 8) {
+            passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+            passErr.style.display = 'block';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = id ? 'Actualizando...' : 'Guardando...';
+
+        var body = {
+            name: name,
+            email: email,
+            user_status_id: statusId || null,
+            type_user_id: typeId || null
+        };
+        if (password) body.password = password;
+
+        var url = id ? '{{ url("/admin/users") }}/' + id : '{{ url("/admin/users") }}';
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+
+            if (data.errors) {
+                if (data.errors.name) { nameErr.textContent = data.errors.name[0]; nameErr.style.display = 'block'; }
+                if (data.errors.email) { emailErr.textContent = data.errors.email[0]; emailErr.style.display = 'block'; }
+                if (data.errors.password) { passErr.textContent = data.errors.password[0]; passErr.style.display = 'block'; }
+                return;
+            }
+
+            if (data.success) {
+                closeUserModal();
+                loadUsers();
+            } else {
+                nameErr.textContent = data.message || 'Error al guardar.';
+                nameErr.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+            nameErr.textContent = 'Error de conexión.';
+            nameErr.style.display = 'block';
+        });
+    }
+
+    function openUserDelete(id, name) {
+        deleteUserId = id;
+        document.getElementById('user-delete-name').textContent = name;
+        document.getElementById('user-delete-warning').style.display = 'none';
+        document.getElementById('user-delete-overlay').style.display = 'flex';
+    }
+
+    function closeUserDelete() {
+        document.getElementById('user-delete-overlay').style.display = 'none';
+        deleteUserId = null;
+    }
+
+    function confirmDeleteUser() {
+        if (!deleteUserId) return;
+        var btn = document.getElementById('user-delete-btn');
+        var deletingId = deleteUserId;
+        btn.disabled = true;
+        btn.textContent = 'Eliminando...';
+
+        fetch('{{ url("/admin/users") }}/' + deleteUserId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            if (data.success) {
+                closeUserDelete();
+                if (selectedUser && selectedUser.id === deletingId) clearUserDemographic();
+                loadUsers();
+            } else {
+                var warn = document.getElementById('user-delete-warning');
+                warn.textContent = data.message || 'No se pudo eliminar.';
+                warn.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            var warn = document.getElementById('user-delete-warning');
+            warn.textContent = 'Error de conexión.';
+            warn.style.display = 'block';
+        });
+    }
 
     function loadUserStatuses() {
         document.getElementById('userstatuses-loading').style.display = 'block';
