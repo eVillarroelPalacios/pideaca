@@ -293,9 +293,6 @@
 
                                 <!-- COLUMNA DERECHA: Redacci&#243;n Institucional -->
                                 <div class="qs-text-col">
-                                    <span class="qs-badge">El Ecosistema Local</span>
-                                    <h2>Sobre <span class="qs-brand">pideaca.com</span></h2>
-
                                     <p class="qs-lead">
                                         <strong>pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos una aplicaci&#243;n web multiservicio que integra en un &#250;nico lugar todo lo que un hogar o conductor necesita para resolver compras, urgencias o agendas diarias de forma &#225;gil y segura.
                                     </p>
