@@ -343,9 +343,9 @@
         {{-- LOGIN MODAL --}}
         <div id="login-overlay" class="login-overlay" style="display:none;">
             <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative;">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
-                    <img src="{{ asset('images/logo.png') }}" alt="PideAca" style="height:36px;object-fit:contain;" />
-                    <button onclick="closeLogin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:rgba(255,255,255,0.7);line-height:1;">&times;</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#ffffff;border-bottom:1px solid #e5e7eb;">
+                    <img src="{{ asset('images/logo.png') }}" alt="PideAca" style="height:44px;width:auto;max-width:150px;object-fit:contain;display:block;" />
+                    <button onclick="closeLogin()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;line-height:1;font-weight:600;">&times;</button>
                 </div>
                 <form id="login-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
                     <div>
@@ -371,7 +371,7 @@
                     </div>
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         <button type="submit" id="login-submit" class="header-btn" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
-                        <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#1d4ed8;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
+                        <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#D24C19;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
                     </div>
                 </form>
             </div>

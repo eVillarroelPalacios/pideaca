@@ -2383,12 +2383,13 @@
         .then(function(user) {
             profileData = user;
             profileProvider = user.provider || null;
-            profileIsPrestador = user.type_user && user.type_user.description === 'Prestador';
+            var typeObj = user.type_user || user.typeUser || null;
+            profileIsPrestador = typeObj && typeObj.description === 'Prestador';
 
             document.getElementById('profile-name').value = user.name || '';
             document.getElementById('profile-email').value = user.email || '';
             setProfileStatusBadge(user);
-            document.getElementById('profile-type').textContent = user.type_user ? user.type_user.description : '-';
+            document.getElementById('profile-type').textContent = typeObj ? typeObj.description : '-';
 
             document.getElementById('sidebar-link-negocio').style.display = profileIsPrestador ? '' : 'none';
             document.getElementById('sidebar-link-horarios').style.display = profileIsPrestador ? '' : 'none';
@@ -2419,11 +2420,13 @@
 
     function setProfileStatusBadge(user) {
         var el = document.getElementById('profile-status');
-        var st = user.user_status ? user.user_status.status : '-';
+        var stObj = user.status || user.user_status || null;
+        var st = stObj ? (stObj.status || stObj.description || '-') : '-';
         el.textContent = st;
-        if (st === 'Active') {
+        var stLower = String(st).toLowerCase();
+        if (stLower === 'active' || stLower === 'activo' || stLower === 'activa') {
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-size:12px;font-weight:600;';
-        } else if (st === 'Inactive') {
+        } else if (stLower === 'inactive' || stLower === 'inactivo' || stLower === 'inactiva') {
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:12px;font-weight:600;';
         } else {
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#eef2f7;border:1px solid #e2e8f0;color:#334155;font-size:12px;font-weight:600;';
