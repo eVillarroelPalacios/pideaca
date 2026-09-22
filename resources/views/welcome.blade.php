@@ -17,7 +17,7 @@
     <body style="margin:0;padding:0;background:#ffffff;min-height:100vh;display:flex;flex-direction:column;">
 
         <div style="background:#D24C19;height:2px;"></div>
-        <div style="background:#f3f4f6;padding:10px 0;">
+        <div id="top-social-bar" style="background:#f3f4f6;padding:10px 0;display:block;">
             <div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:14px;">
                     <a href="#" title="Facebook" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#1877F2'" onmouseout="this.style.color='#6b7280'">
@@ -53,7 +53,7 @@
 
                 <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
                     <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                    <a href="#" onclick="showSection('quienes-somos')" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                    <a href="#" onclick="showSection('quienes-somos');return false;" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;display:flex;align-items:center;gap:6px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
                         Quienes Somos
                     </a>
@@ -68,14 +68,14 @@
                         Contactos
                     </a>
                     <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
-                    <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
+                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
+                    <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
                     <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
                 </div>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                 <div style="display:flex;justify-content:center;align-items:center;gap:32px;">
-                    <a href="#" onclick="showSection('quienes-somos')" style="color:#1f2937;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:6px;" title="Quienes Somos">
+                    <a href="#" onclick="showSection('quienes-somos');return false;" style="color:#1f2937;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:6px;" title="Quienes Somos">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
                     </a>
                     <a href="#" onclick="showSection('servicios')" style="color:#1f2937;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:6px;" title="Servicios">
@@ -91,30 +91,30 @@
         {{-- SECTION --}}
         <main style="flex:1;">
             {{-- CAROUSEL --}}
-            <section style="padding:0;">
-                <div style="width:CAROUSEL100%;">
+            <section id="hero-carousel" style="padding:0;">
+                <div style="width:100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
                         <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;overflow:hidden;background:white;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;overflow:hidden;background:white;">
                                 <video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;">
                                     <source src="{{ asset('images/videos/video1.mp4') }}" type="video/mp4">
                                 </video>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
                                     <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
                                 </div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:150px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
                                 <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
                                     <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
                                     <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
@@ -126,25 +126,28 @@
                         <button class="carousel-nav-btn" onclick="moveCarousel(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10095;</button>
                     </div>
                 </div>
+            </section>
 
                 <section style="background:#f5f7fa;padding:0;">
                     <div id="section-inicio" class="page-section" style="display:block;max-width:100%;margin:0;background:white;border-radius:0;padding:0;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
 
-                        <div id="adFilterBar" style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #e5e7eb;margin:0;padding:0 28px;overflow-x:auto;background:#f3f4f6;">
+                        <div id="adFilterBar" style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #e5e7eb;margin:0;padding:0 28px;overflow:visible;background:#f3f4f6;">
                             <span class="ad-filter-tab active" onclick="adSetCategory('Todos')" data-cat="Todos" title="Todos">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                             </span>
                             @php
                                 $groupIcons = [
                                     'Comercio & Gastronomía' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                                    'Servicios del Hogar & Bienestar' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>',
+                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>',
                                     'Auxilio Vial & Mecánica' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>',
                                     'Abastos Recurrentes' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
                                 ];
                             @endphp
                             @foreach($allGroups as $grp)
+                            <div style="width:1px;height:20px;background:#d1d5db;flex-shrink:0;"></div>
                             <span class="ad-filter-tab" onclick="adSetCategory('{{ mb_strtoupper($grp->description) }}')" data-cat="{{ mb_strtoupper($grp->description) }}" title="{{ $grp->description }}">
-                                {!! $groupIcons[$grp->description] ?? '' !!}
+                                {!! ($grp->icon ?: ($groupIcons[$grp->description] ?? '')) !!}
                             </span>
                             @endforeach
                             <div style="width:1px;height:20px;background:#d1d5db;flex-shrink:0;"></div>
@@ -222,79 +225,16 @@
                                 <!-- COLUMNA IZQUIERDA: Ilustraci&#243;n Visual Vectorial -->
                                 <div class="qs-image-col">
                                     <div class="illustration-wrapper">
-                                        <svg viewBox="0 0 500 550" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                                            <defs>
-                                                <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" stop-color="#f8fafc"/>
-                                                    <stop offset="100%" stop-color="#edf2f7"/>
-                                                </linearGradient>
-                                                <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" stop-color="#0b2545"/>
-                                                    <stop offset="100%" stop-color="#1e3a8a"/>
-                                                </linearGradient>
-                                                <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" stop-color="#e65100"/>
-                                                    <stop offset="100%" stop-color="#ff9800"/>
-                                                </linearGradient>
-                                                <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
-                                                    <feDropShadow dx="0" dy="8" stdDeviation="6" flood-opacity="0.08"/>
-                                                </filter>
-                                            </defs>
-
-                                            <rect width="500" height="550" rx="24" fill="url(#bgGradient)"/>
-
-                                            <g filter="url(#softShadow)">
-                                                <circle cx="250" cy="240" r="130" fill="#ffffff"/>
-                                                <path d="M250,130 C195,130 150,175 150,230 C150,300 250,390 250,390 C250,390 350,300 350,230 C350,175 305,130 250,130 Z" fill="url(#accentGrad)"/>
-                                                <circle cx="250" cy="220" r="40" fill="#ffffff"/>
-                                            </g>
-
-                                            <g filter="url(#softShadow)" class="floating-item">
-                                                <rect x="35" y="80" width="150" height="65" rx="12" fill="#ffffff"/>
-                                                <circle cx="65" cy="112" r="18" fill="#fff3e0"/>
-                                                <path d="M65 100 L77 120 H53 Z" fill="#e65100"/>
-                                                <text x="95" y="110" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Gastronom&#237;a</text>
-                                                <text x="95" y="125" font-family="sans-serif" font-size="10" fill="#64748b">Fast Delivery</text>
-                                            </g>
-
-                                            <g filter="url(#softShadow)" class="floating-item-delay">
-                                                <rect x="315" y="90" width="150" height="65" rx="12" fill="#ffffff"/>
-                                                <circle cx="345" cy="122" r="18" fill="#e0f2fe"/>
-                                                <path d="M340 115 L350 125 M348 115 L340 125" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
-                                                <text x="375" y="120" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Servicios Hogar</text>
-                                                <text x="375" y="135" font-family="sans-serif" font-size="10" fill="#64748b">T&#233;cnicos 24/7</text>
-                                            </g>
-
-                                            <g filter="url(#softShadow)" class="floating-item">
-                                                <rect x="35" y="380" width="150" height="65" rx="12" fill="#ffffff"/>
-                                                <circle cx="65" cy="412" r="18" fill="#fce7f3"/>
-                                                <circle cx="65" cy="412" r="8" stroke="#db2777" stroke-width="3" fill="none"/>
-                                                <text x="95" y="410" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Auxilio Vial</text>
-                                                <text x="95" y="425" font-family="sans-serif" font-size="10" fill="#64748b">GPS en Vivo</text>
-                                            </g>
-
-                                            <g filter="url(#softShadow)" class="floating-item-delay">
-                                                <rect x="315" y="370" width="150" height="65" rx="12" fill="#ffffff"/>
-                                                <circle cx="345" cy="402" r="18" fill="#dcfce7"/>
-                                                <rect x="340" y="394" width="10" height="16" rx="2" fill="#16a34a"/>
-                                                <text x="375" y="400" font-family="sans-serif" font-weight="bold" font-size="12" fill="#0b2545">Abastos Agua/Gas</text>
-                                                <text x="375" y="415" font-family="sans-serif" font-size="10" fill="#64748b">Programables</text>
-                                            </g>
-
-                                            <g filter="url(#softShadow)">
-                                                <rect x="125" y="475" width="250" height="50" rx="25" fill="url(#primaryGrad)"/>
-                                                <circle cx="155" cy="500" r="14" fill="#ffffff"/>
-                                                <path d="M150 500 L154 504 L162 496" stroke="#e65100" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                                <text x="180" y="505" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="13">Ecosistema Win-Win Garantizado</text>
-                                            </g>
-                                        </svg>
+                                        <video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;">
+                                            <source src="{{ asset('images/videos/quienes-somos.mp4') }}" type="video/mp4">
+                                        </video>
                                     </div>
                                 </div>
 
                                 <!-- COLUMNA DERECHA: Redacci&#243;n Institucional -->
                                 <div class="qs-text-col">
                                     <p class="qs-lead">
-                                        <strong>pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos una aplicaci&#243;n web multiservicio que integra en un &#250;nico lugar todo lo que un hogar o conductor necesita para resolver compras, urgencias o agendas diarias de forma &#225;gil y segura.
+                                        <strong>Pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos una aplicaci&#243;n web multiservicio que integra en un &#250;nico lugar todo lo que un hogar o conductor necesita para resolver compras, urgencias o agendas diarias de forma &#225;gil y segura.
                                     </p>
 
                                     <div class="qs-section-block">
@@ -327,28 +267,28 @@
                                         <h3>Estructura de Servicios</h3>
                                         <div class="qs-modules-grid">
                                             <div class="module-item">
-                                                <span class="mod-icon">&#127869;</span>
+                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
                                                 <div>
                                                     <strong>Comercio &amp; Gastronom&#237;a</strong>
                                                     <p>Pizzer&#237;as, rotiser&#237;as y tiendas con carrito interactivo.</p>
                                                 </div>
                                             </div>
                                             <div class="module-item">
-                                                <span class="mod-icon">&#128295;</span>
+                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg></span>
                                                 <div>
                                                     <strong>Servicios del Hogar &amp; Bienestar</strong>
                                                     <p>Plomeros, electricistas, t&#233;cnicos 24/7 y belleza a domicilio.</p>
                                                 </div>
                                             </div>
                                             <div class="module-item">
-                                                <span class="mod-icon">&#128680;</span>
+                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
                                                 <div>
                                                     <strong>Auxilio Vial &amp; Mec&#225;nica</strong>
                                                     <p>Gr&#250;as y auxilio inmediato por GPS en tiempo real.</p>
                                                 </div>
                                             </div>
                                             <div class="module-item">
-                                                <span class="mod-icon">&#128167;</span>
+                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
                                                 <div>
                                                     <strong>Abastos Recurrentes</strong>
                                                     <p>Suscripci&#243;n de agua, garrafas de gas y hielo.</p>
@@ -385,7 +325,6 @@
                         <p style="font-size:14px;color:#374151;margin:4px 0;"><strong>Horario de atención:</strong> Lunes a domingo, 24 horas.</p>
                     </div>
                 </section>
-            </section>
 
         </main>
         <div style="background:white;height:8px;"></div>
@@ -393,7 +332,7 @@
             <div style="text-align:center;">
                 <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                 </div>
@@ -457,17 +396,28 @@
         --qs-muted: #64748b;
         --qs-bg-light: #f8fafc;
     }
+    #section-quienes-somos,
+    #section-inicio,
+    #section-servicios,
+    #section-contactos {
+        scroll-margin-top: 70px;
+    }
+    #top-social-bar {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
     .quienes-somos-section {
-        padding: 60px 20px;
+        padding: 2rem 20px;
         background-color: #ffffff;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         color: var(--qs-text);
     }
     .qs-container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 0.85fr 1.15fr;
+        grid-template-columns: 1.15fr 0.85fr;
         gap: 50px;
         align-items: start;
     }
@@ -478,7 +428,8 @@
     }
     .illustration-wrapper {
         width: 100%;
-        border-radius: 20px;
+        height: 560px;
+        border-radius: 0;
         overflow: hidden;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
     }
@@ -510,8 +461,10 @@
         font-size: 1.05rem;
         line-height: 1.6;
         margin-bottom: 30px;
+        text-align: justify;
     }
     .qs-section-block { margin-bottom: 30px; }
+    .qs-section-block p { text-align: justify; }
     .qs-section-block h3 {
         font-size: 1.3rem;
         color: var(--qs-primary);
@@ -528,7 +481,7 @@
     .winwin-card {
         background-color: var(--qs-bg-light);
         padding: 15px;
-        border-radius: 12px;
+        border-radius: 0;
         border: 1px solid #e2e8f0;
     }
     .winwin-card h4 {
@@ -554,11 +507,11 @@
         gap: 12px;
         background: #ffffff;
         padding: 12px;
-        border-radius: 10px;
+        border-radius: 0;
         border: 1px solid #f1f5f9;
         box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
-    .mod-icon { font-size: 1.5rem; }
+    .mod-icon { color: var(--qs-accent); display: flex; align-items: center; flex-shrink: 0; }
     .module-item strong {
         display: block;
         font-size: 0.9rem;
@@ -573,11 +526,13 @@
         font-size: 0.9rem;
         color: var(--qs-muted);
         line-height: 1.5;
+        text-align: justify;
     }
     @media (max-width: 900px) {
         .qs-container { grid-template-columns: 1fr; }
         .qs-winwin-grid, .qs-modules-grid { grid-template-columns: 1fr; }
         .qs-image-col { position: relative; top: 0; }
+        .illustration-wrapper { height: 240px; }
     }
     
     .header-btn:hover, .cta-btn:hover {
@@ -779,39 +734,39 @@
     .fb-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #374151; }
     .fb-meta-row svg { flex-shrink: 0; color: #0f172a; }
     .ad-hidden { display: none !important; }
-    .ad-filter-tab { display: inline-flex; align-items: center; gap: 6px; padding: 12px 16px; font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; white-space: nowrap; user-select: none; margin-bottom: -2px; letter-spacing: 0.02em; position: relative; }
+    .ad-filter-tab { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; white-space: nowrap; user-select: none; margin-bottom: -2px; letter-spacing: 0.02em; position: relative; }
     .ad-filter-tab svg { flex-shrink: 0; }
     .ad-filter-tab:hover { color: #374151; background: #9ca3af; }
     .ad-filter-tab.active { color: #D24C19; border-bottom-color: #D24C19; }
     .ad-filter-tab:hover { z-index: 10; }
 
-    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #d1d5db; transition: border-color 0.15s ease; height: 28px; }
+    .ad-search-inner { display: flex; align-items: center; background: #fff; border-radius: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #d1d5db; transition: border-color 0.15s ease; height: 24px; }
     .ad-search-inner:focus-within { border-color: #D24C19; }
-    #adSearchInput { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 4px 10px; font-size: 12px; color: #111827; font-family: inherit; border-radius: 0; }
+    #adSearchInput { flex: 1; min-width: 0; height: 100%; border: none; outline: none; background: transparent; padding: 0 8px; font-size: 11px; color: #111827; font-family: inherit; border-radius: 0; }
     #adSearchInput::placeholder { color: #9ca3af; }
     #adClearBtn { display: none; align-items: center; justify-content: center; background: none; border: none; padding: 0 4px; color: #6b7280; cursor: pointer; line-height: 1; font-size: 14px; }
     #adClearBtn:hover { color: #111827; }
-    #adSubmitBtn { width: 32px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: none; border-left: 1px solid #d1d5db; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease; padding: 0 0 0 4px; }
-    #adSubmitBtn:hover { background: #fff; color: #D24C19; border-left: 1px solid #D24C19; }
-    .ad-search-wrap { flex: 0 0 auto; min-width: 260px; position: relative; z-index: 1; }
+    #adSubmitBtn { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #D24C19; color: white; border: 1px solid #d1d5db; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease; padding: 0; align-self: stretch; }
+    #adSubmitBtn:hover { background: #fff; color: #D24C19; border-color: #D24C19; }
+    .ad-search-wrap { flex: 0 0 auto; min-width: 260px; position: relative; z-index: 30; align-self: center; }
 
-    .ad-suggest-box { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 40; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; max-height: 420px; overflow: auto; display: none; padding: 8px; box-sizing: border-box; }
+    .ad-suggest-box { position: absolute; top: 100%; left: 0; right: 0; z-index: 40; background: #fff; border-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.18); border: 1px solid #e5e7eb; border-top: none; max-height: 420px; overflow-y: auto; overflow-x: hidden; display: none; padding: 8px; box-sizing: border-box; }
     .sug-sec { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b7280; padding: 8px 10px 4px; }
-    .sug-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: #1f2937; }
+    .sug-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 0; cursor: pointer; font-size: 13px; color: #1f2937; }
     .sug-row svg { flex-shrink: 0; color: #6b7280; }
     .sug-row:hover { background: #f3f4f6; }
     .sug-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .sug-count { font-size: 11px; color: #9ca3af; flex-shrink: 0; }
-    .sug-badge { flex-shrink: 0; font-size: 9px; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.03em; }
+    .sug-badge { flex-shrink: 1; min-width: 0; font-size: 9px; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 0; letter-spacing: 0.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .sug-empty { padding: 18px; text-align: center; font-size: 12px; color: #6b7280; }
 
     @media (max-width: 768px) {
         .nav-container { flex-wrap: nowrap !important; }
         .logo-img { width: 100px !important; height: 40px !important; }
         .ad-search-wrap { flex: 0 0 auto; min-width: 80px; max-width: none; }
-        .ad-search-inner { height: 26px; }
-        #adSearchInput { padding: 3px 6px; font-size: 11px; }
-        #adSubmitBtn { width: 28px; height: 22px; }
+        .ad-search-inner { height: 24px; }
+        #adSearchInput { padding: 2px 6px; font-size: 10px; }
+        #adSubmitBtn { width: 28px; }
         .nav-link { font-size: 0 !important; padding: 4px 6px !important; gap: 0 !important; }
         .nav-link svg { margin: 0 !important; }
         .nav-separator { display: none !important; }
@@ -831,7 +786,7 @@
         #menu-toggle { display: block !important; }
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
-        .carousel-slide { height: 100px !important; }
+        .carousel-slide { height: 140px !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
@@ -839,12 +794,12 @@
             padding: 4px 12px !important; 
         }
         #adFilterBar { padding: 0 8px !important; gap: 2px !important; flex-wrap: nowrap !important; overflow: hidden !important; }
-        .ad-filter-tab { font-size: 0 !important; padding: 8px 6px !important; gap: 0 !important; }
+        .ad-filter-tab { font-size: 0 !important; padding: 3px 6px !important; gap: 0 !important; }
         .ad-filter-tab svg { width: 16px !important; height: 16px !important; }
         .ad-search-wrap { min-width: 0 !important; flex: 0 1 160px !important; }
-        .ad-search-inner { height: 26px; }
-        #adSearchInput { padding: 3px 6px; font-size: 11px; }
-        #adSubmitBtn { width: 26px; height: 22px; }
+        .ad-search-inner { height: 24px; }
+        #adSearchInput { padding: 2px 6px; font-size: 10px; }
+        #adSubmitBtn { width: 26px; }
         #adResultCount-wrap { font-size: 9px !important; white-space: nowrap !important; padding: 8px 0 !important; }
         .ad-banner { height: 120px !important; }
         .ad-title { height: 26px !important; font-size: 11px !important; }
@@ -899,10 +854,21 @@
             const el = document.getElementById('section-' + k);
             if (el) el.style.display = (k === key) ? 'block' : 'none';
         });
-        const target = document.getElementById('section-' + key);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const carousel = document.getElementById('hero-carousel');
+        if (carousel) carousel.style.display = (key === 'inicio') ? 'block' : 'none';
         const menu = document.getElementById('mobile-menu');
         if (menu) menu.style.display = 'none';
+        const suggest = document.getElementById('adSuggestBox');
+        if (suggest) suggest.style.display = 'none';
+        if (history.replaceState) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        window.scrollTo(0, 0);
+        requestAnimationFrame(function () {
+            window.scrollTo(0, 0);
+        });
     }
 
     let adCurrentPage = 1;
