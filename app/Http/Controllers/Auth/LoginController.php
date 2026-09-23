@@ -19,9 +19,12 @@ class LoginController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        $user = User::where('email', $credentials['email'])->first();
+        $users = User::where('email', $credentials['email'])->get();
+        $user = $users->first(function ($candidate) use ($credentials) {
+            return Hash::check($credentials['password'], $candidate->password);
+        });
 
-        if ($user && Hash::check($credentials['password'], $user->password)) {
+        if ($user) {
             Auth::login($user);
             $request->session()->regenerate();
             return response()->json([

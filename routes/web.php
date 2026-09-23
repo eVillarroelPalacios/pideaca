@@ -35,12 +35,23 @@ Route::get('/type-users', [TypeUserController::class, 'index'])->name('type-user
 Route::post('/type-users', [TypeUserController::class, 'store'])->name('type-users.store');
 Route::put('/type-users/{typeUser}', [TypeUserController::class, 'update'])->name('type-users.update');
 Route::delete('/type-users/{typeUser}', [TypeUserController::class, 'destroy'])->name('type-users.destroy');
+Route::get('/type-users/pages-data', [TypeUserController::class, 'pagesData'])->name('type-users.pages-data');
+Route::put('/type-users/{typeUser}/pages', [TypeUserController::class, 'updatePages'])->name('type-users.pages.update');
+Route::post('/type-users/{typeUser}/pages/bulk', [TypeUserController::class, 'bulkPages'])->name('type-users.pages.bulk');
+Route::post('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'attachPage'])->name('type-users.pages.attach');
+Route::delete('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'detachPage'])->name('type-users.pages.detach');
 
 Route::get('/admin/users', [UsuarioController::class, 'index'])->name('admin.users.index');
 Route::get('/admin/users/{user}', [UsuarioController::class, 'show'])->name('admin.users.show');
 Route::post('/admin/users', [UsuarioController::class, 'store'])->name('admin.users.store');
 Route::put('/admin/users/{user}', [UsuarioController::class, 'update'])->name('admin.users.update');
 Route::delete('/admin/users/{user}', [UsuarioController::class, 'destroy'])->name('admin.users.destroy');
+Route::put('/admin/users/{user}/provider', [UsuarioController::class, 'updateProvider'])->name('admin.users.provider.update');
+Route::post('/admin/users/{user}/addresses', [UsuarioController::class, 'storeAddress'])->name('admin.users.addresses.store');
+Route::put('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'updateAddress'])->name('admin.users.addresses.update');
+Route::delete('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'destroyAddress'])->name('admin.users.addresses.destroy');
+Route::post('/admin/users/{user}/images', [UsuarioController::class, 'storeImage'])->name('admin.users.images.store');
+Route::delete('/admin/users/{user}/images/{image}', [UsuarioController::class, 'destroyImage'])->name('admin.users.images.destroy');
 
 Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
 Route::post('/pages', [PageController::class, 'store'])->name('pages.store');

@@ -132,21 +132,31 @@
                     .img-type-badge{position:absolute;bottom:6px;left:6px;background:rgba(15,23,42,0.85);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:0;padding:3px 7px;}
                     .img-star{position:absolute;top:6px;left:6px;color:#fbbf24;font-size:14px;}
                     .status-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#eef2f7;color:#334155;font-size:12px;font-weight:600;}
-                    .user-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f8fafc;padding:0 8px;overflow-x:auto;}
-                    .user-tab{position:relative;display:inline-flex;align-items:center;gap:8px;padding:14px 18px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:color .15s,background .15s;}
-                    .user-tab:hover{color:#0f172a;background:rgba(255,255,255,0.7);}
-                    .user-tab.active{color:#D24C19;background:#fff;}
-                    .user-tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;background:#D24C19;border-radius:3px 3px 0 0;}
-                    .user-tab svg{flex-shrink:0;opacity:.85;}
-                    .user-tab.active svg{opacity:1;}
-                    .user-tab-panel{display:none;padding:20px 24px;}
-                    .user-tab-panel.active{display:block;animation:tabFade .18s ease;}
+                    #user-sidebar{width:230px;min-width:230px;background:#ffffff;color:#1e293b;display:flex;flex-direction:column;border-right:1px solid #e5e7eb;align-self:stretch;}
+                    #user-content{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;}
+                    .user-panel{display:none;padding:20px 24px;}
+                    .user-panel.active{display:block;animation:tabFade .18s ease;}
+                    #user-sidebar-toggle{display:none;}
                     @keyframes tabFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
                     .user-demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
                     .user-demo-label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
                     .user-demo-value{font-size:13px;color:#0f172a;font-weight:500;}
                     .user-demo-section-title{font-size:13px;font-weight:700;color:#0f172a;margin:0 0 14px;text-transform:uppercase;letter-spacing:.4px;}
                     .user-demo-empty-tab{padding:36px 16px;text-align:center;color:#64748b;font-size:13px;background:#f8fafc;border:1px dashed #e2e8f0;}
+                    .user-account-tabs{display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-top:22px;}
+                    .user-account-tab{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;}
+                    .user-account-tab:hover{color:#0f172a;background:#f8fafc;}
+                    .user-account-tab.active{color:#D24C19;border-bottom-color:#D24C19;background:linear-gradient(180deg,rgba(210,76,25,.06),transparent);}
+                    .user-account-tab .tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:9999px;background:#e2e8f0;color:#475569;font-size:11px;font-weight:700;}
+                    .user-account-tab.active .tab-count{background:#D24C19;color:#fff;}
+                    .user-account-pane{padding-top:18px;animation:tabFade .2s ease;}
+                    .user-pages-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+                    .user-page-card{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;transition:border-color .15s ease,box-shadow .15s ease;}
+                    .user-page-card:hover{border-color:#fdba74;box-shadow:0 2px 8px rgba(210,76,25,.08);}
+                    .user-page-card .page-icon{width:32px;height:32px;border-radius:8px;background:#fff7ed;color:#D24C19;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+                    .user-page-card .page-name{font-size:13px;font-weight:600;color:#0f172a;}
+                    .user-page-card .page-meta{font-size:11px;color:#64748b;margin-top:2px;}
+                    .user-page-card .page-url{font-size:11px;color:#D24C19;margin-top:4px;word-break:break-all;font-family:ui-monospace,monospace;}
                     @media (max-width:768px){
                         .profile-field-grid{grid-template-columns:1fr;}
                         .img-zones{grid-template-columns:1fr !important;}
@@ -154,6 +164,9 @@
                         #profile-sidebar.open{transform:translateX(0);}
                         #profile-content{margin-left:0 !important;}
                         #sidebar-toggle-btn{display:flex !important;}
+                        #user-sidebar{position:fixed;top:60px;left:0;height:calc(100vh - 60px);transform:translateX(-100%);z-index:260;transition:transform .25s ease;overflow-y:auto;}
+                        #user-sidebar.open{transform:translateX(0);}
+                        #user-sidebar-toggle{display:flex !important;}
                     }
                 </style>
 
@@ -878,13 +891,19 @@
                 </div>
             </div>
                     @elseif($page->url === 'usuarios')
-            <section id="dash-usuarios" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
+            <section id="dash-usuarios" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
                     <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
-                    <button type="button" onclick="openUserSelectModal()" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                        Seleccionar usuario
-                    </button>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <button type="button" onclick="openTypeUserPagesModal()" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m-6-6h.008v.008H8.25v-6zm9 0h.008v.008H16.5v-6zm-9 3.75h.008v.008H8.25v-.008zm9 0h.008v.008H16.5v-.008z"/></svg>
+                            Páginas por tipos usuarios
+                        </button>
+                        <button type="button" onclick="openUserSelectModal('all')" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                            Seleccionar usuario
+                        </button>
+                    </div>
                 </div>
 
                 <div id="user-demo-empty" style="background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
@@ -895,104 +914,236 @@
                     <p style="font-size:13px;color:#64748b;margin:0;">Elegí un usuario para ver su demografía y trabajar con él.</p>
                 </div>
 
+                <div id="user-sidebar-overlay" onclick="toggleUserSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:240;"></div>
+
                 <div id="user-demo-panel" style="display:none;background:white;border:1px solid #e5e7eb;">
-                    <div style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;">
-                        <div id="user-demo-avatar" style="width:52px;height:52px;border-radius:50%;background:#D24C19;color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;"></div>
-                        <div style="flex:1;min-width:180px;">
-                            <div id="user-demo-name" style="font-size:16px;font-weight:700;color:#0f172a;"></div>
-                            <div id="user-demo-email" style="font-size:13px;color:#64748b;"></div>
-                            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-                                <span id="user-demo-status" class="status-badge"></span>
-                                <span id="user-demo-type" class="status-badge" style="background:#eff6ff;color:#1d4ed8;"></span>
+                    <div style="display:flex;align-items:stretch;background:#fff;border-bottom:1px solid #e5e7eb;">
+                        <aside id="user-sidebar">
+                            <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div id="user-demo-avatar" style="width:38px;height:38px;border-radius:50%;background:#D24C19;color:white;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                                    <div style="min-width:0;">
+                                        <div id="user-demo-name" style="font-size:13px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $user->name }}</div>
+                                        <div id="user-demo-email" style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $user->email }}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+                                    <span id="user-demo-status" class="status-badge" style="font-size:11px;padding:4px 10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">{{ optional($user->status)->status ?: 'Active' }}</span>
+                                    <span id="user-demo-type" class="status-badge" style="background:#eff6ff;color:#1d4ed8;font-size:11px;padding:4px 10px;">{{ optional($user->typeUser)->description ?: 'Prestador' }}</span>
+                                </div>
+                            </div>
+
+                            <nav style="flex:1;padding:12px 0;">
+                                <a href="#" onclick="event.preventDefault();switchUserTab('demografia')" class="sidebar-link active" data-user-panel="demografia">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                    <span>Demografía</span>
+                                </a>
+                                <a href="#" onclick="event.preventDefault();switchUserTab('direcciones')" class="sidebar-link" data-user-panel="direcciones">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                    <span>Direcciones</span>
+                                </a>
+                                <a href="#" onclick="event.preventDefault();switchUserTab('negocio')" class="sidebar-link" data-user-panel="negocio">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                                    <span>Negocio</span>
+                                </a>
+                                <a href="#" onclick="event.preventDefault();switchUserTab('cuenta')" class="sidebar-link" data-user-panel="cuenta">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                    <span>Gestión de cuenta</span>
+                                </a>
+                                <a href="#" onclick="event.preventDefault();switchUserTab('imagenes')" class="sidebar-link" data-user-panel="imagenes">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
+                                    <span>Imágenes Publicitarias</span>
+                                </a>
+                            </nav>
+                        </aside>
+
+                        <div id="user-content">
+                            <div style="height:44px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 20px;gap:8px;">
+                                <button onclick="toggleUserSidebar()" id="user-sidebar-toggle" style="display:none;background:none;border:none;cursor:pointer;padding:4px;color:#0f172a;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                                </button>
+                                <span style="font-size:12px;color:#64748b;">Usuarios</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                                <span style="font-size:12px;color:#0f172a;font-weight:600;" id="user-breadcrumb-current">Demografía</span>
+                            </div>
+
+                            <div id="user-panel-demografia" class="user-panel active">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <h3 class="user-demo-section-title" style="margin:0;">Demografía del usuario</h3>
+                                    <button type="button" class="btn-secondary" id="user-demo-edit-btn" onclick="if(selectedUser)openUserModal(selectedUser.id)" style="display:none;">Editar datos</button>
+                                </div>
+                                <div class="user-demo-grid">
+                                    <div>
+                                        <div class="user-demo-label">Nombre completo</div>
+                                        <div id="user-demo-f-name" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Email</div>
+                                        <div id="user-demo-f-email" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Estado</div>
+                                        <div id="user-demo-f-status" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Tipo de usuario</div>
+                                        <div id="user-demo-f-type" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Registro</div>
+                                        <div id="user-demo-f-created" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Email verificado</div>
+                                        <div id="user-demo-f-verified" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Teléfono</div>
+                                        <div id="user-demo-f-phone" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">WhatsApp</div>
+                                        <div id="user-demo-f-whatsapp" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Negocio</div>
+                                        <div id="user-demo-f-business" class="user-demo-value">-</div>
+                                    </div>
+                                    <div>
+                                        <div class="user-demo-label">Zona</div>
+                                        <div id="user-demo-f-zone" class="user-demo-value">-</div>
+                                    </div>
+                                    <div style="grid-column:1 / -1;">
+                                        <div class="user-demo-label">Dirección principal</div>
+                                        <div id="user-demo-f-address" class="user-demo-value">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="user-panel-direcciones" class="user-panel">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <h3 class="user-demo-section-title" style="margin:0;">Direcciones</h3>
+                                    <button type="button" class="btn-primary" id="user-demo-add-address-btn" onclick="openUserAddressModal(null)" style="display:none;">+ Agregar dirección</button>
+                                </div>
+                                <div id="user-demo-addresses"></div>
+                            </div>
+
+                            <div id="user-panel-negocio" class="user-panel">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <h3 class="user-demo-section-title" style="margin:0;">Negocio / Proveedor</h3>
+                                    <button type="button" class="btn-primary" id="user-demo-edit-provider-btn" onclick="openUserProviderModal()" style="display:none;">Editar negocio</button>
+                                </div>
+                                <div id="user-demo-provider"></div>
+                            </div>
+
+                            <div id="user-panel-cuenta" class="user-panel">
+                                <div class="user-demo-section-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <h3 class="user-demo-section-title" style="margin:0;">Gestión de cuenta</h3>
+                                    <button type="button" id="user-demo-edit-btn-account" class="btn-primary" onclick="if(selectedUser)openUserModal(selectedUser.id)">Editar usuario</button>
+                                </div>
+                                <div id="user-demo-account"></div>
+                                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;">
+                                    <div class="user-account-tabs" role="tablist" style="margin-top:0;flex:1;min-width:0;">
+                                        <button type="button" class="user-account-tab active" data-account-tab="gestion" onclick="switchUserAccountTab('gestion')" role="tab">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                            Gestión de usuarios
+                                            <span class="tab-count" id="user-tab-count-gestion">1</span>
+                                        </button>
+                                        <button type="button" class="user-account-tab" data-account-tab="paginas" onclick="switchUserAccountTab('paginas')" role="tab">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                                            Páginas por usuario
+                                            <span class="tab-count" id="user-tab-count-paginas">0</span>
+                                        </button>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;padding-bottom:4px;">
+                                        <button type="button" onclick="openUserSelectModal('account')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                            Seleccionar usuario
+                                        </button>
+                                        <button type="button" onclick="openUserModal(null)" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 14px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                            Crear usuario
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="user-account-pane-gestion" class="user-account-pane" role="tabpanel"></div>
+                                <div id="user-account-pane-paginas" class="user-account-pane" role="tabpanel" style="display:none;"></div>
+                            </div>
+
+                            <div id="user-panel-imagenes" class="user-panel">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                                    <h3 class="user-demo-section-title" style="margin:0;">Imágenes Publicitarias</h3>
+                                </div>
+                                <p style="font-size:13px;color:#64748b;margin:0 0 14px;">Imagen publicitaria del negocio del usuario. Solo se permite una a la vez.</p>
+                                <div id="user-demo-images-dropzone" class="dropzone" style="display:none;max-width:400px;">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="1.6"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0z"/></svg>
+                                    <span class="dropzone-title">Subir imagen publicitaria</span>
+                                    <span class="dropzone-hint">Arrastrá o hacé clic (JPG o PNG, máx. 5MB)</span>
+                                    <input type="file" id="user-demo-images-input" accept="image/jpeg,image/png" style="display:none;" />
+                                </div>
+                                <div id="user-demo-images-no-provider" class="user-demo-empty-tab" style="display:none;">Este usuario no tiene negocio. Creá el negocio para poder subir imágenes.</div>
+                                <span id="user-demo-images-msg" class="save-msg" style="display:none;margin-top:12px;"></span>
+                                <div id="user-demo-images-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;"></div>
+                                <div id="user-demo-images-empty" class="user-demo-empty-tab" style="display:none;margin-top:4px;">No hay imagen publicitaria cargada.</div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="user-tabs" id="user-tabs">
-                        <button type="button" class="user-tab active" data-user-tab="demografia" onclick="switchUserTab('demografia')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                            Demografía
-                        </button>
-                        <button type="button" class="user-tab" data-user-tab="direcciones" onclick="switchUserTab('direcciones')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                            Direcciones
-                        </button>
-                        <button type="button" class="user-tab" data-user-tab="negocio" onclick="switchUserTab('negocio')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-                            Negocio
-                        </button>
-                        <button type="button" class="user-tab" data-user-tab="cuenta" onclick="switchUserTab('cuenta')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.646.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><circle cx="12" cy="12" r="3"/></svg>
-                            Cuenta
-                        </button>
-                    </div>
-
-                    <div id="user-tab-demografia" class="user-tab-panel active">
-                        <h3 class="user-demo-section-title">Demografía del usuario</h3>
-                        <div class="user-demo-grid">
-                            <div>
-                                <div class="user-demo-label">Nombre completo</div>
-                                <div id="user-demo-f-name" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Email</div>
-                                <div id="user-demo-f-email" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Estado</div>
-                                <div id="user-demo-f-status" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Tipo de usuario</div>
-                                <div id="user-demo-f-type" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Registro</div>
-                                <div id="user-demo-f-created" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Email verificado</div>
-                                <div id="user-demo-f-verified" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Teléfono</div>
-                                <div id="user-demo-f-phone" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">WhatsApp</div>
-                                <div id="user-demo-f-whatsapp" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Negocio</div>
-                                <div id="user-demo-f-business" class="user-demo-value">-</div>
-                            </div>
-                            <div>
-                                <div class="user-demo-label">Zona</div>
-                                <div id="user-demo-f-zone" class="user-demo-value">-</div>
-                            </div>
-                            <div style="grid-column:1 / -1;">
-                                <div class="user-demo-label">Dirección principal</div>
-                                <div id="user-demo-f-address" class="user-demo-value">-</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="user-tab-direcciones" class="user-tab-panel">
-                        <h3 class="user-demo-section-title">Direcciones</h3>
-                        <div id="user-demo-addresses"></div>
-                    </div>
-
-                    <div id="user-tab-negocio" class="user-tab-panel">
-                        <h3 class="user-demo-section-title">Negocio / Proveedor</h3>
-                        <div id="user-demo-provider"></div>
-                    </div>
-
-                    <div id="user-tab-cuenta" class="user-tab-panel">
-                        <h3 class="user-demo-section-title">Gestión de cuenta</h3>
-                        <div id="user-demo-account"></div>
                     </div>
                 </div>
             </section>
+
+            <div id="typeuser-pages-overlay" onclick="if(event.target===this)closeTypeUserPagesModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:215;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:720px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Páginas por tipos usuarios</h3>
+                        <button onclick="closeTypeUserPagesModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <div style="padding:16px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Tipo de usuario</label>
+                            <select id="typeuser-pages-select" onchange="loadTypeUserPagesForType()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;box-sizing:border-box;">
+                                <option value="">-- Seleccioná un tipo --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Módulo</label>
+                            <select id="typeuser-pages-module" onchange="renderTypeUserPagesList()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;box-sizing:border-box;">
+                                <option value="">-- Todos los módulos --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="padding:8px 20px 0;">
+                        <p id="typeuser-pages-hint" style="font-size:12px;color:#64748b;margin:0;display:none;"></p>
+                    </div>
+                    <div style="padding:14px 20px;overflow:auto;flex:1;min-height:180px;">
+                        <div id="typeuser-pages-loading" style="padding:32px;text-align:center;display:none;">
+                            <p style="font-size:13px;color:#6b7280;">Cargando páginas...</p>
+                        </div>
+                        <div id="typeuser-pages-empty" style="padding:32px;text-align:center;display:none;">
+                            <p style="font-size:13px;color:#6b7280;">Seleccioná un tipo de usuario para gestionar sus páginas.</p>
+                        </div>
+                        <div id="typeuser-pages-list" style="display:none;overflow-x:auto;">
+                            <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb;">
+                                <thead>
+                                    <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;width:70%;">Página</th>
+                                        <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;width:30%;">
+                                            <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-transform:uppercase;">
+                                                <input type="checkbox" id="typeuser-pages-check-all" onchange="toggleTypeUserPagesAll(this.checked)" style="width:15px;height:15px;accent-color:#D24C19;cursor:pointer;" title="Agregar o quitar todo" />
+                                                <span>Agregar/Quitar</span>
+                                            </label>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="typeuser-pages-tbody"></tbody>
+                            </table>
+                            <div id="typeuser-pages-grid-empty" style="display:none;padding:24px;text-align:center;font-size:13px;color:#6b7280;background:#fff;border:1px solid #e5e7eb;border-top:none;"></div>
+                        </div>
+                    </div>
+                    <div style="padding:12px 20px;border-top:1px solid #e5e7eb;">
+                        <span id="typeuser-pages-msg" class="save-msg" style="display:none;"></span>
+                    </div>
+                </div>
+            </div>
 
             <div id="user-select-overlay" onclick="if(event.target===this)closeUserSelectModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:860px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
@@ -1051,28 +1202,31 @@
                             <input type="text" id="user-name" maxlength="255" placeholder="Nombre completo" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
                             <p id="user-name-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
-                        <div style="margin-bottom:16px;">
+                        <div id="user-email-field" style="margin-bottom:16px;display:none;">
                             <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Email <span style="color:#dc2626;">*</span></label>
                             <input type="email" id="user-email" maxlength="255" placeholder="correo@ejemplo.com" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
                             <p id="user-email-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
                         <div style="margin-bottom:16px;">
                             <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Contraseña <span id="user-password-required" style="color:#dc2626;">*</span></label>
-                            <input type="password" id="user-password" minlength="8" placeholder="Mínimo 8 caracteres" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                            <div style="position:relative;">
+                                <input type="password" id="user-password" minlength="8" placeholder="Mínimo 8 caracteres" style="width:100%;padding:8px 36px 8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                                <button type="button" class="user-pw-toggle" data-target="user-password" onclick="toggleUserPasswordVisibility('user-password', this)" title="Mostrar u ocultar contraseña" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#6b7280;line-height:1;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                                </button>
+                            </div>
                             <p id="user-password-hint" style="font-size:11px;color:#6b7280;margin:4px 0 0;display:none;">Dejar en blanco para no cambiarla.</p>
                             <p id="user-password-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Estado</label>
-                            <select id="user-status-id" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
-                                <option value="">-- Sin estado --</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Tipo de usuario</label>
-                            <select id="user-type-id" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
-                                <option value="">-- Sin tipo --</option>
-                            </select>
+                        <div id="user-password-confirm-field" style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Confirmar contraseña <span id="user-password-confirm-required" style="color:#dc2626;">*</span></label>
+                            <div style="position:relative;">
+                                <input type="password" id="user-password-confirm" minlength="8" placeholder="Repetí la contraseña" style="width:100%;padding:8px 36px 8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                                <button type="button" class="user-pw-toggle" data-target="user-password-confirm" onclick="toggleUserPasswordVisibility('user-password-confirm', this)" title="Mostrar u ocultar contraseña" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;color:#6b7280;line-height:1;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+                                </button>
+                            </div>
+                            <p id="user-password-confirm-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
                         <div style="display:flex;gap:8px;justify-content:flex-end;">
                             <button type="button" onclick="closeUserModal()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
@@ -1095,6 +1249,115 @@
                         <button onclick="closeUserDelete()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
                         <button id="user-delete-btn" onclick="confirmDeleteUser()" style="padding:8px 16px;background:#dc2626;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Eliminar</button>
                     </div>
+                </div>
+            </div>
+
+            <div id="user-address-overlay" onclick="if(event.target===this)closeUserAddressModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:215;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:520px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow:auto;">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 id="user-address-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Agregar dirección</h3>
+                        <button type="button" onclick="closeUserAddressModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <form id="user-address-form" onsubmit="submitUserAddress(event)" style="padding:20px;">
+                        <input type="hidden" id="user-address-id" value="" />
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">País <span style="color:#dc2626;">*</span></label>
+                            <select id="user-address-country" onchange="loadUserAddressRegions(this.value)" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;box-sizing:border-box;">
+                                <option value="">-- Seleccionar --</option>
+                            </select>
+                            <p id="user-address-country-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Provincia / Región</label>
+                            <select id="user-address-province" disabled style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;box-sizing:border-box;">
+                                <option value="">-- Seleccionar país primero --</option>
+                            </select>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Calle</label>
+                                <input type="text" id="user-address-street" maxlength="255" placeholder="Av. San Martín" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Número</label>
+                                <input type="text" id="user-address-number" maxlength="20" placeholder="1234" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Piso / Depto</label>
+                                <input type="text" id="user-address-floor" maxlength="50" placeholder="3B" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Código Postal</label>
+                                <input type="text" id="user-address-postal" maxlength="20" placeholder="B1602" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Notas</label>
+                            <textarea id="user-address-notes" rows="2" maxlength="500" placeholder="Referencias..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;resize:vertical;"></textarea>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;margin-bottom:16px;cursor:pointer;">
+                            <input type="checkbox" id="user-address-primary" style="accent-color:#D24C19;" />
+                            Marcar como dirección principal
+                        </label>
+                        <p id="user-address-error" style="font-size:11px;color:#dc2626;margin:0 0 12px;display:none;"></p>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;">
+                            <button type="button" onclick="closeUserAddressModal()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                            <button type="submit" id="user-address-submit-btn" style="padding:8px 16px;background:#D24C19;border:1px solid #D24C19;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="user-provider-overlay" onclick="if(event.target===this)closeUserProviderModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:215;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:520px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow:auto;">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 id="user-provider-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Editar negocio</h3>
+                        <button type="button" onclick="closeUserProviderModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <form id="user-provider-form" onsubmit="submitUserProvider(event)" style="padding:20px;">
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Nombre comercial <span style="color:#dc2626;">*</span></label>
+                            <input type="text" id="user-provider-business" maxlength="255" placeholder="Ej: Agua Purificada Don Agua" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            <p id="user-provider-business-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Descripción</label>
+                            <textarea id="user-provider-description" rows="2" maxlength="1000" placeholder="Breve descripción..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;resize:vertical;"></textarea>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Teléfono</label>
+                                <input type="text" id="user-provider-phone" maxlength="30" placeholder="+54 11 ..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">WhatsApp</label>
+                                <input type="text" id="user-provider-whatsapp" maxlength="30" placeholder="5411..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Zona</label>
+                                <input type="text" id="user-provider-zone" maxlength="255" placeholder="Tigre, San Fernando..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Categoría</label>
+                                <select id="user-provider-category" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;box-sizing:border-box;">
+                                    <option value="">-- Sin categoría --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Promoción</label>
+                            <input type="text" id="user-provider-promo" maxlength="500" placeholder="2x1 en empanadas..." style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;margin-bottom:16px;cursor:pointer;">
+                            <input type="checkbox" id="user-provider-active" checked style="accent-color:#D24C19;" />
+                            Negocio activo
+                        </label>
+                        <p id="user-provider-error" style="font-size:11px;color:#dc2626;margin:0 0 12px;display:none;"></p>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;">
+                            <button type="button" onclick="closeUserProviderModal()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                            <button type="submit" id="user-provider-submit-btn" style="padding:8px 16px;background:#D24C19;border:1px solid #D24C19;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Guardar</button>
+                        </div>
+                    </form>
                 </div>
             </div>
                     @else
@@ -2365,6 +2628,8 @@
     var allUsers = [];
     var deleteUserId = null;
     var selectedUser = null;
+    var authEmail = @json($user->email);
+    var userSelectScope = 'all';
     var userCurrentPage = 1;
     var userPerPage = 10;
     var allUserStatuses = [];
@@ -2377,20 +2642,30 @@
         document.getElementById('users-table-wrap').style.display = 'none';
         document.getElementById('users-pagination').style.display = 'none';
 
-        fetch('{{ url("/admin/users") }}', {
+        return fetch('{{ url("/admin/users") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             allUsers = data;
-            allUsers._filtered = data;
-            renderUsers(data);
+            var scoped = (userSelectScope === 'account') ? getAccountUsers() : allUsers;
+            allUsers._filtered = scoped;
+            renderUsers(scoped);
             loadUserStatusOptions();
             loadTypeUserOptions();
             if (selectedUser) {
-                var fresh = allUsers.find(function(x) { return x.id === selectedUser.id; });
-                if (fresh) renderUserDemographic(fresh);
-                else clearUserDemographic();
+                var fresh = allUsers.find(function(x) { return String(x.id) === String(selectedUser.id); });
+                if (fresh) {
+                    if (selectedUser.addresses) fresh.addresses = selectedUser.addresses;
+                    if (selectedUser.provider) fresh.provider = selectedUser.provider;
+                    selectedUser = fresh;
+                    var sIdx = allUsers.findIndex(function(x) { return String(x.id) === String(fresh.id); });
+                    if (sIdx !== -1) allUsers[sIdx] = fresh;
+                    renderUserDemographic(fresh);
+                    renderUserAccount(fresh);
+                } else {
+                    clearUserDemographic();
+                }
             }
         })
         .catch(function() {
@@ -2398,7 +2673,26 @@
         });
     }
 
-    function openUserSelectModal() {
+    function getActiveAccountEmail() {
+        if (selectedUser && selectedUser.email) return String(selectedUser.email).toLowerCase();
+        if (authEmail) return String(authEmail).toLowerCase();
+        return '';
+    }
+
+    function getAccountUsers() {
+        var email = getActiveAccountEmail();
+        if (!email) return allUsers;
+        return allUsers.filter(function(u) {
+            return u.email && String(u.email).toLowerCase() === email;
+        });
+    }
+
+    function getSelectableUsers() {
+        return userSelectScope === 'account' ? getAccountUsers() : allUsers;
+    }
+
+    function openUserSelectModal(scope) {
+        userSelectScope = (scope === 'account') ? 'account' : 'all';
         document.getElementById('user-select-overlay').style.display = 'flex';
         var search = document.getElementById('user-search');
         search.value = '';
@@ -2406,8 +2700,9 @@
             loadUsers();
         } else {
             userCurrentPage = 1;
-            allUsers._filtered = allUsers;
-            renderUsers(allUsers);
+            var scoped = getSelectableUsers();
+            allUsers._filtered = scoped;
+            renderUsers(scoped);
         }
         setTimeout(function() { search.focus(); }, 50);
     }
@@ -2416,35 +2711,494 @@
         document.getElementById('user-select-overlay').style.display = 'none';
     }
 
+    var typeUserPagesTypes = [];
+    var typeUserPagesAll = [];
+    var typeUserPagesAssigned = [];
+    var typeUserPagesModules = [];
+
+    function openTypeUserPagesModal() {
+        document.getElementById('typeuser-pages-overlay').style.display = 'flex';
+        var msg = document.getElementById('typeuser-pages-msg');
+        if (msg) { msg.style.display = 'none'; msg.textContent = ''; msg.classList.remove('ok', 'err'); }
+        var select = document.getElementById('typeuser-pages-select');
+        var moduleSelect = document.getElementById('typeuser-pages-module');
+        var empty = document.getElementById('typeuser-pages-empty');
+        var list = document.getElementById('typeuser-pages-list');
+        var tbody = document.getElementById('typeuser-pages-tbody');
+        var gridEmpty = document.getElementById('typeuser-pages-grid-empty');
+        var loading = document.getElementById('typeuser-pages-loading');
+        var hint = document.getElementById('typeuser-pages-hint');
+        if (empty) empty.style.display = 'block';
+        if (list) list.style.display = 'none';
+        if (tbody) tbody.innerHTML = '';
+        if (gridEmpty) { gridEmpty.style.display = 'none'; gridEmpty.textContent = ''; }
+        if (loading) loading.style.display = 'none';
+        if (hint) hint.style.display = 'none';
+        if (select) select.value = '';
+        if (moduleSelect) moduleSelect.value = '';
+        loadTypeUserPagesData();
+    }
+
+    function closeTypeUserPagesModal() {
+        document.getElementById('typeuser-pages-overlay').style.display = 'none';
+    }
+
+    function loadTypeUserPagesData() {
+        var loading = document.getElementById('typeuser-pages-loading');
+        var empty = document.getElementById('typeuser-pages-empty');
+        var select = document.getElementById('typeuser-pages-select');
+        var moduleSelect = document.getElementById('typeuser-pages-module');
+        if (loading) loading.style.display = 'block';
+        if (empty) empty.style.display = 'none';
+
+        Promise.all([
+            fetch('{{ url("/type-users/pages-data") }}', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+            }).then(function(r) { return r.json(); }),
+            fetch('{{ url("/modules") }}', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+            }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            if (loading) loading.style.display = 'none';
+            var data = results[0] || {};
+            var modules = results[1] || [];
+            typeUserPagesTypes = data.types || [];
+            typeUserPagesAll = data.pages || [];
+            typeUserPagesModules = Array.isArray(modules) ? modules : [];
+            if (select) {
+                select.innerHTML = '<option value="">-- Seleccioná un tipo --</option>' +
+                    typeUserPagesTypes.map(function(t) {
+                        return '<option value="' + t.id + '">' + escapeHtml(t.description) + ' (' + (t.users_count || 0) + ' usuarios)</option>';
+                    }).join('');
+            }
+            if (moduleSelect) {
+                moduleSelect.innerHTML = '<option value="">-- Todos los módulos --</option>' +
+                    typeUserPagesModules.map(function(m) {
+                        return '<option value="' + m.id + '">' + escapeHtml(m.description || m.name || ('Módulo ' + m.id)) + '</option>';
+                    }).join('');
+            }
+            if (!typeUserPagesTypes.length) {
+                if (empty) {
+                    empty.textContent = 'No hay tipos de usuario disponibles.';
+                    empty.style.display = 'block';
+                }
+            } else {
+                if (empty) empty.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            if (loading) loading.style.display = 'none';
+            if (empty) {
+                empty.textContent = 'Error al cargar los tipos de usuario.';
+                empty.style.display = 'block';
+            }
+        });
+    }
+
+    function loadTypeUserPagesForType() {
+        var select = document.getElementById('typeuser-pages-select');
+        var typeId = select ? parseInt(select.value, 10) : 0;
+        var empty = document.getElementById('typeuser-pages-empty');
+        var list = document.getElementById('typeuser-pages-list');
+        var tbody = document.getElementById('typeuser-pages-tbody');
+        var gridEmpty = document.getElementById('typeuser-pages-grid-empty');
+        var hint = document.getElementById('typeuser-pages-hint');
+        var msg = document.getElementById('typeuser-pages-msg');
+        if (msg) { msg.style.display = 'none'; msg.textContent = ''; msg.classList.remove('ok', 'err'); }
+
+        if (!typeId) {
+            if (list) list.style.display = 'none';
+            if (tbody) tbody.innerHTML = '';
+            if (gridEmpty) { gridEmpty.style.display = 'none'; gridEmpty.textContent = ''; }
+            if (empty) {
+                empty.textContent = 'Seleccioná un tipo de usuario para gestionar sus páginas.';
+                empty.style.display = 'block';
+            }
+            if (hint) hint.style.display = 'none';
+            typeUserPagesAssigned = [];
+            return;
+        }
+
+        var type = typeUserPagesTypes.find(function(t) { return t.id === typeId; });
+        typeUserPagesAssigned = ((type && type.assigned_page_ids) || []).slice();
+        if (hint && type) {
+            hint.textContent = type.users_count + ' usuario(s) con este tipo. Al guardar, las páginas seleccionadas se aplican a todos ellos.';
+            hint.style.display = 'block';
+        }
+        if (empty) empty.style.display = 'none';
+        renderTypeUserPagesList();
+    }
+
+    function renderTypeUserPagesList() {
+        var list = document.getElementById('typeuser-pages-list');
+        var tbody = document.getElementById('typeuser-pages-tbody');
+        var gridEmpty = document.getElementById('typeuser-pages-grid-empty');
+        var empty = document.getElementById('typeuser-pages-empty');
+        var typeSelect = document.getElementById('typeuser-pages-select');
+        var moduleSelect = document.getElementById('typeuser-pages-module');
+        if (!list || !tbody) return;
+
+        var typeId = typeSelect ? parseInt(typeSelect.value, 10) : 0;
+        var moduleFilter = moduleSelect ? moduleSelect.value : '';
+        if (!typeId) {
+            list.style.display = 'none';
+            tbody.innerHTML = '';
+            if (gridEmpty) { gridEmpty.style.display = 'none'; gridEmpty.textContent = ''; }
+            if (empty) {
+                empty.textContent = 'Seleccioná un tipo de usuario para gestionar sus páginas.';
+                empty.style.display = 'block';
+            }
+            return;
+        }
+
+        if (!moduleFilter) {
+            list.style.display = 'none';
+            tbody.innerHTML = '';
+            if (gridEmpty) { gridEmpty.style.display = 'none'; gridEmpty.textContent = ''; }
+            if (empty) {
+                empty.textContent = 'Seleccioná un módulo para ver las páginas.';
+                empty.style.display = 'block';
+            }
+            return;
+        }
+
+        if (empty) empty.style.display = 'none';
+
+        var mid = parseInt(moduleFilter, 10);
+        var pages = typeUserPagesAll.filter(function(pg) {
+            return pg.module_id === mid;
+        });
+
+        if (!pages.length) {
+            tbody.innerHTML = '';
+            list.style.display = 'block';
+            if (gridEmpty) {
+                gridEmpty.textContent = 'No hay páginas disponibles para este módulo.';
+                gridEmpty.style.display = 'block';
+            }
+            return;
+        }
+
+        if (gridEmpty) { gridEmpty.style.display = 'none'; gridEmpty.textContent = ''; }
+
+        var assigned = {};
+        typeUserPagesAssigned.forEach(function(id) { assigned[id] = true; });
+
+        tbody.innerHTML = pages.map(function(pg, idx) {
+            var checked = !!assigned[pg.id];
+            var bg = idx % 2 === 0 ? '#fff' : '#f8fafc';
+            var meta = [];
+            if (pg.module) meta.push(escapeHtml(pg.module));
+            if (pg.url) meta.push(escapeHtml(pg.url));
+            return '<tr style="background:' + bg + ';border-bottom:1px solid #e5e7eb;">' +
+                '<td style="padding:10px 16px;font-size:13px;color:#0f172a;vertical-align:middle;">' +
+                    '<div style="font-weight:600;">' + escapeHtml(pg.description || '-') + '</div>' +
+                    (meta.length ? '<div style="font-size:11px;color:#64748b;margin-top:2px;">' + meta.join(' · ') + '</div>' : '') +
+                '</td>' +
+                '<td style="padding:10px 16px;text-align:center;vertical-align:middle;">' +
+                    '<input type="checkbox" class="typeuser-pages-check" value="' + pg.id + '"' + (checked ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:#D24C19;cursor:pointer;" title="Asociar o quitar página" onchange="toggleTypeUserPage(' + pg.id + ', this.checked)" />' +
+                    '<div style="font-size:10px;color:#64748b;margin-top:2px;">' + (checked ? 'Agregada' : 'Agregar') + '</div>' +
+                '</td>' +
+            '</tr>';
+        }).join('');
+        list.style.display = 'block';
+        updateTypeUserPagesCheckAll();
+    }
+
+    function getVisibleTypeUserPageIds() {
+        var moduleSelect = document.getElementById('typeuser-pages-module');
+        var moduleFilter = moduleSelect ? moduleSelect.value : '';
+        if (!moduleFilter) return [];
+        var mid = parseInt(moduleFilter, 10);
+        return typeUserPagesAll
+            .filter(function(pg) { return pg.module_id === mid; })
+            .map(function(pg) { return pg.id; });
+    }
+
+    function updateTypeUserPagesCheckAll() {
+        var header = document.getElementById('typeuser-pages-check-all');
+        if (!header) return;
+        var list = document.getElementById('typeuser-pages-list');
+        if (!list || list.style.display === 'none') {
+            header.checked = false;
+            header.indeterminate = false;
+            header.disabled = false;
+            return;
+        }
+        var visibleIds = getVisibleTypeUserPageIds();
+        if (!visibleIds.length) {
+            header.checked = false;
+            header.indeterminate = false;
+            return;
+        }
+        var onCount = 0;
+        visibleIds.forEach(function(id) {
+            if (typeUserPagesAssigned.indexOf(id) !== -1) onCount++;
+        });
+        header.disabled = false;
+        header.checked = onCount === visibleIds.length;
+        header.indeterminate = onCount > 0 && onCount < visibleIds.length;
+    }
+
+    function toggleTypeUserPagesAll(checked) {
+        var typeSelect = document.getElementById('typeuser-pages-select');
+        var typeId = typeSelect ? parseInt(typeSelect.value, 10) : 0;
+        var msg = document.getElementById('typeuser-pages-msg');
+        var header = document.getElementById('typeuser-pages-check-all');
+        var visibleIds = getVisibleTypeUserPageIds();
+
+        function showMsg(text, ok) {
+            if (!msg) return;
+            msg.textContent = text;
+            msg.style.display = 'block';
+            msg.className = 'save-msg ' + (ok ? 'ok' : 'err');
+        }
+
+        if (!typeId) {
+            if (header) header.checked = false;
+            showMsg('Seleccioná un tipo de usuario.', false);
+            return;
+        }
+
+        if (!visibleIds.length) {
+            if (header) header.checked = false;
+            showMsg('No hay páginas visibles para actualizar.', false);
+            return;
+        }
+
+        var prevAssigned = typeUserPagesAssigned.slice();
+        var prevHeader = header ? { checked: header.checked, indeterminate: header.indeterminate } : null;
+
+        if (checked) {
+            visibleIds.forEach(function(id) {
+                if (typeUserPagesAssigned.indexOf(id) === -1) typeUserPagesAssigned.push(id);
+            });
+        } else {
+            typeUserPagesAssigned = typeUserPagesAssigned.filter(function(id) {
+                return visibleIds.indexOf(id) === -1;
+            });
+        }
+
+        if (header) {
+            header.checked = checked;
+            header.indeterminate = false;
+        }
+        renderTypeUserPagesList();
+
+        if (header) {
+            header.checked = checked;
+            header.indeterminate = false;
+        }
+
+        fetch('{{ url("/type-users") }}/' + typeId + '/pages/bulk', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                action: checked ? 'attach' : 'detach',
+                page_ids: visibleIds
+            })
+        })
+        .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+        .then(function(res) {
+            if (!res.ok || !res.data.success) {
+                typeUserPagesAssigned = prevAssigned;
+                if (header && prevHeader) {
+                    header.checked = prevHeader.checked;
+                    header.indeterminate = prevHeader.indeterminate;
+                }
+                renderTypeUserPagesList();
+                showMsg((res.data && res.data.message) || 'Error al actualizar las páginas.', false);
+                return;
+            }
+            var type = typeUserPagesTypes.find(function(t) { return t.id === typeId; });
+            if (type) type.assigned_page_ids = typeUserPagesAssigned.slice();
+            showMsg(res.data.message || (checked ? 'Páginas agregadas.' : 'Páginas quitadas.'), true);
+            updateTypeUserPagesCheckAll();
+            if (selectedUser && selectedUser.type_user_id === typeId) {
+                refreshSelectedUser();
+            }
+        })
+        .catch(function() {
+            typeUserPagesAssigned = prevAssigned;
+            if (header && prevHeader) {
+                header.checked = prevHeader.checked;
+                header.indeterminate = prevHeader.indeterminate;
+            }
+            renderTypeUserPagesList();
+            showMsg('Error de conexión.', false);
+        });
+    }
+
+    function toggleTypeUserPage(pageId, checked) {
+        var typeSelect = document.getElementById('typeuser-pages-select');
+        var typeId = typeSelect ? parseInt(typeSelect.value, 10) : 0;
+        var msg = document.getElementById('typeuser-pages-msg');
+        var checkbox = document.querySelector('.typeuser-pages-check[value="' + pageId + '"]');
+
+        function showMsg(text, ok) {
+            if (!msg) return;
+            msg.textContent = text;
+            msg.style.display = 'block';
+            msg.className = 'save-msg ' + (ok ? 'ok' : 'err');
+        }
+
+        function setLabel(isOn) {
+            if (!checkbox) return;
+            var label = checkbox.nextElementSibling;
+            if (label) label.textContent = isOn ? 'Agregada' : 'Agregar';
+        }
+
+        function revert() {
+            if (checkbox) checkbox.checked = !checked;
+            var idx = typeUserPagesAssigned.indexOf(pageId);
+            if (checked) {
+                if (idx !== -1) typeUserPagesAssigned.splice(idx, 1);
+            } else if (idx === -1) {
+                typeUserPagesAssigned.push(pageId);
+            }
+            setLabel(typeUserPagesAssigned.indexOf(pageId) !== -1);
+        }
+
+        if (!typeId) {
+            if (checkbox) checkbox.checked = !checked;
+            showMsg('Seleccioná un tipo de usuario.', false);
+            return;
+        }
+
+        if (checked) {
+            if (typeUserPagesAssigned.indexOf(pageId) === -1) typeUserPagesAssigned.push(pageId);
+        } else {
+            var i = typeUserPagesAssigned.indexOf(pageId);
+            if (i !== -1) typeUserPagesAssigned.splice(i, 1);
+        }
+        setLabel(checked);
+
+        var method = checked ? 'POST' : 'DELETE';
+        fetch('{{ url("/type-users") }}/' + typeId + '/pages/' + pageId, {
+            method: method,
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+        .then(function(res) {
+            if (!res.ok || !res.data.success) {
+                revert();
+                showMsg(res.data.message || 'Error al actualizar la página.', false);
+                updateTypeUserPagesCheckAll();
+                return;
+            }
+            var type = typeUserPagesTypes.find(function(t) { return t.id === typeId; });
+            if (type) type.assigned_page_ids = typeUserPagesAssigned.slice();
+            showMsg(res.data.message || (checked ? 'Página agregada.' : 'Página quitada.'), true);
+            updateTypeUserPagesCheckAll();
+            if (selectedUser && selectedUser.type_user_id === typeId) {
+                refreshSelectedUser();
+            }
+        })
+        .catch(function() {
+            revert();
+            showMsg('Error de conexión.', false);
+            updateTypeUserPagesCheckAll();
+        });
+    }
+
     function selectUser(id) {
-        var u = allUsers.find(function(x) { return x.id === id; });
+        var u = allUsers.find(function(x) { return String(x.id) === String(id); });
         if (!u) return;
         selectedUser = u;
-        renderUserDemographic(u);
+        if (userSelectScope === 'account') {
+            switchUserTab('cuenta');
+            switchUserAccountTab('gestion');
+            renderUserDemographic(u);
+            renderUserAccount(u);
+        } else {
+            switchUserTab(currentUserPanelTab() || 'demografia');
+            renderUserDemographic(u);
+            renderUserAccount(u);
+        }
         closeUserSelectModal();
-        fetch('{{ url("/admin/users") }}/' + id, {
+        refreshSelectedUser();
+    }
+
+    function refreshSelectedUser() {
+        if (!selectedUser) return Promise.resolve();
+        var id = selectedUser.id;
+        return fetch('{{ url("/admin/users") }}/' + id, {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(fresh) {
             if (!fresh || fresh.error) return;
-            if (!selectedUser || selectedUser.id !== fresh.id) return;
+            if (!selectedUser || String(selectedUser.id) !== String(fresh.id)) return;
             selectedUser = fresh;
-            var idx = allUsers.findIndex(function(x) { return x.id === fresh.id; });
+            var idx = allUsers.findIndex(function(x) { return String(x.id) === String(fresh.id); });
             if (idx !== -1) allUsers[idx] = fresh;
-            allUsers._filtered = allUsers;
+            allUsers._filtered = getAccountUsers();
             renderUserDemographic(fresh);
+            renderUserAccount(fresh);
+            if (userSelectScope === 'account') {
+                switchUserTab('cuenta');
+                switchUserAccountTab('gestion');
+            }
         })
         .catch(function() {});
     }
 
+    function applyUserUpdate(user) {
+        if (!user || !selectedUser || String(selectedUser.id) !== String(user.id)) return;
+        selectedUser = user;
+        var idx = allUsers.findIndex(function(x) { return String(x.id) === String(user.id); });
+        if (idx !== -1) allUsers[idx] = user;
+        allUsers._filtered = getAccountUsers();
+        renderUserDemographic(user);
+        renderUserAccount(user);
+        if (userSelectScope === 'account') {
+            switchUserTab('cuenta');
+            switchUserAccountTab('gestion');
+        }
+    }
+
+    function currentUserPanelTab() {
+        var active = document.querySelector('#user-sidebar .sidebar-link[data-user-panel].active');
+        return active ? active.getAttribute('data-user-panel') : 'demografia';
+    }
+
+    var userPanelLabels = {
+        demografia: 'Demografía',
+        direcciones: 'Direcciones',
+        negocio: 'Negocio',
+        cuenta: 'Gestión de cuenta',
+        imagenes: 'Imágenes Publicitarias'
+    };
+
     function switchUserTab(tab) {
-        document.querySelectorAll('#user-tabs .user-tab').forEach(function(btn) {
-            btn.classList.toggle('active', btn.getAttribute('data-user-tab') === tab);
+        document.querySelectorAll('#user-sidebar .sidebar-link[data-user-panel]').forEach(function(link) {
+            link.classList.toggle('active', link.getAttribute('data-user-panel') === tab);
         });
-        document.querySelectorAll('.user-tab-panel').forEach(function(panel) {
-            panel.classList.toggle('active', panel.id === 'user-tab-' + tab);
+        document.querySelectorAll('.user-panel').forEach(function(panel) {
+            panel.classList.toggle('active', panel.id === 'user-panel-' + tab);
         });
+        var bc = document.getElementById('user-breadcrumb-current');
+        if (bc) bc.textContent = userPanelLabels[tab] || tab;
+        var sb = document.getElementById('user-sidebar');
+        if (sb) sb.classList.remove('open');
+        var ov = document.getElementById('user-sidebar-overlay');
+        if (ov) ov.style.display = 'none';
+    }
+
+    function toggleUserSidebar() {
+        var sb = document.getElementById('user-sidebar');
+        var ov = document.getElementById('user-sidebar-overlay');
+        if (!sb) return;
+        var isOpen = sb.classList.toggle('open');
+        if (ov) ov.style.display = isOpen ? 'block' : 'none';
     }
 
     function formatAddressParts(addr) {
@@ -2474,10 +3228,18 @@
                 '<div style="width:32px;height:32px;border-radius:50%;background:#fff7ed;color:#D24C19;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>' +
                 '</div>' +
-                '<div style="min-width:0;">' +
+                '<div style="min-width:0;flex:1;">' +
                 '<div style="font-size:13px;font-weight:600;color:#0f172a;">' + (i + 1) + '. Dirección' + primary + '</div>' +
                 '<div style="font-size:13px;color:#64748b;margin-top:4px;">' + text + '</div>' +
                 (a.notes ? '<div style="font-size:12px;color:#94a3b8;margin-top:4px;">Nota: ' + a.notes + '</div>' : '') +
+                '</div>' +
+                '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+                '<button type="button" class="icon-btn edit" title="Editar" onclick="openUserAddressModal(' + a.id + ')">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z"/></svg>' +
+                '</button>' +
+                '<button type="button" class="icon-btn del" title="Eliminar" onclick="openUserAddressDelete(' + a.id + ')">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>' +
+                '</button>' +
                 '</div></div>';
         }).join('');
     }
@@ -2485,20 +3247,22 @@
     function renderUserProvider(u) {
         var el = document.getElementById('user-demo-provider');
         var p = u.provider || null;
-        if (!p) {
-            el.innerHTML = '<div class="user-demo-empty-tab">Este usuario no tiene negocio/proveedor asociado.</div>';
-            return;
-        }
-        var fields = [
+        var fields = p ? [
             ['Nombre comercial', p.business_name],
             ['Descripción', p.description],
             ['Teléfono', p.phone],
             ['WhatsApp', p.whatsapp],
             ['Zona', p.zone],
+            ['Promoción', p.promo],
             ['Categoría', p.category && (p.category.description || p.category.name)],
             ['Activo', p.is_active ? 'Sí' : 'No'],
             ['Rating', p.rating]
-        ].filter(function(f) { return f[1] !== null && f[1] !== undefined && f[1] !== ''; });
+        ].filter(function(f) { return f[1] !== null && f[1] !== undefined && f[1] !== ''; }) : [];
+
+        if (!p) {
+            el.innerHTML = '<div class="user-demo-empty-tab">Este usuario no tiene negocio/proveedor asociado. Usá "Editar negocio" para crear uno.</div>';
+            return;
+        }
         if (!fields.length) {
             el.innerHTML = '<div class="user-demo-empty-tab">Sin datos de negocio cargados.</div>';
             return;
@@ -2508,50 +3272,310 @@
         }).join('') + '</div>';
     }
 
+    var userAccountActiveTab = 'gestion';
+
+    function switchUserAccountTab(tab) {
+        userAccountActiveTab = (tab === 'paginas') ? 'paginas' : 'gestion';
+        document.querySelectorAll('.user-account-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-account-tab') === userAccountActiveTab);
+        });
+        var g = document.getElementById('user-account-pane-gestion');
+        var p = document.getElementById('user-account-pane-paginas');
+        if (g) g.style.display = userAccountActiveTab === 'gestion' ? 'block' : 'none';
+        if (p) p.style.display = userAccountActiveTab === 'paginas' ? 'block' : 'none';
+    }
+
     function renderUserAccount(u) {
         var el = document.getElementById('user-demo-account');
         el.innerHTML =
-            '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;">' +
-                '<button type="button" class="btn-primary" onclick="openUserModal(' + u.id + ')">Editar usuario</button>' +
-                '<button type="button" class="btn-danger" onclick="openUserDelete(' + u.id + ', ' + JSON.stringify(String(u.name || '')).replace(/"/g, '&quot;') + ')">Eliminar usuario</button>' +
-            '</div>' +
-            '<div class="user-demo-grid">' +
-                '<div><div class="user-demo-label">ID</div><div class="user-demo-value">' + u.id + '</div></div>' +
+            '<div class="user-demo-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">' +
                 '<div><div class="user-demo-label">Email</div><div class="user-demo-value">' + (u.email || '-') + '</div></div>' +
                 '<div><div class="user-demo-label">Cuenta creada</div><div class="user-demo-value">' + (u.created_at ? new Date(u.created_at).toLocaleString('es-AR') : '-') + '</div></div>' +
                 '<div><div class="user-demo-label">Última actualización</div><div class="user-demo-value">' + (u.updated_at ? new Date(u.updated_at).toLocaleString('es-AR') : '-') + '</div></div>' +
             '</div>';
+
+        renderUserAccountGestion(u);
+        renderUserAccountPaginas(u);
+        switchUserAccountTab(userAccountActiveTab);
+    }
+
+    function renderUserAccountGestion(u) {
+        var pane = document.getElementById('user-account-pane-gestion');
+        if (!pane) return;
+
+        var isVerified = !!u.email_verified_at;
+        var selectedName = u.name || '-';
+
+        pane.innerHTML =
+            '<div class="user-demo-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">' +
+                '<div style="grid-column:span 1;"><div class="user-demo-label">Usuario seleccionado</div><div class="user-demo-value" style="font-weight:700;color:#0c2a4d;">' + escapeHtml(selectedName) + '</div></div>' +
+                '<div><div class="user-demo-label">Email verificado</div><div class="user-demo-value">' + (isVerified ? 'Sí' : 'No') + '</div></div>' +
+                '<div><div class="user-demo-label">Páginas asignadas</div><div class="user-demo-value">' + (u.pages || []).length + '</div></div>' +
+            '</div>' +
+            '<div style="margin-top:18px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;">' +
+                'Usá <strong style="color:#0f172a;">Seleccionar usuario</strong> para trabajar con un usuario o <strong style="color:#0f172a;">Crear usuario</strong> para dar de alta uno nuevo.' +
+            '</div>';
+
+        var countEl = document.getElementById('user-tab-count-gestion');
+        if (countEl) {
+            var accEmail = (u.email || '').toLowerCase();
+            var accCount = accEmail ? allUsers.filter(function(x) {
+                return x.email && String(x.email).toLowerCase() === accEmail;
+            }).length : 1;
+            countEl.textContent = String(accCount || 1);
+        }
+    }
+
+    function renderUserAccountPaginas(u) {
+        var pane = document.getElementById('user-account-pane-paginas');
+        if (!pane) return;
+
+        var pages = u.pages || [];
+        var countEl = document.getElementById('user-tab-count-paginas');
+        if (countEl) countEl.textContent = String(pages.length);
+
+        if (!pages.length) {
+            pane.innerHTML = '<div class="user-demo-empty-tab">Este usuario no tiene páginas asignadas.</div>';
+            return;
+        }
+
+        var iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>';
+
+        pane.innerHTML = '<div class="user-pages-list">' + pages.map(function(pg) {
+            var moduleName = (pg.module && (pg.module.description || pg.module.name)) || 'Sin módulo';
+            return '<div class="user-page-card">' +
+                '<div class="page-icon">' + iconSvg + '</div>' +
+                '<div style="min-width:0;">' +
+                    '<div class="page-name">' + (pg.description || '-') + '</div>' +
+                    '<div class="page-meta">Módulo: ' + moduleName + '</div>' +
+                    (pg.url ? '<div class="page-url">' + pg.url + '</div>' : '') +
+                '</div>' +
+            '</div>';
+        }).join('') + '</div>';
+    }
+
+    function renderUserImages(u) {
+        var dropzone = document.getElementById('user-demo-images-dropzone');
+        var noProvider = document.getElementById('user-demo-images-no-provider');
+        var grid = document.getElementById('user-demo-images-grid');
+        var empty = document.getElementById('user-demo-images-empty');
+        var msg = document.getElementById('user-demo-images-msg');
+        if (!dropzone || !noProvider || !grid || !empty) return;
+
+        if (msg) {
+            msg.style.display = 'none';
+            msg.textContent = '';
+            msg.classList.remove('ok', 'err');
+        }
+
+        var p = u.provider || null;
+        if (!p) {
+            dropzone.style.display = 'none';
+            noProvider.style.display = 'block';
+            grid.style.display = 'none';
+            grid.innerHTML = '';
+            empty.style.display = 'none';
+            return;
+        }
+
+        noProvider.style.display = 'none';
+        var limitNote = document.getElementById('user-demo-images-limit');
+        if (limitNote) limitNote.style.display = 'none';
+
+        var images = p.images || [];
+        if (!images.length) {
+            dropzone.style.display = '';
+            grid.style.display = 'none';
+            grid.innerHTML = '';
+            empty.style.display = 'block';
+            setupUserDemoImagesDropzone();
+            return;
+        }
+
+        dropzone.style.display = 'none';
+        empty.style.display = 'none';
+        grid.style.display = 'grid';
+        grid.innerHTML = images.map(function(img) {
+            var src = '{{ asset("images/publicidad/") }}/' + img.image_path + '?v=' + Date.now();
+            var fileName = img.image_path || ('publicidad_' + img.id);
+            return '<div style="position:relative;border:1px solid #e2e8f0;background:#fff;overflow:hidden;">' +
+                '<img src="' + src + '" style="width:100%;height:180px;object-fit:cover;display:block;" />' +
+                '<span class="img-type-badge">Publicidad</span>' +
+                '<button type="button" onclick="downloadUserDemoImage(\'' + encodeURIComponent(src) + '\', \'' + String(fileName).replace(/'/g, '') + '\')" title="Descargar imagen" style="position:absolute;top:6px;right:36px;background:rgba(12,42,77,0.92);color:#fff;border:none;width:24px;height:24px;font-size:11px;cursor:pointer;line-height:1;">&#8595;</button>' +
+                '<button type="button" onclick="deleteUserDemoImage(' + img.id + ')" title="Eliminar imagen" style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,0.95);color:#fff;border:none;width:24px;height:24px;font-size:11px;cursor:pointer;line-height:1;">&#10005;</button>' +
+                '</div>';
+        }).join('');
+
+        if (!limitNote) {
+            limitNote = document.createElement('div');
+            limitNote.id = 'user-demo-images-limit';
+            limitNote.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;color:#9a3412;';
+            limitNote.innerHTML = '&#9432; Solo se permite una imagen publicitaria. Eliminá la actual para subir una nueva.';
+            grid.parentNode.insertBefore(limitNote, grid.nextSibling);
+        }
+        limitNote.style.display = 'block';
+    }
+
+    function setupUserDemoImagesDropzone() {
+        var zone = document.getElementById('user-demo-images-dropzone');
+        var input = document.getElementById('user-demo-images-input');
+        if (!zone || !input || zone._userDemoBound) return;
+        zone._userDemoBound = true;
+
+        zone.addEventListener('click', function(e) {
+            if (e.target !== input) input.click();
+        });
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', function() {
+            zone.classList.remove('dragover');
+        });
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                uploadUserDemoImage(e.dataTransfer.files[0]);
+            }
+        });
+        input.addEventListener('change', function() {
+            if (input.files && input.files[0]) {
+                uploadUserDemoImage(input.files[0]);
+                input.value = '';
+            }
+        });
+    }
+
+    function showUserDemoImagesMsg(text, ok) {
+        var msg = document.getElementById('user-demo-images-msg');
+        if (!msg) return;
+        msg.textContent = text;
+        msg.style.display = 'block';
+        msg.classList.toggle('ok', !!ok);
+        msg.classList.toggle('err', !ok);
+    }
+
+    function uploadUserDemoImage(file) {
+        if (!selectedUser || !file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            showUserDemoImagesMsg('La imagen no puede superar 5MB.', false);
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('image', file);
+
+        showUserDemoImagesMsg('Subiendo imagen...', true);
+
+        fetch('{{ url("/admin/users") }}/' + selectedUser.id + '/images', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                showUserDemoImagesMsg(data.message || 'Imagen subida correctamente.', true);
+                applyUserUpdate(data.user);
+                refreshSelectedUser();
+            } else {
+                showUserDemoImagesMsg(data.message || 'No se pudo subir la imagen.', false);
+            }
+        })
+        .catch(function() {
+            showUserDemoImagesMsg('Error de conexión.', false);
+        });
+    }
+
+    function downloadUserDemoImage(encodedSrc, fileName) {
+        var src = decodeURIComponent(encodedSrc);
+        fetch(src, { cache: 'no-cache' })
+            .then(function(r) {
+                if (!r.ok) throw new Error('fail');
+                return r.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(function() {
+                var a = document.createElement('a');
+                a.href = src;
+                a.download = fileName;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+    }
+
+    function deleteUserDemoImage(imageId) {
+        if (!selectedUser) return;
+        if (!confirm('¿Eliminar esta imagen?')) return;
+
+        fetch('{{ url("/admin/users") }}/' + selectedUser.id + '/images/' + imageId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                showUserDemoImagesMsg(data.message || 'Imagen eliminada correctamente.', true);
+                applyUserUpdate(data.user);
+                refreshSelectedUser();
+            } else {
+                showUserDemoImagesMsg(data.message || 'No se pudo eliminar.', false);
+            }
+        })
+        .catch(function() {
+            showUserDemoImagesMsg('Error de conexión.', false);
+        });
     }
 
     function clearUserDemographic() {
         selectedUser = null;
         document.getElementById('user-demo-empty').style.display = 'block';
         document.getElementById('user-demo-panel').style.display = 'none';
+        ['user-demo-edit-btn', 'user-demo-add-address-btn', 'user-demo-edit-provider-btn'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
         switchUserTab('demografia');
     }
 
     function renderUserDemographic(u) {
         document.getElementById('user-demo-empty').style.display = 'none';
         document.getElementById('user-demo-panel').style.display = 'block';
-        switchUserTab('demografia');
+
+        var editBtn = document.getElementById('user-demo-edit-btn');
+        var addAddrBtn = document.getElementById('user-demo-add-address-btn');
+        var editProvBtn = document.getElementById('user-demo-edit-provider-btn');
+        if (editBtn) editBtn.style.display = '';
+        if (addAddrBtn) addAddrBtn.style.display = '';
+        if (editProvBtn) {
+            editProvBtn.style.display = '';
+            editProvBtn.textContent = u.provider ? 'Editar negocio' : 'Crear negocio';
+        }
+
+        switchUserTab(currentUserPanelTab());
 
         var typeObj = u.type_user || u.typeUser || null;
         var statusObj = u.status || null;
         var statusText = (statusObj && (statusObj.status || statusObj.description)) || 'Sin estado';
         var typeText = (typeObj && typeObj.description) || 'Sin tipo';
-        var statusColor = /inactiv/i.test(statusText) ? '#dc2626' : (/activ/i.test(statusText) ? '#16a34a' : '#6b7280');
-        var initial = (u.name || '?').charAt(0).toUpperCase();
-
-        document.getElementById('user-demo-avatar').textContent = initial;
-        document.getElementById('user-demo-name').textContent = u.name || '';
-        document.getElementById('user-demo-email').textContent = u.email || '';
-
-        var stBadge = document.getElementById('user-demo-status');
-        stBadge.textContent = statusText;
-        stBadge.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:' + (/activ/i.test(statusText) ? '#ecfdf5;border:1px solid #a7f3d0;color:#047857;' : '#fef2f2;border:1px solid #fecaca;color:#b91c1c;') + 'font-size:12px;font-weight:600;';
-
-        var tyBadge = document.getElementById('user-demo-type');
-        tyBadge.textContent = typeText;
 
         document.getElementById('user-demo-f-name').textContent = u.name || '-';
         document.getElementById('user-demo-f-email').textContent = u.email || '-';
@@ -2584,15 +3608,17 @@
         renderUserAddresses(u);
         renderUserProvider(u);
         renderUserAccount(u);
+        renderUserImages(u);
     }
 
     function loadUserStatusOptions() {
+        var select = document.getElementById('user-status-id');
+        if (!select) return;
         fetch('{{ url("/user-statuses") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var select = document.getElementById('user-status-id');
             select.innerHTML = '<option value="">-- Sin estado --</option>';
             data.forEach(function(s) {
                 var opt = document.createElement('option');
@@ -2605,12 +3631,13 @@
     }
 
     function loadTypeUserOptions() {
+        var select = document.getElementById('user-type-id');
+        if (!select) return;
         fetch('{{ url("/type-users") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var select = document.getElementById('user-type-id');
             select.innerHTML = '<option value="">-- Sin tipo --</option>';
             data.forEach(function(t) {
                 var opt = document.createElement('option');
@@ -2699,30 +3726,68 @@
     function filterUsers() {
         userCurrentPage = 1;
         var q = document.getElementById('user-search').value.toLowerCase();
-        var filtered = allUsers.filter(function(u) {
+        var filtered = getSelectableUsers().filter(function(u) {
             return u.name.toLowerCase().indexOf(q) !== -1 || u.email.toLowerCase().indexOf(q) !== -1;
         });
         allUsers._filtered = filtered;
         renderUsers(filtered);
     }
 
+    function toggleUserPasswordVisibility(inputId, btn) {
+        var input = document.getElementById(inputId);
+        if (!input || !btn) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.innerHTML = show
+            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M2 2l20 20"/></svg>'
+            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>';
+    }
+
     function openUserModal(id) {
-        var u = id ? allUsers.find(function(x) { return x.id === id; }) : null;
+        var u = null;
+        if (id !== null && id !== undefined && id !== '') {
+            u = allUsers.find(function(x) { return String(x.id) === String(id); });
+            if (!u && selectedUser && String(selectedUser.id) === String(id)) {
+                u = selectedUser;
+            }
+        }
+        var emailField = document.getElementById('user-email-field');
+        var emailInput = document.getElementById('user-email');
+        var confirmField = document.getElementById('user-password-confirm-field');
+        var confirmReq = document.getElementById('user-password-confirm-required');
         document.getElementById('user-id').value = u ? u.id : '';
         document.getElementById('user-name').value = u ? u.name : '';
-        document.getElementById('user-email').value = u ? u.email : '';
+        if (u) {
+            emailInput.value = u.email || '';
+        } else if (selectedUser && selectedUser.email) {
+            emailInput.value = selectedUser.email;
+        } else {
+            emailInput.value = '';
+        }
+        if (emailField) emailField.style.display = 'none';
         document.getElementById('user-password').value = '';
+        var confirmInput = document.getElementById('user-password-confirm');
+        if (confirmInput) {
+            confirmInput.value = '';
+            confirmInput.type = 'password';
+        }
+        var pwInput = document.getElementById('user-password');
+        if (pwInput) pwInput.type = 'password';
+        document.querySelectorAll('.user-pw-toggle').forEach(function(btn) {
+            if (!btn.dataset.target) return;
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>';
+        });
         document.getElementById('user-name-error').style.display = 'none';
         document.getElementById('user-email-error').style.display = 'none';
         document.getElementById('user-password-error').style.display = 'none';
+        var confirmErr = document.getElementById('user-password-confirm-error');
+        if (confirmErr) confirmErr.style.display = 'none';
         document.getElementById('user-password-required').style.display = u ? 'none' : 'inline';
         document.getElementById('user-password-hint').style.display = u ? 'block' : 'none';
+        if (confirmField) confirmField.style.display = u ? 'none' : 'block';
+        if (confirmReq) confirmReq.style.display = u ? 'none' : 'inline';
         document.getElementById('user-modal-title').textContent = u ? 'Editar Usuario' : 'Nuevo Usuario';
         document.getElementById('user-submit-btn').textContent = u ? 'Actualizar' : 'Guardar';
-        setTimeout(function() {
-            document.getElementById('user-status-id').value = u ? (u.user_status_id || '') : '';
-            document.getElementById('user-type-id').value = u ? (u.type_user_id || '') : '';
-        }, 50);
         document.getElementById('user-modal-overlay').style.display = 'flex';
         document.getElementById('user-name').focus();
     }
@@ -2741,16 +3806,35 @@
         var name = document.getElementById('user-name').value.trim();
         var email = document.getElementById('user-email').value.trim();
         var password = document.getElementById('user-password').value;
-        var statusId = document.getElementById('user-status-id').value;
-        var typeId = document.getElementById('user-type-id').value;
+        var passwordConfirm = document.getElementById('user-password-confirm') ? document.getElementById('user-password-confirm').value : '';
+        var target = selectedUser;
+        if (id) {
+            target = allUsers.find(function(x) { return String(x.id) === String(id); }) || selectedUser;
+            if (selectedUser && String(selectedUser.id) === String(id)) target = selectedUser;
+        }
+        var statusId = (target && target.user_status_id) ? target.user_status_id : (target && target.status && target.status.id ? target.status.id : null);
+        var typeId = (target && target.type_user_id) ? target.type_user_id : (target && target.type_user && target.type_user.id ? target.type_user.id : null);
+        if (!id && !selectedUser) {
+            statusId = null;
+            typeId = null;
+        }
+        if (id && !selectedUser) {
+            var existing = allUsers.find(function(x) { return String(x.id) === String(id); });
+            if (existing) {
+                statusId = existing.user_status_id || null;
+                typeId = existing.type_user_id || null;
+            }
+        }
         var nameErr = document.getElementById('user-name-error');
         var emailErr = document.getElementById('user-email-error');
         var passErr = document.getElementById('user-password-error');
+        var confirmErr = document.getElementById('user-password-confirm-error');
         var submitBtn = document.getElementById('user-submit-btn');
 
         nameErr.style.display = 'none';
         emailErr.style.display = 'none';
         passErr.style.display = 'none';
+        if (confirmErr) confirmErr.style.display = 'none';
 
         if (!name) {
             nameErr.textContent = 'El nombre es obligatorio.';
@@ -2767,10 +3851,33 @@
             passErr.style.display = 'block';
             return;
         }
-        if (id && password && password.length < 8) {
-            passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
-            passErr.style.display = 'block';
+        if (!id && !passwordConfirm) {
+            if (confirmErr) {
+                confirmErr.textContent = 'Confirmá la contraseña.';
+                confirmErr.style.display = 'block';
+            }
             return;
+        }
+        if (!id && password !== passwordConfirm) {
+            if (confirmErr) {
+                confirmErr.textContent = 'Las contraseñas no coinciden.';
+                confirmErr.style.display = 'block';
+            }
+            return;
+        }
+        if (id && password) {
+            if (password.length < 8) {
+                passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+                passErr.style.display = 'block';
+                return;
+            }
+            if (passwordConfirm && password !== passwordConfirm) {
+                if (confirmErr) {
+                    confirmErr.textContent = 'Las contraseñas no coinciden.';
+                    confirmErr.style.display = 'block';
+                }
+                return;
+            }
         }
 
         submitBtn.disabled = true;
@@ -2779,8 +3886,8 @@
         var body = {
             name: name,
             email: email,
-            user_status_id: statusId || null,
-            type_user_id: typeId || null
+            user_status_id: statusId,
+            type_user_id: typeId
         };
         if (password) body.password = password;
 
@@ -2810,7 +3917,10 @@
 
             if (data.success) {
                 closeUserModal();
-                loadUsers();
+                if (data.user) applyUserUpdate(data.user);
+                loadUsers().then(function() {
+                    refreshSelectedUser();
+                });
             } else {
                 nameErr.textContent = data.message || 'Error al guardar.';
                 nameErr.style.display = 'block';
@@ -2821,6 +3931,292 @@
             submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
             nameErr.textContent = 'Error de conexión.';
             nameErr.style.display = 'block';
+        });
+    }
+
+    var userAddressDeleteId = null;
+
+    function openUserAddressModal(addressId) {
+        if (!selectedUser) return;
+        var addresses = selectedUser.addresses || [];
+        var a = addressId ? addresses.find(function(x) { return x.id === addressId; }) : null;
+        document.getElementById('user-address-id').value = a ? a.id : '';
+        document.getElementById('user-address-modal-title').textContent = a ? 'Editar dirección' : 'Agregar dirección';
+        document.getElementById('user-address-street').value = a ? (a.street || '') : '';
+        document.getElementById('user-address-number').value = a ? (a.number || '') : '';
+        document.getElementById('user-address-floor').value = a ? (a.floor_apartment || '') : '';
+        document.getElementById('user-address-postal').value = a ? (a.postal_code || '') : '';
+        document.getElementById('user-address-notes').value = a ? (a.notes || '') : '';
+        document.getElementById('user-address-primary').checked = a ? !!a.is_primary : false;
+        document.getElementById('user-address-error').style.display = 'none';
+        document.getElementById('user-address-country-error').style.display = 'none';
+
+        var countrySel = document.getElementById('user-address-country');
+        var provinceSel = document.getElementById('user-address-province');
+        countrySel.innerHTML = '<option value="">Cargando...</option>';
+        provinceSel.innerHTML = '<option value="">-- Seleccionar país primero --</option>';
+        provinceSel.disabled = true;
+
+        fetch('{{ url("/countries") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(countries) {
+            countrySel.innerHTML = '<option value="">-- Seleccionar --</option>';
+            countries.forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                countrySel.appendChild(opt);
+            });
+            if (a && a.country_id) {
+                countrySel.value = String(a.country_id);
+                loadUserAddressRegions(a.country_id, a.province_id);
+            }
+        })
+        .catch(function() {
+            countrySel.innerHTML = '<option value="">Error al cargar países</option>';
+        });
+
+        document.getElementById('user-address-overlay').style.display = 'flex';
+    }
+
+    function closeUserAddressModal() {
+        document.getElementById('user-address-overlay').style.display = 'none';
+    }
+
+    function loadUserAddressRegions(countryId, selectedId) {
+        var sel = document.getElementById('user-address-province');
+        sel.innerHTML = '<option value="">Cargando...</option>';
+        sel.disabled = true;
+        if (!countryId) {
+            sel.innerHTML = '<option value="">-- Seleccionar país primero --</option>';
+            return;
+        }
+        fetch('{{ url("/regions") }}?country_id=' + countryId, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(regions) {
+            sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+            regions.forEach(function(r) {
+                var opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name;
+                sel.appendChild(opt);
+            });
+            if (selectedId) sel.value = String(selectedId);
+            sel.disabled = false;
+        })
+        .catch(function() {
+            sel.innerHTML = '<option value="">Error al cargar regiones</option>';
+        });
+    }
+
+    function submitUserAddress(e) {
+        e.preventDefault();
+        if (!selectedUser) return;
+        var addressId = document.getElementById('user-address-id').value;
+        var countryId = document.getElementById('user-address-country').value;
+        var errEl = document.getElementById('user-address-error');
+        var countryErr = document.getElementById('user-address-country-error');
+        var btn = document.getElementById('user-address-submit-btn');
+        errEl.style.display = 'none';
+        countryErr.style.display = 'none';
+
+        if (!countryId) {
+            countryErr.textContent = 'El país es obligatorio.';
+            countryErr.style.display = 'block';
+            return;
+        }
+
+        var body = {
+            country_id: parseInt(countryId, 10),
+            province_id: document.getElementById('user-address-province').value ? parseInt(document.getElementById('user-address-province').value, 10) : null,
+            street: document.getElementById('user-address-street').value.trim(),
+            number: document.getElementById('user-address-number').value.trim(),
+            floor_apartment: document.getElementById('user-address-floor').value.trim(),
+            postal_code: document.getElementById('user-address-postal').value.trim(),
+            notes: document.getElementById('user-address-notes').value.trim(),
+            is_primary: document.getElementById('user-address-primary').checked
+        };
+
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        var base = '{{ url("/admin/users") }}/' + selectedUser.id + '/addresses';
+        var url = addressId ? base + '/' + addressId : base;
+        var method = addressId ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar';
+            if (data.errors) {
+                var msgs = [];
+                Object.keys(data.errors).forEach(function(k) { msgs.push(data.errors[k][0]); });
+                errEl.textContent = msgs.join(' ');
+                errEl.style.display = 'block';
+                return;
+            }
+            if (data.success) {
+                closeUserAddressModal();
+                applyUserUpdate(data.user);
+                refreshSelectedUser();
+            } else {
+                errEl.textContent = data.message || 'Error al guardar.';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Guardar';
+            errEl.textContent = 'Error de conexión.';
+            errEl.style.display = 'block';
+        });
+    }
+
+    function openUserAddressDelete(addressId) {
+        userAddressDeleteId = addressId;
+        if (!selectedUser || !addressId) return;
+        if (!confirm('¿Eliminar esta dirección del usuario?')) return;
+        deleteUserAddress(addressId);
+    }
+
+    function deleteUserAddress(addressId) {
+        if (!selectedUser || !addressId) return;
+        fetch('{{ url("/admin/users") }}/' + selectedUser.id + '/addresses/' + addressId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                applyUserUpdate(data.user);
+                refreshSelectedUser();
+            }
+        })
+        .catch(function() {});
+    }
+
+    function openUserProviderModal() {
+        if (!selectedUser) return;
+        var p = selectedUser.provider || null;
+        document.getElementById('user-provider-modal-title').textContent = p ? 'Editar negocio' : 'Crear negocio';
+        document.getElementById('user-provider-business').value = p ? (p.business_name || '') : '';
+        document.getElementById('user-provider-description').value = p ? (p.description || '') : '';
+        document.getElementById('user-provider-phone').value = p ? (p.phone || '') : '';
+        document.getElementById('user-provider-whatsapp').value = p ? (p.whatsapp || '') : '';
+        document.getElementById('user-provider-zone').value = p ? (p.zone || '') : '';
+        document.getElementById('user-provider-promo').value = p ? (p.promo || '') : '';
+        document.getElementById('user-provider-active').checked = p ? !!p.is_active : true;
+        document.getElementById('user-provider-business-error').style.display = 'none';
+        document.getElementById('user-provider-error').style.display = 'none';
+
+        var catSel = document.getElementById('user-provider-category');
+        catSel.innerHTML = '<option value="">Cargando...</option>';
+        fetch('{{ url("/groups") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(groups) {
+            catSel.innerHTML = '<option value="">-- Sin categoría --</option>';
+            groups.forEach(function(g) {
+                var opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.description;
+                catSel.appendChild(opt);
+            });
+            if (p && p.category_id) catSel.value = String(p.category_id);
+        })
+        .catch(function() {
+            catSel.innerHTML = '<option value="">-- Sin categoría --</option>';
+        });
+
+        document.getElementById('user-provider-overlay').style.display = 'flex';
+        document.getElementById('user-provider-business').focus();
+    }
+
+    function closeUserProviderModal() {
+        document.getElementById('user-provider-overlay').style.display = 'none';
+    }
+
+    function submitUserProvider(e) {
+        e.preventDefault();
+        if (!selectedUser) return;
+        var business = document.getElementById('user-provider-business').value.trim();
+        var errBn = document.getElementById('user-provider-business-error');
+        var errEl = document.getElementById('user-provider-error');
+        var btn = document.getElementById('user-provider-submit-btn');
+        errBn.style.display = 'none';
+        errEl.style.display = 'none';
+
+        if (!business) {
+            errBn.textContent = 'El nombre del negocio es obligatorio.';
+            errBn.style.display = 'block';
+            return;
+        }
+
+        var body = {
+            business_name: business,
+            description: document.getElementById('user-provider-description').value.trim(),
+            phone: document.getElementById('user-provider-phone').value.trim(),
+            whatsapp: document.getElementById('user-provider-whatsapp').value.trim(),
+            zone: document.getElementById('user-provider-zone').value.trim(),
+            promo: document.getElementById('user-provider-promo').value.trim(),
+            category_id: document.getElementById('user-provider-category').value ? parseInt(document.getElementById('user-provider-category').value, 10) : null,
+            is_active: document.getElementById('user-provider-active').checked
+        };
+
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        fetch('{{ url("/admin/users") }}/' + selectedUser.id + '/provider', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar';
+            if (data.errors) {
+                var msgs = [];
+                Object.keys(data.errors).forEach(function(k) { msgs.push(data.errors[k][0]); });
+                errEl.textContent = msgs.join(' ');
+                errEl.style.display = 'block';
+                return;
+            }
+            if (data.success) {
+                closeUserProviderModal();
+                applyUserUpdate(data.user);
+                refreshSelectedUser();
+            } else {
+                errEl.textContent = data.message || 'Error al guardar.';
+                errEl.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Guardar';
+            errEl.textContent = 'Error de conexión.';
+            errEl.style.display = 'block';
         });
     }
 
@@ -2856,7 +4252,7 @@
             btn.textContent = 'Eliminar';
             if (data.success) {
                 closeUserDelete();
-                if (selectedUser && selectedUser.id === deletingId) clearUserDemographic();
+                if (selectedUser && String(selectedUser.id) === String(deletingId)) clearUserDemographic();
                 loadUsers();
             } else {
                 var warn = document.getElementById('user-delete-warning');

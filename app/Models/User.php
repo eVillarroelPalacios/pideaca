@@ -64,6 +64,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Page::class, 'page_user', 'user_id', 'page_id');
     }
 
+    public function typeAssignedPages()
+    {
+        return $this->typeUser
+            ? $this->typeUser->assignedPages
+            : collect();
+    }
+
     public function addresses()
     {
         return $this->hasMany(Address::class);

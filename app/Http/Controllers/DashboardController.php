@@ -14,7 +14,7 @@ class DashboardController extends Controller
             return redirect('/');
         }
 
-        $user = Auth::user();
+        $user = Auth::user()->load(['status', 'typeUser']);
         $modules = Module::with(['pages' => function ($q) use ($user) {
             $q->whereHas('users', function ($q2) use ($user) {
                 $q2->where('users.id', $user->id);
