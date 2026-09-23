@@ -52,6 +52,10 @@ Route::put('/admin/users/{user}/addresses/{address}', [UsuarioController::class,
 Route::delete('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'destroyAddress'])->name('admin.users.addresses.destroy');
 Route::post('/admin/users/{user}/images', [UsuarioController::class, 'storeImage'])->name('admin.users.images.store');
 Route::delete('/admin/users/{user}/images/{image}', [UsuarioController::class, 'destroyImage'])->name('admin.users.images.destroy');
+    Route::post('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'attachPage'])->name('admin.users.pages.attach');
+    Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
+    Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
+    Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
 
 Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
 Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
