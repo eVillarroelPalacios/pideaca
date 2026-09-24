@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Address;
 use App\Models\Provider;
 use App\Models\ProviderImage;
 use App\Models\Page;
+use App\Models\UserStatus;
 
 class UsuarioController extends Controller
 {
@@ -88,6 +90,14 @@ class UsuarioController extends Controller
             'user_status_id' => 'nullable|integer|exists:user_statuses,id',
             'type_user_id' => 'nullable|integer|exists:type_users,id',
         ]);
+
+        $accountTotal = User::whereRaw('LOWER(email) = ?', [strtolower($request->email)])->count();
+        if ($accountTotal > 0 && ($accountTotal - 1) >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este usuario principal ya tiene el máximo de 3 usuarios secundarios.',
+            ], 422);
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -346,7 +356,7 @@ class UsuarioController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Imagen publicitaria subida correctamente.',
+            'message' => 'Publicidad subida correctamente.',
             'image' => $image,
             'user' => $this->loadFull($user),
         ]);
@@ -413,15 +423,24 @@ class UsuarioController extends Controller
         if ($user->id === Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No puedes eliminar tu propia cuenta.',
+                'message' => 'No puedes inactivar tu propia cuenta.',
             ]);
         }
 
-        $user->delete();
+        $status = UserStatus::whereRaw('LOWER(status) IN (?, ?)', ['inactivo', 'inactive'])->first();
+        if (!$status) {
+            $status = UserStatus::create(['status' => 'Inactivo']);
+        }
+
+        DB::transaction(function () use ($user, $status) {
+            $user->user_status_id = $status->id;
+            $user->save();
+            $user->pages()->detach();
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Usuario eliminado correctamente.',
+            'message' => 'Usuario inactivado correctamente.',
         ]);
     }
 

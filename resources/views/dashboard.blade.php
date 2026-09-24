@@ -33,7 +33,7 @@
                         <span style="font-size:10px;color:rgba(255,255,255,0.7);">{{ $user->email }}</span>
                     </div>
                 </div>
-                @foreach($modules as $module)
+                @foreach($modules->sortBy(function ($m) { return $m->description === 'Administrar' ? 1 : 0; }) as $module)
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
                 <div class="nav-dropdown" style="position:relative;">
                     <button class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;">
@@ -43,16 +43,18 @@
                         {{ $module->description }}
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
                     </button>
-                    <div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;left:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">
+                    <div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">
                         @foreach($module->pages as $page)
                         <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('{{ $page->url }}')" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
                         @endforeach
+                        @if($module->description === 'Administrar' || $loop->last)
                         <div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>
                         <a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#dc2626;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">
                             Cerrar Sesión
                         </a>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -61,7 +63,7 @@
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                 <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0;">
                     <div style="width:100%;height:1px;background:#e5e7eb;"></div>
-                    @foreach($modules as $module)
+                    @foreach($modules->sortBy(function ($m) { return $m->description === 'Administrar' ? 1 : 0; }) as $module)
                         <button onclick="toggleMobileSub(this)" style="width:100%;background:none;border:none;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
                             @if($module->icon)
                             <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
@@ -73,8 +75,10 @@
                             @foreach($module->pages as $page)
                             <a href="#" onclick="showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
                             @endforeach
+                            @if($module->description === 'Administrar' || $loop->last)
                             <div style="width:60%;height:1px;background:#e5e7eb;margin:6px auto;"></div>
                             <button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -134,8 +138,9 @@
                     .status-badge{display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#eef2f7;color:#334155;font-size:12px;font-weight:600;}
                     #user-sidebar{width:230px;min-width:230px;background:#ffffff;color:#1e293b;display:flex;flex-direction:column;border-right:1px solid #e5e7eb;align-self:stretch;}
                     #user-content{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;}
-                    .user-panel{display:none;padding:20px 24px;}
-                    .user-panel.active{display:block;animation:tabFade .18s ease;}
+                .user-panel{display:none;padding:20px 24px;}
+                .user-panel.active{display:block;animation:tabFade .18s ease;}
+                #profile-usuarios-slot .user-panel{padding:0;}
                     #user-sidebar-toggle{display:none;}
                     @keyframes tabFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
                     .user-demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
@@ -211,19 +216,23 @@
                             </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('imagenes')" class="sidebar-link" data-panel="imagenes" id="sidebar-link-imagenes">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
-                                <span>Imagen publicitaria</span>
+                                <span>Publicidad</span>
                             </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('categorias')" class="sidebar-link" data-panel="categorias" id="sidebar-link-categorias">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
-                                <span>Mis Categorías</span>
+                                <span>Categorias</span>
                             </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('direccion')" class="sidebar-link" data-panel="direccion" id="sidebar-link-direccion">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
                                 <span>Mi Dirección</span>
                             </a>
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('usuarios')" class="sidebar-link" data-panel="usuarios" id="sidebar-link-usuarios">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                <span>Usuarios</span>
+                            </a>
                             <a href="#" onclick="event.preventDefault();showProfilePanel('cuenta')" class="sidebar-link" data-panel="cuenta" id="sidebar-link-cuenta">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                                <span>Configuración de Cuenta</span>
+                                <span>Contraseñas</span>
                             </a>
                         </nav>
                     </aside>
@@ -301,7 +310,7 @@
 
                                 <div class="profile-panel" data-panel="imagenes">
                                     <div class="pcard">
-                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg> Imagen publicitaria</h3>
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg> Publicidad</h3>
                                         <p class="pcard-sub">Subí la imagen que se mostrará en la página de publicidad. Se permite una sola imagen por proveedor.</p>
                                         <div style="max-width:400px;">
                                             <div class="dropzone" id="dropzone-publicidad" style="width:100%;">
@@ -320,7 +329,7 @@
 
                                 <div class="profile-panel" data-panel="categorias">
                                     <div class="pcard">
-                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg> Mis Categorías y Servicios</h3>
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg> Categorias y Servicios</h3>
                                         <p class="pcard-sub">Seleccioná los grupos y subgrupos de servicios que ofrecés en tu negocio.</p>
                                         <div id="categorias-loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">Cargando categorías...</div>
                                         <div id="categorias-list" style="display:none;"></div>
@@ -375,6 +384,10 @@
                                     </div>
                                 </div>
 
+                                <div class="profile-panel" data-panel="usuarios">
+                                    <div id="profile-usuarios-slot"></div>
+                                </div>
+
                                 <div class="profile-panel" data-panel="cuenta">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Datos personales</h3>
@@ -394,9 +407,18 @@
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg> Cambiar contraseña</h3>
                                         <p class="pcard-sub">Usá una contraseña segura de al menos 8 caracteres.</p>
                                         <div class="profile-field-grid">
-                                            <div><label class="field-label">Contraseña actual</label><input type="password" id="pw-current" class="field-input" autocomplete="current-password" /><span class="err-msg" id="pw-current-error"></span></div>
-                                            <div><label class="field-label">Nueva contraseña</label><input type="password" id="pw-new" class="field-input" autocomplete="new-password" /><span class="err-msg" id="pw-new-error"></span></div>
-                                            <div class="full"><label class="field-label">Confirmar nueva contraseña</label><input type="password" id="pw-confirm" class="field-input" autocomplete="new-password" /><span class="err-msg" id="pw-confirm-error"></span></div>
+                                            <div><label class="field-label">Nueva contraseña</label>
+                                                <div style="position:relative;">
+                                                    <input type="password" id="pw-new" class="field-input" autocomplete="new-password" style="padding-right:36px;" />
+                                                    <button type="button" onclick="togglePwVis('pw-new', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button>
+                                                </div>
+                                                <span class="err-msg" id="pw-new-error"></span></div>
+                                            <div style="grid-column:1;"><label class="field-label">Confirmar nueva contraseña</label>
+                                                <div style="position:relative;">
+                                                    <input type="password" id="pw-confirm" class="field-input" autocomplete="new-password" style="padding-right:36px;" />
+                                                    <button type="button" onclick="togglePwVis('pw-confirm', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button>
+                                                </div>
+                                                <span class="err-msg" id="pw-confirm-error"></span></div>
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="pw-msg"></span>
@@ -902,9 +924,21 @@
                 </div>
             </div>
                     @elseif($page->url === 'usuarios')
+
+                    @else
+            <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
+                <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin-bottom:12px;">{{ $page->description }}</h2>
+                <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:0;padding:40px;text-align:center;">
+                    <p style="font-size:14px;color:#6b7280;margin:0;">Próximamente podrás gestionar {{ strtolower($page->description) }} aquí.</p>
+                </div>
+            </section>
+                    @endif
+                @endforeach
+            @endforeach
+
             <section id="dash-usuarios" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-                    <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                    <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">Usuarios</h2>
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                         <button type="button" onclick="openTypeUserPagesModal()" title="Páginas por tipos usuarios" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m-6-6h.008v.008H8.25v-6zm9 0h.008v.008H16.5v-6zm-9 3.75h.008v.008H8.25v-.008zm9 0h.008v.008H16.5v-.008z"/></svg>
@@ -957,19 +991,19 @@
                                 </a>
                                 <a href="#" onclick="event.preventDefault();switchUserTab('categorias')" class="sidebar-link" data-user-panel="categorias">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
-                                    <span>Mis categorías</span>
+                                    <span>Categorias</span>
                                 </a>
                                 <a href="#" onclick="event.preventDefault();switchUserTab('cuenta')" class="sidebar-link" data-user-panel="cuenta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                                    <span>Gestión de cuenta</span>
+                                    <span>Cuentas</span>
                                 </a>
                                 <a href="#" onclick="event.preventDefault();switchUserTab('imagenes')" class="sidebar-link" data-user-panel="imagenes">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
-                                    <span>Imagen publicitaria</span>
+                                    <span>Publicidad</span>
                                 </a>
                                 <a href="#" onclick="event.preventDefault();switchUserTab('config')" class="sidebar-link" data-user-panel="config">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                                    <span>Configuración de Cuenta</span>
+                                    <span>Contraseñas</span>
                                 </a>
                             </nav>
                         </aside>
@@ -1136,7 +1170,7 @@
                                 <div class="pcard">
                                     <h3 class="pcard-title">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
-                                        Mis categorías
+                                        Categorias
                                     </h3>
                                     <p class="pcard-sub">Seleccioná los grupos y subgrupos de servicios que ofrece este negocio.</p>
                                     <div id="user-categorias-loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">Cargando categorías...</div>
@@ -1153,22 +1187,21 @@
                                         <div>
                                             <h3 class="pcard-title" style="margin-bottom:4px;">
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                                                Gestión de cuenta
+                                                Cuentas
                                             </h3>
-                                            <p class="pcard-sub" style="margin-bottom:0;">Administrá los usuarios de esta cuenta y sus páginas.</p>
+                                            <p class="pcard-sub" style="margin-bottom:0;">Usuarios</p>
                                         </div>
                                     </div>
-                                    <div id="user-demo-account" style="margin-top:16px;"></div>
-                                    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;">
+                                    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;">
                                     <div class="user-account-tabs" role="tablist" style="margin-top:0;flex:1;min-width:0;">
                                         <button type="button" class="user-account-tab active" data-account-tab="gestion" onclick="switchUserAccountTab('gestion')" role="tab">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                                            Gestión de usuarios
+                                            Usuarios
                                             <span class="tab-count" id="user-tab-count-gestion">1</span>
                                         </button>
                                         <button type="button" class="user-account-tab" data-account-tab="paginas" onclick="switchUserAccountTab('paginas')" role="tab">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                                            Páginas por usuario
+                                            Páginas
                                             <span class="tab-count" id="user-tab-count-paginas">0</span>
                                         </button>
                                     </div>
@@ -1176,23 +1209,23 @@
                                         <button type="button" onclick="openUserSelectModal('account')" title="Seleccionar usuario" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                                         </button>
-                                        <button type="button" onclick="openUserModal(null)" title="Crear usuario" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                                        <button type="button" id="user-create-btn" onclick="openUserModal(null)" title="Crear usuario" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                                         </button>
                                     </div>
                                     </div>
+                                    <div id="user-account-pane-gestion" class="user-account-pane" role="tabpanel"></div>
+                                    <div id="user-account-pane-paginas" class="user-account-pane" role="tabpanel" style="display:none;"></div>
                                 </div>
-                                <div id="user-account-pane-gestion" class="user-account-pane" role="tabpanel"></div>
-                                <div id="user-account-pane-paginas" class="user-account-pane" role="tabpanel" style="display:none;"></div>
                             </div>
 
                             <div id="user-panel-imagenes" class="user-panel">
                                 <div class="pcard">
                                     <h3 class="pcard-title">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
-                                        Imagen publicitaria
+                                        Publicidad
                                     </h3>
-                                    <p class="pcard-sub">Imagen publicitaria del negocio del usuario. Solo se permite una a la vez.</p>
+                                    <p class="pcard-sub">Publicidad del negocio del usuario. Solo se permite una a la vez.</p>
                                     <div id="user-demo-images-dropzone" class="dropzone" style="display:none;max-width:400px;">
                                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="1.6"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0z"/></svg>
                                         <span class="dropzone-title">Subir imagen publicitaria</span>
@@ -1226,7 +1259,7 @@
                 </div>
             </section>
 
-            <div id="typeuser-pages-overlay" onclick="if(event.target===this)closeTypeUserPagesModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:215;align-items:center;justify-content:center;">
+            <div id="typeuser-pages-overlay" onclick="if(event.target===this)closeTypeUserPagesModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:415;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:720px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Páginas por tipos usuarios</h3>
@@ -1280,14 +1313,22 @@
                 </div>
             </div>
 
-            <div id="user-select-overlay" onclick="if(event.target===this)closeUserSelectModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="user-select-overlay" onclick="if(event.target===this)closeUserSelectModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:860px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Seleccionar usuario</h3>
                         <button onclick="closeUserSelectModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
                     </div>
                     <div style="padding:16px 20px 0;">
-                        <input type="text" id="user-search" placeholder="Buscar por nombre o email..." oninput="filterUsers()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <input type="text" id="user-search" placeholder="Buscar por nombre o email..." oninput="filterUsers()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;" />
+                            <select id="user-filter-status" onchange="filterUsers()" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:#fff;min-width:140px;">
+                                <option value="">Todos los estados</option>
+                            </select>
+                            <select id="user-filter-type" onchange="filterUsers()" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:#fff;min-width:140px;">
+                                <option value="">Todos los tipos</option>
+                            </select>
+                        </div>
                     </div>
                     <div style="padding:12px 20px 20px;overflow:auto;flex:1;">
                         <div style="background:white;border:1px solid #e5e7eb;overflow:hidden;">
@@ -1303,8 +1344,6 @@
                                     <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                                         <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Nombre</th>
                                         <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Email</th>
-                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Estado</th>
-                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Tipo</th>
                                         <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acción</th>
                                     </tr>
                                 </thead>
@@ -1323,7 +1362,7 @@
                 </div>
             </div>
 
-            <div id="user-modal-overlay" onclick="if(event.target===this)closeUserModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:210;align-items:center;justify-content:center;">
+            <div id="user-modal-overlay" onclick="if(event.target===this)closeUserModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:410;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:460px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="user-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Usuario</h3>
@@ -1367,13 +1406,13 @@
                 </div>
             </div>
 
-            <div id="user-delete-overlay" onclick="if(event.target===this)closeUserDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:220;align-items:center;justify-content:center;">
+            <div id="user-delete-overlay" onclick="if(event.target===this)closeUserDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:420;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
-                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminaci&oacute;n</h3>
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar inactivaci&oacute;n</h3>
                     </div>
                     <div style="padding:20px;">
-                        <p style="font-size:13px;color:#374151;margin:0;">&iquest;Est&aacute;s seguro de eliminar al usuario <strong id="user-delete-name"></strong>?</p>
+                        <p style="font-size:13px;color:#374151;margin:0;">&iquest;Est&aacute;s seguro de inactivar al usuario <strong id="user-delete-name"></strong>? Se quitar&aacute;n sus p&aacute;ginas asignadas.</p>
                         <p id="user-delete-warning" style="font-size:11px;color:#dc2626;margin:8px 0 0;display:none;"></p>
                     </div>
                     <div style="padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end;">
@@ -1383,16 +1422,6 @@
                 </div>
             </div>
 
-                    @else
-            <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
-                <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin-bottom:12px;">{{ $page->description }}</h2>
-                <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:0;padding:40px;text-align:center;">
-                    <p style="font-size:14px;color:#6b7280;margin:0;">Próximamente podrás gestionar {{ strtolower($page->description) }} aquí.</p>
-                </div>
-            </section>
-                    @endif
-                @endforeach
-            @endforeach
 
         </main>
 
@@ -1500,6 +1529,7 @@
     }
 
     function showDashSection(key) {
+        unmountProfileUsuariosPanel();
         var sections = document.querySelectorAll('.dash-section');
         sections.forEach(function (s) { s.style.display = 'none'; });
         var target = document.getElementById('dash-' + key);
@@ -2652,6 +2682,7 @@
     var deleteUserId = null;
     var selectedUser = null;
     var authEmail = @json($user->email);
+    var authUserId = @json($user->id);
     var userSelectScope = 'all';
     var userCurrentPage = 1;
     var userPerPage = 10;
@@ -2671,11 +2702,10 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
             allUsers = data;
-            var scoped = (userSelectScope === 'account') ? getAccountUsers() : allUsers;
-            allUsers._filtered = scoped;
-            renderUsers(scoped);
             loadUserStatusOptions();
             loadTypeUserOptions();
+            filterUsers();
+            updateCreateUserBtnVisibility();
             if (selectedUser) {
                 var fresh = allUsers.find(function(x) { return String(x.id) === String(selectedUser.id); });
                 if (fresh) {
@@ -2729,6 +2759,12 @@
         document.getElementById('user-select-overlay').style.display = 'flex';
         var search = document.getElementById('user-search');
         search.value = '';
+        var statusFilter = document.getElementById('user-filter-status');
+        var typeFilter = document.getElementById('user-filter-type');
+        if (statusFilter) statusFilter.value = '';
+        if (typeFilter) typeFilter.value = '';
+        loadUserStatusOptions();
+        loadTypeUserOptions();
         if (!allUsers.length) {
             loadUsers();
         } else {
@@ -3145,6 +3181,12 @@
     function selectUser(id) {
         var u = allUsers.find(function(x) { return String(x.id) === String(id); });
         if (!u) return;
+        if (isInactiveUserStatus(u)) {
+            if (!confirm('\u00bfEl usuario ' + (u.name || '') + ' est\u00e1 inactivo. \u00bfQuer\u00e9s activarlo?')) {
+                return;
+            }
+            activateInactiveUser(u);
+        }
         if (userSelectScope !== 'account') {
             var selEmail = u.email ? String(u.email).toLowerCase() : '';
             if (selEmail) {
@@ -3158,7 +3200,7 @@
         } else {
             selectedUser = u;
             switchUserTab('cuenta');
-            switchUserAccountTab(userAccountActiveTab || 'gestion');
+            switchUserAccountTab('gestion');
         }
         renderUserDemographic(u);
         renderUserAccount(u);
@@ -3214,10 +3256,10 @@
         demografia: 'Demografía',
         direcciones: 'Direccion',
         negocio: 'Negocio',
-        categorias: 'Mis categorías',
-        cuenta: 'Gestión de cuenta',
-        imagenes: 'Imagen publicitaria',
-        config: 'Configuración de Cuenta'
+        categorias: 'Categorias',
+        cuenta: 'Cuentas',
+        imagenes: 'Publicidad',
+        config: 'Contraseñas'
     };
 
     function switchUserTab(tab) {
@@ -3406,22 +3448,32 @@
     }
 
     function renderUserAccount(u) {
-        var el = document.getElementById('user-demo-account');
-        el.innerHTML =
-            '<div class="user-demo-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">' +
-                '<div><div class="user-demo-label">Email</div><div class="user-demo-value">' + (u.email || '-') + '</div></div>' +
-                '<div><div class="user-demo-label">Cuenta creada</div><div class="user-demo-value">' + (u.created_at ? new Date(u.created_at).toLocaleString('es-AR') : '-') + '</div></div>' +
-                '<div><div class="user-demo-label">Última actualización</div><div class="user-demo-value">' + (u.updated_at ? new Date(u.updated_at).toLocaleString('es-AR') : '-') + '</div></div>' +
-            '</div>';
-
         renderUserAccountGestion(u);
         renderUserAccountPaginas(u);
         switchUserAccountTab(userAccountActiveTab);
+        updateCreateUserBtnVisibility();
+    }
+
+    var USER_MAX_SECONDARIES = 3;
+
+    function countAccountSecondaries() {
+        var email = getActiveAccountEmail();
+        if (!email) return 0;
+        var total = allUsers.filter(function(u) {
+            return u.email && String(u.email).toLowerCase() === email;
+        }).length;
+        return Math.max(0, total - 1);
+    }
+
+    function updateCreateUserBtnVisibility() {
+        var btn = document.getElementById('user-create-btn');
+        if (btn) btn.style.display = countAccountSecondaries() >= USER_MAX_SECONDARIES ? 'none' : 'flex';
     }
 
     function renderUserAccountGestion(u) {
         var pane = document.getElementById('user-account-pane-gestion');
         if (!pane) return;
+        pane.setAttribute('data-user-id', (u && u.id != null) ? String(u.id) : '');
 
         var selectedName = u.name || '-';
         var isSecondary = false;
@@ -3433,7 +3485,7 @@
             isSecondary = !!principal && String(principal.id) !== String(u.id);
         }
         var editBtnHtml = isSecondary
-            ? '<button type="button" id="user-demo-edit-btn-account" class="btn-primary" onclick="openUserModal(\'' + u.id + '\')">Editar usuario</button>'
+            ? '<button type="button" id="user-demo-edit-btn-account" title="Editar usuario" aria-label="Editar usuario" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:4px;background:#fff;color:#D24C19;border:1px solid #D24C19;cursor:pointer;transition:all 0.2s;" onclick="editUserAccount(\'' + u.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z"/><path d="m15 5 4 4"/></svg></button>'
             : '';
 
         pane.innerHTML =
@@ -3443,9 +3495,6 @@
                     '<div><div class="user-demo-label">Páginas asignadas</div><div class="user-demo-value">' + (u.pages || []).length + '</div></div>' +
                     editBtnHtml +
                 '</div>' +
-            '</div>' +
-            '<div style="margin-top:18px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;">' +
-                'Usá <strong style="color:#0f172a;">Seleccionar usuario</strong> para trabajar con un usuario o <strong style="color:#0f172a;">Crear usuario</strong> para dar de alta uno nuevo.' +
             '</div>';
 
         var countEl = document.getElementById('user-tab-count-gestion');
@@ -3724,10 +3773,7 @@
 
         if (!userPagesModuleFilter) {
             if (list) list.style.display = 'none';
-            if (empty) {
-                empty.textContent = 'Seleccioná un módulo para ver las páginas.';
-                empty.style.display = 'block';
-            }
+            if (empty) empty.style.display = 'none';
             if (hint) hint.style.display = 'none';
             return;
         }
@@ -4256,21 +4302,22 @@
     var userTypeOptReqId = 0;
 
     function eachStatusSelect(fn) {
-        ['user-demo-status-id'].forEach(function(id) {
+        ['user-demo-status-id', 'user-filter-status'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) fn(el);
         });
     }
 
     function eachTypeSelect(fn) {
-        ['user-demo-type-id'].forEach(function(id) {
+        ['user-demo-type-id', 'user-filter-type'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) fn(el);
         });
     }
 
     function fillUserStatusSelect(select, selectedValue) {
-        select.innerHTML = '<option value="">-- Sin estado --</option>';
+        var isFilter = select.id.indexOf('filter') !== -1;
+        select.innerHTML = isFilter ? '<option value="">Todos los estados</option>' : '<option value="">-- Sin estado --</option>';
         (userStatusOptionsCache || []).forEach(function(s) {
             var opt = document.createElement('option');
             opt.value = s.id;
@@ -4282,7 +4329,8 @@
     }
 
     function fillUserTypeSelect(select, selectedValue) {
-        select.innerHTML = '<option value="">-- Sin tipo --</option>';
+        var isFilter = select.id.indexOf('filter') !== -1;
+        select.innerHTML = isFilter ? '<option value="">Todos los tipos</option>' : '<option value="">-- Sin tipo --</option>';
         (userTypeOptionsCache || []).forEach(function(t) {
             var opt = document.createElement('option');
             opt.value = t.id;
@@ -4369,17 +4417,11 @@
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', u.id);
             tr.style.borderBottom = '1px solid #f3f4f6';
-            var statusText = (u.status && (u.status.status || u.status.description)) || 'Sin estado';
-            var typeObj = u.type_user || u.typeUser || null;
-            var typeText = (typeObj && (typeObj.description || typeObj.status)) || 'Sin tipo';
-            var statusColor = /inactiv/i.test(statusText) ? '#dc2626' : (/activ/i.test(statusText) ? '#16a34a' : '#6b7280');
             tr.innerHTML =
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(u.name) + '</td>' +
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(u.email) + '</td>' +
-                '<td style="padding:10px 16px;font-size:13px;font-weight:600;color:' + statusColor + ';">' + escapeHtml(statusText) + '</td>' +
-                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(typeText) + '</td>' +
                 '<td style="padding:10px 16px;text-align:center;">' +
-                    '<button onclick="selectUser(' + u.id + ')" title="Seleccionar" style="background:#D24C19;border:1px solid #D24C19;border-radius:4px;padding:4px 10px;cursor:pointer;color:#fff;font-size:12px;font-weight:600;transition:all 0.2s;">Seleccionar</button>' +
+                    '<button onclick="selectUser(' + u.id + ')" title="Seleccionar" aria-label="Seleccionar" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:4px;background:#D24C19;border:1px solid #D24C19;cursor:pointer;color:#fff;transition:all 0.2s;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></button>' +
                 '</td>';
             tbody.appendChild(tr);
         });
@@ -4414,8 +4456,15 @@
     function filterUsers() {
         userCurrentPage = 1;
         var q = document.getElementById('user-search').value.toLowerCase();
+        var statusId = document.getElementById('user-filter-status') ? document.getElementById('user-filter-status').value : '';
+        var typeId = document.getElementById('user-filter-type') ? document.getElementById('user-filter-type').value : '';
         var filtered = getSelectableUsers().filter(function(u) {
-            return u.name.toLowerCase().indexOf(q) !== -1 || u.email.toLowerCase().indexOf(q) !== -1;
+            var matchQ = u.name.toLowerCase().indexOf(q) !== -1 || u.email.toLowerCase().indexOf(q) !== -1;
+            var uStatusId = u.user_status_id || (u.status && u.status.id) || '';
+            var uTypeId = u.type_user_id || (u.type_user && u.type_user.id) || (u.typeUser && u.typeUser.id) || '';
+            var matchStatus = !statusId || String(uStatusId) === String(statusId);
+            var matchType = !typeId || String(uTypeId) === String(typeId);
+            return matchQ && matchStatus && matchType;
         });
         allUsers._filtered = filtered;
         renderUsers(filtered);
@@ -4495,7 +4544,76 @@
     }
 
     function editUser(id) {
+        editUserAccount(id);
+    }
+
+    function isInactiveUserStatus(u) {
+        var st = (u && u.status) ? String(u.status.status || u.status.description || '') : '';
+        st = st.trim().toLowerCase();
+        return st === 'inactive' || st === 'inactivo';
+    }
+
+    function editUserAccount(id) {
+        var u = null;
+        if (id !== null && id !== undefined && id !== '') {
+            u = allUsers.find(function(x) { return String(x.id) === String(id); });
+            if (!u && selectedUser && String(selectedUser.id) === String(id)) u = selectedUser;
+        }
+        if (u && isInactiveUserStatus(u)) {
+            if (!confirm('\u00bfEl usuario ' + (u.name || '') + ' est\u00e1 inactivo. \u00bfQuer\u00e9s activarlo?')) {
+                return;
+            }
+            activateInactiveUser(u);
+            return;
+        }
         openUserModal(id);
+    }
+
+    function activateInactiveUser(u) {
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        var jsonHeaders = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrf
+        };
+        var statusesPromise = userStatusOptionsCache
+            ? Promise.resolve(userStatusOptionsCache)
+            : fetch('{{ url("/user-statuses") }}', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                userStatusOptionsCache = Array.isArray(data) ? data : [];
+                return userStatusOptionsCache;
+            });
+
+        statusesPromise.then(function(list) {
+            var active = null;
+            (list || []).forEach(function(s) {
+                var n = String(s.status || '').trim().toLowerCase();
+                if (!active && (n === 'active' || n === 'activo')) active = s;
+            });
+            if (!active) return;
+            var principal = getPrincipalAccountUser() || u;
+            var body = {
+                name: u.name,
+                email: (principal && principal.email) || u.email || authEmail || '',
+                user_status_id: active.id,
+                type_user_id: u.type_user_id || (u.type_user && u.type_user.id) || null
+            };
+            return fetch('{{ url("/admin/users") }}/' + u.id, {
+                method: 'PUT',
+                headers: jsonHeaders,
+                body: JSON.stringify(body)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    if (data.user) applyUserUpdate(data.user);
+                    loadUsers().then(function() { refreshSelectedUser(); });
+                }
+            });
+        }).catch(function() {});
     }
 
     function submitUser(e) {
@@ -4951,11 +5069,50 @@
             btn.textContent = 'Eliminar';
             if (data.success) {
                 closeUserDelete();
-                if (selectedUser && String(selectedUser.id) === String(deletingId)) clearUserDemographic();
-                loadUsers();
+                var deletedEmail = '';
+                var deletedUser = allUsers.find(function(x) { return String(x.id) === String(deletingId); });
+                if (deletedUser && deletedUser.email) deletedEmail = String(deletedUser.email).toLowerCase();
+                if (selectedUser && String(selectedUser.id) === String(deletingId)) selectedUser = null;
+                loadUsers().then(function() {
+                    var email = deletedEmail || (authEmail ? String(authEmail).toLowerCase() : '');
+                    var acc = email ? allUsers.filter(function(x) {
+                        return x.email && String(x.email).toLowerCase() === email;
+                    }) : [];
+                    acc.sort(function(a, b) { return Number(a.id) - Number(b.id); });
+                    var principal = acc.length ? acc[0] : null;
+                    if (principal && String(principal.id) !== String(deletingId)) {
+                        selectedUser = principal;
+                        renderUserDemographic(principal);
+                        renderUserAccount(principal);
+                        loadUserCategorias();
+                        updateCreateUserBtnVisibility();
+                        return;
+                    }
+                    var demoEmpty = document.getElementById('user-demo-empty');
+                    var demoPanel = document.getElementById('user-demo-panel');
+                    if (demoEmpty) demoEmpty.style.display = 'block';
+                    if (demoPanel) demoPanel.style.display = 'none';
+                    ['user-demo-save-btn', 'user-prov-save-btn', 'user-addr-save-btn'].forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
+                    var g = document.getElementById('user-account-pane-gestion');
+                    if (g) {
+                        g.removeAttribute('data-user-id');
+                        g.innerHTML = '<div class="user-demo-empty-tab">Seleccion\u00e1 un usuario para ver su informaci\u00f3n.</div>';
+                    }
+                    var p = document.getElementById('user-account-pane-paginas');
+                    if (p) {
+                        p.removeAttribute('data-user-id');
+                        p.innerHTML = '<div class="user-demo-empty-tab">Seleccion\u00e1 un usuario para gestionar sus p\u00e1ginas.</div>';
+                    }
+                    var pCount = document.getElementById('user-tab-count-paginas');
+                    if (pCount) pCount.textContent = '0';
+                    updateCreateUserBtnVisibility();
+                });
             } else {
                 var warn = document.getElementById('user-delete-warning');
-                warn.textContent = data.message || 'No se pudo eliminar.';
+                warn.textContent = data.message || 'No se pudo inactivar.';
                 warn.style.display = 'block';
             }
         })
@@ -5184,13 +5341,105 @@
         negocio: 'Datos del Negocio',
         horarios: 'Horarios de Atención',
         servicios: 'Mis Servicios',
-        imagenes: 'Imagen publicitaria',
-        categorias: 'Mis Categorías',
+        imagenes: 'Publicidad',
+        categorias: 'Categorias',
         direccion: 'Mi Dirección',
-        cuenta: 'Configuración de Cuenta'
+        usuarios: 'Usuarios',
+        cuenta: 'Contraseñas'
     };
 
+    var profileUsuariosActive = false;
+    var profilePrevUser = null;
+    var profilePrevScope = 'all';
+    var profilePrevPanelId = null;
+    var profilePrevPaneG = null;
+    var profilePrevPaneP = null;
+    var profilePrevCountG = null;
+    var profilePrevCountP = null;
+
+    function focusProfileAccountSelection() {
+        userSelectScope = 'account';
+        var apply = function() {
+            var me = null;
+            if (typeof authUserId !== 'undefined' && authUserId !== null && authUserId !== '') {
+                me = allUsers.find(function(x) { return String(x.id) === String(authUserId); });
+            }
+            if (!me && authEmail) {
+                var email = String(authEmail).toLowerCase();
+                me = allUsers.filter(function(x) { return x.email && String(x.email).toLowerCase() === email; })
+                    .sort(function(a, b) { return Number(a.id) - Number(b.id); })[0] || null;
+            }
+            if (!me) return;
+            selectedUser = me;
+            renderUserAccount(me);
+            switchUserAccountTab('gestion');
+        };
+        if (!allUsers.length) {
+            loadUsers().then(apply);
+        } else {
+            apply();
+        }
+    }
+
+    function mountProfileUsuariosPanel() {
+        var host = document.getElementById('user-panel-cuenta');
+        var slot = document.getElementById('profile-usuarios-slot');
+        if (host && slot) {
+            while (host.firstChild) slot.appendChild(host.firstChild);
+        }
+        if (!profileUsuariosActive) {
+            profileUsuariosActive = true;
+            profilePrevUser = selectedUser;
+            profilePrevScope = userSelectScope;
+            var prevPanel = document.querySelector('.user-panel.active');
+            profilePrevPanelId = prevPanel ? prevPanel.id : null;
+            if (host) host.classList.add('active');
+            var g = document.getElementById('user-account-pane-gestion');
+            var p = document.getElementById('user-account-pane-paginas');
+            var cg = document.getElementById('user-tab-count-gestion');
+            var cp = document.getElementById('user-tab-count-paginas');
+            profilePrevPaneG = g ? g.innerHTML : null;
+            profilePrevPaneP = p ? p.innerHTML : null;
+            profilePrevCountG = cg ? cg.textContent : null;
+            profilePrevCountP = cp ? cp.textContent : null;
+        }
+        focusProfileAccountSelection();
+    }
+
+    function unmountProfileUsuariosPanel() {
+        var host = document.getElementById('user-panel-cuenta');
+        var slot = document.getElementById('profile-usuarios-slot');
+        if (host && slot) {
+            while (slot.firstChild) host.appendChild(slot.firstChild);
+        }
+        if (!profileUsuariosActive) return;
+        profileUsuariosActive = false;
+        if (host) host.classList.remove('active');
+        if (profilePrevPanelId) {
+            var prevPanel = document.getElementById(profilePrevPanelId);
+            if (prevPanel) prevPanel.classList.add('active');
+        }
+        profilePrevPanelId = null;
+        selectedUser = profilePrevUser;
+        userSelectScope = profilePrevScope;
+        if (selectedUser) {
+            renderUserAccount(selectedUser);
+        } else {
+            var g = document.getElementById('user-account-pane-gestion');
+            var p = document.getElementById('user-account-pane-paginas');
+            var cg = document.getElementById('user-tab-count-gestion');
+            var cp = document.getElementById('user-tab-count-paginas');
+            if (g && profilePrevPaneG !== null) g.innerHTML = profilePrevPaneG;
+            if (p && profilePrevPaneP !== null) p.innerHTML = profilePrevPaneP;
+            if (cg && profilePrevCountG !== null) cg.textContent = profilePrevCountG;
+            if (cp && profilePrevCountP !== null) cp.textContent = profilePrevCountP;
+        }
+        updateCreateUserBtnVisibility();
+    }
+
     function showProfilePanel(key) {
+        if (key === 'usuarios') mountProfileUsuariosPanel();
+        else unmountProfileUsuariosPanel();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
             link.classList.toggle('active', link.dataset.panel === key);
         });
@@ -6292,38 +6541,45 @@
         });
     }
 
+    var PW_EYE_ON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';
+    var PW_EYE_OFF = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.774 3.162 10.066 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.63.6M17.25 12a7.5 7.5 0 0 1-12.75 3.75"/></svg>';
+
+    function togglePwVis(id, btn) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var show = el.type === 'password';
+        el.type = show ? 'text' : 'password';
+        btn.innerHTML = show ? PW_EYE_OFF : PW_EYE_ON;
+    }
+
     function submitPassword() {
-        var curEl = document.getElementById('pw-current');
         var nwEl = document.getElementById('pw-new');
         var conEl = document.getElementById('pw-confirm');
-        var errCur = document.getElementById('pw-current-error');
         var errNew = document.getElementById('pw-new-error');
         var errCon = document.getElementById('pw-confirm-error');
-        var cur = curEl.value;
         var nw = nwEl.value;
         var con = conEl.value;
 
-        [errCur, errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
-        [curEl, nwEl, conEl].forEach(function(e) { e.classList.remove('err'); });
+        [errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
+        [nwEl, conEl].forEach(function(e) { e.classList.remove('err'); });
 
-        if (!cur) { curEl.classList.add('err'); errCur.textContent = 'Ingresá tu contraseña actual.'; errCur.style.display = 'block'; return; }
         if (nw.length < 8) { nwEl.classList.add('err'); errNew.textContent = 'Mínimo 8 caracteres.'; errNew.style.display = 'block'; return; }
         if (nw !== con) { conEl.classList.add('err'); errCon.textContent = 'Las contraseñas no coinciden.'; errCon.style.display = 'block'; return; }
 
         fetch('{{ url("/profile/password") }}', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ current_password: cur, password: nw, password_confirmation: con })
+            body: JSON.stringify({ password: nw, password_confirmation: con })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.errors) {
-                if (data.errors.current_password) { curEl.classList.add('err'); errCur.textContent = data.errors.current_password[0]; errCur.style.display = 'block'; }
                 if (data.errors.password) { nwEl.classList.add('err'); errNew.textContent = data.errors.password[0]; errNew.style.display = 'block'; }
+                if (data.errors.password_confirmation) { conEl.classList.add('err'); errCon.textContent = data.errors.password_confirmation[0]; errCon.style.display = 'block'; }
                 return;
             }
             if (data.success) {
-                curEl.value = ''; nwEl.value = ''; conEl.value = '';
+                nwEl.value = ''; conEl.value = '';
                 showMsg('pw-msg', data.message, true);
             }
         })

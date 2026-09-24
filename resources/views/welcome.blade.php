@@ -68,8 +68,8 @@
                         Contactos
                     </a>
                     <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
-                    <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:0;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
+                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
+                    <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
                     <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
                 </div>
             </div>

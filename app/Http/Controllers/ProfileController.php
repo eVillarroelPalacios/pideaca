@@ -54,13 +54,13 @@ class ProfileController extends Controller
         }
 
         $request->validate([
-            'current_password' => 'required|string',
+            'current_password' => 'nullable|string',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = Auth::user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if ($request->filled('current_password') && !Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'errors' => ['current_password' => ['La contraseña actual no es correcta.']],
@@ -174,7 +174,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Imagen publicitaria subida correctamente.',
+            'message' => 'Publicidad subida correctamente.',
             'image' => $image,
         ]);
     }
