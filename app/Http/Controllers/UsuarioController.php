@@ -317,6 +317,13 @@ class UsuarioController extends Controller
     {
         if ($this->requireAuth()) return $this->requireAuth();
 
+        if (!$user->canAdvertise()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La publicidad está disponible solo para usuarios Prestador con estado Activo o Prueba.',
+            ], 403);
+        }
+
         $provider = $user->provider ?: $this->resolveAccountProvider($user);
         if (!$provider) {
             return response()->json(['success' => false, 'message' => 'Primero creá el negocio del usuario.'], 400);

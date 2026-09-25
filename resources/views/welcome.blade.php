@@ -68,7 +68,7 @@
                         Contactos
                     </a>
                     <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                    <a href="#" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
+                    <a href="#" onclick="openRegister();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
                     <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
                     <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
                 </div>
@@ -180,6 +180,12 @@
                                 $searchTerms .= ' ' . strtolower($svcList);
                             @endphp
                             <div class="flip-card" data-idx="{{ $idx }}" data-category="{{ mb_strtoupper($provider['category']) }}" data-groups="{{ mb_strtoupper(implode(',', $provider['groups'])) }}" data-search="{{ $searchTerms }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+                                @if(isset($provider['status']) && strtolower($provider['status']) === 'prueba')
+                                <span class="ad-trial-band" style="position:absolute;top:0;right:18px;z-index:3;display:block;width:82px;text-align:center;font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#2b313a;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));">
+                                    <span style="display:block;height:9px;background:linear-gradient(180deg,#666d78 0%,#8b929d 55%,#b4bac4 100%);border-radius:3px 3px 0 0;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);"></span>
+                                    <span style="display:block;padding:9px 0 20px;background:linear-gradient(180deg,#cfd3d9 0%,#c0c4cb 50%,#b3b8bf 100%);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);text-shadow:0 1px 0 rgba(255,255,255,.75);">Prueba</span>
+                                </span>
+                                @endif
                                 <div class="ad-banner" style="position:relative;overflow:hidden;background:#f9fafb;height:150px;">
                                     <img src="{{ $provider['banner_url'] ? asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) : asset('images/publicidad/default.jpg') }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
                                 </div>
@@ -372,6 +378,81 @@
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         <button type="submit" id="login-submit" class="header-btn" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Iniciar</button>
                         <button type="button" onclick="recoverPassword()" style="padding:10px;background:#ffffff;color:#D24C19;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Recuperar contraseña</button>
+                    </div>
+                </form>
+
+                <form id="recovery-form" style="padding:20px;display:none;flex-direction:column;gap:14px;">
+                    <div>
+                        <label for="recovery-email" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Correo</label>
+                        <input type="email" id="recovery-email" name="email" placeholder="Ingrese el correo"
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                    </div>
+                    <div id="recovery-msg" style="display:none;font-size:12px;padding:9px 12px;"></div>
+                    <button type="submit" id="recovery-submit" class="header-btn" style="padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Enviar enlace</button>
+                    <button type="button" onclick="backToLogin()" style="padding:10px;background:#ffffff;color:#D24C19;border:1px solid #d1d5db;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Volver a iniciar sesión</button>
+                    <p style="font-size:11.5px;line-height:1.5;color:#64748b;margin:0;">Te enviaremos un correo con un botón para restablecer tu contraseña. El enlace dura 60 minutos y solo puede usarse una vez.</p>
+                </form>
+            </div>
+        </div>
+
+        {{-- REGISTRO MODAL --}}
+        <div id="register-overlay" class="login-overlay" style="display:none;">
+            <div class="login-box" style="background:#ffffff;width:360px;max-width:92vw;border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#ffffff;border-bottom:1px solid #e5e7eb;">
+                    <img src="{{ asset('images/logo.png') }}" alt="PideAca" style="height:44px;width:auto;max-width:150px;object-fit:contain;display:block;" />
+                    <button onclick="closeRegister()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;line-height:1;font-weight:600;">&times;</button>
+                </div>
+                <form id="register-form" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+                    <div>
+                        <label for="register-name" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Nombre completo</label>
+                        <input type="text" id="register-name" name="name" placeholder="Ingrese su nombre completo"
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                    </div>
+                    <div>
+                        <label for="register-email" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Correo</label>
+                        <input type="email" id="register-email" name="email" placeholder="Ingrese el correo"
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                    </div>
+                    <div>
+                        <label for="register-type" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Tipo de cliente</label>
+                        <select id="register-type" name="type_user_id"
+                            style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;background:#ffffff;">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="register-password" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Contraseña</label>
+                        <div style="position:relative;">
+                            <input type="password" id="register-password" name="password" placeholder="Ingrese su contraseña"
+                                style="width:100%;box-sizing:border-box;padding:9px 36px 9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                            <button type="button" onclick="toggleRegisterPassword()" id="reg-eye-toggle"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;color:#6b7280;line-height:1;"
+                                title="Ver contraseña">
+                                <svg id="reg-eye-open" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                                <svg id="reg-eye-closed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="register-password-confirm" style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Confirmar contraseña</label>
+                        <div style="position:relative;">
+                            <input type="password" id="register-password-confirm" name="password_confirmation" placeholder="Repita la contraseña"
+                                style="width:100%;box-sizing:border-box;padding:9px 36px 9px 12px;border:1px solid #d1d5db;border-radius:0;font-size:13px;outline:none;">
+                            <button type="button" onclick="toggleRegisterPasswordConfirm()" id="reg-eye2-toggle"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;color:#6b7280;line-height:1;"
+                                title="Ver contraseña">
+                                <svg id="reg-eye2-open" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                                <svg id="reg-eye2-closed" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="register-error" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
+                    <div id="register-ok" style="display:none;font-size:12px;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:8px 12px;border-radius:0;"></div>
+                    <div id="register-spinner-overlay" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:transparent;z-index:10;align-items:center;justify-content:center;border-radius:0;">
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div>
+                        <button type="submit" id="register-submit" class="header-btn" style="width:100%;box-sizing:border-box;display:block;padding:10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Registrarse</button>
                     </div>
                 </form>
             </div>
@@ -822,9 +903,10 @@
         position: fixed; inset: 0; z-index: 200;
         background: rgba(7, 26, 48, 0.6);
         display: flex; align-items: flex-start; justify-content: center;
-        padding-top: 180px;
+        padding: 48px 20px 40px;
+        overflow-y: auto;
     }
-    .login-box { animation: loginPop 0.25s ease; }
+    .login-box { margin: auto; animation: loginPop 0.25s ease; }
     @keyframes loginPop {
         from { transform: scale(0.95); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
@@ -1138,15 +1220,56 @@
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
     const loginSpinnerOverlay = document.getElementById('login-spinner-overlay');
+    const recoveryForm = document.getElementById('recovery-form');
+    const recoveryEmail = document.getElementById('recovery-email');
+    const recoveryMsg = document.getElementById('recovery-msg');
 
-    function openLogin() {
+    function setRecoveryMsg(text, kind) {
+        if (!text) {
+            recoveryMsg.style.display = 'none';
+            recoveryMsg.textContent = '';
+            return;
+        }
+        recoveryMsg.textContent = text;
+        recoveryMsg.style.display = 'block';
+        if (kind === 'ok') {
+            recoveryMsg.style.color = '#047857';
+            recoveryMsg.style.background = '#ecfdf5';
+            recoveryMsg.style.border = '1px solid #a7f3d0';
+        } else {
+            recoveryMsg.style.color = '#dc2626';
+            recoveryMsg.style.background = '#fef2f2';
+            recoveryMsg.style.border = '1px solid #fecaca';
+        }
+    }
+
+    function backToLogin() {
+        recoveryForm.style.display = 'none';
+        loginForm.style.display = 'flex';
+        setRecoveryMsg('');
         loginError.style.display = 'none';
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-email').focus();
+    }
+
+    function openLogin(prefillEmail) {
+        loginError.style.display = 'none';
+        setRecoveryMsg('');
+        recoveryForm.style.display = 'none';
+        loginForm.style.display = 'flex';
         document.getElementById('login-password').value = '';
         document.getElementById('login-password').type = 'password';
         document.getElementById('eye-open').style.display = 'block';
         document.getElementById('eye-closed').style.display = 'none';
+        if (typeof prefillEmail === 'string' && prefillEmail) {
+            document.getElementById('login-email').value = prefillEmail;
+        }
         loginOverlay.style.display = 'flex';
-        document.getElementById('login-email').focus();
+        if (typeof prefillEmail === 'string' && prefillEmail) {
+            document.getElementById('login-password').focus();
+        } else {
+            document.getElementById('login-email').focus();
+        }
     }
 
     function closeLogin() {
@@ -1215,12 +1338,52 @@
     });
 
     function recoverPassword() {
-        loginError.style.color = '#1d4ed8';
-        loginError.style.background = '#eff6ff';
-        loginError.style.border = '1px solid #bfdbfe';
-        loginError.style.display = 'block';
-        loginError.textContent = 'Próximamente enviaremos un enlace de recuperación a tu correo.';
+        loginForm.style.display = 'none';
+        recoveryForm.style.display = 'flex';
+        loginError.style.display = 'none';
+        setRecoveryMsg('');
+        var loginEmail = document.getElementById('login-email').value.trim();
+        if (loginEmail) recoveryEmail.value = loginEmail;
+        recoveryEmail.focus();
     }
+
+    recoveryForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var email = recoveryEmail.value.trim();
+        if (!email) { setRecoveryMsg('Ingrese el correo', 'err'); return; }
+
+        setRecoveryMsg('');
+        var submitBtn = document.getElementById('recovery-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        fetch('{{ url('/password/forgot') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (r) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar enlace';
+            if (r.ok && r.data.success) {
+                setRecoveryMsg(r.data.message, 'ok');
+                return;
+            }
+            var errors = r.data && r.data.errors;
+            var msg = (errors && errors.email && errors.email[0]) || (r.data && r.data.message) || 'No pudimos procesar la solicitud.';
+            setRecoveryMsg(msg, 'err');
+        })
+        .catch(function () {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar enlace';
+            setRecoveryMsg('Error de conexión. Intentá de nuevo.', 'err');
+        });
+    });
 
     function togglePassword() {
         var input = document.getElementById('login-password');
@@ -1236,5 +1399,176 @@
             eyeClosed.style.display = 'none';
         }
     }
+
+    const registerOverlay = document.getElementById('register-overlay');
+    const registerForm = document.getElementById('register-form');
+    const registerError = document.getElementById('register-error');
+    const registerOk = document.getElementById('register-ok');
+    const registerSpinnerOverlay = document.getElementById('register-spinner-overlay');
+    const registerType = document.getElementById('register-type');
+    let registerTypesLoaded = false;
+
+    function loadRegisterTypes() {
+        if (registerTypesLoaded) return;
+        fetch(@json(url('/registro/tipos')), {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (types) {
+            registerType.innerHTML = '';
+            var fallback = document.createElement('option');
+            fallback.value = '';
+            fallback.textContent = 'Seleccione una opción';
+            registerType.appendChild(fallback);
+            (types || []).forEach(function (t) {
+                var opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.description;
+                registerType.appendChild(opt);
+            });
+            registerTypesLoaded = true;
+        })
+        .catch(function () {
+            registerType.innerHTML = '<option value="">No se pudieron cargar los tipos</option>';
+        });
+    }
+
+    function showRegisterMessage(el, text, isError) {
+        el.style.color = isError ? '#dc2626' : '#047857';
+        el.style.background = isError ? '#fef2f2' : '#ecfdf5';
+        el.style.border = isError ? '1px solid #fecaca' : '1px solid #a7f3d0';
+        el.style.display = 'block';
+        el.textContent = text;
+    }
+
+    function openRegister() {
+        registerError.style.display = 'none';
+        registerOk.style.display = 'none';
+        document.getElementById('register-submit').disabled = false;
+        document.getElementById('register-name').value = '';
+        document.getElementById('register-email').value = '';
+        document.getElementById('register-password').value = '';
+        document.getElementById('register-password-confirm').value = '';
+        resetRegisterPassword(document.getElementById('register-password'), 'reg-eye-open', 'reg-eye-closed');
+        resetRegisterPassword(document.getElementById('register-password-confirm'), 'reg-eye2-open', 'reg-eye2-closed');
+        loadRegisterTypes();
+        registerOverlay.style.display = 'flex';
+        document.getElementById('register-name').focus();
+    }
+
+    function resetRegisterPassword(input, openId, closedId) {
+        input.type = 'password';
+        document.getElementById(openId).style.display = 'block';
+        document.getElementById(closedId).style.display = 'none';
+    }
+
+    function toggleRegisterPassword() {
+        toggleRegisterField('register-password', 'reg-eye-open', 'reg-eye-closed');
+    }
+
+    function toggleRegisterPasswordConfirm() {
+        toggleRegisterField('register-password-confirm', 'reg-eye2-open', 'reg-eye2-closed');
+    }
+
+    function toggleRegisterField(inputId, openId, closedId) {
+        var input = document.getElementById(inputId);
+        var open = document.getElementById(openId);
+        var closed = document.getElementById(closedId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            open.style.display = 'none';
+            closed.style.display = 'block';
+        } else {
+            input.type = 'password';
+            open.style.display = 'block';
+            closed.style.display = 'none';
+        }
+    }
+
+    function closeRegister() {
+        registerOverlay.style.display = 'none';
+    }
+
+    registerOverlay.addEventListener('click', function (e) {
+        if (e.target === registerOverlay) closeRegister();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && registerOverlay.style.display === 'flex') closeRegister();
+    });
+
+    registerForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fullName = document.getElementById('register-name').value.trim();
+        var email = document.getElementById('register-email').value.trim();
+        var typeId = registerType.value;
+        var password = document.getElementById('register-password').value;
+        var passwordConfirm = document.getElementById('register-password-confirm').value;
+        registerError.style.display = 'none';
+        registerOk.style.display = 'none';
+
+        if (!fullName) { showRegisterMessage(registerError, 'Ingrese el nombre completo', true); return; }
+        if (!email) { showRegisterMessage(registerError, 'Ingrese el correo', true); return; }
+        if (!typeId) { showRegisterMessage(registerError, 'Seleccione el tipo de cliente', true); return; }
+        if (!password) { showRegisterMessage(registerError, 'Ingrese la contraseña', true); return; }
+        if (password.length < 8) { showRegisterMessage(registerError, 'La contraseña debe tener al menos 8 caracteres', true); return; }
+        if (!passwordConfirm) { showRegisterMessage(registerError, 'Confirme la contraseña', true); return; }
+        if (password !== passwordConfirm) { showRegisterMessage(registerError, 'Las contraseñas no coinciden', true); return; }
+
+        var submitBtn = document.getElementById('register-submit');
+        submitBtn.disabled = true;
+        registerSpinnerOverlay.style.display = 'flex';
+
+        fetch(@json(url('/registro')), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                name: fullName,
+                email: email,
+                type_user_id: typeId,
+                password: password,
+                password_confirmation: passwordConfirm
+            })
+        })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (r) {
+            submitBtn.disabled = false;
+            registerSpinnerOverlay.style.display = 'none';
+            if (r.ok && r.data.success) {
+                showRegisterMessage(registerOk, r.data.message, false);
+                document.getElementById('register-submit').disabled = true;
+                setTimeout(function () {
+                    closeRegister();
+                    openLogin(document.getElementById('register-email').value.trim());
+                }, 2000);
+            } else {
+                showRegisterMessage(registerError, r.data.message || 'No se pudo completar el registro', true);
+            }
+        })
+        .catch(function () {
+            submitBtn.disabled = false;
+            registerSpinnerOverlay.style.display = 'none';
+            showRegisterMessage(registerError, 'Error de conexión. Intentá de nuevo.', true);
+        });
+    });
+
+    // Vuelta desde el formulario de nueva contraseña (?password_reset=1)
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('password_reset') !== '1') return;
+        openLogin();
+        loginError.style.color = '#047857';
+        loginError.style.background = '#ecfdf5';
+        loginError.style.border = '1px solid #a7f3d0';
+        loginError.style.display = 'block';
+        loginError.textContent = 'Contraseña actualizada. Ya podés iniciar sesión.';
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    })();
 </script>
 </html>

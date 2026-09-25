@@ -140,6 +140,13 @@ class ProfileController extends Controller
 
         $user = Auth::user();
 
+        if (!$user->canAdvertise()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La publicidad está disponible solo para usuarios Prestador con estado Activo o Prueba.',
+            ], 403);
+        }
+
         if (!$user->provider) {
             return response()->json(['success' => false, 'message' => 'Primero debés configurar tu perfil de proveedor.'], 400);
         }
@@ -236,8 +243,8 @@ class ProfileController extends Controller
 
         $user = Auth::user();
 
-        if (!$user->provider) {
-            return response()->json(['success' => false, 'message' => 'Primero debés configurar tu perfil de proveedor.'], 400);
+        if (!$user->typeUser || strcasecmp((string) $user->typeUser->description, 'Prestador') !== 0) {
+            return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar categorías.'], 403);
         }
 
         $request->validate([
@@ -245,6 +252,17 @@ class ProfileController extends Controller
         ]);
 
         $provider = $user->provider;
+
+        // El prestador todavía no guardó "Datos del Negocio": lo damos de alta
+        // para poder vincularle categorías desde el primer ingreso.
+        if (!$provider) {
+            $provider = Provider::create([
+                'user_id' => $user->id,
+                'business_name' => trim((string) $user->name) !== '' ? trim((string) $user->name) : 'Mi negocio',
+                'is_active' => true,
+            ]);
+        }
+
         $subgroupId = $request->subgroup_id;
 
         $exists = $provider->subgroups()->where('subgroup_id', $subgroupId)->exists();

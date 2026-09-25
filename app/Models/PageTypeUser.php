@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageTypeUser extends Model
 {
-    protected $table = 'paginasptiposusuarios';
+    protected $table = 'page_type_user';
 
     protected $fillable = [
         'type_user_id',

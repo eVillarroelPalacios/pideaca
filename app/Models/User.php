@@ -60,6 +60,38 @@ class User extends Authenticatable
         return $this->belongsTo(TypeUser::class, 'type_user_id');
     }
 
+    /**
+     * Lowercase status names that grant access to the advertising module.
+     */
+    public const ADVERTISING_STATUSES = ['activo', 'prueba'];
+
+    /**
+     * Only Prestador users with an Activo/Prueba status can have advertising.
+     */
+    public function canAdvertise(): bool
+    {
+        $type = $this->typeUser ? strtolower(trim($this->typeUser->description)) : '';
+        $status = $this->status ? strtolower(trim($this->status->status)) : '';
+
+        return $type === 'prestador' && in_array($status, self::ADVERTISING_STATUSES, true);
+    }
+
+    /**
+     * Query-level version of canAdvertise(), for filtering providers on the public site.
+     */
+    public function scopeAdvertisable($query)
+    {
+        $statuses = self::ADVERTISING_STATUSES;
+
+        return $query
+            ->whereHas('typeUser', function ($q) {
+                $q->whereRaw('LOWER(description) = ?', ['prestador']);
+            })
+            ->whereHas('status', function ($q) use ($statuses) {
+                $q->whereRaw('LOWER(status) IN ('.implode(', ', array_fill(0, count($statuses), '?')).')', $statuses);
+            });
+    }
+
     public function pages()
     {
         return $this->belongsToMany(Page::class, 'page_user', 'user_id', 'page_id');

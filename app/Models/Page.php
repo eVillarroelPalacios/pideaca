@@ -20,7 +20,7 @@ class Page extends Model
 
     public function typeUsers()
     {
-        return $this->belongsToMany(TypeUser::class, 'paginasptiposusuarios', 'page_id', 'type_user_id')->withTimestamps();
+        return $this->belongsToMany(TypeUser::class, 'page_type_user', 'page_id', 'type_user_id')->withTimestamps();
     }
 
     public function pageTypeUsers()

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -19,7 +20,7 @@ class LoginController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        $users = User::where('email', $credentials['email'])->get();
+        $users = User::whereRaw('LOWER(email) = ?', [Str::lower(trim($credentials['email']))])->get();
         $user = $users->first(function ($candidate) use ($credentials) {
             return Hash::check($credentials['password'], $candidate->password);
         });

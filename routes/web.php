@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\UserStatusController;
@@ -18,6 +20,13 @@ Route::get('/', [AdvertisingController::class, 'index']);
 
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::post('/password/forgot', [PasswordResetController::class, 'forgot'])->middleware('throttle:5,1')->name('password.forgot');
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'showForm'])->name('password.reset');
+Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.reset.store');
+
+Route::get('/registro/tipos', [RegisterController::class, 'types'])->name('registro.tipos');
+Route::post('/registro', [RegisterController::class, 'store'])->name('registro.store');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

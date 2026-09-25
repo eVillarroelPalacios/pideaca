@@ -16,8 +16,12 @@ class AdvertisingController extends Controller
             'category',
             'services',
             'subgroups.group',
+            'user.status',
         ])
         ->where('is_active', true)
+        ->whereHas('user', function ($query) {
+            $query->advertisable();
+        })
         ->get()
         ->map(function ($provider) {
             $bannerUrl = $this->findProviderBanner($provider->id);
@@ -44,6 +48,7 @@ class AdvertisingController extends Controller
                 'groups' => $groupNames,
                 'rating' => $provider->rating,
                 'promo' => $provider->promo,
+                'status' => $provider->user->status->status ?? null,
                 'phone' => $provider->phone,
                 'whatsapp' => $provider->whatsapp,
                 'zone' => $provider->zone,

@@ -971,7 +971,7 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-                                    <span id="user-demo-status" class="status-badge" style="font-size:11px;padding:4px 10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">{{ optional($user->status)->status ?: 'Active' }}</span>
+                                    <span id="user-demo-status" class="status-badge" style="font-size:11px;padding:4px 10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">{{ optional($user->status)->status ?: 'Activo' }}</span>
                                     <span id="user-demo-type" class="status-badge" style="background:#eff6ff;color:#1d4ed8;font-size:11px;padding:4px 10px;">{{ optional($user->typeUser)->description ?: 'Prestador' }}</span>
                                 </div>
                             </div>
@@ -1244,9 +1244,9 @@
                                     <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg> Cambiar contraseña</h3>
                                     <p class="pcard-sub" id="user-cfg-pw-sub">Usá una contraseña segura de al menos 8 caracteres.</p>
                                     <div style="display:flex;flex-direction:column;gap:16px;">
-                                        <div id="user-cfg-pw-current-field"><label class="field-label">Contraseña actual</label><input type="password" id="user-cfg-pw-current" class="field-input" autocomplete="current-password" /><span class="err-msg" id="user-cfg-pw-current-error"></span></div>
-                                        <div><label class="field-label">Nueva contraseña</label><input type="password" id="user-cfg-pw-new" class="field-input" autocomplete="new-password" /><span class="err-msg" id="user-cfg-pw-new-error"></span></div>
-                                        <div><label class="field-label">Confirmar nueva contraseña</label><input type="password" id="user-cfg-pw-confirm" class="field-input" autocomplete="new-password" /><span class="err-msg" id="user-cfg-pw-confirm-error"></span></div>
+                                        <div id="user-cfg-pw-current-field"><label class="field-label">Contraseña actual</label><div style="position:relative;width:420px;max-width:100%;"><input type="password" id="user-cfg-pw-current" class="field-input" autocomplete="current-password" style="padding-right:36px;" /><button type="button" onclick="togglePwVis('user-cfg-pw-current', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button></div><span class="err-msg" id="user-cfg-pw-current-error"></span></div>
+                                        <div><label class="field-label">Nueva contraseña</label><div style="position:relative;width:420px;max-width:100%;"><input type="password" id="user-cfg-pw-new" class="field-input" autocomplete="new-password" style="padding-right:36px;" /><button type="button" onclick="togglePwVis('user-cfg-pw-new', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button></div><span class="err-msg" id="user-cfg-pw-new-error"></span></div>
+                                        <div><label class="field-label">Confirmar nueva contraseña</label><div style="position:relative;width:420px;max-width:100%;"><input type="password" id="user-cfg-pw-confirm" class="field-input" autocomplete="new-password" style="padding-right:36px;" /><button type="button" onclick="togglePwVis('user-cfg-pw-confirm', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#64748b;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button></div><span class="err-msg" id="user-cfg-pw-confirm-error"></span></div>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                         <span class="save-msg" id="user-cfg-pw-msg"></span>
@@ -1437,6 +1437,26 @@
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>
+
+        <div id="onboard-cats-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:400;align-items:center;justify-content:center;padding:20px;">
+            <div style="background:#ffffff;width:100%;max-width:780px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,0.35);">
+                <div style="padding:18px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+                    <div>
+                        <h3 style="font-size:17px;font-weight:700;color:#0c2a4d;margin:0;">Configurá tus categorías y servicios</h3>
+                        <p style="font-size:12.5px;color:#64748b;margin:6px 0 0;">Seleccioná los rubros y servicios que vas a ofrecer en tu negocio. Debes elegir al menos uno para poder cerrar esta ventana.</p>
+                    </div>
+                    <button type="button" onclick="closeOnboarding()" title="Cerrar" aria-label="Cerrar" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:24px;line-height:1;">&times;</button>
+                </div>
+                <div style="padding:20px 24px;overflow-y:auto;flex:1 1 auto;">
+                    <div id="onboard-cats-loading" style="text-align:center;padding:30px;color:#94a3b8;font-size:12px;">Cargando categorías...</div>
+                    <div id="onboard-cats-list" style="display:none;"></div>
+                </div>
+                <div style="padding:14px 24px;border-top:1px solid #e5e7eb;display:flex;align-items:center;gap:10px;background:#f9fafb;flex-wrap:wrap;">
+                    <span id="onboard-cats-hint" style="font-size:12px;font-weight:600;color:#dc2626;">Debés seleccionar al menos una categoría para continuar.</span>
+                    <span class="save-msg" id="onboard-cats-msg"></span>
+                </div>
+            </div>
+        </div>
 
     </body>
 <style>
@@ -2240,6 +2260,11 @@
             if (key === 'paginas') loadPages();
             if (key === 'perfil') loadProfile();
         };
+
+        @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0)
+            // Prestador que todavía no eligió categorías: no deja avanzar hasta configurarlas.
+            checkCategoryOnboarding();
+        @endif
     });
 
     var allPages = [];
@@ -3263,6 +3288,7 @@
     };
 
     function switchUserTab(tab) {
+        if (tab === 'imagenes' && !userCanAdvertise()) tab = 'demografia';
         document.querySelectorAll('#user-sidebar .sidebar-link[data-user-panel]').forEach(function(link) {
             link.classList.toggle('active', link.getAttribute('data-user-panel') === tab);
         });
@@ -3581,6 +3607,29 @@
         if (target.type_user || target.typeUser) return target.type_user || target.typeUser;
         var peer = getAccountPeer(target, function(x) { return !!(x.type_user || x.typeUser); });
         return peer ? (peer.type_user || peer.typeUser) : null;
+    }
+
+    // Publicidad: solo usuarios tipo Prestador con estado Activo o Prueba.
+    var ADVERTISING_STATUSES = ['activo', 'prueba'];
+
+    function userCanAdvertise(u) {
+        var target = u || selectedUser;
+        if (!target) return false;
+        var typeObj = getEffectiveTypeUser(target);
+        var statusObj = getEffectiveStatus(target);
+        var type = String(typeObj && (typeObj.description || typeObj.status) || '').trim().toLowerCase();
+        var status = String(statusObj && (statusObj.status || statusObj.description) || '').trim().toLowerCase();
+        return type === 'prestador' && ADVERTISING_STATUSES.indexOf(status) !== -1;
+    }
+
+    function updateUserAdTabVisibility(u) {
+        var link = document.querySelector('#user-sidebar .sidebar-link[data-user-panel="imagenes"]');
+        if (!link) return;
+        var allowed = userCanAdvertise(u);
+        link.style.display = allowed ? '' : 'none';
+        if (!allowed && currentUserPanelTab() === 'imagenes') {
+            switchUserTab('demografia');
+        }
     }
 
     function ensureUserPagesModules() {
@@ -4198,7 +4247,17 @@
         var typeId = formU.type_user_id || (typeObj && typeObj.id) || '';
         var hdrStatusObj = hdrU.status || getEffectiveStatus(hdrU);
         var hdrTypeObj = hdrU.type_user || hdrU.typeUser || getEffectiveTypeUser(hdrU);
-        if (hdrStatus) hdrStatus.textContent = (hdrStatusObj && (hdrStatusObj.status || hdrStatusObj.description)) || 'Active';
+        if (hdrStatus) {
+            hdrStatus.textContent = (hdrStatusObj && (hdrStatusObj.status || hdrStatusObj.description)) || 'Activo';
+            var stKey = String(hdrStatus.textContent).trim().toLowerCase();
+            if (stKey === 'inactive' || stKey === 'inactivo' || stKey === 'inactiva') {
+                hdrStatus.style.cssText = 'font-size:11px;padding:4px 10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;';
+            } else if (stKey === 'prueba') {
+                hdrStatus.style.cssText = 'font-size:11px;padding:4px 10px;background:#fffbeb;border:1px solid #fde68a;color:#b45309;';
+            } else {
+                hdrStatus.style.cssText = 'font-size:11px;padding:4px 10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;';
+            }
+        }
         if (hdrType) hdrType.textContent = (hdrTypeObj && (hdrTypeObj.description || hdrTypeObj.status)) || 'Prestador';
         if (statusSel) {
             statusSel._pendingValue = statusId ? String(statusId) : '';
@@ -4215,6 +4274,7 @@
         renderUserProvider(u);
         renderUserAccount(u);
         renderUserImages(u);
+        updateUserAdTabVisibility(u);
     }
 
     function submitUserDemographic() {
@@ -5316,6 +5376,7 @@
     var profileData = null;
     var profileProvider = null;
     var profileIsPrestador = false;
+    var profileCanAdvertise = false;
 
     var PROFILE_DAYS = [
         { key: 'mon', label: 'Lunes' },
@@ -5438,6 +5499,7 @@
     }
 
     function showProfilePanel(key) {
+        if (key === 'imagenes' && !profileCanAdvertise) key = profileIsPrestador ? 'negocio' : 'cuenta';
         if (key === 'usuarios') mountProfileUsuariosPanel();
         else unmountProfileUsuariosPanel();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
@@ -5478,6 +5540,9 @@
             profileProvider = user.provider || null;
             var typeObj = user.type_user || user.typeUser || null;
             profileIsPrestador = typeObj && typeObj.description === 'Prestador';
+            var statusObj = user.status || user.user_status || null;
+            var statusName = String((statusObj && (statusObj.status || statusObj.description)) || '').trim().toLowerCase();
+            profileCanAdvertise = !!profileIsPrestador && ADVERTISING_STATUSES.indexOf(statusName) !== -1;
 
             document.getElementById('profile-name').value = user.name || '';
             document.getElementById('profile-email').value = user.email || '';
@@ -5487,7 +5552,7 @@
             document.getElementById('sidebar-link-negocio').style.display = profileIsPrestador ? '' : 'none';
             document.getElementById('sidebar-link-horarios').style.display = profileIsPrestador ? '' : 'none';
             document.getElementById('sidebar-link-servicios').style.display = profileIsPrestador ? '' : 'none';
-            document.getElementById('sidebar-link-imagenes').style.display = profileIsPrestador ? '' : 'none';
+            document.getElementById('sidebar-link-imagenes').style.display = profileCanAdvertise ? '' : 'none';
             document.getElementById('sidebar-link-categorias').style.display = profileIsPrestador ? '' : 'none';
 
             loading.style.display = 'none';
@@ -5521,6 +5586,8 @@
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-size:12px;font-weight:600;';
         } else if (stLower === 'inactive' || stLower === 'inactivo' || stLower === 'inactiva') {
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:12px;font-weight:600;';
+        } else if (stLower === 'prueba') {
+            el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#fffbeb;border:1px solid #fde68a;color:#b45309;font-size:12px;font-weight:600;';
         } else {
             el.style.cssText = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;background:#eef2f7;border:1px solid #e2e8f0;color:#334155;font-size:12px;font-weight:600;';
         }
@@ -6237,62 +6304,69 @@
         .then(function(data) {
             loading.style.display = 'none';
             list.style.display = 'block';
-            list.innerHTML = '';
-
-            if (!data.groups || data.groups.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:20px;">No hay categorías disponibles.</p>';
-                return;
-            }
-
-            data.groups.forEach(function(group) {
-                if (!group.subgroups || group.subgroups.length === 0) return;
-
-                var section = document.createElement('div');
-                section.style.cssText = 'margin-bottom:20px;border:1px solid #e2e8f0;background:#fff;padding:16px;';
-
-                var header = document.createElement('div');
-                header.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;';
-                var icon = document.createElement('span');
-                if (group.icon) icon.innerHTML = group.icon;
-                icon.style.cssText = 'display:flex;align-items:center;color:#D24C19;';
-                var title = document.createElement('h4');
-                title.style.cssText = 'font-size:13px;font-weight:700;color:#0f172a;margin:0;';
-                title.textContent = group.description;
-                header.appendChild(icon);
-                header.appendChild(title);
-                section.appendChild(header);
-
-                var grid = document.createElement('div');
-                grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;';
-
-                group.subgroups.forEach(function(sub) {
-                    var isSelected = data.selected.indexOf(sub.id) >= 0;
-                    var label = document.createElement('label');
-                    label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid ' + (isSelected ? '#D24C19' : '#e2e8f0') + ';background:' + (isSelected ? '#fff7ed' : '#fff') + ';cursor:pointer;transition:all .15s;font-size:12px;font-weight:500;color:' + (isSelected ? '#D24C19' : '#475569') + ';';
-                    var cb = document.createElement('input');
-                    cb.type = 'checkbox';
-                    cb.checked = isSelected;
-                    cb.style.cssText = 'accent-color:#D24C19;width:14px;height:14px;cursor:pointer;';
-                    cb.addEventListener('change', function() {
-                        toggleSubgroup(sub.id, label, cb);
-                    });
-                    var span = document.createElement('span');
-                    span.textContent = sub.description;
-                    label.appendChild(cb);
-                    label.appendChild(span);
-                    grid.appendChild(label);
-                });
-
-                section.appendChild(grid);
-                list.appendChild(section);
-            });
+            renderProviderSubgroups(list, data, { msgId: 'categorias-msg' });
         })
         .catch(function() {
             loading.textContent = 'Error al cargar categorías.';
         });
     }
 
-    function toggleSubgroup(subgroupId, labelEl, cb) {
+    function renderProviderSubgroups(list, data, ctx) {
+        ctx = ctx || {};
+        list.innerHTML = '';
+
+        if (!data.groups || data.groups.length === 0) {
+            list.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:20px;">No hay categorías disponibles.</p>';
+            return;
+        }
+
+        data.groups.forEach(function(group) {
+            if (!group.subgroups || group.subgroups.length === 0) return;
+
+            var section = document.createElement('div');
+            section.style.cssText = 'margin-bottom:20px;border:1px solid #e2e8f0;background:#fff;padding:16px;';
+
+            var header = document.createElement('div');
+            header.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;';
+            var icon = document.createElement('span');
+            if (group.icon) icon.innerHTML = group.icon;
+            icon.style.cssText = 'display:flex;align-items:center;color:#D24C19;';
+            var title = document.createElement('h4');
+            title.style.cssText = 'font-size:13px;font-weight:700;color:#0f172a;margin:0;';
+            title.textContent = group.description;
+            header.appendChild(icon);
+            header.appendChild(title);
+            section.appendChild(header);
+
+            var grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;';
+
+            group.subgroups.forEach(function(sub) {
+                var isSelected = data.selected.indexOf(sub.id) >= 0;
+                var label = document.createElement('label');
+                label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid ' + (isSelected ? '#D24C19' : '#e2e8f0') + ';background:' + (isSelected ? '#fff7ed' : '#fff') + ';cursor:pointer;transition:all .15s;font-size:12px;font-weight:500;color:' + (isSelected ? '#D24C19' : '#475569') + ';';
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = isSelected;
+                cb.style.cssText = 'accent-color:#D24C19;width:14px;height:14px;cursor:pointer;';
+                cb.addEventListener('change', function() {
+                    toggleSubgroup(sub.id, label, cb, ctx);
+                });
+                var span = document.createElement('span');
+                span.textContent = sub.description;
+                label.appendChild(cb);
+                label.appendChild(span);
+                grid.appendChild(label);
+            });
+
+            section.appendChild(grid);
+            list.appendChild(section);
+        });
+    }
+
+    function toggleSubgroup(subgroupId, labelEl, cb, ctx) {
+        ctx = ctx || {};
+        var msgId = ctx.msgId || 'categorias-msg';
         fetch('{{ url("/profile/subgroups/toggle") }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
@@ -6306,16 +6380,108 @@
                 labelEl.style.background = isSelected ? '#fff7ed' : '#fff';
                 labelEl.style.color = isSelected ? '#D24C19' : '#475569';
                 cb.checked = isSelected;
-                showMsg('categorias-msg', data.message, true);
+                if (ctx.onSelectionChange) ctx.onSelectionChange(data.selected);
+                showMsg(msgId, data.message, true);
             } else {
                 cb.checked = !cb.checked;
-                showMsg('categorias-msg', data.message || 'Error al guardar.', false);
+                showMsg(msgId, data.message || 'Error al guardar.', false);
             }
         })
         .catch(function() {
             cb.checked = !cb.checked;
-            showMsg('categorias-msg', 'Error de conexión.', false);
+            showMsg(msgId, 'Error de conexión.', false);
         });
+    }
+
+    // ---------- Primer ingreso: categorías obligatorias ----------
+
+    var onboardingSelected = [];
+    var onboardingAvailable = true;
+
+    function checkCategoryOnboarding() {
+        fetch('{{ url("/profile/subgroups") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success) return;
+            if (data.selected && data.selected.length > 0) return;
+            openCategoryOnboarding();
+        })
+        .catch(function() {});
+    }
+
+    function openCategoryOnboarding() {
+        var overlay = document.getElementById('onboard-cats-overlay');
+        if (!overlay) return;
+
+        onboardingSelected = [];
+        updateOnboardingHint();
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        var list = document.getElementById('onboard-cats-list');
+        var loading = document.getElementById('onboard-cats-loading');
+        list.style.display = 'none';
+        list.innerHTML = '';
+        loading.style.display = 'block';
+        loading.textContent = 'Cargando categorías...';
+
+        fetch('{{ url("/profile/subgroups") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            loading.style.display = 'none';
+            list.style.display = 'block';
+            onboardingSelected = (data.selected || []).slice();
+            onboardingAvailable = false;
+            (data.groups || []).forEach(function(g) {
+                if (g.subgroups && g.subgroups.length > 0) onboardingAvailable = true;
+            });
+            updateOnboardingHint();
+            renderProviderSubgroups(list, data, {
+                msgId: 'onboard-cats-msg',
+                onSelectionChange: function(selected) {
+                    onboardingSelected = (selected || []).slice();
+                    updateOnboardingHint();
+                }
+            });
+        })
+        .catch(function() {
+            loading.textContent = 'No pudimos cargar las categorías. Recargá la página para intentar de nuevo.';
+            onboardingAvailable = false;
+            updateOnboardingHint();
+        });
+    }
+
+    function updateOnboardingHint() {
+        var hint = document.getElementById('onboard-cats-hint');
+        if (!hint) return;
+        if (!onboardingAvailable) {
+            hint.textContent = 'No hay categorías disponibles ahora. Cerrá esta ventana y volvé a intentar más tarde.';
+            hint.style.color = '#64748b';
+            return;
+        }
+        var count = onboardingSelected.length;
+        if (count > 0) {
+            hint.textContent = 'Listo: seleccionaste ' + count + (count === 1 ? ' categoría.' : ' categorías.') + ' Ya podés cerrar esta ventana.';
+            hint.style.color = '#059669';
+        } else {
+            hint.textContent = 'Debés seleccionar al menos una categoría para cerrar esta ventana.';
+            hint.style.color = '#dc2626';
+        }
+    }
+
+    function closeOnboarding() {
+        if (onboardingAvailable && onboardingSelected.length === 0) {
+            showMsg('onboard-cats-msg', 'Elegí al menos una categoría para poder continuar.', false);
+            return;
+        }
+        var overlay = document.getElementById('onboard-cats-overlay');
+        if (overlay) overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        loadProviderSubgroups();
     }
 
     // ---------- Tab 4: Cuenta y perfil ----------
