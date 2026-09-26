@@ -15,6 +15,10 @@ use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\AdvertisingController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\AddressController;
 
 Route::get('/', [AdvertisingController::class, 'index']);
 
@@ -98,3 +102,12 @@ Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
 Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
 Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.index');
+
+// Modulo A - Fast Delivery
+Route::get('/api/providers', [ProviderController::class, 'index'])->name('api.providers.index');
+Route::get('/api/providers/{provider}/catalog', [CatalogController::class, 'show'])->name('api.providers.catalog');
+Route::get('/api/providers/{provider}/orders', [OrderController::class, 'index'])->name('api.providers.orders');
+Route::get('/api/orders/mine', [OrderController::class, 'mine'])->name('api.orders.mine');
+Route::post('/api/orders', [OrderController::class, 'store'])->name('api.orders.store');
+Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('api.orders.status');
+Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.me.addresses');

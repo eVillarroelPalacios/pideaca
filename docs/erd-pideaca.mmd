@@ -1,0 +1,197 @@
+%% Diagrama Entidad-Relación de pideaca_db (tablas de negocio)
+%% Extraído de information_schema en vivo — 17 tablas, 22 FK
+erDiagram
+    USERS ||--o{ ADDRESSES : "tiene dirección"
+    COUNTRIES ||--o{ ADDRESSES : "país de dirección"
+    REGIONS ||--o{ ADDRESSES : "provincia de"
+    REGIONS ||--o{ ADDRESSES : "departamento de"
+    REGIONS ||--o{ ADDRESSES : "región de"
+    TYPE_USERS ||--o{ USERS : "clasifica a"
+    USER_STATUSES ||--o{ USERS : "estado de"
+    USERS ||--o{ PASSWORD_RESET_REQUESTS : "solicita"
+    USERS ||--o{ PROVIDERS : "es dueño de"
+    GROUPS ||--o{ PROVIDERS : "categoría de"
+    PROVIDERS ||--o{ PROVIDER_SERVICES : "ofrece"
+    PROVIDERS ||--o{ PROVIDER_IMAGES : "tiene imagen"
+    PROVIDERS ||--o{ PROVIDER_SUBGROUPS : "pertenece a"
+    SUB_GROUPS ||--o{ PROVIDER_SUBGROUPS : "recibe"
+    GROUPS ||--o{ SUB_GROUPS : "agrupa"
+    COUNTRIES ||--o{ REGIONS : "tiene regiones"
+    REGIONS ||--o{ REGIONS : "padre de"
+    MODULES ||--o{ PAGES : "contiene"
+    PAGES ||--o{ PAGE_USER : "asignada a"
+    USERS ||--o{ PAGE_USER : "tiene acceso"
+    PAGES ||--o{ PAGE_TYPE_USER : "visible para"
+    TYPE_USERS ||--o{ PAGE_TYPE_USER : "ve"
+
+    USERS {
+        bigint id PK
+        varchar name
+        varchar email
+        varchar password
+        bigint type_user_id FK
+        bigint user_status_id FK
+        timestamp email_verified_at
+        varchar remember_token
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USER_STATUSES {
+        bigint id PK
+        varchar status
+    }
+
+    TYPE_USERS {
+        bigint id PK
+        varchar description
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ADDRESSES {
+        bigint id PK
+        bigint user_id FK
+        bigint country_id FK
+        bigint province_id FK
+        bigint department_id FK
+        bigint region_id FK
+        varchar postal_code
+        varchar street
+        varchar number
+        varchar floor_apartment
+        text notes
+        numeric latitude
+        numeric longitude
+        boolean is_primary
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    COUNTRIES {
+        bigint id PK
+        varchar iso_code
+        varchar name
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    REGIONS {
+        bigint id PK
+        bigint country_id FK
+        bigint parent_id FK
+        varchar code
+        varchar name
+        varchar type
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    GROUPS {
+        bigint id PK
+        varchar description
+        text icon
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SUB_GROUPS {
+        bigint id PK
+        varchar description
+        bigint group_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PROVIDERS {
+        bigint id PK
+        bigint user_id FK
+        bigint category_id FK
+        varchar business_name
+        text description
+        varchar banner_image
+        numeric rating
+        varchar promo
+        varchar phone
+        varchar whatsapp
+        varchar zone
+        json hours
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PROVIDER_SERVICES {
+        bigint id PK
+        bigint provider_id FK
+        varchar name
+        text description
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PROVIDER_IMAGES {
+        bigint id PK
+        bigint provider_id FK
+        varchar image_path
+        varchar image_type
+        boolean is_primary
+        int sort_order
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PROVIDER_SUBGROUPS {
+        bigint id PK
+        bigint provider_id FK
+        bigint subgroup_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    MODULES {
+        bigint id PK
+        varchar description
+        text icon
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PAGES {
+        bigint id PK
+        varchar description
+        varchar url
+        bigint module_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PAGE_USER {
+        bigint id PK
+        bigint user_id FK
+        bigint page_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PAGE_TYPE_USER {
+        bigint id PK
+        bigint type_user_id FK
+        bigint page_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PASSWORD_RESET_REQUESTS {
+        bigint id PK
+        bigint user_id FK
+        varchar token
+        timestamp expires_at
+        timestamp used_at
+        timestamp created_at
+        timestamp updated_at
+    }

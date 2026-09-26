@@ -57,6 +57,21 @@ class Provider extends Model
         return $this->belongsToMany(SubGroup::class, 'provider_subgroups', 'provider_id', 'subgroup_id');
     }
 
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class)->orderBy('sort_order');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class)->orderBy('sort_order');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class)->latest();
+    }
+
     public function bannerImages(): HasMany
     {
         return $this->hasMany(ProviderImage::class)

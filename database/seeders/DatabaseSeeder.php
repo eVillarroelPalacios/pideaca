@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CountriesAndRegionsSeeder::class,
             UsuariosPageSeeder::class,
+            FastDeliverySeeder::class,
+            FastDeliveryPagesSeeder::class,
         ]);
     }
 }

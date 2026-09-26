@@ -190,6 +190,25 @@
 
                     <div id="sidebar-overlay" onclick="toggleProfileSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:240;"></div>
 
+                    @php
+                        $esPerfilPrestador = strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0;
+                        $esPerfilCliente = strcasecmp((string) $user->typeUser?->description, 'Cliente') === 0;
+                        $perfilPanelInicial = $esPerfilPrestador ? 'negocio' : ($esPerfilCliente ? 'direccion' : 'cuenta');
+                        $perfilEtiquetas = [
+                            'negocio' => 'Datos del Negocio',
+                            'direccion' => 'Mi Dirección',
+                            'cuenta' => 'Contraseñas',
+                        ];
+                        $estadoPerfil = $user->status?->status ?? '-';
+                        $estadoPerfilKey = strtolower(trim($estadoPerfil));
+                        $estadoPerfilEstilo = match (true) {
+                            in_array($estadoPerfilKey, ['active', 'activo', 'activa'], true) => 'background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;',
+                            in_array($estadoPerfilKey, ['inactive', 'inactivo', 'inactiva'], true) => 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;',
+                            $estadoPerfilKey === 'prueba' => 'background:#fffbeb;border:1px solid #fde68a;color:#b45309;',
+                            default => '',
+                        };
+                    @endphp
+
                     <aside id="profile-sidebar" style="width:250px;min-width:250px;background:#ffffff;color:#1e293b;display:flex;flex-direction:column;position:fixed;top:70px;left:0;z-index:260;overflow-y:auto;">
                         <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;">
                             <div style="display:flex;align-items:center;gap:10px;">
@@ -202,6 +221,7 @@
                         </div>
 
                         <nav style="flex:1;padding:12px 0;">
+                            @if($esPerfilPrestador)
                             <a href="#" onclick="event.preventDefault();showProfilePanel('negocio')" class="sidebar-link active" data-panel="negocio" id="sidebar-link-negocio">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
                                 <span>Datos del Negocio</span>
@@ -222,15 +242,18 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
                                 <span>Categorias</span>
                             </a>
-                            <a href="#" onclick="event.preventDefault();showProfilePanel('direccion')" class="sidebar-link" data-panel="direccion" id="sidebar-link-direccion">
+                            @endif
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('direccion')" class="sidebar-link{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion" id="sidebar-link-direccion">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
                                 <span>Mi Dirección</span>
                             </a>
+                            @if(strcasecmp((string) $user->typeUser?->description, 'Cliente') !== 0)
                             <a href="#" onclick="event.preventDefault();showProfilePanel('usuarios')" class="sidebar-link" data-panel="usuarios" id="sidebar-link-usuarios">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                                 <span>Usuarios</span>
                             </a>
-                            <a href="#" onclick="event.preventDefault();showProfilePanel('cuenta')" class="sidebar-link" data-panel="cuenta" id="sidebar-link-cuenta">
+                            @endif
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('cuenta')" class="sidebar-link{{ $perfilPanelInicial === 'cuenta' ? ' active' : '' }}" data-panel="cuenta" id="sidebar-link-cuenta">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                                 <span>Contraseñas</span>
                             </a>
@@ -244,7 +267,7 @@
                             </button>
                             <span style="font-size:12px;color:#64748b;">Mi Panel</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-                            <span style="font-size:12px;color:#0f172a;font-weight:600;" id="breadcrumb-current">Datos del Negocio</span>
+                            <span style="font-size:12px;color:#0f172a;font-weight:600;" id="breadcrumb-current">{{ $perfilEtiquetas[$perfilPanelInicial] }}</span>
                             <div style="flex:1;"></div>
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <span style="font-size:12px;color:#0f172a;font-weight:600;">{{ $user->name }}</span>
@@ -253,10 +276,10 @@
                         </div>
 
                         <div style="flex:1;overflow-y:auto;padding:24px;background:#f1f5f9;">
-                            <div id="profile-loading" style="text-align:center;padding:40px;color:#64748b;font-size:13px;">Cargando tu panel...</div>
-                            <div id="profile-panels" style="display:none;max-width:960px;margin:0 auto;">
+                            <div id="profile-loading" style="text-align:center;padding:40px;color:#64748b;font-size:13px;{{ $esPerfilPrestador ? '' : 'display:none;' }}">Cargando tu panel...</div>
+                            <div id="profile-panels" style="{{ $esPerfilPrestador ? 'display:none;' : '' }}max-width:960px;margin:0 auto;">
 
-                                <div class="profile-panel active" data-panel="negocio">
+                                <div class="profile-panel{{ $esPerfilPrestador ? ' active' : '' }}" data-panel="negocio">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg> Información del negocio</h3>
                                         <p class="pcard-sub">Estos datos se muestran en las tarjetas publicitarias de la landing.</p>
@@ -339,10 +362,10 @@
                                     </div>
                                 </div>
 
-                                <div class="profile-panel" data-panel="direccion">
+                                <div class="profile-panel{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg> Mi Dirección</h3>
-                                        <p class="pcard-sub">Configurá la ubicación de tu negocio para que los clientes te encuentren.</p>
+                                        <p class="pcard-sub">{{ $esPerfilPrestador ? 'Configurá la ubicación de tu negocio para que los clientes te encuentren.' : 'Configurá la dirección a la que querés recibir tus pedidos.' }}</p>
                                         <div class="profile-field-grid">
                                             <div>
                                                 <label class="field-label">País</label>
@@ -388,15 +411,15 @@
                                     <div id="profile-usuarios-slot"></div>
                                 </div>
 
-                                <div class="profile-panel" data-panel="cuenta">
+                                <div class="profile-panel{{ $perfilPanelInicial === 'cuenta' ? ' active' : '' }}" data-panel="cuenta">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Datos personales</h3>
                                         <p class="pcard-sub">Información de tu cuenta de usuario.</p>
                                         <div class="profile-field-grid">
-                                            <div><label class="field-label">Nombre</label><input type="text" id="profile-name" class="field-input" /><span class="err-msg" id="profile-name-error"></span></div>
-                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" /><span class="err-msg" id="profile-email-error"></span></div>
-                                            <div><label class="field-label">Estado</label><span id="profile-status" class="status-badge">-</span></div>
-                                            <div><label class="field-label">Tipo de usuario</label><span id="profile-type" class="status-badge">-</span></div>
+                                            <div><label class="field-label">Nombre</label><input type="text" id="profile-name" class="field-input" value="{{ $user->name }}" /><span class="err-msg" id="profile-name-error"></span></div>
+                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" value="{{ $user->email }}" /><span class="err-msg" id="profile-email-error"></span></div>
+                                            <div><label class="field-label">Estado</label><span id="profile-status" class="status-badge" style="{{ $estadoPerfilEstilo }}">{{ $estadoPerfil }}</span></div>
+                                            <div><label class="field-label">Tipo de usuario</label><span id="profile-type" class="status-badge">{{ $user->typeUser?->description ?? '-' }}</span></div>
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="profile-msg"></span>
@@ -924,6 +947,129 @@
                 </div>
             </div>
                     @elseif($page->url === 'usuarios')
+
+                    @elseif($page->url === 'mi-catalogo')
+            <section id="dash-mi-catalogo" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="fd-catalog-subtitle" style="font-size:13px;color:#6b7280;margin:4px 0 0;">{{ optional($user->provider)->business_name ?: 'Tu comercio' }}</p>
+                    </div>
+                    <button type="button" onclick="loadProviderCatalog()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                        Actualizar
+                    </button>
+                </div>
+
+                <div id="fd-catalog-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando catálogo...</p>
+                </div>
+
+                <div id="fd-catalog-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-catalog-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudo cargar el catálogo.</p>
+                </div>
+
+                <div id="fd-catalog-content" style="display:none;"></div>
+            </section>
+
+                    @elseif($page->url === 'pedidos')
+            <section id="dash-pedidos" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="fd-orders-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">{{ optional($user->provider)->business_name ?: 'Tu comercio' }}</p>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="fd-orders-filter" onchange="loadProviderOrders()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;">
+                            <option value="">Todos los estados</option>
+                        </select>
+                        <button type="button" onclick="loadProviderOrders()" title="Actualizar pedidos" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="fd-orders-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando pedidos...</p>
+                </div>
+
+                <div id="fd-orders-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-orders-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar los pedidos.</p>
+                </div>
+
+                <div id="fd-orders-list" style="display:none;"></div>
+            </section>
+
+                    @elseif($page->url === 'comercios')
+            <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="fd-shops-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">Comercios con envío a tu domicilio</p>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="fd-shops-search" placeholder="Buscar comercio..." oninput="fdShopsSearchDebounce()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;min-width:200px;" />
+                        <button type="button" onclick="loadComercios()" title="Actualizar comercios" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="fd-shops-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando comercios...</p>
+                </div>
+
+                <div id="fd-shops-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-shops-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar los comercios.</p>
+                </div>
+
+                <div id="fd-shops-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;"></div>
+            </section>
+
+            <div id="fd-shop-overlay" onclick="if(event.target===this)closeFdShop()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;align-items:center;justify-content:center;">
+                <div style="background:#fff;width:100%;max-width:880px;max-height:90vh;margin:16px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 18px;border-bottom:1px solid #e5e7eb;">
+                        <div style="min-width:0;">
+                            <h3 id="fd-shop-title" style="margin:0;font-size:16px;font-weight:700;color:#0c2a4d;"></h3>
+                            <p id="fd-shop-subtitle" style="margin:4px 0 0;font-size:12px;color:#6b7280;"></p>
+                        </div>
+                        <button type="button" onclick="closeFdShop()" title="Cerrar" style="background:none;border:none;font-size:26px;line-height:1;color:#64748b;cursor:pointer;padding:0 4px;">&times;</button>
+                    </div>
+                    <div id="fd-shop-body" style="padding:16px 18px;overflow:auto;flex:1 1 auto;"></div>
+                    <div id="fd-shop-cart" style="border-top:1px solid #e5e7eb;padding:14px 18px;background:#f8fafc;"></div>
+                </div>
+            </div>
+
+                    @elseif($page->url === 'mis-pedidos')
+            <section id="dash-mis-pedidos" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="fd-myorders-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">Tus pedidos y su estado</p>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="fd-myorders-filter" onchange="loadMyOrders()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;">
+                            <option value="">Todos los estados</option>
+                        </select>
+                        <button type="button" onclick="loadMyOrders()" title="Actualizar mis pedidos" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="fd-myorders-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando pedidos...</p>
+                </div>
+
+                <div id="fd-myorders-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-myorders-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar tus pedidos.</p>
+                </div>
+
+                <div id="fd-myorders-list" style="display:none;"></div>
+            </section>
 
                     @else
             <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
@@ -2240,12 +2386,1221 @@
         });
     }
 
+    // ============ FAST DELIVERY: CATÁLOGO Y PEDIDOS DEL PRESTADOR ============
+
+    var FD_ORDER_STATUS = {
+        'pending': ['Pendiente', '#b45309', '#fef3c7'],
+        'confirmed': ['Confirmado', '#1d4ed8', '#dbeafe'],
+        'in_preparation': ['En preparación', '#6d28d9', '#ede9fe'],
+        'on_the_way': ['En camino', '#0369a1', '#e0f2fe'],
+        'delivered': ['Entregado', '#047857', '#d1fae5'],
+        'cancelled': ['Cancelado', '#b91c1c', '#fee2e2']
+    };
+
+    var FD_PAYMENT_STATUS = {
+        'pending': ['Pago pendiente', '#b45309', '#fef3c7'],
+        'processing': ['Pago en proceso', '#1d4ed8', '#dbeafe'],
+        'paid': ['Pagado', '#047857', '#d1fae5'],
+        'failed': ['Pago fallido', '#b91c1c', '#fee2e2'],
+        'refunded': ['Reembolsado', '#6b7280', '#f1f5f9']
+    };
+
+    function fdProviderId(sectionId) {
+        var el = document.getElementById(sectionId);
+        var id = el ? parseInt(el.getAttribute('data-provider-id'), 10) : NaN;
+        return isNaN(id) ? null : id;
+    }
+
+    function fdMoney(value) {
+        var n = Number(value || 0);
+        return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function fdDate(value) {
+        if (!value) return '';
+        var d = new Date(String(value).replace(' ', 'T'));
+        return isNaN(d.getTime()) ? '' : d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function fdBadge(text, color, bg) {
+        return '<span style="display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:9999px;color:' +
+            color + ';background:' + bg + ';white-space:nowrap;">' + escapeHtml(text) + '</span>';
+    }
+
+    function fdStatusBadge(status) {
+        var s = FD_ORDER_STATUS[status] || [status || '-', '#334155', '#f1f5f9'];
+        return fdBadge(s[0], s[1], s[2]);
+    }
+
+    function fdPaymentBadge(payments) {
+        var p = (payments && payments[0]) || null;
+        if (!p) return '';
+        var s = FD_PAYMENT_STATUS[p.status] || [p.status || '-', '#334155', '#f1f5f9'];
+        return fdBadge(s[0], s[1], s[2]);
+    }
+
+    // Siguiente paso del flujo que el comercio puede marcar en cada pedido.
+    var FD_ORDER_FLOW = {
+        'pending': ['confirmed', 'Confirmar pedido'],
+        'confirmed': ['in_preparation', 'Marcar en preparación'],
+        'in_preparation': ['on_the_way', 'Marcar en camino'],
+        'on_the_way': ['delivered', 'Marcar entregado']
+    };
+
+    var FD_ORDER_CANCELLABLE = ['pending', 'confirmed', 'in_preparation'];
+
+    function fdOrderActions(o) {
+        var html = '<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">';
+        var flow = FD_ORDER_FLOW[o.status];
+
+        if (flow) {
+            html += '<button type="button" data-order-action onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)" '
+                + 'style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
+                + escapeHtml(flow[1]) + '</button>';
+        }
+
+        if (FD_ORDER_CANCELLABLE.indexOf(o.status) !== -1) {
+            html += '<button type="button" data-order-action onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)" '
+                + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
+                + 'Cancelar</button>';
+        }
+
+        return html + '</div>';
+    }
+
+    function fdUpdateOrderStatus(orderId, status, btn) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+        fdFetchJson('{{ url("/api/orders") }}/' + orderId + '/status', {
+            method: 'PATCH',
+            body: JSON.stringify({ status: status })
+        })
+        .then(function (res) {
+            if (!res.ok) {
+                fdToast((res.data && res.data.message) || 'No se pudo actualizar el pedido.', true);
+                loadProviderOrders();
+                return;
+            }
+
+            var card = document.querySelector('[data-order-id="' + orderId + '"]');
+            if (card && res.data.order) {
+                card.outerHTML = fdRenderOrder(res.data.order);
+                fdOrdersLastHtml = '';
+            } else {
+                loadProviderOrders(true);
+            }
+
+            fdToast('Pedido actualizado: ' + (FD_ORDER_STATUS[res.data.status] || [res.data.status])[0] + '.', false);
+        })
+        .catch(function () {
+            fdToast('No se pudo conectar con el servidor.', true);
+            loadProviderOrders();
+        });
+    }
+
+    function fdSetCatalogState(state, text) {
+        var map = { loading: 'fd-catalog-loading', message: 'fd-catalog-message', content: 'fd-catalog-content' };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.style.display = (k === state) ? 'block' : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById('fd-catalog-message-text');
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function fdSetOrdersState(state, text) {
+        var map = { loading: 'fd-orders-loading', message: 'fd-orders-message', content: 'fd-orders-list' };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.style.display = (k === state) ? 'block' : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById('fd-orders-message-text');
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function fdFetchJson(url, options) {
+        options = options || {};
+        var headers = {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        };
+        Object.keys(options.headers || {}).forEach(function (k) { headers[k] = options.headers[k]; });
+        if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+
+        return fetch(url, Object.assign({}, options, { headers: headers })).then(function (r) {
+            return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+        });
+    }
+
+    // --- Catálogo ---
+
+    function loadProviderCatalog() {
+        var providerId = fdProviderId('dash-mi-catalogo');
+        if (!providerId) {
+            fdSetCatalogState('message', 'Todavía no tenés un comercio configurado.\nCreá tu comercio desde Tu Perfil para cargar el catálogo.');
+            return;
+        }
+
+        fdSetCatalogState('loading');
+
+        fdFetchJson('{{ url("/api/providers") }}/' + providerId + '/catalog')
+            .then(function (res) {
+                if (!res.ok) {
+                    fdSetCatalogState('message', (res.data && res.data.message) || 'No se pudo cargar el catálogo.');
+                    return;
+                }
+
+                var subtitle = document.getElementById('fd-catalog-subtitle');
+                if (subtitle && res.data.provider) {
+                    subtitle.textContent = res.data.provider.business_name +
+                        (res.data.provider.is_active === false ? ' · comercio pausado' : '');
+                }
+
+                var categories = res.data.categories || [];
+
+                if (!categories.length) {
+                    fdSetCatalogState('message', 'Tu catálogo está vacío.\nCreá categorías y productos para que los clientes puedan pedir.');
+                    return;
+                }
+
+                document.getElementById('fd-catalog-content').innerHTML =
+                    fdRenderCatalog(categories, res.data.provider);
+
+                fdSetCatalogState('content');
+            })
+            .catch(function () {
+                fdSetCatalogState('message', 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderCatalog(categories, provider) {
+        var totalProducts = 0;
+        categories.forEach(function (c) { totalProducts += (c.products || []).length; });
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+            + fdBadge(categories.length + ' categorías', '#0c2a4d', '#eef2f7')
+            + fdBadge(totalProducts + ' productos', '#0c2a4d', '#eef2f7')
+            + (provider && provider.zone ? fdBadge(provider.zone, '#9a3412', '#fff7ed') : '')
+            + (provider && provider.is_active === false ? fdBadge('Comercio pausado', '#b91c1c', '#fee2e2') : '')
+            + '</div>';
+
+        categories.forEach(function (cat) {
+            var products = cat.products || [];
+
+            html += '<div style="background:#fff;border:1px solid #e5e7eb;margin-bottom:16px;overflow:hidden;">'
+                + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
+                + '<span style="font-size:13px;font-weight:700;color:#fff;">' + escapeHtml(cat.name) + '</span>'
+                + '<span style="font-size:11px;color:rgba(255,255,255,.75);">' + products.length + ' productos</span>'
+                + '</div>';
+
+            if (!products.length) {
+                html += '<div style="padding:20px 16px;font-size:13px;color:#94a3b8;text-align:center;">Esta categoría todavía no tiene productos.</div>';
+            } else {
+                products.forEach(function (p) { html += fdRenderProduct(p); });
+            }
+
+            html += '</div>';
+        });
+
+        return html;
+    }
+
+    function fdRenderProduct(p) {
+        var available = p.is_available !== false;
+        var html = '<div style="padding:14px 16px;border-top:1px solid #f1f5f9;">'
+            + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">'
+            + '<div style="min-width:0;">'
+            + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+            + '<span style="font-size:14px;font-weight:600;color:#0f172a;">' + escapeHtml(p.name) + '</span>'
+            + (available ? fdBadge('Disponible', '#047857', '#d1fae5') : fdBadge('No disponible', '#b91c1c', '#fee2e2'))
+            + '</div>';
+
+        if (p.description) {
+            html += '<p style="font-size:12px;color:#64748b;margin:4px 0 0;">' + escapeHtml(p.description) + '</p>';
+        }
+
+        html += '</div>'
+            + '<div style="font-size:14px;font-weight:700;color:#D24C19;white-space:nowrap;">' + fdMoney(p.price) + '</div>'
+            + '</div>';
+
+        var variants = p.variants || [];
+        if (variants.length) {
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';
+            variants.forEach(function (v) {
+                var ok = v.is_available !== false;
+                html += '<span style="font-size:11px;padding:4px 9px;border:1px solid ' + (ok ? '#fdba74' : '#e2e8f0')
+                    + ';border-radius:4px;background:' + (ok ? '#fff7ed' : '#f8fafc')
+                    + ';color:' + (ok ? '#9a3412' : '#94a3b8') + ';">'
+                    + escapeHtml(v.name) + ' · ' + fdMoney(v.price) + (ok ? '' : ' · sin stock') + '</span>';
+            });
+            html += '</div>';
+        }
+
+        var groups = p.option_groups || [];
+        groups.forEach(function (g) {
+            var opts = g.options || [];
+            var rules = [];
+            if (g.min_choices) rules.push('mín. ' + g.min_choices);
+            if (g.max_choices) rules.push('máx. ' + g.max_choices);
+            if (g.is_required) rules.push('obligatorio');
+
+            html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb;">'
+                + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;">'
+                + '<span style="font-weight:600;color:#0f172a;">' + escapeHtml(g.name) + '</span>'
+                + (rules.length ? '<span style="color:#94a3b8;">' + escapeHtml(rules.join(' · ')) + '</span>' : '')
+                + '</div>';
+
+            if (opts.length) {
+                html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">';
+                opts.forEach(function (o) {
+                    var ok = o.is_available !== false;
+                    html += '<span style="font-size:11px;padding:4px 9px;border:1px solid #e2e8f0;border-radius:4px;background:'
+                        + (ok ? '#fff' : '#f8fafc') + ';color:' + (ok ? '#334155' : '#94a3b8') + ';">'
+                        + escapeHtml(o.name)
+                        + (Number(o.extra_price) > 0 ? ' <b style="color:#D24C19;">+' + fdMoney(o.extra_price) + '</b>' : '')
+                        + (ok ? '' : ' · sin stock')
+                        + '</span>';
+                });
+                html += '</div>';
+            } else {
+                html += '<div style="font-size:11px;color:#94a3b8;margin-top:4px;">Sin opciones cargadas.</div>';
+            }
+
+            html += '</div>';
+        });
+
+        return html + '</div>';
+    }
+
+    // --- Pedidos ---
+
+    function fdClock() {
+        return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function fdToast(text, isError) {
+        var el = document.createElement('div');
+        el.textContent = text;
+        el.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:9999;max-width:340px;padding:11px 16px;'
+            + 'border-radius:4px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);'
+            + 'background:' + (isError ? '#b91c1c' : '#047857') + ';';
+        document.body.appendChild(el);
+        setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 4000);
+    }
+
+    // Ultimo HTML pintado por lista: evita repintar (y parpadear) cuando la
+    // actualizacion automatica trae los mismos datos.
+    var fdOrdersLastHtml = '';
+    var fdMyOrdersLastHtml = '';
+
+    function loadProviderOrders(silent) {
+        var providerId = fdProviderId('dash-pedidos');
+        if (!providerId) {
+            if (!silent) fdSetOrdersState('message', 'Todavía no tenés un comercio configurado.\nCreá tu comercio desde Tu Perfil para recibir pedidos.');
+            return;
+        }
+
+        var filterEl = document.getElementById('fd-orders-filter');
+        var savedFilter = filterEl ? filterEl.value : '';
+
+        if (!silent) fdSetOrdersState('loading');
+
+        var url = '{{ url("/api/providers") }}/' + providerId + '/orders';
+        if (savedFilter) url += '?status=' + encodeURIComponent(savedFilter);
+
+        fdFetchJson(url)
+            .then(function (res) {
+                if (!res.ok) {
+                    if (silent) return;
+                    fdSetOrdersState('message', (res.data && res.data.message) || 'No se pudieron cargar los pedidos.');
+                    return;
+                }
+
+                var filter = document.getElementById('fd-orders-filter');
+                if (filter && filter.options.length <= 1) {
+                    (res.data.statuses || []).forEach(function (status) {
+                        var opt = document.createElement('option');
+                        opt.value = status;
+                        opt.textContent = FD_ORDER_STATUS[status] ? FD_ORDER_STATUS[status][0] : status;
+                        filter.appendChild(opt);
+                    });
+                    filter.value = savedFilter;
+                }
+
+                var orders = res.data.orders || [];
+                var provider = res.data.provider || {};
+                var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
+
+                var summary = document.getElementById('fd-orders-summary');
+                if (summary) {
+                    summary.textContent = (provider.business_name || 'Tu comercio') +
+                        ' · ' + orders.length + ' pedidos' +
+                        (pending ? ' · ' + pending + ' pendientes' : '') +
+                        ' · actualizado ' + fdClock();
+                }
+
+                if (!orders.length) {
+                    fdOrdersLastHtml = '';
+                    fdSetOrdersState('message', savedFilter
+                        ? 'No hay pedidos con ese estado.'
+                        : 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.');
+                    return;
+                }
+
+                var html = orders.map(fdRenderOrder).join('');
+                var list = document.getElementById('fd-orders-list');
+
+                if (silent && html === fdOrdersLastHtml && list.style.display === 'block') return;
+
+                fdOrdersLastHtml = html;
+                list.innerHTML = html;
+                fdSetOrdersState('content');
+            })
+            .catch(function () {
+                if (silent) return;
+                fdSetOrdersState('message', 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderOrder(o) {
+        var client = o.user || {};
+        var address = o.address;
+        var html = '<div data-order-id="' + Number(o.id) + '" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:14px;overflow:hidden;">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">'
+            + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+            + '<span style="font-size:13px;font-weight:700;color:#0c2a4d;font-family:ui-monospace,monospace;">' + escapeHtml(o.order_number) + '</span>'
+            + fdStatusBadge(o.status)
+            + fdPaymentBadge(o.payments)
+            + '</div>'
+            + '<span style="font-size:11px;color:#94a3b8;">' + fdDate(o.created_at) + '</span>'
+            + '</div>';
+
+        html += '<div style="padding:14px 16px;">'
+            + '<div style="font-size:13px;color:#334155;">'
+            + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+            + '<b>' + escapeHtml(client.name || 'Cliente') + '</b>'
+            + '<span style="color:#94a3b8;font-size:12px;">' + escapeHtml(client.email || '') + '</span>'
+            + '</div>';
+
+        if (address) {
+            html += '<div style="color:#64748b;margin-top:4px;font-size:12px;">'
+                + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
+                + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
+                + (address.postal_code ? ' · CP ' + escapeHtml(address.postal_code) : '')
+                + '</div>';
+            if (address.notes) {
+                html += '<div style="color:#94a3b8;font-size:11px;margin-top:2px;">' + escapeHtml(address.notes) + '</div>';
+            }
+        } else {
+            html += '<div style="color:#94a3b8;margin-top:4px;font-size:12px;">Sin dirección registrada</div>';
+        }
+
+        if (o.notes) {
+            html += '<div style="margin-top:4px;font-size:12px;color:#9a3412;">Nota: ' + escapeHtml(o.notes) + '</div>';
+        }
+
+        html += '</div>'
+            + '<div style="border-top:1px solid #f1f5f9;padding-top:10px;">'
+            + (o.items || []).map(fdRenderOrderItem).join('')
+            + '</div>'
+            + '<div style="border-top:1px solid #e5e7eb;padding-top:10px;font-size:13px;">'
+            + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
+            + fdTotalRow('Envío', fdMoney(o.delivery_fee), false)
+            + fdTotalRow('Descuento', '-' + fdMoney(o.discount), false)
+            + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
+            + '<span>Total</span><span>' + fdMoney(o.total) + '</span></div>'
+            + '</div>'
+            + '</div>'
+            + fdOrderActions(o)
+            + '</div>';
+
+        return html;
+    }
+
+    function fdRenderOrderItem(it) {
+        var options = it.options || [];
+        var optionsHtml = '';
+
+        if (options.length) {
+            optionsHtml = '<div style="font-size:11px;color:#94a3b8;margin-top:2px;">'
+                + options.map(function (op) {
+                    return escapeHtml(op.option_name) +
+                        (Number(op.extra_price) > 0 ? ' +' + fdMoney(op.extra_price) : '');
+                }).join(' · ')
+                + '</div>';
+        }
+
+        return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px;flex-wrap:wrap;">'
+            + '<div style="min-width:0;">'
+            + '<b>' + Number(it.quantity) + '× </b>' + escapeHtml(it.product_name)
+            + (it.variant_name ? ' <span style="color:#94a3b8;">(' + escapeHtml(it.variant_name) + ')</span>' : '')
+            + '<div style="font-size:11px;color:#94a3b8;">' + fdMoney(it.unit_price) + ' c/u</div>'
+            + optionsHtml
+            + '</div>'
+            + '<div style="font-weight:600;white-space:nowrap;">' + fdMoney(it.total_price) + '</div>'
+            + '</div>';
+    }
+
+    function fdTotalRow(label, value, strong) {
+        return '<div style="display:flex;justify-content:space-between;color:#64748b;' +
+            (strong ? 'font-weight:700;color:#0c2a4d;' : '') + '">'
+            + '<span>' + escapeHtml(label) + '</span><span>' + value + '</span></div>';
+    }
+
+    // ============ FAST DELIVERY: COMERCIOS Y MIS PEDIDOS DEL CLIENTE ============
+
+    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false };
+    var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
+    var fdShopsTimer = null;
+
+    function fdSetShopsState(state, text) {
+        var map = { loading: 'fd-shops-loading', message: 'fd-shops-message', content: 'fd-shops-grid' };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.style.display = (k === state) ? (k === 'content' ? 'grid' : 'block') : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById('fd-shops-message-text');
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function fdSetMyOrdersState(state, text) {
+        var map = { loading: 'fd-myorders-loading', message: 'fd-myorders-message', content: 'fd-myorders-list' };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.style.display = (k === state) ? 'block' : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById('fd-myorders-message-text');
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function fdShopsSearchDebounce() {
+        if (fdShopsTimer) clearTimeout(fdShopsTimer);
+        fdShopsTimer = setTimeout(loadComercios, 300);
+    }
+
+    function loadComercios() {
+        var input = document.getElementById('fd-shops-search');
+        var search = input ? input.value.trim() : '';
+        var section = document.getElementById('dash-comercios');
+        var moduleId = section ? parseInt(section.getAttribute('data-module-id'), 10) : NaN;
+        var params = [];
+
+        // Solo comercios de la categoria que corresponde al modulo abierto
+        if (moduleId > 0) params.push('module_id=' + moduleId);
+        if (search) params.push('search=' + encodeURIComponent(search));
+
+        fdSetShopsState('loading');
+
+        fdFetchJson('{{ url("/api/providers") }}' + (params.length ? '?' + params.join('&') : ''))
+            .then(function (res) {
+                if (!res.ok) {
+                    fdSetShopsState('message', (res.data && res.data.message) || 'No se pudieron cargar los comercios.');
+                    return;
+                }
+
+                var providers = res.data.providers || [];
+                FD_SHOP.settings = res.data.settings || {};
+
+                var summary = document.getElementById('fd-shops-summary');
+                if (summary) {
+                    summary.textContent = providers.length
+                        ? providers.length + ' comercios disponibles'
+                        : 'Comercios con envío a tu domicilio';
+                }
+
+                if (!providers.length) {
+                    fdSetShopsState('message', search
+                        ? 'No encontramos comercios con ese nombre.'
+                        : 'Todavía no hay comercios publicados.\nPronto vas a poder pedir desde acá.');
+                    return;
+                }
+
+                document.getElementById('fd-shops-grid').innerHTML = providers.map(fdRenderProviderCard).join('');
+                fdSetShopsState('content');
+            })
+            .catch(function () {
+                fdSetShopsState('message', 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderProviderCard(p) {
+        var initial = escapeHtml((p.business_name || '?').replace(/^\s+/, '').charAt(0).toUpperCase());
+        var meta = p.rubro || p.zone || 'Comercio';
+
+        var html = '<div style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">'
+            + '<div style="display:flex;gap:12px;align-items:center;">'
+            + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + initial + '</div>'
+            + '<div style="min-width:0;">'
+            + '<div style="font-size:14px;font-weight:700;color:#0c2a4d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(p.business_name) + '</div>'
+            + '<div style="font-size:11px;color:#94a3b8;">' + escapeHtml(meta) + (p.zone && p.rubro ? ' · ' + escapeHtml(p.zone) : '') + '</div>'
+            + '</div>'
+            + (p.rating ? '<div style="margin-left:auto;font-size:12px;font-weight:700;color:#b45309;white-space:nowrap;">★ ' + escapeHtml(Number(p.rating).toFixed(1)) + '</div>' : '')
+            + '</div>';
+
+        if (p.description) {
+            html += '<p style="margin:0;font-size:12px;color:#64748b;line-height:1.45;">' + escapeHtml(p.description) + '</p>';
+        }
+
+        if (p.promo) {
+            html += '<div style="font-size:11px;color:#047857;background:#ecfdf5;padding:6px 8px;">' + escapeHtml(p.promo) + '</div>';
+        }
+
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;">'
+            + '<span style="font-size:11px;color:#6b7280;">' + Number(p.products_count || 0) + ' productos · ' + Number(p.categories_count || 0) + ' categorías</span>'
+            + '<button type="button" onclick="openFdShop(' + Number(p.id) + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Ver catálogo</button>'
+            + '</div>'
+            + '</div>';
+
+        return html;
+    }
+
+    function openFdShop(providerId) {
+        FD_SHOP.providerId = Number(providerId);
+        FD_SHOP.providerName = '';
+        FD_SHOP.catalog = null;
+        FD_SHOP.cart = [];
+
+        var overlay = document.getElementById('fd-shop-overlay');
+        if (overlay) overlay.style.display = 'flex';
+
+        document.getElementById('fd-shop-title').textContent = 'Cargando...';
+        document.getElementById('fd-shop-subtitle').textContent = '';
+        document.getElementById('fd-shop-body').innerHTML =
+            '<p style="font-size:13px;color:#6b7280;text-align:center;padding:32px 0;margin:0;">Cargando catálogo...</p>';
+        document.getElementById('fd-shop-cart').innerHTML = '';
+
+        fdLoadShopAddresses();
+
+        fdFetchJson('{{ url("/api/providers") }}/' + FD_SHOP.providerId + '/catalog?only_available=1')
+            .then(function (res) {
+                if (!res.ok) {
+                    document.getElementById('fd-shop-body').innerHTML =
+                        '<p style="font-size:13px;color:#b91c1c;text-align:center;padding:32px 0;margin:0;">'
+                        + escapeHtml((res.data && res.data.message) || 'No se pudo cargar el catálogo.') + '</p>';
+                    return;
+                }
+
+                FD_SHOP.catalog = res.data;
+
+                var provider = res.data.provider || {};
+                FD_SHOP.providerName = provider.business_name || '';
+
+                document.getElementById('fd-shop-title').textContent = provider.business_name || 'Comercio';
+
+                var hours = provider.hours;
+                var hoursText = Array.isArray(hours) ? hours.join(' · ') : (typeof hours === 'string' ? hours : '');
+                document.getElementById('fd-shop-subtitle').textContent = [provider.zone, hoursText].filter(Boolean).join(' · ');
+
+                document.getElementById('fd-shop-body').innerHTML =
+                    fdRenderShopCatalog(res.data.categories || []);
+                fdRenderShopCart();
+            })
+            .catch(function () {
+                document.getElementById('fd-shop-body').innerHTML =
+                    '<p style="font-size:13px;color:#b91c1c;text-align:center;padding:32px 0;margin:0;">No se pudo conectar con el servidor.</p>';
+            });
+    }
+
+    function closeFdShop() {
+        var overlay = document.getElementById('fd-shop-overlay');
+        if (overlay) overlay.style.display = 'none';
+        FD_SHOP.providerId = null;
+        FD_SHOP.catalog = null;
+        FD_SHOP.cart = [];
+    }
+
+    function fdRenderShopCatalog(categories) {
+        if (!categories.length) {
+            return '<p style="font-size:13px;color:#6b7280;text-align:center;padding:32px 0;margin:0;">'
+                + 'Este comercio todavía no tiene productos disponibles.</p>';
+        }
+
+        return categories.map(function (c) {
+            return '<div style="margin-bottom:18px;">'
+                + '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9a3412;margin-bottom:8px;">'
+                + escapeHtml(c.name) + '</div>'
+                + (c.products || []).map(fdRenderShopProduct).join('')
+                + '</div>';
+        }).join('');
+    }
+
+    function fdRenderShopProduct(p) {
+        var variants = p.variants || [];
+        var groups = p.option_groups || [];
+        var maxQty = Number(FD_SHOP.settings.max_quantity_per_item || 20);
+
+        var html = '<div id="fd-p-' + p.id + '" style="background:#fff;border:1px solid #e5e7eb;padding:12px 14px;margin-bottom:10px;">'
+            + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">'
+            + '<div style="min-width:0;">'
+            + '<div style="font-size:14px;font-weight:600;color:#0c2a4d;">' + escapeHtml(p.name) + '</div>'
+            + (p.description ? '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + escapeHtml(p.description) + '</div>' : '')
+            + '</div>'
+            + '<div style="font-size:14px;font-weight:700;color:#D24C19;white-space:nowrap;">'
+            + fdMoney(variants.length ? variants[0].price : p.price) + '</div>'
+            + '</div>';
+
+        if (variants.length > 1) {
+            html += '<div style="margin-top:8px;">'
+                + '<select id="fd-variant-' + p.id + '" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+                + variants.map(function (v) {
+                    return '<option value="' + v.id + '">' + escapeHtml(v.name) + ' — ' + fdMoney(v.price) + '</option>';
+                }).join('')
+                + '</select></div>';
+        } else if (variants.length === 1) {
+            html += '<div style="margin-top:6px;font-size:11px;color:#94a3b8;">' + escapeHtml(variants[0].name) + '</div>'
+                + '<input type="hidden" id="fd-variant-' + p.id + '" value="' + variants[0].id + '" />';
+        }
+
+        groups.forEach(function (g) {
+            var opts = g.options || [];
+            if (!opts.length) return;
+
+            var min = Number(g.min_choices || 0);
+            var max = Number(g.max_choices || 0);
+            var hint = (min > 0 ? 'obligatorio' : 'opcional') + (max > 0 ? ', hasta ' + max : '');
+
+            html += '<div style="margin-top:8px;font-size:12px;color:#334155;">'
+                + '<b>' + escapeHtml(g.name) + '</b> <span style="color:#94a3b8;">(' + hint + ')</span>'
+                + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">'
+                + opts.map(function (o) {
+                    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;background:#f8fafc;border:1px solid #e5e7eb;padding:5px 8px;cursor:pointer;">'
+                        + '<input type="checkbox" class="fd-opt" data-product="' + p.id + '" data-group="' + g.id + '" value="' + o.id + '" />'
+                        + escapeHtml(o.name)
+                        + (Number(o.extra_price) > 0 ? ' <span style="color:#047857;">+' + fdMoney(o.extra_price) + '</span>' : '')
+                        + '</label>';
+                }).join('')
+                + '</div></div>';
+        });
+
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">'
+            + '<div style="display:flex;align-items:center;gap:6px;">'
+            + '<button type="button" onclick="fdShopQty(' + p.id + ', -1)" style="width:28px;height:28px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;">−</button>'
+            + '<input type="number" id="fd-qty-' + p.id + '" value="1" min="1" readonly style="width:56px;text-align:center;padding:5px 0;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />'
+            + '<button type="button" onclick="fdShopQty(' + p.id + ', 1)" style="width:28px;height:28px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;">+</button>'
+            + '</div>'
+            + '<button type="button" onclick="fdShopAdd(' + p.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Agregar</button>'
+            + '</div>'
+            + '<div id="fd-p-msg-' + p.id + '" style="display:none;font-size:11px;color:#b91c1c;margin-top:6px;"></div>'
+            + '</div>';
+
+        return html;
+    }
+
+    function fdShopQty(productId, delta) {
+        var el = document.getElementById('fd-qty-' + productId);
+        if (!el) return;
+        var max = Number(FD_SHOP.settings.max_quantity_per_item || 20);
+        var value = (parseInt(el.value, 10) || 1) + delta;
+        el.value = Math.min(Math.max(value, 1), Math.max(max, 1));
+    }
+
+    function fdShopFindProduct(productId) {
+        var categories = (FD_SHOP.catalog && FD_SHOP.catalog.categories) || [];
+        for (var i = 0; i < categories.length; i++) {
+            var products = categories[i].products || [];
+            for (var j = 0; j < products.length; j++) {
+                if (Number(products[j].id) === Number(productId)) return products[j];
+            }
+        }
+        return null;
+    }
+
+    function fdShopAdd(productId) {
+        var p = fdShopFindProduct(productId);
+        if (!p) return;
+
+        var msgEl = document.getElementById('fd-p-msg-' + productId);
+        var showMsg = function (text) {
+            if (msgEl) { msgEl.textContent = text; msgEl.style.display = 'block'; }
+        };
+        var hideMsg = function () { if (msgEl) msgEl.style.display = 'none'; };
+
+        var qtyEl = document.getElementById('fd-qty-' + productId);
+        var quantity = Math.max(1, parseInt(qtyEl ? qtyEl.value : '1', 10) || 1);
+        var maxQty = Number(FD_SHOP.settings.max_quantity_per_item || 20);
+
+        if (quantity > maxQty) {
+            showMsg('Máximo ' + maxQty + ' unidades por producto.');
+            return;
+        }
+
+        var variants = p.variants || [];
+        var variantId = null;
+        var variantName = '';
+        var unitPrice = Number(p.price || 0);
+
+        var variantEl = document.getElementById('fd-variant-' + productId);
+        if (variantEl) {
+            var selectedVariantId = parseInt(variantEl.value, 10);
+            variants.forEach(function (v) {
+                if (Number(v.id) === selectedVariantId) {
+                    variantId = Number(v.id);
+                    variantName = v.name;
+                    unitPrice = Number(v.price);
+                }
+            });
+        }
+
+        var boxes = document.querySelectorAll('#fd-p-' + productId + ' input.fd-opt:checked');
+        var byGroup = {};
+        var options = [];
+        var optionLabels = [];
+        var optionsExtra = 0;
+
+        Array.prototype.forEach.call(boxes, function (box) {
+            var groupId = box.getAttribute('data-group');
+            if (!byGroup[groupId]) byGroup[groupId] = [];
+            byGroup[groupId].push(box);
+            options.push(Number(box.value));
+        });
+
+        var invalid = (p.option_groups || []).some(function (g) {
+            var selected = byGroup[g.id] || [];
+            var min = Number(g.min_choices || 0);
+            var max = Number(g.max_choices || 0);
+
+            if (min > 0 && selected.length < min) {
+                showMsg('Elegí al menos ' + min + ' opción de "' + g.name + '".');
+                return true;
+            }
+            if (max > 0 && selected.length > max) {
+                showMsg('Podés elegir hasta ' + max + ' opciones de "' + g.name + '".');
+                return true;
+            }
+            return false;
+        });
+
+        if (invalid) return;
+
+        Array.prototype.forEach.call(boxes, function (box) {
+            var extra = Number(box.getAttribute('data-extra') || 0);
+            optionsExtra += extra;
+            optionLabels.push(box.parentNode.textContent.trim());
+        });
+
+        FD_SHOP.cart.push({
+            product_id: Number(p.id),
+            variant_id: variantId,
+            quantity: quantity,
+            product_name: p.name,
+            variant_name: variantName,
+            unit_price: unitPrice,
+            options: options,
+            options_extra: optionsExtra,
+            option_labels: optionLabels
+        });
+
+        if (qtyEl) qtyEl.value = 1;
+        hideMsg();
+        fdRenderShopCart();
+    }
+
+    function fdShopRemove(index) {
+        FD_SHOP.cart.splice(Number(index), 1);
+        fdRenderShopCart();
+    }
+
+    function fdLoadShopAddresses() {
+        FD_SHOP.addresses = null;
+        fdFetchJson('{{ url("/api/me/addresses") }}')
+            .then(function (res) {
+                FD_SHOP.addresses = (res.ok && res.data.addresses) || [];
+                fdRenderShopCart();
+            })
+            .catch(function () {
+                FD_SHOP.addresses = [];
+                fdRenderShopCart();
+            });
+    }
+
+    function fdRenderShopCart() {
+        var el = document.getElementById('fd-shop-cart');
+        if (!el) return;
+
+        var prevAddress = document.getElementById('fd-shop-address');
+        var prevNotes = document.getElementById('fd-shop-notes');
+        var prevPayment = document.getElementById('fd-shop-payment');
+        var keepAddress = prevAddress ? prevAddress.value : '';
+        var keepNotes = prevNotes ? prevNotes.value : '';
+        var keepPayment = prevPayment ? prevPayment.value : '';
+
+        if (!FD_SHOP.cart.length) {
+            el.innerHTML = '<div style="font-size:12px;color:#6b7280;text-align:center;">'
+                + 'Tu carrito está vacío. Agregá productos para continuar.</div>';
+            return;
+        }
+
+        var subtotal = 0;
+        var lines = FD_SHOP.cart.map(function (line, index) {
+            var lineTotal = (Number(line.unit_price) + Number(line.options_extra)) * Number(line.quantity);
+            subtotal += lineTotal;
+
+            return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;">'
+                + '<div style="min-width:0;">'
+                + '<b>' + Number(line.quantity) + '×</b> ' + escapeHtml(line.product_name)
+                + (line.variant_name ? ' <span style="color:#94a3b8;">(' + escapeHtml(line.variant_name) + ')</span>' : '')
+                + (line.option_labels && line.option_labels.length
+                    ? '<div style="font-size:11px;color:#6b7280;">' + line.option_labels.map(escapeHtml).join(', ') + '</div>'
+                    : '')
+                + '</div>'
+                + '<div style="display:flex;align-items:center;gap:8px;white-space:nowrap;">'
+                + '<span style="font-weight:600;">' + fdMoney(lineTotal) + '</span>'
+                + '<button type="button" onclick="fdShopRemove(' + index + ')" title="Quitar" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:15px;line-height:1;padding:0;">&times;</button>'
+                + '</div></div>';
+        }).join('');
+
+        var fee = Number(FD_SHOP.settings.delivery_fee || 0);
+        var total = subtotal + fee;
+        var addresses = FD_SHOP.addresses;
+
+        var addressHtml;
+        if (addresses === null) {
+            addressHtml = '<div style="font-size:12px;color:#6b7280;margin-top:10px;">Cargando direcciones...</div>';
+        } else if (!addresses.length) {
+            addressHtml = '<div style="font-size:12px;color:#b45309;margin-top:10px;">'
+                + 'No tenés direcciones cargadas. Cargá una desde <b>Tu Perfil</b> para poder pedir.</div>';
+        } else {
+            addressHtml = '<div style="margin-top:10px;">'
+                + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Dirección de entrega *</label>'
+                + '<select id="fd-shop-address" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+                + addresses.map(function (a) {
+                    return '<option value="' + a.id + '"' + (String(a.id) === keepAddress ? ' selected' : '') + '>'
+                        + escapeHtml(a.formatted || (a.street + ' ' + (a.number || '')))
+                        + (a.is_primary ? ' · principal' : '')
+                        + '</option>';
+                }).join('')
+                + '</select></div>';
+        }
+
+        var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
+            if (key === 'transferencia' || key === 'mercadopago') return '';
+            return '<option value="' + key + '"' + (key === keepPayment ? ' selected' : '') + '>'
+                + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
+        }).join('');
+
+        el.innerHTML = lines
+            + '<div style="border-top:1px solid #e5e7eb;margin-top:8px;padding-top:8px;font-size:13px;">'
+            + fdTotalRow('Subtotal', fdMoney(subtotal), false)
+            + fdTotalRow('Envío', fdMoney(fee), false)
+            + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
+            + '<span>Total estimado</span><span>' + fdMoney(total) + '</span></div>'
+            + '</div>'
+            + addressHtml
+            + '<div style="margin-top:10px;">'
+            + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
+            + '<select id="fd-shop-payment" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+            + paymentOptions
+            + '</select></div>'
+            + '<div style="margin-top:10px;">'
+            + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nota para el comercio</label>'
+            + '<textarea id="fd-shop-notes" rows="2" maxlength="1000" placeholder="Ej: sin cebolla, timbre roto, etc." style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">'
+            + escapeHtml(keepNotes) + '</textarea></div>'
+            + '<div id="fd-shop-msg" style="display:none;font-size:12px;color:#b91c1c;margin-top:8px;"></div>'
+            + '<div style="display:flex;justify-content:flex-end;margin-top:10px;">'
+            + '<button type="button" id="fd-shop-submit" onclick="fdShopSubmit()" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;">'
+            + 'Confirmar pedido · ' + fdMoney(total)
+            + '</button></div>';
+
+        if (keepNotes) {
+            var notes = document.getElementById('fd-shop-notes');
+            if (notes) notes.value = keepNotes;
+        }
+    }
+
+    function fdShopShowMsg(text, isError) {
+        var msg = document.getElementById('fd-shop-msg');
+        if (!msg) return;
+        msg.textContent = text;
+        msg.style.color = isError ? '#b91c1c' : '#047857';
+        msg.style.display = 'block';
+    }
+
+    function fdShopSubmit() {
+        if (FD_SHOP.busy) return;
+
+        if (!FD_SHOP.cart.length) {
+            fdShopShowMsg('Agregá al menos un producto antes de confirmar.', true);
+            return;
+        }
+
+        var addressSel = document.getElementById('fd-shop-address');
+        var addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
+
+        if (isNaN(addressId)) {
+            fdShopShowMsg('Seleccioná la dirección de entrega.', true);
+            return;
+        }
+
+        var notesEl = document.getElementById('fd-shop-notes');
+        var paymentEl = document.getElementById('fd-shop-payment');
+        var submitBtn = document.getElementById('fd-shop-submit');
+
+        var payload = {
+            provider_id: FD_SHOP.providerId,
+            address_id: addressId,
+            payment_method: paymentEl ? paymentEl.value : 'efectivo',
+            notes: notesEl ? notesEl.value.trim() : '',
+            items: FD_SHOP.cart.map(function (line) {
+                return {
+                    product_id: line.product_id,
+                    variant_id: line.variant_id,
+                    quantity: line.quantity,
+                    options: line.options
+                };
+            })
+        };
+
+        FD_SHOP.busy = true;
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviando...'; }
+
+        fetch('{{ url("/api/orders") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+            FD_SHOP.busy = false;
+
+            if (!res.ok) {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirmar pedido'; }
+                var message = (res.data && res.data.message) || 'No se pudo registrar el pedido.';
+                if (res.data && res.data.errors) {
+                    var firstKey = Object.keys(res.data.errors)[0];
+                    message = res.data.errors[firstKey][0];
+                }
+                fdShopShowMsg(message, true);
+                return;
+            }
+
+            var orderNumber = (res.data.order && res.data.order.order_number) || '';
+
+            FD_SHOP.cart = [];
+            document.getElementById('fd-shop-cart').innerHTML =
+                '<div style="text-align:center;padding:6px 0;">'
+                + '<div style="font-size:14px;font-weight:700;color:#047857;margin-bottom:6px;">Pedido registrado</div>'
+                + '<div style="font-size:12px;color:#64748b;">'
+                + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
+                + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
+                + '<button type="button" onclick="closeFdShop();showDashSection(\'mis-pedidos\');" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
+                + 'Ver mis pedidos</button>'
+                + '</div>';
+
+            loadMyOrders();
+        })
+        .catch(function () {
+            FD_SHOP.busy = false;
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirmar pedido'; }
+            fdShopShowMsg('No se pudo conectar con el servidor.', true);
+        });
+    }
+
+    function loadMyOrders(silent) {
+        var filterEl = document.getElementById('fd-myorders-filter');
+        var savedFilter = filterEl ? filterEl.value : '';
+
+        if (!silent) fdSetMyOrdersState('loading');
+
+        var url = '{{ url("/api/orders/mine") }}';
+        if (savedFilter) url += '?status=' + encodeURIComponent(savedFilter);
+
+        fdFetchJson(url)
+            .then(function (res) {
+                if (!res.ok) {
+                    if (silent) return;
+                    fdSetMyOrdersState('message', (res.data && res.data.message) || 'No se pudieron cargar tus pedidos.');
+                    return;
+                }
+
+                var filter = document.getElementById('fd-myorders-filter');
+                if (filter && filter.options.length <= 1) {
+                    (res.data.statuses || []).forEach(function (status) {
+                        var opt = document.createElement('option');
+                        opt.value = status;
+                        opt.textContent = FD_ORDER_STATUS[status] ? FD_ORDER_STATUS[status][0] : status;
+                        filter.appendChild(opt);
+                    });
+                    filter.value = savedFilter;
+                }
+
+                var orders = res.data.orders || [];
+                var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
+
+                var summary = document.getElementById('fd-myorders-summary');
+                if (summary) {
+                    summary.textContent = (orders.length
+                        ? orders.length + ' pedidos' + (pending ? ' · ' + pending + ' pendientes' : '')
+                        : 'Tus pedidos y su estado')
+                        + ' · actualizado ' + fdClock();
+                }
+
+                if (!orders.length) {
+                    fdMyOrdersLastHtml = '';
+                    fdSetMyOrdersState('message', savedFilter
+                        ? 'No hay pedidos con ese estado.'
+                        : 'Todavía no hiciste pedidos.\nEntrá a Comercios y armá tu primer pedido.');
+                    return;
+                }
+
+                var html = orders.map(fdRenderMyOrder).join('');
+                var list = document.getElementById('fd-myorders-list');
+
+                if (silent && html === fdMyOrdersLastHtml && list.style.display === 'block') return;
+
+                fdMyOrdersLastHtml = html;
+                list.innerHTML = html;
+                fdSetMyOrdersState('content');
+            })
+            .catch(function () {
+                if (silent) return;
+                fdSetMyOrdersState('message', 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    var FD_TRACK_STEPS = [
+        ['pending', 'Recibido'],
+        ['confirmed', 'Confirmado'],
+        ['in_preparation', 'En preparación'],
+        ['on_the_way', 'En camino'],
+        ['delivered', 'Entregado']
+    ];
+
+    function fdTrackHtml(status) {
+        if (status === 'cancelled') {
+            return '<div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:12px 16px;font-size:13px;color:#b91c1c;font-weight:700;">Pedido cancelado</div>';
+        }
+
+        var current = -1;
+        FD_TRACK_STEPS.forEach(function (step, i) { if (step[0] === status) current = i; });
+        if (current < 0) return '';
+
+        var html = '<div data-track="' + status + '" style="display:flex;gap:6px;padding:14px 16px 4px;flex-wrap:wrap;">';
+
+        FD_TRACK_STEPS.forEach(function (step, i) {
+            var done = i < current;
+            var active = i === current;
+            var border = active ? '#fdba74' : (done ? '#a7f3d0' : '#e5e7eb');
+            var bg = active ? '#fff7ed' : (done ? '#ecfdf5' : '#f8fafc');
+            var titleColor = active ? '#9a3412' : (done ? '#047857' : '#94a3b8');
+            var textColor = active ? '#9a3412' : (done ? '#065f46' : '#94a3b8');
+
+            html += '<div style="flex:1 1 110px;min-width:104px;border:1px solid ' + border + ';background:' + bg + ';padding:7px 10px;border-radius:4px;">'
+                + '<div style="font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:' + titleColor + ';font-weight:700;">' + (done ? 'Listo' : (active ? 'Ahora' : 'Pendiente')) + '</div>'
+                + '<div style="font-size:12px;color:' + textColor + ';font-weight:' + (active ? '700' : '600') + ';margin-top:2px;">' + escapeHtml(step[1]) + '</div>'
+                + '</div>';
+        });
+
+        return html + '</div>';
+    }
+
+    function fdRenderMyOrder(o) {
+        var shop = o.provider || {};
+        var address = o.address;
+
+        var html = '<div data-order-id="' + Number(o.id) + '" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:14px;overflow:hidden;">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">'
+            + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+            + '<span style="font-size:13px;font-weight:700;color:#0c2a4d;font-family:ui-monospace,monospace;">' + escapeHtml(o.order_number) + '</span>'
+            + fdStatusBadge(o.status)
+            + fdPaymentBadge(o.payments)
+            + '</div>'
+            + '<span style="font-size:11px;color:#94a3b8;">' + fdDate(o.created_at) + '</span>'
+            + '</div>';
+
+        html += fdTrackHtml(o.status);
+
+        html += '<div style="padding:14px 16px;">'
+            + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;">'
+            + '<div style="min-width:0;">'
+            + '<b>' + escapeHtml(shop.business_name || 'Comercio') + '</b>'
+            + (shop.is_active === false ? ' <span style="color:#94a3b8;font-size:11px;">(comercio pausado)</span>' : '')
+            + (address
+                ? '<div style="color:#64748b;margin-top:4px;font-size:12px;">'
+                    + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
+                    + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
+                    + (address.postal_code ? ' · CP ' + escapeHtml(address.postal_code) : '')
+                    + '</div>'
+                : '<div style="color:#94a3b8;margin-top:4px;font-size:12px;">Sin dirección registrada</div>')
+            + '</div>'
+            + '<div style="text-align:right;font-size:12px;color:#64748b;white-space:nowrap;">'
+            + 'Pago: ' + escapeHtml(FD_PAYMENT_METHOD_LABELS[o.payment_method] || o.payment_method || '-')
+            + '</div>'
+            + '</div>';
+
+        if (o.notes) {
+            html += '<div style="margin-top:4px;font-size:12px;color:#9a3412;">Nota: ' + escapeHtml(o.notes) + '</div>';
+        }
+
+        html += '<div style="border-top:1px solid #f1f5f9;margin-top:10px;padding-top:10px;">'
+            + (o.items || []).map(fdRenderOrderItem).join('')
+            + '</div>'
+            + '<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;font-size:13px;">'
+            + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
+            + fdTotalRow('Envío', fdMoney(o.delivery_fee), false)
+            + fdTotalRow('Descuento', '-' + fdMoney(o.discount), false)
+            + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
+            + '<span>Total</span><span>' + fdMoney(o.total) + '</span></div>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+
+        return html;
+    }
+
     function escapeHtml(str) {
         if (!str) return '';
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
         return div.innerHTML;
     }
+
+    // ============ SEGUIMIENTO EN VIVO ============
+    // Cada seccion de pedidos se refresca sola mientras este a la vista, para
+    // que el estado del pedido cambie sin recargar la pagina.
+
+    var FD_POLL_SECTIONS = {
+        'mis-pedidos': function () { loadMyOrders(true); },
+        'pedidos': function () { loadProviderOrders(true); }
+    };
+    var FD_POLL_MS = 8000;
+    var fdPollTimer = null;
+    var fdPollKey = null;
+
+    function fdStopPolling() {
+        if (fdPollTimer) clearInterval(fdPollTimer);
+        fdPollTimer = null;
+        fdPollKey = null;
+    }
+
+    function fdStartPolling(key) {
+        if (fdPollKey === key) return;
+        fdStopPolling();
+        if (!FD_POLL_SECTIONS[key]) return;
+
+        fdPollKey = key;
+        fdPollTimer = setInterval(function () {
+            if (document.hidden) return;
+            var section = document.getElementById('dash-' + fdPollKey);
+            if (!section || section.style.display === 'none') { fdStopPolling(); return; }
+            FD_POLL_SECTIONS[fdPollKey]();
+        }, FD_POLL_MS);
+    }
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && fdPollKey && FD_POLL_SECTIONS[fdPollKey]) FD_POLL_SECTIONS[fdPollKey]();
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         var origShow = showDashSection;
@@ -2259,7 +3614,19 @@
             if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();
             if (key === 'perfil') loadProfile();
+            if (key === 'mi-catalogo') loadProviderCatalog();
+            if (key === 'pedidos') loadProviderOrders();
+            if (key === 'comercios') loadComercios();
+            if (key === 'mis-pedidos') loadMyOrders();
+            fdStartPolling(key);
         };
+
+        document.querySelectorAll('.dash-section').forEach(function (section) {
+            var key = section.id.indexOf('dash-') === 0 ? section.id.slice(5) : '';
+            if (section.style.display === 'none' || !FD_POLL_SECTIONS[key]) return;
+            fdStartPolling(key);
+            FD_POLL_SECTIONS[key]();
+        });
 
         @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0)
             // Prestador que todavía no eligió categorías: no deja avanzar hasta configurarlas.
@@ -5376,6 +6743,9 @@
     var profileData = null;
     var profileProvider = null;
     var profileIsPrestador = false;
+    var profileEsPrestador = {{ $esPerfilPrestador ? 'true' : 'false' }};
+    var profilePanelInicial = '{{ $perfilPanelInicial }}';
+    var profileDireccionCargada = false;
     var profileCanAdvertise = false;
 
     var PROFILE_DAYS = [
@@ -5500,8 +6870,10 @@
 
     function showProfilePanel(key) {
         if (key === 'imagenes' && !profileCanAdvertise) key = profileIsPrestador ? 'negocio' : 'cuenta';
+        if (key === 'usuarios' && !document.querySelector('.sidebar-link[data-panel="usuarios"]')) key = 'cuenta';
         if (key === 'usuarios') mountProfileUsuariosPanel();
         else unmountProfileUsuariosPanel();
+        if (key === 'direccion') loadAddress();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
             link.classList.toggle('active', link.dataset.panel === key);
         });
@@ -5526,6 +6898,11 @@
     }
 
     function loadProfile() {
+        if (!profileEsPrestador) {
+            if (profilePanelInicial === 'direccion') showProfilePanel('direccion');
+            return;
+        }
+
         var loading = document.getElementById('profile-loading');
         var panels = document.getElementById('profile-panels');
         panels.style.display = 'none';
@@ -5549,11 +6926,16 @@
             setProfileStatusBadge(user);
             document.getElementById('profile-type').textContent = typeObj ? typeObj.description : '-';
 
-            document.getElementById('sidebar-link-negocio').style.display = profileIsPrestador ? '' : 'none';
-            document.getElementById('sidebar-link-horarios').style.display = profileIsPrestador ? '' : 'none';
-            document.getElementById('sidebar-link-servicios').style.display = profileIsPrestador ? '' : 'none';
-            document.getElementById('sidebar-link-imagenes').style.display = profileCanAdvertise ? '' : 'none';
-            document.getElementById('sidebar-link-categorias').style.display = profileIsPrestador ? '' : 'none';
+            var toggleSidebarLink = function (id, visible) {
+                var link = document.getElementById(id);
+                if (link) link.style.display = visible ? '' : 'none';
+            };
+
+            toggleSidebarLink('sidebar-link-negocio', profileIsPrestador);
+            toggleSidebarLink('sidebar-link-horarios', profileIsPrestador);
+            toggleSidebarLink('sidebar-link-servicios', profileIsPrestador);
+            toggleSidebarLink('sidebar-link-imagenes', profileCanAdvertise);
+            toggleSidebarLink('sidebar-link-categorias', profileIsPrestador);
 
             loading.style.display = 'none';
             panels.style.display = 'block';
@@ -6786,6 +8168,9 @@
     // ---------- Mi Dirección ----------
 
     function loadAddress() {
+        if (profileDireccionCargada) return;
+        profileDireccionCargada = true;
+
         fetch('{{ url("/profile/address") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
@@ -6819,7 +8204,7 @@
                 }
             });
         })
-        .catch(function() {});
+        .catch(function() { profileDireccionCargada = false; });
     }
 
     function loadRegionsForCountry(countryId, selectedId) {
