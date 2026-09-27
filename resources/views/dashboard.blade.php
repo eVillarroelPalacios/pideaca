@@ -607,6 +607,14 @@
                             <p id="group-description-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
                         <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Estado <span style="color:#dc2626;">*</span></label>
+                            <select id="group-status-select" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:#ffffff;color:#1f2937;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'">
+                                <option value="">Cargando estados...</option>
+                            </select>
+                            <p id="group-status-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                            <p style="font-size:10px;color:#9ca3af;margin:2px 0 0;">Estado del grupo dentro del catálogo (Activo / Desactivo).</p>
+                        </div>
+                        <div style="margin-bottom:16px;">
                             <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Icono (SVG)</label>
                             <textarea id="group-icon" rows="3" placeholder='<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">...</svg>' style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;font-family:monospace;outline:none;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'"></textarea>
                             <p style="font-size:10px;color:#9ca3af;margin:2px 0 0;">Pegá el código SVG del icono. Si está vacío, no se muestra icono.</p>
@@ -643,8 +651,11 @@
                     </button>
                 </div>
 
-                <div style="margin-bottom:12px;">
-                    <input type="text" id="subgroup-search" placeholder="Buscar sub grupo..." oninput="filterSubGroups()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;" />
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                    <input type="text" id="subgroup-search" placeholder="Buscar sub grupo..." oninput="filterSubGroups()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;" />
+                    <select id="subgroup-group-filter" onchange="filterSubGroups()" title="Filtrar por grupo" style="flex:0 1 260px;min-width:200px;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
+                        <option value="">Todos los grupos</option>
+                    </select>
                 </div>
 
                 <div style="background:white;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;">
@@ -659,7 +670,6 @@
                         <thead>
                             <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Descripción</th>
-                                <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Grupo</th>
                                 <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acciones</th>
                             </tr>
                         </thead>
@@ -900,6 +910,7 @@
                         <thead>
                             <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Estado</th>
+                                <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Usuarios</th>
                                 <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acciones</th>
                             </tr>
                         </thead>
@@ -946,6 +957,82 @@
                     </div>
                 </div>
             </div>
+                    @elseif($page->url === 'estados-grupos')
+            <section id="dash-estados-grupos" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="groupstatuses-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">Estados disponibles para los grupos</p>
+                    </div>
+                    <button onclick="openGroupStatusModal()" class="btn-orange" style="background:#D24C19;color:white;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Nuevo Estado">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    </button>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <input type="text" id="groupstatus-search" placeholder="Buscar estado..." oninput="filterGroupStatuses()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;" />
+                </div>
+
+                <div style="background:white;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;">
+                    <div id="groupstatuses-loading" style="padding:40px;text-align:center;">
+                        <p style="font-size:13px;color:#6b7280;">Cargando estados...</p>
+                    </div>
+                    <div id="groupstatuses-empty" style="display:none;padding:40px;text-align:center;">
+                        <p style="font-size:13px;color:#6b7280;">No se encontraron estados.</p>
+                    </div>
+                    <div id="groupstatuses-table-wrap" style="display:none;overflow-x:auto;">
+                    <table id="groupstatuses-table" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
+                                <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Estado</th>
+                                <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Grupos</th>
+                                <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupstatuses-tbody"></tbody>
+                    </table>
+                    </div>
+                </div>
+            </section>
+
+            <div id="grupostatus-modal-overlay" onclick="if(event.target===this)closeGroupStatusModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+                        <h3 id="grupostatus-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Estado</h3>
+                        <button onclick="closeGroupStatusModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
+                    </div>
+                    <form id="grupostatus-form" onsubmit="submitGroupStatus(event)" style="padding:20px;">
+                        @csrf
+                        <input type="hidden" id="grupostatus-id" value="" />
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Estado <span style="color:#dc2626;">*</span></label>
+                            <input type="text" id="grupostatus-description" maxlength="255" placeholder="Nombre del estado" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
+                            <p id="grupostatus-description-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;">
+                            <button type="button" onclick="closeGroupStatusModal()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                            <button type="submit" id="grupostatus-submit-btn" class="btn-orange" style="padding:8px 16px;background:#D24C19;border:1px solid #D24C19;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="grupostatus-delete-overlay" onclick="if(event.target===this)closeGroupStatusDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
+                    </div>
+                    <div style="padding:20px;">
+                        <p style="font-size:13px;color:#374151;margin:0;">¿Estás seguro de eliminar el estado <strong id="grupostatus-delete-name"></strong>?</p>
+                        <p id="grupostatus-delete-warning" style="font-size:11px;color:#dc2626;margin:8px 0 0;display:none;"></p>
+                    </div>
+                    <div style="padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end;">
+                        <button onclick="closeGroupStatusDelete()" style="padding:8px 16px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:#374151;">Cancelar</button>
+                        <button id="grupostatus-delete-btn" onclick="confirmDeleteGroupStatus()" style="padding:8px 16px;background:#dc2626;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:white;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+
                     @elseif($page->url === 'usuarios')
 
                     @elseif($page->url === 'mi-catalogo')
@@ -1574,12 +1661,7 @@
         <div style="background:white;height:8px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
             <div style="text-align:center;">
-                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                </div>
+                @include('partials.footer-group-icons')
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>
@@ -1632,6 +1714,7 @@
     #subgroups-table tbody tr:hover,
     #modules-table tbody tr:hover,
     #userstatuses-table tbody tr:hover,
+    #groupstatuses-table tbody tr:hover,
     #typeusers-table tbody tr:hover,
     #pages-table tbody tr:hover {
         background: #f9fafb;
@@ -1911,6 +1994,7 @@
     }
 
     var allGroups = [];
+    var allGroupStatusOptions = [];
     var deleteGroupId = null;
 
     function loadGroups() {
@@ -1975,15 +2059,65 @@
         renderGroups(filtered);
     }
 
-    function openGroupModal(id, description, icon) {
+    function openGroupModal(id, description, icon, statusId) {
         document.getElementById('group-id').value = id || '';
         document.getElementById('group-description').value = description || '';
         document.getElementById('group-icon').value = icon || '';
         document.getElementById('group-description-error').style.display = 'none';
+        document.getElementById('group-status-error').style.display = 'none';
         document.getElementById('group-modal-title').textContent = id ? 'Editar Grupo' : 'Nuevo Grupo';
         document.getElementById('group-submit-btn').textContent = id ? 'Actualizar' : 'Guardar';
         document.getElementById('group-modal-overlay').style.display = 'flex';
+        loadGroupStatusOptions(statusId);
         document.getElementById('group-description').focus();
+    }
+
+    function loadGroupStatusOptions(selectedId) {
+        var sel = document.getElementById('group-status-select');
+        sel.innerHTML = '<option value="">Cargando estados...</option>';
+        sel.disabled = true;
+
+        fetch('{{ url("/group-statuses") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(list) {
+            fillGroupStatusSelect(Array.isArray(list) ? list : [], selectedId);
+        })
+        .catch(function() {
+            sel.innerHTML = '<option value="">No se pudieron cargar los estados</option>';
+            sel.disabled = false;
+        });
+    }
+
+    function fillGroupStatusSelect(statuses, selectedId) {
+        var sel = document.getElementById('group-status-select');
+        allGroupStatusOptions = statuses;
+        sel.innerHTML = '';
+
+        if (statuses.length === 0) {
+            sel.innerHTML = '<option value="">Sin estados disponibles</option>';
+            sel.disabled = false;
+            return;
+        }
+
+        statuses.forEach(function(s) {
+            var opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.description;
+            sel.appendChild(opt);
+        });
+        sel.disabled = false;
+
+        var wanted = selectedId ? String(selectedId) : '';
+        var match = wanted && statuses.some(function(s) { return String(s.id) === wanted; });
+        if (match) {
+            sel.value = wanted;
+            return;
+        }
+        // Grupo nuevo (o estado eliminado): se preselecciona "Activo".
+        var activo = statuses.find(function(s) { return s.description === 'Activo'; });
+        sel.value = activo ? activo.id : statuses[0].id;
     }
 
     function closeGroupModal() {
@@ -1992,7 +2126,7 @@
 
     function editGroup(id) {
         var g = allGroups.find(function(grp) { return grp.id === id; });
-        if (g) openGroupModal(g.id, g.description, g.icon);
+        if (g) openGroupModal(g.id, g.description, g.icon, g.group_status_id);
     }
 
     function submitGroup(e) {
@@ -2000,15 +2134,23 @@
         var id = document.getElementById('group-id').value;
         var desc = document.getElementById('group-description').value.trim();
         var iconVal = document.getElementById('group-icon').value.trim();
+        var statusSel = document.getElementById('group-status-select');
         var errorEl = document.getElementById('group-description-error');
+        var statusErrorEl = document.getElementById('group-status-error');
         var submitBtn = document.getElementById('group-submit-btn');
 
         errorEl.style.display = 'none';
+        statusErrorEl.style.display = 'none';
 
         if (!desc) {
             errorEl.textContent = 'La descripción es obligatoria.';
             errorEl.style.display = 'block';
             return;
+        }
+
+        var payload = { description: desc, icon: iconVal };
+        if (statusSel.value) {
+            payload.group_status_id = parseInt(statusSel.value, 10);
         }
 
         submitBtn.disabled = true;
@@ -2024,7 +2166,7 @@
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({ description: desc, icon: iconVal })
+            body: JSON.stringify(payload)
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -2032,9 +2174,17 @@
             submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
 
             if (data.errors) {
-                var msg = data.errors.description ? data.errors.description[0] : 'Error de validación.';
-                errorEl.textContent = msg;
-                errorEl.style.display = 'block';
+                if (data.errors.group_status_id) {
+                    statusErrorEl.textContent = data.errors.group_status_id[0];
+                    statusErrorEl.style.display = 'block';
+                }
+                if (data.errors.description) {
+                    errorEl.textContent = data.errors.description[0];
+                    errorEl.style.display = 'block';
+                } else if (!data.errors.group_status_id) {
+                    errorEl.textContent = 'Error de validación.';
+                    errorEl.style.display = 'block';
+                }
                 return;
             }
 
@@ -2129,20 +2279,47 @@
         });
     }
 
+    function loadSubGroupFilter() {
+        var select = document.getElementById('subgroup-group-filter');
+        if (!select) return Promise.resolve();
+
+        var current = select.value;
+        select.innerHTML = '<option value="">Todos los grupos</option>';
+
+        return fetch('{{ url("/groups") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            (Array.isArray(data) ? data : []).forEach(function(g) {
+                var opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.description;
+                select.appendChild(opt);
+            });
+            select.value = current;
+        })
+        .catch(function() {});
+    }
+
     function loadSubGroups() {
         subgroupCurrentPage = 1;
         document.getElementById('subgroups-loading').style.display = 'block';
         document.getElementById('subgroups-empty').style.display = 'none';
         document.getElementById('subgroups-table-wrap').style.display = 'none';
 
-        fetch('{{ url("/subgroups") }}', {
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            allSubGroups = data;
-            allSubGroups._filtered = data;
-            renderSubGroups(data);
+        // Se esperan el combo de grupos y los sub grupos: si no, la grilla se
+        // pintaba sin filtrar mientras el combo ya tenia un grupo elegido.
+        Promise.all([
+            loadSubGroupFilter(),
+            fetch('{{ url("/subgroups") }}', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+            }).then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            allSubGroups = Array.isArray(results[1]) ? results[1] : [];
+            allSubGroups._filtered = allSubGroups;
+            applySubGroupFilters(false);
         })
         .catch(function() {
             document.getElementById('subgroups-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar sub grupos.</p>';
@@ -2181,10 +2358,8 @@
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', s.id);
             tr.style.borderBottom = '1px solid #f3f4f6';
-            var groupName = s.group ? escapeHtml(s.group.description) : '<span style="color:#9ca3af;">—</span>';
             tr.innerHTML =
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(s.description) + '</td>' +
-                '<td style="padding:10px 16px;text-align:center;font-size:13px;color:#6b7280;">' + groupName + '</td>' +
                 '<td style="padding:10px 16px;text-align:center;">' +
                     '<button onclick="editSubGroup(' + s.id + ')" title="Editar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>' +
@@ -2223,14 +2398,30 @@
         if (dir === 2 && subgroupCurrentPage < totalPages) { subgroupCurrentPage++; renderSubGroups(data); }
     }
 
-    function filterSubGroups() {
-        subgroupCurrentPage = 1;
-        var q = document.getElementById('subgroup-search').value.toLowerCase();
-        var filtered = allSubGroups.filter(function(s) {
-            return s.description.toLowerCase().indexOf(q) !== -1;
+    // Aplica el texto del buscador y el grupo elegido en el combo. Es la unica
+    // via de pintado: asi la grilla respeta los filtros al cargar y al refrescar.
+    function applySubGroupFilters(resetPage) {
+        var search = document.getElementById('subgroup-search');
+        var combo = document.getElementById('subgroup-group-filter');
+        if (resetPage) subgroupCurrentPage = 1;
+
+        var q = ((search && search.value) || '').toLowerCase();
+        var groupId = combo ? String(combo.value) : '';
+        var list = Array.isArray(allSubGroups) ? allSubGroups : [];
+
+        var filtered = list.filter(function(s) {
+            var text = (s.description || '').toLowerCase();
+            var matchText = !q || text.indexOf(q) !== -1;
+            var matchGroup = !groupId || String(s.group_id) === groupId;
+            return matchText && matchGroup;
         });
+
         allSubGroups._filtered = filtered;
         renderSubGroups(filtered);
+    }
+
+    function filterSubGroups() {
+        applySubGroupFilters(true);
     }
 
     function openSubGroupModal(id, description, groupId) {
@@ -3610,6 +3801,7 @@
             if (key === 'grupos') loadGroups();
             if (key === 'sub-grupos') loadSubGroups();
             if (key === 'estados-usuarios') loadUserStatuses();
+            if (key === 'estados-grupos') loadGroupStatuses();
             if (key === 'tipo-usuarios') loadTypeUsers();
             if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();
@@ -3627,6 +3819,10 @@
             fdStartPolling(key);
             FD_POLL_SECTIONS[key]();
         });
+
+        // Al entrar al dashboard se muestra una seccion por defecto: sin esto
+        // todas las secciones quedan ocultas y la pantalla aparecia en blanco.
+        showDashSection('perfil');
 
         @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0)
             // Prestador que todavía no eligió categorías: no deja avanzar hasta configurarlas.
@@ -6594,6 +6790,7 @@
             tr.style.borderBottom = '1px solid #f3f4f6';
             tr.innerHTML =
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(s.status) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;font-size:13px;color:#6b7280;">' + Number(s.users_count || 0) + '</td>' +
                 '<td style="padding:10px 16px;text-align:center;">' +
                     '<button onclick="editUserStatus(' + s.id + ')" title="Editar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>' +
@@ -6733,6 +6930,203 @@
             btn.disabled = false;
             btn.textContent = 'Eliminar';
             var warn = document.getElementById('userstatus-delete-warning');
+            warn.textContent = 'Error de conexión.';
+            warn.style.display = 'block';
+        });
+    }
+
+    // ==================== ESTADO DE LOS GRUPOS ====================
+
+    var allGroupStatuses = [];
+    var deleteGroupStatusId = null;
+
+    function loadGroupStatuses() {
+        document.getElementById('groupstatuses-loading').style.display = 'block';
+        document.getElementById('groupstatuses-empty').style.display = 'none';
+        document.getElementById('groupstatuses-table-wrap').style.display = 'none';
+
+        fetch('{{ url("/group-statuses") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            allGroupStatuses = data;
+            renderGroupStatuses(data);
+
+            var summary = document.getElementById('groupstatuses-summary');
+            if (summary) {
+                var enUso = data.filter(function(s) { return (s.groups_count || 0) > 0; }).length;
+                summary.textContent = data.length + ' estados · ' + enUso + ' en uso por grupos';
+            }
+        })
+        .catch(function() {
+            document.getElementById('groupstatuses-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar estados.</p>';
+        });
+    }
+
+    function renderGroupStatuses(statuses) {
+        var tbody = document.getElementById('groupstatuses-tbody');
+        var loading = document.getElementById('groupstatuses-loading');
+        var empty = document.getElementById('groupstatuses-empty');
+        var tableWrap = document.getElementById('groupstatuses-table-wrap');
+
+        loading.style.display = 'none';
+        tbody.innerHTML = '';
+
+        if (statuses.length === 0) {
+            empty.style.display = 'block';
+            tableWrap.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tableWrap.style.display = 'block';
+
+        statuses.forEach(function(s) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-id', s.id);
+            tr.style.borderBottom = '1px solid #f3f4f6';
+            tr.innerHTML =
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(s.description) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;font-size:13px;color:#6b7280;">' + Number(s.groups_count || 0) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;">' +
+                    '<button onclick="editGroupStatus(' + s.id + ')" title="Editar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>' +
+                    '</button>' +
+                    '<button onclick="openGroupStatusDelete(' + s.id + ', \'' + escapeHtml(s.description).replace(/'/g, "\\'") + '\')" title="Eliminar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#dc2626\';this.style.color=\'#dc2626\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>' +
+                    '</button>' +
+                '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterGroupStatuses() {
+        var q = document.getElementById('groupstatus-search').value.toLowerCase();
+        var filtered = allGroupStatuses.filter(function(s) {
+            return s.description.toLowerCase().indexOf(q) !== -1;
+        });
+        renderGroupStatuses(filtered);
+    }
+
+    function openGroupStatusModal(id, description) {
+        document.getElementById('grupostatus-id').value = id || '';
+        document.getElementById('grupostatus-description').value = description || '';
+        document.getElementById('grupostatus-description-error').style.display = 'none';
+        document.getElementById('grupostatus-modal-title').textContent = id ? 'Editar Estado' : 'Nuevo Estado';
+        document.getElementById('grupostatus-submit-btn').textContent = id ? 'Actualizar' : 'Guardar';
+        document.getElementById('grupostatus-modal-overlay').style.display = 'flex';
+        document.getElementById('grupostatus-description').focus();
+    }
+
+    function closeGroupStatusModal() {
+        document.getElementById('grupostatus-modal-overlay').style.display = 'none';
+    }
+
+    function editGroupStatus(id) {
+        var s = allGroupStatuses.find(function(st) { return st.id === id; });
+        if (s) openGroupStatusModal(s.id, s.description);
+    }
+
+    function submitGroupStatus(e) {
+        e.preventDefault();
+        var id = document.getElementById('grupostatus-id').value;
+        var value = document.getElementById('grupostatus-description').value.trim();
+        var errorEl = document.getElementById('grupostatus-description-error');
+        var submitBtn = document.getElementById('grupostatus-submit-btn');
+
+        errorEl.style.display = 'none';
+
+        if (!value) {
+            errorEl.textContent = 'El estado es obligatorio.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = id ? 'Actualizando...' : 'Guardando...';
+
+        var url = id ? '{{ url("/group-statuses") }}/' + id : '{{ url("/group-statuses") }}';
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ description: value })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+
+            if (data.errors) {
+                errorEl.textContent = data.errors.description ? data.errors.description[0] : 'Error de validación.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (data.success) {
+                closeGroupStatusModal();
+                loadGroupStatuses();
+            } else {
+                errorEl.textContent = data.message || 'Error al guardar.';
+                errorEl.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+            errorEl.textContent = 'Error de conexión.';
+            errorEl.style.display = 'block';
+        });
+    }
+
+    function openGroupStatusDelete(id, name) {
+        deleteGroupStatusId = id;
+        document.getElementById('grupostatus-delete-name').textContent = name;
+        document.getElementById('grupostatus-delete-warning').style.display = 'none';
+        document.getElementById('grupostatus-delete-overlay').style.display = 'flex';
+    }
+
+    function closeGroupStatusDelete() {
+        document.getElementById('grupostatus-delete-overlay').style.display = 'none';
+        deleteGroupStatusId = null;
+    }
+
+    function confirmDeleteGroupStatus() {
+        if (!deleteGroupStatusId) return;
+        var btn = document.getElementById('grupostatus-delete-btn');
+        btn.disabled = true;
+        btn.textContent = 'Eliminando...';
+
+        fetch('{{ url("/group-statuses") }}/' + deleteGroupStatusId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            if (data.success) {
+                closeGroupStatusDelete();
+                loadGroupStatuses();
+            } else {
+                var warn = document.getElementById('grupostatus-delete-warning');
+                warn.textContent = data.message || 'No se pudo eliminar.';
+                warn.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            var warn = document.getElementById('grupostatus-delete-warning');
             warn.textContent = 'Error de conexión.';
             warn.style.display = 'block';
         });

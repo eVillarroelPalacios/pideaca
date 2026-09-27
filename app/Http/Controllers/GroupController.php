@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Group;
+use App\Models\GroupStatus;
 
 class GroupController extends Controller
 {
@@ -14,7 +15,7 @@ class GroupController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        $groups = Group::orderBy('description')->get();
+        $groups = Group::with('groupStatus')->orderBy('description')->get();
 
         return response()->json($groups);
     }
@@ -28,17 +29,21 @@ class GroupController extends Controller
         $request->validate([
             'description' => 'required|string|max:255|unique:groups,description',
             'icon' => 'nullable|string',
+            'group_status_id' => 'nullable|integer|exists:group_statuses,id',
         ]);
 
         $group = Group::create([
             'description' => $request->description,
             'icon' => $request->icon,
+            // Todo grupo nuevo nace activo salvo que se pida lo contrario.
+            'group_status_id' => $request->input('group_status_id')
+                ?: GroupStatus::where('description', GroupStatus::STATUS_ACTIVE)->value('id'),
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Grupo creado correctamente.',
-            'group' => $group,
+            'group' => $group->load('groupStatus'),
         ]);
     }
 
@@ -51,17 +56,25 @@ class GroupController extends Controller
         $request->validate([
             'description' => 'required|string|max:255|unique:groups,description,' . $group->id,
             'icon' => 'nullable|string',
+            'group_status_id' => 'nullable|integer|exists:group_statuses,id',
         ]);
 
-        $group->update([
+        $data = [
             'description' => $request->description,
             'icon' => $request->icon,
-        ]);
+        ];
+
+        // Si no viene el estado en el request se conserva el actual.
+        if ($request->exists('group_status_id')) {
+            $data['group_status_id'] = $request->input('group_status_id');
+        }
+
+        $group->update($data);
 
         return response()->json([
             'success' => true,
             'message' => 'Grupo actualizado correctamente.',
-            'group' => $group,
+            'group' => $group->load('groupStatus'),
         ]);
     }
 

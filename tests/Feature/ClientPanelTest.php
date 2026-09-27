@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Category;
 use App\Models\Country;
 use App\Models\Group;
+use App\Models\GroupStatus;
 use App\Models\Module;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -417,6 +418,39 @@ class ClientPanelTest extends TestCase
         $response->assertOk()
             ->assertDontSee('id="dash-comercios"', false)
             ->assertDontSee('id="dash-mis-pedidos"', false);
+    }
+
+    public function test_dashboard_shows_a_default_section_on_entry(): void
+    {
+        // Todas las secciones arrancan con display:none: sin una llamada inicial
+        // el dashboard quedaba completamente en blanco hasta hacer clic en el menú.
+        $response = $this->actingAs($this->client)->get('/dashboard');
+
+        $response->assertOk()
+            ->assertSee("showDashSection('perfil');", false)
+            ->assertSee("showDashSection = function(key)", false);
+    }
+
+    public function test_dashboard_footer_shows_only_active_group_icons(): void
+    {
+        $activo = Group::firstOrCreate(['description' => 'Grupo Footer Activo'], [
+            'group_status_id' => GroupStatus::firstOrCreate(['description' => GroupStatus::STATUS_ACTIVE])->id,
+        ]);
+        $inactivo = Group::firstOrCreate(['description' => 'Grupo Footer Inactivo'], [
+            'group_status_id' => GroupStatus::firstOrCreate(['description' => GroupStatus::STATUS_INACTIVE])->id,
+        ]);
+
+        $activo->update(['icon' => '<svg data-footer="activo"></svg>']);
+        $inactivo->update(['icon' => '<svg data-footer="cerrado"></svg>']);
+
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $pos = strpos($html, '<footer');
+        $this->assertNotFalse($pos);
+        $footer = substr($html, $pos);
+
+        $this->assertStringContainsString('data-footer="activo"', $footer);
+        $this->assertStringNotContainsString('data-footer="cerrado"', $footer);
+        $this->assertSame(1, substr_count($footer, 'class="footer-group-icon"'));
     }
 
     // --- Seguimiento en vivo ---

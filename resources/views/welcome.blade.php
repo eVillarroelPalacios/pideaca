@@ -272,34 +272,26 @@
                                     <div class="qs-section-block">
                                         <h3>Estructura de Servicios</h3>
                                         <div class="qs-modules-grid">
+                                            @php
+                                                $groupBlurbs = [
+                                                    'Comercio & Gastronomía' => 'Pizzerías, rotiserías y tiendas con carrito interactivo.',
+                                                    'Servicios del Hogar & Bienestar' => 'Plomeros, electricistas, técnicos 24/7 y belleza a domicilio.',
+                                                    'Servicios del Hogar & Cuidado Personal' => 'Plomeros, electricistas, técnicos 24/7 y belleza a domicilio.',
+                                                    'Auxilio Vial & Mecánica' => 'Grúas y auxilio inmediato por GPS en tiempo real.',
+                                                    'Abastos Recurrentes' => 'Suscripción de agua, garrafas de gas y hielo.',
+                                                ];
+                                            @endphp
+                                            @foreach($allGroups as $grp)
                                             <div class="module-item">
-                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+                                                <span class="mod-icon">{!! ($grp->icon ?: ($groupIcons[$grp->description] ?? '')) !!}</span>
                                                 <div>
-                                                    <strong>Comercio &amp; Gastronom&#237;a</strong>
-                                                    <p>Pizzer&#237;as, rotiser&#237;as y tiendas con carrito interactivo.</p>
+                                                    <strong>{{ $grp->description }}</strong>
+                                                    @if(isset($groupBlurbs[$grp->description]))
+                                                        <p>{{ $groupBlurbs[$grp->description] }}</p>
+                                                    @endif
                                                 </div>
                                             </div>
-                                            <div class="module-item">
-                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg></span>
-                                                <div>
-                                                    <strong>Servicios del Hogar &amp; Bienestar</strong>
-                                                    <p>Plomeros, electricistas, t&#233;cnicos 24/7 y belleza a domicilio.</p>
-                                                </div>
-                                            </div>
-                                            <div class="module-item">
-                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
-                                                <div>
-                                                    <strong>Auxilio Vial &amp; Mec&#225;nica</strong>
-                                                    <p>Gr&#250;as y auxilio inmediato por GPS en tiempo real.</p>
-                                                </div>
-                                            </div>
-                                            <div class="module-item">
-                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
-                                                <div>
-                                                    <strong>Abastos Recurrentes</strong>
-                                                    <p>Suscripci&#243;n de agua, garrafas de gas y hielo.</p>
-                                                </div>
-                                            </div>
+                                            @endforeach
                                         </div>
                                     </div>
 
@@ -317,11 +309,22 @@
                     </div>
                     <div id="section-servicios" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
                         <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Nuestros Servicios</h2>
-                        <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 12px;">Descubrí las cuatro grandes familias de servicios que ofrecemos:</p>
-                        <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:#D24C19;">Comercio:</span> Pizzerías, rotiserías, kioscos y tiendas de conveniencia.</p>
-                        <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:#2563eb;">Hogar:</span> Plomeros, electricistas, técnicos y estética a domicilio.</p>
-                        <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:#0d9488;">Auxilio Vial:</span> Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
-                        <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:#d97706;">Abastos:</span> Agua, gas, hielo y soda en pedidos programados.</p>
+                        <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 12px;">Descubrí las grandes familias de servicios que ofrecemos:</p>
+                        @php
+                            $groupServices = [
+                                'Comercio & Gastronomía' => ['color' => '#D24C19', 'label' => 'Comercio', 'text' => 'Pizzerías, rotiserías, kioscos y tiendas de conveniencia.'],
+                                'Servicios del Hogar & Bienestar' => ['color' => '#2563eb', 'label' => 'Hogar', 'text' => 'Plomeros, electricistas, técnicos y estética a domicilio.'],
+                                'Servicios del Hogar & Cuidado Personal' => ['color' => '#2563eb', 'label' => 'Hogar', 'text' => 'Plomeros, electricistas, técnicos y estética a domicilio.'],
+                                'Auxilio Vial & Mecánica' => ['color' => '#0d9488', 'label' => 'Auxilio Vial', 'text' => 'Grúas, mecánica ligera y gomería móvil con ubicación GPS.'],
+                                'Abastos Recurrentes' => ['color' => '#d97706', 'label' => 'Abastos', 'text' => 'Agua, gas, hielo y soda en pedidos programados.'],
+                            ];
+                        @endphp
+                        @foreach($allGroups as $grp)
+                            @php
+                                $svc = $groupServices[$grp->description] ?? ['color' => '#0c2a4d', 'label' => $grp->description, 'text' => ''];
+                            @endphp
+                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:{{ $svc['color'] }};">{{ $svc['label'] }}:</span>{{ $svc['text'] !== '' ? ' '.$svc['text'] : '' }}</p>
+                        @endforeach
                     </div>
                     <div id="section-contactos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
                         <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Contactos</h2>
@@ -336,12 +339,7 @@
         <div style="background:white;height:8px;"></div>
         <footer style="background:#0a0f1a;color:white;padding:14px 0;">
             <div style="text-align:center;">
-                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                </div>
+                @include('partials.footer-group-icons')
                 <p style="font-size:10px;color:#9ca3af;margin:0;">&copy; {{ date('Y') }} pideaca.com - Todos los derechos reservados.</p>
             </div>
         </footer>

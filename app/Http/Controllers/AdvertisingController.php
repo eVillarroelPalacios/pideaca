@@ -10,7 +10,11 @@ class AdvertisingController extends Controller
 {
     public function index()
     {
-        $allGroups = Group::orderBy('id')->get();
+        // Solo los grupos activos se ofrecen en el sitio publico (filtros,
+        // "Estructura de Servicios" y etiquetas de los comercios).
+        $allGroups = Group::active()->orderBy('id')->get();
+
+        $activeGroupIds = $allGroups->pluck('id');
 
         $providers = Provider::with([
             'category',
@@ -23,7 +27,20 @@ class AdvertisingController extends Controller
             $query->advertisable();
         })
         ->get()
-        ->map(function ($provider) {
+        ->filter(function ($provider) use ($activeGroupIds) {
+            // Los comercios que solo pertenecen a grupos desactivados no se
+            // muestran; sin grupos asignados siguen visibles ("General").
+            $linked = $provider->subgroups->pluck('group_id')->filter()
+                ->push($provider->category_id)
+                ->filter();
+
+            if ($linked->isEmpty()) {
+                return true;
+            }
+
+            return $linked->intersect($activeGroupIds)->isNotEmpty();
+        })
+        ->map(function ($provider) use ($activeGroupIds) {
             $bannerUrl = $this->findProviderBanner($provider->id);
 
             if ($bannerUrl) {
@@ -33,9 +50,18 @@ class AdvertisingController extends Controller
             $servicesList = $provider->services->pluck('name')->toArray();
             $hoursText = $this->formatHours($provider->hours);
 
-            $groupNames = $provider->subgroups->pluck('group.description')->filter()->unique()->values()->toArray();
+            // La etiqueta del comercio solo puede nombrar grupos activos.
+            $groupNames = $provider->subgroups
+                ->filter(function ($subgroup) use ($activeGroupIds) {
+                    return $subgroup->group_id && $activeGroupIds->contains($subgroup->group_id);
+                })
+                ->pluck('group.description')->filter()->unique()->values()->toArray();
+
             if (empty($groupNames)) {
-                $groupNames = [$provider->category->description ?? 'General'];
+                $category = $provider->category;
+                $groupNames = ($category && $activeGroupIds->contains($category->id))
+                    ? [$category->description]
+                    : ['General'];
             }
 
             $primaryGroup = $groupNames[0];
@@ -61,6 +87,7 @@ class AdvertisingController extends Controller
         return response()->view('welcome', [
             'providers' => $providers,
             'allGroups' => $allGroups,
+            'footerGroups' => $allGroups,
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
           ->header('Pragma', 'no-cache');
     }

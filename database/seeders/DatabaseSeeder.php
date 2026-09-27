@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             UsuariosPageSeeder::class,
             FastDeliverySeeder::class,
             FastDeliveryPagesSeeder::class,
+            EstadosDeLosGruposPageSeeder::class,
         ]);
     }
 }

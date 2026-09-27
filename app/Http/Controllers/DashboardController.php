@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Group;
 use App\Models\Module;
 
 class DashboardController extends Controller
@@ -23,9 +24,12 @@ class DashboardController extends Controller
             return $module->pages->isNotEmpty();
         });
 
+        $footerGroups = Group::active()->orderBy('id')->get();
+
         return view('dashboard', [
             'user' => $user,
             'modules' => $modules,
+            'footerGroups' => $footerGroups,
         ]);
     }
 }

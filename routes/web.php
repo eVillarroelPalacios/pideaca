@@ -11,6 +11,7 @@ use App\Http\Controllers\TypeUserController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\EstadosDeLosGruposController;
 use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderServiceController;
@@ -43,6 +44,12 @@ Route::get('/user-statuses', [UserStatusController::class, 'index'])->name('user
 Route::post('/user-statuses', [UserStatusController::class, 'store'])->name('user-statuses.store');
 Route::put('/user-statuses/{userStatus}', [UserStatusController::class, 'update'])->name('user-statuses.update');
 Route::delete('/user-statuses/{userStatus}', [UserStatusController::class, 'destroy'])->name('user-statuses.destroy');
+
+// Estado de los grupos
+Route::get('/group-statuses', [EstadosDeLosGruposController::class, 'index'])->name('group-statuses.index');
+Route::post('/group-statuses', [EstadosDeLosGruposController::class, 'store'])->name('group-statuses.store');
+Route::put('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'update'])->name('group-statuses.update');
+Route::delete('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'destroy'])->name('group-statuses.destroy');
 
 Route::get('/type-users', [TypeUserController::class, 'index'])->name('type-users.index');
 Route::post('/type-users', [TypeUserController::class, 'store'])->name('type-users.store');

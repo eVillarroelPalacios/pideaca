@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Country;
+use App\Models\Group;
+use App\Models\GroupStatus;
 use App\Models\Module;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -16,6 +18,7 @@ use App\Models\ProductOption;
 use App\Models\ProductOptionGroup;
 use App\Models\ProductVariant;
 use App\Models\Provider;
+use App\Models\SubGroup;
 use App\Models\TypeUser;
 use App\Models\User;
 use App\Models\UserStatus;
@@ -366,5 +369,41 @@ class ProviderPanelTest extends TestCase
         $response->assertOk()
             ->assertSee('id="dash-mi-catalogo"', false)
             ->assertSee('data-provider-id=""', false);
+    }
+
+    // --- Categorías y servicios: solo grupos activos ---
+
+    public function test_provider_categories_hide_deactivated_groups(): void
+    {
+        $activo = GroupStatus::where('description', GroupStatus::STATUS_ACTIVE)->firstOrFail();
+        $desactivo = GroupStatus::where('description', GroupStatus::STATUS_INACTIVE)->firstOrFail();
+
+        $visible = Group::create(['description' => 'Comercio Activo', 'group_status_id' => $activo->id]);
+        $oculto = Group::create(['description' => 'Comercio Desactivado', 'group_status_id' => $desactivo->id]);
+
+        SubGroup::create(['description' => 'Pizzerias', 'group_id' => $visible->id]);
+        SubGroup::create(['description' => 'Rotiserias', 'group_id' => $oculto->id]);
+
+        $groups = $this->actingAs($this->owner)
+            ->getJson('/profile/subgroups')
+            ->assertOk()
+            ->json('groups');
+
+        $descriptions = array_column($groups, 'description');
+
+        $this->assertContains('Comercio Activo', $descriptions);
+        $this->assertNotContains('Comercio Desactivado', $descriptions);
+    }
+
+    public function test_provider_categories_keep_groups_without_status_visible(): void
+    {
+        $sinEstado = Group::create(['description' => 'Grupo Sin Estado']);
+
+        $groups = $this->actingAs($this->owner)
+            ->getJson('/profile/subgroups')
+            ->assertOk()
+            ->json('groups');
+
+        $this->assertContains($sinEstado->description, array_column($groups, 'description'));
     }
 }

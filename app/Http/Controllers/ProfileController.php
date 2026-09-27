@@ -219,9 +219,14 @@ class ProfileController extends Controller
 
         $user = Auth::user();
 
+        // Solo se ofrecen grupos activos: los desactivados no aparecen en
+        // "Categorias y servicios" (los grupos sin estado siguen visibles).
         $groups = Group::with(['subgroups' => function ($q) {
             $q->orderBy('description');
-        }])->orderBy('description')->get();
+        }])
+            ->active()
+            ->orderBy('description')
+            ->get();
 
         $providerSubgroupIds = [];
         if ($user->provider) {
