@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
             FastDeliverySeeder::class,
             FastDeliveryPagesSeeder::class,
             EstadosDeLosGruposPageSeeder::class,
+            UnitOfMeasureSeeder::class,
+            InventoryPagesSeeder::class,
         ]);
     }
 }

@@ -516,7 +516,7 @@
                 </div>
             </section>
 
-            <div id="module-modal-overlay" onclick="if(event.target===this)closeModuleModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="module-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="module-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Módulo</h3>
@@ -543,7 +543,7 @@
                 </div>
             </div>
 
-            <div id="module-delete-overlay" onclick="if(event.target===this)closeModuleDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="module-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -592,7 +592,7 @@
                 </div>
             </section>
 
-            <div id="group-modal-overlay" onclick="if(event.target===this)closeGroupModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="group-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="group-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Grupo</h3>
@@ -627,7 +627,7 @@
                 </div>
             </div>
 
-            <div id="group-delete-overlay" onclick="if(event.target===this)closeGroupDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="group-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -686,7 +686,7 @@
                 </div>
             </section>
 
-            <div id="subgroup-modal-overlay" onclick="if(event.target===this)closeSubGroupModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="subgroup-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="subgroup-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Sub Grupo</h3>
@@ -715,7 +715,7 @@
                 </div>
             </div>
 
-            <div id="subgroup-delete-overlay" onclick="if(event.target===this)closeSubGroupDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="subgroup-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -739,8 +739,11 @@
                     </button>
                 </div>
 
-                <div style="margin-bottom:12px;">
-                    <input type="text" id="page-search" placeholder="Buscar página..." oninput="filterPages()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;" />
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                    <input type="text" id="page-search" placeholder="Buscar página..." oninput="filterPages()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;" />
+                    <select id="page-module-filter" onchange="filterPages()" title="Filtrar por módulo" style="flex:0 1 260px;min-width:200px;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;background:white;">
+                        <option value="">Todos los módulos</option>
+                    </select>
                 </div>
 
                 <div style="background:white;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;">
@@ -755,7 +758,6 @@
                         <thead>
                             <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                                 <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Descripción</th>
-                                <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Módulo</th>
                                 <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acciones</th>
                             </tr>
                         </thead>
@@ -765,7 +767,7 @@
                 </div>
             </section>
 
-            <div id="page-modal-overlay" onclick="if(event.target===this)closePageModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="page-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="page-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nueva Página</h3>
@@ -799,7 +801,7 @@
                 </div>
             </div>
 
-            <div id="page-delete-overlay" onclick="if(event.target===this)closePageDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="page-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -848,7 +850,7 @@
                 </div>
             </section>
 
-            <div id="typeuser-modal-overlay" onclick="if(event.target===this)closeTypeUserModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="typeuser-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="typeuser-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Tipo de Usuario</h3>
@@ -870,7 +872,7 @@
                 </div>
             </div>
 
-            <div id="typeuser-delete-overlay" onclick="if(event.target===this)closeTypeUserDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="typeuser-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -920,7 +922,7 @@
                 </div>
             </section>
 
-            <div id="userstatus-modal-overlay" onclick="if(event.target===this)closeUserStatusModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="userstatus-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="userstatus-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Estado</h3>
@@ -942,7 +944,7 @@
                 </div>
             </div>
 
-            <div id="userstatus-delete-overlay" onclick="if(event.target===this)closeUserStatusDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="userstatus-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -995,7 +997,7 @@
                 </div>
             </section>
 
-            <div id="grupostatus-modal-overlay" onclick="if(event.target===this)closeGroupStatusModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="grupostatus-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:420px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="grupostatus-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Estado</h3>
@@ -1017,7 +1019,7 @@
                 </div>
             </div>
 
-            <div id="grupostatus-delete-overlay" onclick="if(event.target===this)closeGroupStatusDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+            <div id="grupostatus-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar Eliminación</h3>
@@ -1088,6 +1090,36 @@
                 <div id="fd-orders-list" style="display:none;"></div>
             </section>
 
+                    @elseif($page->url === 'inventario')
+            <section id="dash-inventario" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+                        <p id="fd-inventory-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">{{ optional($user->provider)->business_name ?: 'Tu comercio' }}</p>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <label for="fd-inventory-enabled" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="fd-inventory-enabled" onchange="toggleInventoryControl()" style="cursor:pointer;" />
+                            Control de inventario
+                        </label>
+                        <button type="button" onclick="loadInventory()" title="Actualizar inventario" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="fd-inventory-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando inventario...</p>
+                </div>
+
+                <div id="fd-inventory-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-inventory-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudo cargar el inventario.</p>
+                </div>
+
+                <div id="fd-inventory-content" style="display:none;"></div>
+            </section>
+
                     @elseif($page->url === 'comercios')
             <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -1115,7 +1147,7 @@
                 <div id="fd-shops-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;"></div>
             </section>
 
-            <div id="fd-shop-overlay" onclick="if(event.target===this)closeFdShop()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;align-items:center;justify-content:center;">
+            <div id="fd-shop-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;align-items:center;justify-content:center;">
                 <div style="background:#fff;width:100%;max-width:880px;max-height:90vh;margin:16px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 18px;border-bottom:1px solid #e5e7eb;">
                         <div style="min-width:0;">
@@ -1492,7 +1524,7 @@
                 </div>
             </section>
 
-            <div id="typeuser-pages-overlay" onclick="if(event.target===this)closeTypeUserPagesModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:415;align-items:center;justify-content:center;">
+            <div id="typeuser-pages-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:415;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:720px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Páginas por tipos usuarios</h3>
@@ -1546,7 +1578,7 @@
                 </div>
             </div>
 
-            <div id="user-select-overlay" onclick="if(event.target===this)closeUserSelectModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;">
+            <div id="user-select-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:860px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Seleccionar usuario</h3>
@@ -1595,7 +1627,7 @@
                 </div>
             </div>
 
-            <div id="user-modal-overlay" onclick="if(event.target===this)closeUserModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:410;align-items:center;justify-content:center;">
+            <div id="user-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:410;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:460px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
                         <h3 id="user-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Usuario</h3>
@@ -1639,7 +1671,7 @@
                 </div>
             </div>
 
-            <div id="user-delete-overlay" onclick="if(event.target===this)closeUserDelete()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:420;align-items:center;justify-content:center;">
+            <div id="user-delete-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:420;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:380px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
                         <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Confirmar inactivaci&oacute;n</h3>
@@ -2768,6 +2800,145 @@
             });
     }
 
+    // --- Inventario ---
+
+    function fdSetInventoryState(state, text) {
+        var map = { loading: 'fd-inventory-loading', message: 'fd-inventory-message', content: 'fd-inventory-content' };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.style.display = (k === state) ? 'block' : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById('fd-inventory-message-text');
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function loadInventory() {
+        fdSetInventoryState('loading');
+
+        fdFetchJson('{{ url("/api/v1/provider/inventory") }}')
+            .then(function (res) {
+                if (!res.ok) {
+                    fdSetInventoryState('message', (res.data && res.data.message) || 'No se pudo cargar el inventario.');
+                    return;
+                }
+
+                var provider = res.data.provider || {};
+                var enabled = !!provider.has_inventory_control;
+                var toggle = document.getElementById('fd-inventory-enabled');
+                if (toggle) toggle.checked = enabled;
+
+                var summary = document.getElementById('fd-inventory-summary');
+                if (summary) {
+                    summary.textContent = (provider.business_name || 'Tu comercio')
+                        + (enabled ? ' · inventario activo' : ' · inventario desactivado')
+                        + (res.data.low_stock_count ? ' · ' + res.data.low_stock_count + ' con stock bajo' : '');
+                }
+
+                var products = res.data.products || [];
+                if (!products.length) {
+                    fdSetInventoryState('message', 'Todavía no hay productos en tu catálogo.\nCargá productos desde Mi Catálogo para empezar a controlar el stock.');
+                    return;
+                }
+
+                document.getElementById('fd-inventory-content').innerHTML = fdRenderInventory(res.data);
+                fdSetInventoryState('content');
+            })
+            .catch(function () {
+                fdSetInventoryState('message', 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function toggleInventoryControl() {
+        var toggle = document.getElementById('fd-inventory-enabled');
+        if (!toggle) return;
+
+        fdFetchJson('{{ url("/api/v1/provider/inventory/settings") }}', {
+            method: 'PUT',
+            body: JSON.stringify({ has_inventory_control: toggle.checked })
+        })
+        .then(function (res) {
+            if (!res.ok) {
+                toggle.checked = !toggle.checked;
+                fdToast('No se pudo actualizar la configuración de inventario.', true);
+                return;
+            }
+            fdToast('Configuración de inventario actualizada.', false);
+            loadInventory();
+        })
+        .catch(function () {
+            toggle.checked = !toggle.checked;
+            fdToast('No se pudo conectar con el servidor.', true);
+        });
+    }
+
+    function fdInvNum(value) {
+        if (value === null || typeof value === 'undefined') return '—';
+        var n = Number(value);
+        if (isNaN(n)) return escapeHtml(String(value));
+        return String(Math.round(n * 1000) / 1000);
+    }
+
+    function fdRenderInventory(data) {
+        var products = data.products || [];
+        var enabled = !!(data.provider && data.provider.has_inventory_control);
+        var lowCount = data.low_stock_count || 0;
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+            + fdBadge(products.length + ' productos', '#0c2a4d', '#eef2f7')
+            + fdBadge(lowCount + ' con stock bajo', lowCount ? '#b91c1c' : '#047857', lowCount ? '#fee2e2' : '#d1fae5')
+            + fdBadge(enabled ? 'Control activo' : 'Control desactivado', enabled ? '#047857' : '#9a3412', enabled ? '#d1fae5' : '#fff7ed')
+            + '</div>';
+
+        if (!enabled) {
+            html += '<div style="background:#fffbeb;border:1px solid #fde68a;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e;">'
+                + 'El control de inventario está desactivado: las ventas no descuentan stock y los ajustes no se aplican. '
+                + 'Activalo con el interruptor de arriba.'
+                + '</div>';
+        }
+
+        html += '<div style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;">'
+            + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
+            + '<thead><tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Producto</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Unidad</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Stock actual</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Reservado</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Disponible</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Mínimo</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Estado</th>'
+            + '</tr></thead><tbody>';
+
+        products.forEach(function (p, i) {
+            var unit = p.unit_of_measure
+                ? escapeHtml(p.unit_of_measure.name) + ' (' + escapeHtml(p.unit_of_measure.symbol) + ')'
+                : '—';
+
+            var status;
+            if (!p.track_stock) status = fdBadge('Sin seguimiento', '#64748b', '#f1f5f9');
+            else if (p.low_stock) status = fdBadge('Stock bajo', '#b91c1c', '#fee2e2');
+            else if (Number(p.available_stock) <= 0) status = fdBadge('Sin stock', '#b91c1c', '#fee2e2');
+            else status = fdBadge('OK', '#047857', '#d1fae5');
+
+            html += '<tr style="background:' + (i % 2 ? '#f8fafc' : '#fff') + ';border-top:1px solid #f1f5f9;">'
+                + '<td style="padding:10px 12px;color:#0f172a;font-weight:600;">' + escapeHtml(p.name) + '</td>'
+                + '<td style="padding:10px 12px;color:#6b7280;">' + unit + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:#0f172a;font-weight:600;">' + fdInvNum(p.current_stock) + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:#6b7280;">' + fdInvNum(p.reserved_stock) + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:#0f172a;">' + fdInvNum(p.available_stock) + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:#6b7280;">'
+                + (typeof p.min_stock_alert !== 'undefined' && p.min_stock_alert !== null ? fdInvNum(p.min_stock_alert) : '—')
+                + '</td>'
+                + '<td style="padding:10px 12px;">' + status + '</td>'
+                + '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        return html;
+    }
+
     function fdRenderCatalog(categories, provider) {
         var totalProducts = 0;
         categories.forEach(function (c) { totalProducts += (c.products || []).length; });
@@ -3808,6 +3979,7 @@
             if (key === 'perfil') loadProfile();
             if (key === 'mi-catalogo') loadProviderCatalog();
             if (key === 'pedidos') loadProviderOrders();
+            if (key === 'inventario') loadInventory();
             if (key === 'comercios') loadComercios();
             if (key === 'mis-pedidos') loadMyOrders();
             fdStartPolling(key);
@@ -3849,11 +4021,29 @@
                 opt.textContent = m.description;
                 select.appendChild(opt);
             });
+            fillPageModuleFilter();
             if (callback) callback();
         })
         .catch(function() {
             if (callback) callback();
         });
+    }
+
+    function fillPageModuleFilter() {
+        var select = document.getElementById('page-module-filter');
+        if (!select) return;
+
+        var current = select.value;
+        select.innerHTML = '<option value="">Todos los módulos</option>';
+        allPageModules.forEach(function(m) {
+            var opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = m.description;
+            select.appendChild(opt);
+        });
+
+        select.value = current || '';
+        if (select.selectedIndex === -1) select.value = '';
     }
 
     function loadPages() {
@@ -3867,7 +4057,12 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
             allPages = data;
-            renderPages(data);
+            if (allPageModules.length === 0) {
+                loadPageModules();
+            } else {
+                fillPageModuleFilter();
+            }
+            filterPages();
         })
         .catch(function() {
             document.getElementById('pages-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar páginas.</p>';
@@ -3896,10 +4091,8 @@
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', p.id);
             tr.style.borderBottom = '1px solid #f3f4f6';
-            var moduleName = p.module ? escapeHtml(p.module.description) : '<span style="color:#9ca3af;">—</span>';
             tr.innerHTML =
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(p.description) + '</td>' +
-                '<td style="padding:10px 16px;text-align:center;font-size:13px;color:#6b7280;">' + moduleName + '</td>' +
                 '<td style="padding:10px 16px;text-align:center;">' +
                     '<button onclick="editPage(' + p.id + ')" title="Editar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>' +
@@ -3914,9 +4107,11 @@
 
     function filterPages() {
         var q = document.getElementById('page-search').value.toLowerCase();
+        var moduleId = document.getElementById('page-module-filter').value;
         var filtered = allPages.filter(function(p) {
-            return (p.description && p.description.toLowerCase().indexOf(q) !== -1) ||
-                   (p.module && p.module.description.toLowerCase().indexOf(q) !== -1);
+            var matchesText = !q || (p.description && p.description.toLowerCase().indexOf(q) !== -1);
+            var matchesModule = !moduleId || String(p.module_id || '') === moduleId;
+            return matchesText && matchesModule;
         });
         renderPages(filtered);
     }

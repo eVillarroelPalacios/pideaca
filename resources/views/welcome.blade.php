@@ -1274,14 +1274,6 @@
         loginOverlay.style.display = 'none';
     }
 
-    loginOverlay.addEventListener('click', function (e) {
-        if (e.target === loginOverlay) closeLogin();
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && loginOverlay.style.display === 'flex') closeLogin();
-    });
-
     loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
         var email = document.getElementById('login-email').value.trim();
@@ -1486,14 +1478,6 @@
     function closeRegister() {
         registerOverlay.style.display = 'none';
     }
-
-    registerOverlay.addEventListener('click', function (e) {
-        if (e.target === registerOverlay) closeRegister();
-    });
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && registerOverlay.style.display === 'flex') closeRegister();
-    });
 
     registerForm.addEventListener('submit', function (e) {
         e.preventDefault();

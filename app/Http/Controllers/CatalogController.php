@@ -29,7 +29,7 @@ class CatalogController extends Controller
         $categories = $provider->categories()
             ->where('is_active', true)
             ->with(['products' => function ($query) use ($onlyAvailable) {
-                $query->with(['variants' => function ($variants) use ($onlyAvailable) {
+                $query->with(['inventory', 'variants' => function ($variants) use ($onlyAvailable) {
                     if ($onlyAvailable) {
                         $variants->where('is_available', true);
                     }
@@ -50,6 +50,19 @@ class CatalogController extends Controller
             $categories = $categories->filter(
                 fn ($category) => $category->products->isNotEmpty()
             )->values();
+        }
+
+        $usesInventory = $provider->usesInventory();
+
+        foreach ($categories as $category) {
+            foreach ($category->products as $product) {
+                $inventory = $product->inventory;
+
+                $product->setAttribute('is_out_of_stock', $usesInventory
+                    && $product->track_stock
+                    && ($inventory ? (float) $inventory->current_stock <= 0 : true)
+                    && ! ($inventory && $inventory->allow_negative_stock));
+            }
         }
 
         return response()->json([

@@ -24,17 +24,24 @@ class Provider extends Model
         'zone',
         'hours',
         'is_active',
+        'has_inventory_control',
     ];
 
     protected $casts = [
         'hours' => 'array',
         'rating' => 'decimal:2',
         'is_active' => 'boolean',
+        'has_inventory_control' => 'boolean',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function usesInventory(): bool
+    {
+        return (bool) $this->has_inventory_control;
     }
 
     public function category(): BelongsTo

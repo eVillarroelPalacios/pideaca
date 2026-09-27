@@ -20,6 +20,7 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\InventoryController;
 
 Route::get('/', [AdvertisingController::class, 'index']);
 
@@ -118,3 +119,9 @@ Route::get('/api/orders/mine', [OrderController::class, 'mine'])->name('api.orde
 Route::post('/api/orders', [OrderController::class, 'store'])->name('api.orders.store');
 Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('api.orders.status');
 Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.me.addresses');
+
+// Modulo de inventario por comercio
+Route::get('/api/v1/provider/inventory', [InventoryController::class, 'index'])->name('api.provider.inventory.index');
+Route::put('/api/v1/provider/inventory/settings', [InventoryController::class, 'settings'])->name('api.provider.inventory.settings');
+Route::post('/api/v1/provider/inventory/adjust', [InventoryController::class, 'adjust'])->name('api.provider.inventory.adjust');
+Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 'movements'])->name('api.provider.inventory.movements');
