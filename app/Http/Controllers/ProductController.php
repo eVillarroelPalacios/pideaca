@@ -20,6 +20,9 @@ use Illuminate\Validation\ValidationException;
  */
 class ProductController extends Controller
 {
+    /** Relaciones que necesita el panel para editar variantes y agregados. */
+    private const EAGER = ['category:id,name', 'unitOfMeasure', 'inventory', 'variants', 'optionGroups.options'];
+
     public function index(Request $request)
     {
         $resolved = $this->currentProvider();
@@ -31,12 +34,13 @@ class ProductController extends Controller
         $provider = $resolved;
 
         $categories = Category::where('provider_id', $provider->id)
+            ->withCount('products')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
         $products = $provider->products()
-            ->with(['category:id,name', 'unitOfMeasure', 'inventory'])
+            ->with(self::EAGER)
             ->orderBy('name')
             ->get()
             ->map(fn (Product $product) => $this->payload($product))
@@ -51,70 +55,15 @@ class ProductController extends Controller
             'categories' => $categories->map(fn (Category $category) => [
                 'id' => $category->id,
                 'name' => $category->name,
+                'sort_order' => $category->sort_order,
                 'is_active' => (bool) $category->is_active,
+                'products_count' => (int) $category->products_count,
             ])->values(),
             'unit_of_measures' => UnitOfMeasure::orderBy('id')->get([
                 'id', 'name', 'symbol', 'base_conversion_factor', 'is_integer_only',
             ]),
             'products' => $products,
         ]);
-    }
-
-    /**
-     * Alta de una categoria del catalogo. Sin esto el comercio no podia crear
-     * categorias propias: solo podia elegir las que venian en el seeder.
-     */
-    public function storeCategory(Request $request)
-    {
-        $resolved = $this->currentProvider();
-
-        if ($resolved instanceof JsonResponse) {
-            return $resolved;
-        }
-
-        $provider = $resolved;
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:80'],
-        ], [
-            'name.min' => 'El nombre de la categoría debe tener al menos 2 caracteres.',
-        ]);
-
-        $espacios = is_string($data['name']) ? preg_replace('/\s+/u', ' ', $data['name']) : null;
-        $nombre = is_string($espacios) ? trim($espacios) : $data['name'];
-
-        if (! is_string($nombre) || mb_strlen($nombre) < 2) {
-            throw ValidationException::withMessages([
-                'name' => 'El nombre de la categoría debe tener al menos 2 caracteres.',
-            ]);
-        }
-
-        $duplicada = Category::where('provider_id', $provider->id)
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($nombre)])
-            ->exists();
-
-        if ($duplicada) {
-            throw ValidationException::withMessages([
-                'name' => 'Ya tenés una categoría con ese nombre.',
-            ]);
-        }
-
-        $category = Category::create([
-            'provider_id' => $provider->id,
-            'name' => $nombre,
-            'sort_order' => (int) (Category::where('provider_id', $provider->id)->max('sort_order')) + 1,
-            'is_active' => true,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'category' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'sort_order' => $category->sort_order,
-                'is_active' => (bool) $category->is_active,
-            ],
-        ], 201);
     }
 
     public function store(Request $request)
@@ -153,7 +102,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto creado correctamente.',
-            'product' => $this->payload($product->fresh()->load(['category:id,name', 'unitOfMeasure', 'inventory'])),
+            'product' => $this->payload($product->fresh()->load(self::EAGER)),
         ], 201);
     }
 
@@ -204,7 +153,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Producto actualizado correctamente.',
-            'product' => $this->payload($product->fresh()->load(['category:id,name', 'unitOfMeasure', 'inventory'])),
+            'product' => $this->payload($product->fresh()->load(self::EAGER)),
         ]);
     }
 
@@ -355,6 +304,31 @@ class ProductController extends Controller
             ] : null,
             'current_stock' => $inventory ? round((float) $inventory->current_stock, 3) : 0.0,
             'allow_negative_stock' => $inventory ? (bool) $inventory->allow_negative_stock : false,
+            'variants' => $product->variants
+                ->sortBy('id')
+                ->map(fn ($v) => [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'price' => (float) $v->price,
+                    'is_available' => (bool) $v->is_available,
+                ])->values(),
+            'option_groups' => $product->optionGroups
+                ->sortBy('id')
+                ->map(fn ($g) => [
+                    'id' => $g->id,
+                    'name' => $g->name,
+                    'min_choices' => (int) $g->min_choices,
+                    'max_choices' => (int) $g->max_choices,
+                    'is_required' => (bool) $g->is_required,
+                    'options' => $g->options
+                        ->sortBy('id')
+                        ->map(fn ($o) => [
+                            'id' => $o->id,
+                            'name' => $o->name,
+                            'extra_price' => (float) $o->extra_price,
+                            'is_available' => (bool) $o->is_available,
+                        ])->values(),
+                ])->values(),
         ];
     }
 

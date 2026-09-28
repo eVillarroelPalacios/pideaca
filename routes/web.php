@@ -6,24 +6,28 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstadosDeLosGruposController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TypeUserController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\VariantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AdvertisingController::class, 'index']);
@@ -153,7 +157,25 @@ Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 
 Route::get('/api/v1/provider/products', [ProductController::class, 'index'])->name('api.provider.products.index');
 Route::post('/api/v1/provider/products', [ProductController::class, 'store'])->name('api.provider.products.store');
 Route::put('/api/v1/provider/products/{product}', [ProductController::class, 'update'])->name('api.provider.products.update');
-Route::post('/api/v1/provider/categories', [ProductController::class, 'storeCategory'])->name('api.provider.categories.store');
+
+// Variantes (Individual / Grande / Familiar): el precio que paga el cliente
+Route::post('/api/v1/provider/products/{product}/variants', [VariantController::class, 'store'])->name('api.provider.variants.store');
+Route::put('/api/v1/provider/variants/{variant}', [VariantController::class, 'update'])->name('api.provider.variants.update');
+Route::delete('/api/v1/provider/variants/{variant}', [VariantController::class, 'destroy'])->name('api.provider.variants.destroy');
+
+// Agregados / Extras: grupos de opciones y sus opciones con precio extra
+Route::post('/api/v1/provider/products/{product}/option-groups', [OptionController::class, 'storeGroup'])->name('api.provider.option-groups.store');
+Route::put('/api/v1/provider/option-groups/{group}', [OptionController::class, 'updateGroup'])->name('api.provider.option-groups.update');
+Route::delete('/api/v1/provider/option-groups/{group}', [OptionController::class, 'destroyGroup'])->name('api.provider.option-groups.destroy');
+Route::post('/api/v1/provider/option-groups/{group}/options', [OptionController::class, 'storeOption'])->name('api.provider.options.store');
+Route::put('/api/v1/provider/options/{option}', [OptionController::class, 'updateOption'])->name('api.provider.options.update');
+Route::delete('/api/v1/provider/options/{option}', [OptionController::class, 'destroyOption'])->name('api.provider.options.destroy');
+
+// Categorias y unidades de medida del catalogo
+Route::post('/api/v1/provider/categories', [CategoryController::class, 'store'])->name('api.provider.categories.store');
+Route::put('/api/v1/provider/categories/{category}', [CategoryController::class, 'update'])->name('api.provider.categories.update');
+Route::delete('/api/v1/provider/categories/{category}', [CategoryController::class, 'destroy'])->name('api.provider.categories.destroy');
+Route::get('/api/v1/provider/units', [UnitController::class, 'index'])->name('api.provider.units.index');
 
 // Suscripciones y compras recurrentes
 Route::get('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'indexPlans'])->name('api.provider.subscription-plans.index');

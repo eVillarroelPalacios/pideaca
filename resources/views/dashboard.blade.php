@@ -1059,12 +1059,36 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                             Agregar producto
                         </button>
-                        <button type="button" onclick="loadProviderCatalog()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                        <button type="button" onclick="fdCatReload()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
                             Actualizar
                         </button>
                     </div>
                 </div>
+
+                <div class="fd-cat-layout">
+                    <aside id="fd-cat-sidebar">
+                        <div class="fd-cat-menu-title">Organización</div>
+                        <a href="#" class="sidebar-link active" data-cat-panel="catalogo" onclick="event.preventDefault();fdCatTab('catalogo')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <span>Mi catálogo</span>
+                        </a>
+                        <a href="#" class="sidebar-link" data-cat-panel="productos" onclick="event.preventDefault();fdCatTab('productos')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                            <span>Productos</span>
+                        </a>
+                        <a href="#" class="sidebar-link" data-cat-panel="categorias" onclick="event.preventDefault();fdCatTab('categorias')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                            <span>Categorías</span>
+                        </a>
+                        <a href="#" class="sidebar-link" data-cat-panel="unidades" onclick="event.preventDefault();fdCatTab('unidades')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14.5 12.5 12 15m2.5-6.5L12 9m-4.5 3.5L7 14"/></svg>
+                            <span>Unidades de medida</span>
+                        </a>
+                    </aside>
+
+                    <div class="fd-cat-body">
+                        <div id="fd-cat-panel-catalogo" class="fd-cat-panel active">
 
                 <div id="fd-catalog-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando catálogo...</p>
@@ -1075,7 +1099,40 @@
                 </div>
 
                 <div id="fd-catalog-content" style="display:none;"></div>
-            </section>
+            </div>
+
+            <div id="fd-cat-panel-productos" class="fd-cat-panel">
+                <div id="fd-prod-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando productos...</p>
+                </div>
+                <div id="fd-prod-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-prod-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar los productos.</p>
+                </div>
+                <div id="fd-prod-content" style="display:none;"></div>
+            </div>
+
+            <div id="fd-cat-panel-categorias" class="fd-cat-panel">
+                <div id="fd-cats-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando categorías...</p>
+                </div>
+                <div id="fd-cats-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-cats-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar las categorías.</p>
+                </div>
+                <div id="fd-cats-content" style="display:none;"></div>
+            </div>
+
+            <div id="fd-cat-panel-unidades" class="fd-cat-panel">
+                <div id="fd-units-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Cargando unidades de medida...</p>
+                </div>
+                <div id="fd-units-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
+                    <p id="fd-units-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar las unidades.</p>
+                </div>
+                <div id="fd-units-content" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</section>
 
                     @elseif($page->url === 'pedidos')
             <section id="dash-pedidos" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
@@ -1178,88 +1235,6 @@
                 </div>
             </div>
 
-            <div id="fd-product-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
-                <div style="background:#fff;padding:24px;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
-                    <h3 id="fd-product-title" style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Nuevo producto</h3>
-                    <input type="hidden" id="fd-product-id" />
-
-                    <div style="margin-bottom:12px;">
-                        <label class="field-label" for="fd-product-name">Nombre *</label>
-                        <input type="text" id="fd-product-name" class="field-input" placeholder="Ej: Empanada de carne" />
-                    </div>
-
-                    <div style="display:flex;gap:12px;margin-bottom:12px;">
-                        <div style="flex:1;min-width:0;">
-                            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
-                                <label class="field-label" for="fd-product-category" style="margin-bottom:6px;">Categoría *</label>
-                                <button type="button" id="fd-product-newcategory-btn" onclick="fdProdShowNewCategory()" style="background:none;border:none;padding:0;margin-bottom:6px;color:#D24C19;font-size:11px;font-weight:700;cursor:pointer;">+ Nueva</button>
-                            </div>
-                            <select id="fd-product-category" class="field-input"></select>
-                        </div>
-                        <div style="flex:1;min-width:0;">
-                            <label class="field-label" for="fd-product-price">Precio *</label>
-                            <input type="number" step="0.01" min="0" id="fd-product-price" class="field-input" placeholder="0.00" />
-                        </div>
-                    </div>
-
-                    <div id="fd-product-newcategory-box" style="display:none;margin-bottom:12px;">
-                        <label class="field-label" for="fd-product-newcategory-input">Nueva categoría</label>
-                        <div style="display:flex;gap:8px;align-items:flex-end;">
-                            <div style="flex:1;min-width:0;">
-                                <input type="text" id="fd-product-newcategory-input" class="field-input" maxlength="80" placeholder="Ej: Bebidas frías"
-                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); fdProdCreateCategory(); }" />
-                            </div>
-                            <button type="button" class="btn-secondary" onclick="fdProdCancelNewCategory()">Cancelar</button>
-                            <button type="button" id="fd-product-newcategory-ok" class="btn-primary" onclick="fdProdCreateCategory()">Agregar</button>
-                        </div>
-                        <span class="save-msg err" id="fd-product-newcategory-error" style="display:none;margin-top:6px;"></span>
-                    </div>
-
-                    <div style="margin-bottom:12px;">
-                        <label class="field-label" for="fd-product-description">Descripción</label>
-                        <textarea id="fd-product-description" class="field-input" rows="2" placeholder="Opcional"></textarea>
-                    </div>
-
-                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
-                        <input type="checkbox" id="fd-product-available" checked style="cursor:pointer;" />
-                        Producto disponible para pedidos
-                    </label>
-
-                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
-                        <input type="checkbox" id="fd-product-track" onchange="fdProdTrackChanged()" style="cursor:pointer;" />
-                        Controlar stock (habilitar seguimiento)
-                    </label>
-
-                    <div id="fd-product-stock-fields" style="display:none;">
-                        <div style="display:flex;gap:12px;margin-bottom:12px;">
-                            <div style="flex:1;">
-                                <label class="field-label" for="fd-product-initial">Stock inicial</label>
-                                <input type="number" step="0.001" id="fd-product-initial" class="field-input" placeholder="0" />
-                            </div>
-                            <div style="flex:1;">
-                                <label class="field-label" for="fd-product-min">Stock mínimo</label>
-                                <input type="number" step="0.001" min="0" id="fd-product-min" class="field-input" placeholder="0" />
-                            </div>
-                        </div>
-                        <div style="margin-bottom:12px;">
-                            <label class="field-label" for="fd-product-unit">Unidad de medida</label>
-                            <select id="fd-product-unit" class="field-input"></select>
-                        </div>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;margin-bottom:8px;cursor:pointer;">
-                            <input type="checkbox" id="fd-product-negative" style="cursor:pointer;" />
-                            Permitir stock negativo
-                        </label>
-                        <p style="font-size:11px;color:#94a3b8;margin:0;">El stock inicial solo aplica para la creación; después se edita desde Inventario.</p>
-                    </div>
-
-                    <div style="margin-top:20px;text-align:right;">
-                        <span class="save-msg err" id="fd-product-error" style="display:none;margin-right:8px;"></span>
-                        <button type="button" class="btn-secondary" onclick="closeProductModal()" style="margin-right:8px;">Cancelar</button>
-                        <button type="button" class="btn-primary" onclick="saveProduct()">Guardar</button>
-                    </div>
-                </div>
-            </div>
-
                     @elseif($page->url === 'comercios')
             <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -1352,6 +1327,130 @@
                     @endif
                 @endforeach
             @endforeach
+            <div id="fd-product-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+                <div style="background:#fff;padding:24px;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+                    <h3 id="fd-product-title" style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Nuevo producto</h3>
+                    <input type="hidden" id="fd-product-id" />
+
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-name">Nombre *</label>
+                        <input type="text" id="fd-product-name" class="field-input" placeholder="Ej: Empanada de carne" />
+                    </div>
+
+                    <div style="display:flex;gap:12px;margin-bottom:12px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
+                                <label class="field-label" for="fd-product-category" style="margin-bottom:6px;">Categoría *</label>
+                                <button type="button" id="fd-product-newcategory-btn" onclick="fdProdShowNewCategory()" style="background:none;border:none;padding:0;margin-bottom:6px;color:#D24C19;font-size:11px;font-weight:700;cursor:pointer;">+ Nueva</button>
+                            </div>
+                            <select id="fd-product-category" class="field-input"></select>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <label class="field-label" for="fd-product-price">Precio *</label>
+                            <input type="number" step="0.01" min="0" id="fd-product-price" class="field-input" placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <div id="fd-product-newcategory-box" style="display:none;margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-newcategory-input">Nueva categoría</label>
+                        <div style="display:flex;gap:8px;align-items:flex-end;">
+                            <div style="flex:1;min-width:0;">
+                                <input type="text" id="fd-product-newcategory-input" class="field-input" maxlength="80" placeholder="Ej: Bebidas frías"
+                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); fdProdCreateCategory(); }" />
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="fdProdCancelNewCategory()">Cancelar</button>
+                            <button type="button" id="fd-product-newcategory-ok" class="btn-primary" onclick="fdProdCreateCategory()">Agregar</button>
+                        </div>
+                        <span class="save-msg err" id="fd-product-newcategory-error" style="display:none;margin-top:6px;"></span>
+                    </div>
+
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-description">Descripción</label>
+                        <textarea id="fd-product-description" class="field-input" rows="2" placeholder="Opcional"></textarea>
+                    </div>
+
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
+                        <input type="checkbox" id="fd-product-available" checked style="cursor:pointer;" />
+                        Producto disponible para pedidos
+                    </label>
+
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
+                        <input type="checkbox" id="fd-product-track" onchange="fdProdTrackChanged()" style="cursor:pointer;" />
+                        Controlar stock (habilitar seguimiento)
+                    </label>
+
+                    <div id="fd-product-stock-fields" style="display:none;">
+                        <div style="display:flex;gap:12px;margin-bottom:12px;">
+                            <div style="flex:1;">
+                                <label class="field-label" for="fd-product-initial">Stock inicial</label>
+                                <input type="number" step="0.001" id="fd-product-initial" class="field-input" placeholder="0" />
+                            </div>
+                            <div style="flex:1;">
+                                <label class="field-label" for="fd-product-min">Stock mínimo</label>
+                                <input type="number" step="0.001" min="0" id="fd-product-min" class="field-input" placeholder="0" />
+                            </div>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label class="field-label" for="fd-product-unit">Unidad de medida</label>
+                            <select id="fd-product-unit" class="field-input"></select>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;margin-bottom:8px;cursor:pointer;">
+                            <input type="checkbox" id="fd-product-negative" style="cursor:pointer;" />
+                            Permitir stock negativo
+                        </label>
+                        <p style="font-size:11px;color:#94a3b8;margin:0;">El stock inicial solo aplica para la creación; después se edita desde Inventario.</p>
+                    </div>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <span class="save-msg err" id="fd-product-error" style="display:none;margin-right:8px;"></span>
+                        <button type="button" class="btn-secondary" onclick="closeProductModal()" style="margin-right:8px;">Cancelar</button>
+                        <button type="button" class="btn-primary" onclick="saveProduct()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fd-variant-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+                <div style="background:#fff;padding:24px;width:100%;max-width:660px;max-height:86vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 4px;">Variantes</h3>
+                    <p id="fd-variant-product" style="font-size:12px;color:#64748b;margin:0 0 8px;"></p>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 16px;">
+                        Los tamaños o formatos del producto (Individual, Grande, Familiar...).
+                        <strong>El precio que paga el cliente es el de la variante elegida</strong>; si no tiene variantes se usa el precio base.
+                    </p>
+
+                    <div id="fd-variant-rows"></div>
+
+                    <button type="button" class="btn-secondary" style="margin-top:12px;" onclick="fdVariantAddRow()">+ Agregar variante</button>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <span class="save-msg err" id="fd-variant-error" style="display:none;margin-right:8px;"></span>
+                        <button type="button" class="btn-secondary" onclick="closeVariantModal()" style="margin-right:8px;">Cancelar</button>
+                        <button type="button" class="btn-primary" onclick="saveVariants()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fd-opt-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+                <div style="background:#fff;padding:24px;width:100%;max-width:720px;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 4px;">Agregados</h3>
+                    <p id="fd-opt-product" style="font-size:12px;color:#64748b;margin:0 0 8px;"></p>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 16px;">
+                        Grupos de opciones con precio extra (ej.: Muzzarella extra +$900).
+                        El <strong>mínimo</strong> y el <strong>máximo</strong> definen cuántas opciones se pueden elegir al pedir.
+                    </p>
+
+                    <div id="fd-opt-groups"></div>
+
+                    <button type="button" class="btn-secondary" style="margin-top:4px;" onclick="fdOptAddGroup()">+ Agregar grupo</button>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <span class="save-msg err" id="fd-opt-error" style="display:none;margin-right:8px;"></span>
+                        <button type="button" class="btn-secondary" onclick="closeOptionModal()" style="margin-right:8px;">Cancelar</button>
+                        <button type="button" class="btn-primary" onclick="saveOptions()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
 
             <section id="dash-usuarios" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -1918,6 +2017,25 @@
     #module-modal-overlay[style*="display: flex"],
     #module-delete-overlay[style*="display: flex"] {
         backdrop-filter: blur(2px);
+    }
+
+    /* --- Mi catálogo: sidebar de secciones (catálogo, productos, categorías, unidades) --- */
+    .fd-cat-layout { display: flex; align-items: stretch; background: #ffffff; border: 1px solid #e5e7eb; }
+    #fd-cat-sidebar { width: 218px; min-width: 218px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
+    .fd-cat-menu-title { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; padding: 16px 20px 8px; }
+    .fd-cat-body { flex: 1; min-width: 0; padding: 20px 22px; }
+    .fd-cat-panel { display: none; }
+    .fd-cat-panel.active { display: block; animation: tabFade .18s ease; }
+    .fd-cat-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #f1f5f9; background: #fff; }
+    .fd-cat-row:hover { background: #f8fafc; }
+    .fd-cat-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    @media (max-width: 860px) {
+        .fd-cat-layout { flex-direction: column; }
+        #fd-cat-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #e5e7eb; flex-direction: row; flex-wrap: wrap; padding: 6px; }
+        .fd-cat-menu-title { display: none; }
+        #fd-cat-sidebar .sidebar-link { border-left: none; border-bottom: 3px solid transparent; padding: 8px 12px; }
+        #fd-cat-sidebar .sidebar-link.active { border-left-color: transparent; border-bottom-color: #D24C19; }
+        .fd-cat-body { padding: 16px 12px; }
     }
 
     @media (max-width: 768px) {
@@ -2952,6 +3070,373 @@
             });
     }
 
+    // --- Sidebar de Mi catálogo: catálogo, productos, categorías y unidades ---
+
+    var fdCatActive = 'catalogo';
+
+    var FD_CAT_PANELS = {
+        catalogo:  { loading: 'fd-catalog-loading', message: 'fd-catalog-message', content: 'fd-catalog-content', text: 'fd-catalog-message-text' },
+        productos: { loading: 'fd-prod-loading',    message: 'fd-prod-message',    content: 'fd-prod-content',    text: 'fd-prod-message-text' },
+        categorias:{ loading: 'fd-cats-loading',    message: 'fd-cats-message',    content: 'fd-cats-content',    text: 'fd-cats-message-text' },
+        unidades:  { loading: 'fd-units-loading',   message: 'fd-units-message',   content: 'fd-units-content',   text: 'fd-units-message-text' }
+    };
+
+    function fdPanelState(ids, state, text) {
+        ['loading', 'message', 'content'].forEach(function (k) {
+            var el = document.getElementById(ids[k]);
+            if (el) el.style.display = (k === state) ? 'block' : 'none';
+        });
+        if (state === 'message' && typeof text !== 'undefined') {
+            var msg = document.getElementById(ids.text);
+            if (msg) msg.textContent = text;
+        }
+    }
+
+    function fdCatTab(key) {
+        if (!FD_CAT_PANELS[key]) return;
+        fdCatActive = key;
+
+        document.querySelectorAll('[data-cat-panel]').forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('data-cat-panel') === key);
+        });
+
+        document.querySelectorAll('.fd-cat-panel').forEach(function (p) {
+            p.classList.toggle('active', p.id === 'fd-cat-panel-' + key);
+        });
+
+        fdCatLoad(key);
+    }
+
+    function fdCatLoad(key) {
+        if (key === 'catalogo') loadProviderCatalog();
+        else if (key === 'productos') loadProductsPanel();
+        else if (key === 'categorias') loadCategoriesPanel();
+        else if (key === 'unidades') loadUnitsPanel();
+    }
+
+    // Se ejecuta cada vez que se entra a la sección desde el menú.
+    function fdCatShow() {
+        fdCatTab(fdCatActive);
+    }
+
+    // Recarga el panel a la vista y deja la caché de productos fresca.
+    function fdCatReload() {
+        fdProdData = null;
+        fdCatLoad(fdCatActive);
+    }
+
+    function fdSeq(tareas) {
+        return tareas.reduce(function (p, t) {
+            return p.then(function () { return t(); });
+        }, Promise.resolve());
+    }
+
+    function fdCheck(res, mensaje) {
+        if (!res.ok) {
+            throw new Error((res.data && (res.data.message || Object.values(res.data.errors || {})[0])) || mensaje);
+        }
+        return res;
+    }
+
+    // --- Panel: productos (con variantes y agregados) ---
+
+    function loadProductsPanel() {
+        fdPanelState(FD_CAT_PANELS.productos, 'loading');
+
+        fdFetchJson('{{ url("/api/v1/provider/products") }}')
+            .then(function (res) {
+                fdCheck(res, 'No se pudieron cargar los productos.');
+                fdProdData = res.data;
+                document.getElementById('fd-prod-content').innerHTML = fdRenderProducts(res.data);
+                fdPanelState(FD_CAT_PANELS.productos, 'content');
+            })
+            .catch(function (e) {
+                fdPanelState(FD_CAT_PANELS.productos, 'message', e.message || 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderProducts(data) {
+        var products = data.products || [];
+        var categorias = (data.categories || []).length;
+
+        if (!products.length) {
+            return '<div style="background:#fff;border:1px solid #e5e7eb;padding:36px 20px;text-align:center;">'
+                + '<p style="font-size:14px;color:#6b7280;margin:0 0 14px;">Todavía no cargaste productos.</p>'
+                + '<button type="button" class="btn-primary" onclick="openProductModal(null)">+ Agregar producto</button>'
+                + '</div>';
+        }
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'
+            + fdBadge(products.length + ' productos', '#0c2a4d', '#eef2f7')
+            + fdBadge(categorias + ' categorías', '#0c2a4d', '#eef2f7')
+            + '</div>'
+            + '<div style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;">'
+            + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
+            + '<thead><tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Producto</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Categoría</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Precio</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Variantes</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Agregados</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Stock</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Acciones</th>'
+            + '</tr></thead><tbody>';
+
+        products.forEach(function (p, i) {
+            var variantes = p.variants || [];
+            var grupos = p.option_groups || [];
+            var opciones = 0;
+            grupos.forEach(function (g) { opciones += (g.options || []).length; });
+
+            var vtxt = variantes.length
+                ? variantes.map(function (v) { return escapeHtml(v.name); }).join(', ')
+                : '<span style="color:#94a3b8;">ninguna</span>';
+
+            var gtxt = grupos.length
+                ? fdBadge(grupos.length + ' grupo(s) · ' + opciones + ' opción(es)', '#9a3412', '#fff7ed')
+                : '<span style="color:#94a3b8;">ninguno</span>';
+
+            var stock = p.track_stock
+                ? fdBadge(fdInvNum(p.current_stock) + (p.unit_of_measure ? ' ' + p.unit_of_measure.symbol : ''), '#047857', '#d1fae5')
+                : fdBadge('Sin seguimiento', '#64748b', '#f1f5f9');
+
+            var id = escapeHtml(String(p.id));
+
+            html += '<tr style="background:' + (i % 2 ? '#f8fafc' : '#fff') + ';border-top:1px solid #f1f5f9;">'
+                + '<td style="padding:10px 12px;color:#0f172a;font-weight:600;min-width:170px;">'
+                + escapeHtml(p.name)
+                + (p.is_available === false ? ' ' + fdBadge('No disponible', '#b91c1c', '#fee2e2') : '')
+                + '</td>'
+                + '<td style="padding:10px 12px;color:#6b7280;">' + escapeHtml(p.category_name || '—') + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:#D24C19;font-weight:700;">' + fdMoney(p.price) + '</td>'
+                + '<td style="padding:10px 12px;color:#475569;min-width:150px;">'
+                + (variantes.length ? fdBadge(String(variantes.length), '#0c2a4d', '#eef2f7') + ' ' : '') + vtxt
+                + '</td>'
+                + '<td style="padding:10px 12px;">' + gtxt + '</td>'
+                + '<td style="padding:10px 12px;">' + stock + '</td>'
+                + '<td style="padding:10px 12px;white-space:nowrap;">'
+                + '<div class="fd-cat-actions">'
+                + '<button type="button" class="btn-secondary" onclick="openProductModal(' + id + ')">Editar</button>'
+                + '<button type="button" class="btn-secondary" onclick="openVariantModal(' + id + ')">Variantes</button>'
+                + '<button type="button" class="btn-secondary" onclick="openOptionModal(' + id + ')">Agregados</button>'
+                + '</div></td>'
+                + '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        return html;
+    }
+
+    // --- Panel: categorías ---
+
+    function loadCategoriesPanel() {
+        fdPanelState(FD_CAT_PANELS.categorias, 'loading');
+
+        fdFetchJson('{{ url("/api/v1/provider/products") }}')
+            .then(function (res) {
+                fdCheck(res, 'No se pudieron cargar las categorías.');
+                fdProdData = res.data;
+                document.getElementById('fd-cats-content').innerHTML = fdRenderCategories(res.data);
+                fdPanelState(FD_CAT_PANELS.categorias, 'content');
+            })
+            .catch(function (e) {
+                fdPanelState(FD_CAT_PANELS.categorias, 'message', e.message || 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderCategories(data) {
+        var cats = data.categories || [];
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'
+            + fdBadge(cats.length + ' categorías', '#0c2a4d', '#eef2f7')
+            + '</div>'
+            + '<div style="background:#fff;border:1px solid #e5e7eb;padding:14px;margin-bottom:14px;">'
+            + '<label class="field-label" for="fd-cat-new-name">Nueva categoría</label>'
+            + '<div style="display:flex;gap:8px;align-items:flex-start;">'
+            + '<div style="flex:1;min-width:0;"><input type="text" id="fd-cat-new-name" class="field-input" maxlength="80" placeholder="Ej: Bebidas frías"></div>'
+            + '<button type="button" class="btn-primary" onclick="fdCatCreate()">Agregar</button>'
+            + '</div>'
+            + '<span class="save-msg err" id="fd-cat-new-error" style="display:none;margin-top:6px;"></span>'
+            + '</div>';
+
+        html += '<div style="background:#fff;border:1px solid #e5e7eb;">';
+
+        if (!cats.length) {
+            html += '<div style="padding:24px 16px;font-size:13px;color:#94a3b8;text-align:center;">Todavía no tenés categorías: creá la primera arriba.</div>';
+        }
+
+        cats.forEach(function (c) {
+            html += '<div class="fd-cat-row" data-cid="' + escapeHtml(String(c.id)) + '">'
+                + '<div style="flex:1;min-width:0;"><input type="text" class="field-input fd-cat-name" maxlength="80" value="' + escapeHtml(c.name) + '" style="padding:7px 10px;font-size:13px;"></div>'
+                + fdBadge(c.products_count + ' producto(s)', c.products_count ? '#0c2a4d' : '#64748b', c.products_count ? '#eef2f7' : '#f1f5f9')
+                + (c.is_active ? '' : fdBadge('Oculta', '#9a3412', '#fff7ed'))
+                + '<div class="fd-cat-actions">'
+                + '<button type="button" class="btn-secondary" onclick="fdCatRename(this)">Guardar</button>'
+                + '<button type="button" class="btn-secondary" title="Subir" onclick="fdCatMove(this, -1)">&#8593;</button>'
+                + '<button type="button" class="btn-secondary" title="Bajar" onclick="fdCatMove(this, 1)">&#8595;</button>'
+                + '<button type="button" class="btn-danger" onclick="fdCatRemove(this)">Eliminar</button>'
+                + '</div>'
+                + '</div>';
+        });
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function fdCatCreate() {
+        var input = document.getElementById('fd-cat-new-name');
+        var error = document.getElementById('fd-cat-new-error');
+        var nombre = input.value.trim();
+
+        if (nombre.length < 2) {
+            error.textContent = 'Escribí el nombre de la categoría.';
+            error.style.display = 'inline-block';
+            return;
+        }
+
+        error.style.display = 'none';
+
+        fdFetchJson('{{ url("/api/v1/provider/categories") }}', {
+            method: 'POST',
+            body: JSON.stringify({ name: nombre })
+        })
+            .then(function (res) {
+                fdCheck(res, 'No se pudo crear la categoría.');
+                fdToast('Categoría creada.', false);
+                loadCategoriesPanel();
+            })
+            .catch(function (e) {
+                error.textContent = e.message;
+                error.style.display = 'inline-block';
+            });
+    }
+
+    function fdCatRename(boton) {
+        var fila = boton.closest('.fd-cat-row');
+        var nombre = fila.querySelector('.fd-cat-name').value.trim();
+
+        if (nombre.length < 2) {
+            fdToast('El nombre de la categoría debe tener al menos 2 caracteres.', true);
+            return;
+        }
+
+        fdFetchJson('{{ url("/api/v1/provider/categories") }}/' + encodeURIComponent(fila.getAttribute('data-cid')), {
+            method: 'PUT',
+            body: JSON.stringify({ name: nombre })
+        })
+            .then(function (res) {
+                fdCheck(res, 'No se pudo renombrar la categoría.');
+                fdToast('Categoría actualizada.', false);
+                loadCategoriesPanel();
+            })
+            .catch(function (e) { fdToast(e.message, true); });
+    }
+
+    function fdCatRemove(boton) {
+        var fila = boton.closest('.fd-cat-row');
+        var nombre = fila.querySelector('.fd-cat-name').value;
+
+        if (!window.confirm('¿Eliminar la categoría "' + nombre + '"?')) return;
+
+        fdFetchJson('{{ url("/api/v1/provider/categories") }}/' + encodeURIComponent(fila.getAttribute('data-cid')), {
+            method: 'DELETE'
+        })
+            .then(function (res) {
+                fdCheck(res, 'No se pudo eliminar la categoría.');
+                fdToast('Categoría eliminada.', false);
+                loadCategoriesPanel();
+            })
+            .catch(function (e) { fdToast(e.message, true); });
+    }
+
+    function fdCatMove(boton, dir) {
+        var filas = Array.prototype.slice.call(document.querySelectorAll('#fd-cats-content .fd-cat-row'));
+        var fila = boton.closest('.fd-cat-row');
+        var i = filas.indexOf(fila);
+        var j = i + dir;
+
+        if (i < 0 || j < 0 || j >= filas.length) return;
+
+        var tmp = filas[i];
+        filas[i] = filas[j];
+        filas[j] = tmp;
+
+        var tareas = filas.map(function (f, indice) {
+            var catId = f.getAttribute('data-cid');
+            return function () {
+                return fdFetchJson('{{ url("/api/v1/provider/categories") }}/' + encodeURIComponent(catId), {
+                    method: 'PUT',
+                    body: JSON.stringify({ sort_order: (indice + 1) * 10 })
+                }).then(function (res) { fdCheck(res, 'No se pudo reordenar.'); });
+            };
+        });
+
+        fdSeq(tareas)
+            .then(function () {
+                fdToast('Orden actualizado.', false);
+                loadCategoriesPanel();
+            })
+            .catch(function (e) { fdToast(e.message, true); });
+    }
+
+    // --- Panel: unidades de medida (consulta) ---
+
+    function loadUnitsPanel() {
+        fdPanelState(FD_CAT_PANELS.unidades, 'loading');
+
+        fdFetchJson('{{ url("/api/v1/provider/units") }}')
+            .then(function (res) {
+                fdCheck(res, 'No se pudieron cargar las unidades.');
+                document.getElementById('fd-units-content').innerHTML = fdRenderUnits(res.data);
+                fdPanelState(FD_CAT_PANELS.unidades, 'content');
+            })
+            .catch(function (e) {
+                fdPanelState(FD_CAT_PANELS.unidades, 'message', e.message || 'No se pudo conectar con el servidor.');
+            });
+    }
+
+    function fdRenderUnits(data) {
+        var units = data.units || [];
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'
+            + fdBadge(units.length + ' unidades', '#0c2a4d', '#eef2f7')
+            + fdBadge((data.products_with_unit || 0) + ' producto(s) con unidad', (data.products_with_unit || 0) ? '#047857' : '#64748b', (data.products_with_unit || 0) ? '#d1fae5' : '#f1f5f9')
+            + '</div>'
+            + '<div style="background:#fffbeb;border:1px solid #fde68a;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#92400e;">'
+            + 'Las unidades de medida son de toda la plataforma: se usan para controlar el stock de los productos. '
+            + 'Si necesitás una que no aparece, escribinos y la agregamos.'
+            + '</div>'
+            + '<div style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;">'
+            + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
+            + '<thead><tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Unidad</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Símbolo</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Equivalencia</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Cantidades</th>'
+            + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Tus productos</th>'
+            + '</tr></thead><tbody>';
+
+        if (!units.length) {
+            html += '<tr><td colspan="5" style="padding:24px 16px;color:#94a3b8;text-align:center;">No hay unidades de medida cargadas.</td></tr>';
+        }
+
+        units.forEach(function (u, i) {
+            html += '<tr style="background:' + (i % 2 ? '#f8fafc' : '#fff') + ';border-top:1px solid #f1f5f9;">'
+                + '<td style="padding:10px 12px;color:#0f172a;font-weight:600;">' + escapeHtml(u.name) + '</td>'
+                + '<td style="padding:10px 12px;color:#6b7280;">' + escapeHtml(u.symbol) + '</td>'
+                + '<td style="padding:10px 12px;color:#475569;">1 ' + escapeHtml(u.name) + ' = ' + fdInvNum(u.base_conversion_factor) + ' und</td>'
+                + '<td style="padding:10px 12px;">' + (u.is_integer_only ? fdBadge('Solo enteras', '#9a3412', '#fff7ed') : fdBadge('Admite decimales', '#047857', '#d1fae5')) + '</td>'
+                + '<td style="padding:10px 12px;text-align:right;color:' + (u.products_count ? '#0f172a' : '#94a3b8') + ';font-weight:600;">' + u.products_count + '</td>'
+                + '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        return html;
+    }
+
     // --- Productos (alta y edición) ---
 
     var fdProdData = null;
@@ -3185,11 +3670,396 @@
                 }
                 closeProductModal();
                 fdToast(id ? 'Producto actualizado.' : 'Producto creado.', false);
-                fdProdData = null;
-                loadProviderCatalog();
+                fdCatReload();
             })
             .catch(function () {
                 error.textContent = 'No se pudo conectar con el servidor.';
+                error.style.display = 'inline';
+            });
+    }
+
+    // --- Variantes (Individual / Grande / Familiar) ---
+
+    var fdVariantProducto = null;
+    var fdVariantOriginales = [];
+
+    function fdUrlVariants(productId) {
+        return '{{ url("/api/v1/provider/products") }}/' + encodeURIComponent(productId) + '/variants';
+    }
+
+    function fdUrlVariant(id) {
+        return '{{ url("/api/v1/provider/variants") }}/' + encodeURIComponent(id);
+    }
+
+    function fdVariantRow(v) {
+        v = v || {};
+        var vid = (v.id !== undefined && v.id !== null) ? String(v.id) : '';
+        var precio = (v.price !== undefined && v.price !== null && v.price !== '') ? Number(v.price) : '';
+
+        return '<div class="fd-variant-row" data-vid="' + vid + '" style="display:flex;gap:8px;align-items:flex-end;padding:8px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;">'
+            + '<div style="flex:2;min-width:150px;"><label class="field-label">Nombre</label>'
+            + '<input type="text" class="field-input fd-v-name" maxlength="60" value="' + escapeHtml(v.name || '') + '" placeholder="Ej: Individual" /></div>'
+            + '<div style="flex:1;min-width:110px;"><label class="field-label">Precio</label>'
+            + '<input type="number" step="0.01" min="0" class="field-input fd-v-price" value="' + precio + '" placeholder="0.00" /></div>'
+            + '<label style="display:flex;gap:6px;align-items:center;font-size:12px;color:#475569;padding-bottom:10px;cursor:pointer;white-space:nowrap;">'
+            + '<input type="checkbox" class="fd-v-avail"' + (v.is_available === false ? '' : ' checked') + ' /> Disponible</label>'
+            + '<button type="button" class="icon-btn del" title="Quitar variante" onclick="fdVariantRemove(this)" style="margin-bottom:2px;">&#10005;</button>'
+            + '</div>';
+    }
+
+    function fdVariantRemove(boton) {
+        var fila = boton.closest('.fd-variant-row');
+        if (fila && fila.parentNode) fila.parentNode.removeChild(fila);
+    }
+
+    function fdVariantAddRow() {
+        document.getElementById('fd-variant-rows').insertAdjacentHTML('beforeend', fdVariantRow(null));
+    }
+
+    function openVariantModal(productId) {
+        fdProdLoad(function () {
+            var producto = fdProdOptions().products[productId];
+            if (!producto) return;
+
+            fdVariantProducto = producto;
+            fdVariantOriginales = (producto.variants || []).map(function (v) { return String(v.id); });
+
+            document.getElementById('fd-variant-product').textContent =
+                producto.name + ' · precio base ' + fdMoney(producto.price);
+            document.getElementById('fd-variant-rows').innerHTML =
+                (producto.variants || []).map(function (v) { return fdVariantRow(v); }).join('');
+
+            var error = document.getElementById('fd-variant-error');
+            error.textContent = '';
+            error.style.display = 'none';
+
+            document.getElementById('fd-variant-overlay').style.display = 'flex';
+        });
+    }
+
+    function closeVariantModal() {
+        document.getElementById('fd-variant-overlay').style.display = 'none';
+    }
+
+    function saveVariants() {
+        if (!fdVariantProducto) return;
+
+        var error = document.getElementById('fd-variant-error');
+        error.style.display = 'none';
+
+        var filas = Array.prototype.slice.call(document.querySelectorAll('#fd-variant-rows .fd-variant-row'));
+        var datos = [];
+
+        for (var i = 0; i < filas.length; i++) {
+            var f = filas[i];
+            var nombre = f.querySelector('.fd-v-name').value.trim();
+            var precio = f.querySelector('.fd-v-price').value;
+
+            if (!nombre || precio === '') {
+                error.textContent = 'Completá nombre y precio en cada variante.';
+                error.style.display = 'inline';
+                return;
+            }
+
+            datos.push({
+                id: f.getAttribute('data-vid'),
+                body: JSON.stringify({
+                    name: nombre,
+                    price: Number(precio),
+                    is_available: f.querySelector('.fd-v-avail').checked
+                })
+            });
+        }
+
+        var vivos = datos.filter(function (d) { return d.id; }).map(function (d) { return d.id; });
+        var tareas = [];
+
+        fdVariantOriginales.forEach(function (id) {
+            if (vivos.indexOf(id) === -1) {
+                tareas.push(function () {
+                    return fdFetchJson(fdUrlVariant(id), { method: 'DELETE' })
+                        .then(function (res) { fdCheck(res, 'No se pudo eliminar la variante.'); });
+                });
+            }
+        });
+
+        datos.forEach(function (d) {
+            if (d.id) {
+                tareas.push(function () {
+                    return fdFetchJson(fdUrlVariant(d.id), { method: 'PUT', body: d.body })
+                        .then(function (res) { fdCheck(res, 'No se pudo guardar la variante.'); });
+                });
+            } else {
+                tareas.push(function () {
+                    return fdFetchJson(fdUrlVariants(fdVariantProducto.id), { method: 'POST', body: d.body })
+                        .then(function (res) { fdCheck(res, 'No se pudo crear la variante.'); });
+                });
+            }
+        });
+
+        fdSeq(tareas)
+            .then(function () {
+                closeVariantModal();
+                fdToast('Variantes guardadas.', false);
+                fdCatReload();
+            })
+            .catch(function (e) {
+                error.textContent = e.message;
+                error.style.display = 'inline';
+            });
+    }
+
+    // --- Agregados (grupos de opciones y opciones) ---
+
+    var fdOptProducto = null;
+    var fdOptGruposOriginales = [];
+    var fdOptOpcionesOriginales = [];
+
+    function fdUrlGroups(productId) {
+        return '{{ url("/api/v1/provider/products") }}/' + encodeURIComponent(productId) + '/option-groups';
+    }
+
+    function fdUrlGroup(id) {
+        return '{{ url("/api/v1/provider/option-groups") }}/' + encodeURIComponent(id);
+    }
+
+    function fdUrlOptions(groupId) {
+        return '{{ url("/api/v1/provider/option-groups") }}/' + encodeURIComponent(groupId) + '/options';
+    }
+
+    function fdUrlOption(id) {
+        return '{{ url("/api/v1/provider/options") }}/' + encodeURIComponent(id);
+    }
+
+    function fdOptOptionRow(o) {
+        o = o || {};
+        var oid = (o.id !== undefined && o.id !== null) ? String(o.id) : '';
+        var extra = (o.extra_price !== undefined && o.extra_price !== null && o.extra_price !== '') ? Number(o.extra_price) : 0;
+
+        return '<div class="fd-opt-option" data-oid="' + oid + '" style="display:flex;gap:8px;align-items:flex-end;padding:8px 0;border-top:1px solid #f1f5f9;flex-wrap:wrap;">'
+            + '<div style="flex:2;min-width:150px;"><label class="field-label">Opción</label>'
+            + '<input type="text" class="field-input fd-o-name" maxlength="60" value="' + escapeHtml(o.name || '') + '" placeholder="Ej: Muzzarella extra" /></div>'
+            + '<div style="flex:1;min-width:110px;"><label class="field-label">Precio extra</label>'
+            + '<input type="number" step="0.01" min="0" class="field-input fd-o-price" value="' + extra + '" placeholder="0.00" /></div>'
+            + '<label style="display:flex;gap:6px;align-items:center;font-size:12px;color:#475569;padding-bottom:10px;cursor:pointer;white-space:nowrap;">'
+            + '<input type="checkbox" class="fd-o-avail"' + (o.is_available === false ? '' : ' checked') + ' /> Disponible</label>'
+            + '<button type="button" class="icon-btn del" title="Quitar opción" onclick="fdOptRemoveOption(this)" style="margin-bottom:2px;">&#10005;</button>'
+            + '</div>';
+    }
+
+    function fdOptGroupCard(g) {
+        g = g || {};
+        var gid = (g.id !== undefined && g.id !== null) ? String(g.id) : '';
+        var min = (g.min_choices !== undefined && g.min_choices !== null) ? g.min_choices : 0;
+        var max = (g.max_choices !== undefined && g.max_choices !== null) ? g.max_choices : 3;
+
+        return '<div class="fd-opt-group" data-gid="' + gid + '" style="border:1px solid #e5e7eb;padding:12px 14px;margin-bottom:12px;background:#fff;">'
+            + '<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">'
+            + '<div style="flex:2;min-width:160px;"><label class="field-label">Grupo</label>'
+            + '<input type="text" class="field-input fd-g-name" maxlength="60" value="' + escapeHtml(g.name || '') + '" placeholder="Ej: Agregados" /></div>'
+            + '<div style="width:86px;"><label class="field-label">Mín.</label>'
+            + '<input type="number" min="0" max="20" class="field-input fd-g-min" value="' + min + '" /></div>'
+            + '<div style="width:86px;"><label class="field-label">Máx.</label>'
+            + '<input type="number" min="1" max="20" class="field-input fd-g-max" value="' + max + '" /></div>'
+            + '<label style="display:flex;gap:6px;align-items:center;font-size:12px;color:#475569;padding-bottom:10px;cursor:pointer;white-space:nowrap;">'
+            + '<input type="checkbox" class="fd-g-req"' + (g.is_required ? ' checked' : '') + ' /> Obligatorio</label>'
+            + '<button type="button" class="btn-danger" onclick="fdOptRemoveGroup(this)">Quitar grupo</button>'
+            + '</div>'
+            + '<div class="fd-opt-options" style="margin-top:6px;">'
+            + (g.options || []).map(function (o) { return fdOptOptionRow(o); }).join('')
+            + '</div>'
+            + '<button type="button" class="btn-secondary" style="margin-top:8px;" onclick="fdOptAddOption(this)">+ Agregar opción</button>'
+            + '</div>';
+    }
+
+    function fdOptAddGroup() {
+        document.getElementById('fd-opt-groups').insertAdjacentHTML('beforeend', fdOptGroupCard(null));
+    }
+
+    function fdOptAddOption(boton) {
+        boton.closest('.fd-opt-group').querySelector('.fd-opt-options')
+            .insertAdjacentHTML('beforeend', fdOptOptionRow(null));
+    }
+
+    function fdOptRemoveOption(boton) {
+        var fila = boton.closest('.fd-opt-option');
+        if (fila && fila.parentNode) fila.parentNode.removeChild(fila);
+    }
+
+    function fdOptRemoveGroup(boton) {
+        var card = boton.closest('.fd-opt-group');
+        if (card && card.parentNode) card.parentNode.removeChild(card);
+    }
+
+    function openOptionModal(productId) {
+        fdProdLoad(function () {
+            var producto = fdProdOptions().products[productId];
+            if (!producto) return;
+
+            fdOptProducto = producto;
+            fdOptGruposOriginales = [];
+            fdOptOpcionesOriginales = [];
+
+            (producto.option_groups || []).forEach(function (g) {
+                fdOptGruposOriginales.push(String(g.id));
+                (g.options || []).forEach(function (o) { fdOptOpcionesOriginales.push(String(o.id)); });
+            });
+
+            document.getElementById('fd-opt-product').textContent = producto.name;
+            document.getElementById('fd-opt-groups').innerHTML =
+                (producto.option_groups || []).map(function (g) { return fdOptGroupCard(g); }).join('');
+
+            var error = document.getElementById('fd-opt-error');
+            error.textContent = '';
+            error.style.display = 'none';
+
+            document.getElementById('fd-opt-overlay').style.display = 'flex';
+        });
+    }
+
+    function closeOptionModal() {
+        document.getElementById('fd-opt-overlay').style.display = 'none';
+    }
+
+    function saveOptions() {
+        if (!fdOptProducto) return;
+
+        var error = document.getElementById('fd-opt-error');
+        error.style.display = 'none';
+
+        var cards = Array.prototype.slice.call(document.querySelectorAll('#fd-opt-groups .fd-opt-group'));
+        var grupos = [];
+
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            var nombreGrupo = card.querySelector('.fd-g-name').value.trim();
+            var min = Number(card.querySelector('.fd-g-min').value || 0);
+            var max = Number(card.querySelector('.fd-g-max').value || 0);
+            var opciones = Array.prototype.slice.call(card.querySelectorAll('.fd-opt-option'));
+            var datosOpciones = [];
+
+            if (!nombreGrupo) {
+                error.textContent = 'Cada grupo necesita un nombre.';
+                error.style.display = 'inline';
+                return;
+            }
+
+            if (max < 1) {
+                error.textContent = 'En "' + nombreGrupo + '" el máximo de elecciones debe ser al menos 1.';
+                error.style.display = 'inline';
+                return;
+            }
+
+            if (min > max) {
+                error.textContent = 'En "' + nombreGrupo + '" el mínimo no puede superar al máximo.';
+                error.style.display = 'inline';
+                return;
+            }
+
+            for (var j = 0; j < opciones.length; j++) {
+                var fila = opciones[j];
+                var nombreOp = fila.querySelector('.fd-o-name').value.trim();
+                var extra = fila.querySelector('.fd-o-price').value;
+
+                if (!nombreOp || extra === '') {
+                    error.textContent = 'Completá nombre y precio extra en cada opción.';
+                    error.style.display = 'inline';
+                    return;
+                }
+
+                datosOpciones.push({
+                    id: fila.getAttribute('data-oid'),
+                    body: JSON.stringify({
+                        name: nombreOp,
+                        extra_price: Number(extra),
+                        is_available: fila.querySelector('.fd-o-avail').checked
+                    })
+                });
+            }
+
+            grupos.push({
+                el: card,
+                gid: card.getAttribute('data-gid'),
+                body: JSON.stringify({
+                    name: nombreGrupo,
+                    min_choices: min,
+                    max_choices: max,
+                    is_required: card.querySelector('.fd-g-req').checked
+                }),
+                opciones: datosOpciones
+            });
+        }
+
+        var gruposVivos = grupos.filter(function (g) { return g.gid; }).map(function (g) { return g.gid; });
+        var opcionesVivas = [];
+
+        grupos.forEach(function (g) {
+            g.opciones.forEach(function (o) { if (o.id) opcionesVivas.push(o.id); });
+        });
+
+        var tareas = [];
+
+        // Bajas: primero las opciones sueltas, después los grupos (cascada).
+        fdOptOpcionesOriginales.forEach(function (id) {
+            if (opcionesVivas.indexOf(id) === -1) {
+                tareas.push(function () {
+                    return fdFetchJson(fdUrlOption(id), { method: 'DELETE' })
+                        .then(function (res) { fdCheck(res, 'No se pudo eliminar la opción.'); });
+                });
+            }
+        });
+
+        fdOptGruposOriginales.forEach(function (id) {
+            if (gruposVivos.indexOf(id) === -1) {
+                tareas.push(function () {
+                    return fdFetchJson(fdUrlGroup(id), { method: 'DELETE' })
+                        .then(function (res) { fdCheck(res, 'No se pudo eliminar el grupo.'); });
+                });
+            }
+        });
+
+        // Altas y ediciones: cada grupo se guarda antes que sus opciones, así
+        // una variante nueva ya tiene su id al cargar las opciones.
+        grupos.forEach(function (g) {
+            tareas.push(function () {
+                if (g.gid) {
+                    return fdFetchJson(fdUrlGroup(g.gid), { method: 'PUT', body: g.body })
+                        .then(function (res) { fdCheck(res, 'No se pudo guardar el grupo.'); });
+                }
+
+                return fdFetchJson(fdUrlGroups(fdOptProducto.id), { method: 'POST', body: g.body })
+                    .then(function (res) {
+                        fdCheck(res, 'No se pudo crear el grupo.');
+                        g.gid = String(res.data.group.id);
+                        g.el.setAttribute('data-gid', g.gid);
+                    });
+            });
+
+            g.opciones.forEach(function (o) {
+                tareas.push(function () {
+                    if (!g.gid) {
+                        throw new Error('No se pudo guardar la opción porque falta el grupo.');
+                    }
+
+                    if (o.id) {
+                        return fdFetchJson(fdUrlOption(o.id), { method: 'PUT', body: o.body })
+                            .then(function (res) { fdCheck(res, 'No se pudo guardar la opción.'); });
+                    }
+
+                    return fdFetchJson(fdUrlOptions(g.gid), { method: 'POST', body: o.body })
+                        .then(function (res) { fdCheck(res, 'No se pudo crear la opción.'); });
+                });
+            });
+        });
+
+        fdSeq(tareas)
+            .then(function () {
+                closeOptionModal();
+                fdToast('Agregados guardados.', false);
+                fdCatReload();
+            })
+            .catch(function (e) {
+                error.textContent = e.message;
                 error.style.display = 'inline';
             });
     }
@@ -4546,7 +5416,7 @@
             if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();
             if (key === 'perfil') loadProfile();
-            if (key === 'mi-catalogo') loadProviderCatalog();
+            if (key === 'mi-catalogo') fdCatShow();
             if (key === 'pedidos') loadProviderOrders();
             if (key === 'inventario') loadInventory();
             if (key === 'comercios') loadComercios();
