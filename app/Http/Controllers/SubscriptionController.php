@@ -25,6 +25,32 @@ class SubscriptionController extends Controller
      * que llama (nunca se toca el plan de otro comercio). Los productos y el
      * precio se resuelven contra la base, no se confian al cliente.
      */
+    /**
+     * Planes del propio comercio, activos y ocultos, para que el panel los
+     * pueda editar: la vista publica solo muestra los que estan activos.
+     */
+    public function indexPlans()
+    {
+        $provider = $this->currentProvider();
+
+        if ($provider instanceof JsonResponse) {
+            return $provider;
+        }
+
+        $plans = SubscriptionPlan::where('provider_id', $provider->id)
+            ->with('items.product')
+            ->orderBy('id')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'plans' => $plans->map(fn (SubscriptionPlan $plan) => $this->planPayload($plan))->all(),
+        ]);
+    }
+
+    /**
+     * Crear o actualizar un plan del comercio.
+     */
     public function storePlan(Request $request)
     {
         $provider = $this->currentProvider();
@@ -239,6 +265,39 @@ class SubscriptionController extends Controller
             'message' => 'Suscripcion creada correctamente.',
             'subscription' => $this->subscriptionPayload($subscription->load('items.product')),
         ], 201);
+    }
+
+    /**
+     * Suscripciones del cliente logueado, con plan, sabores elegidos y los
+     * ultimos cobros: es la pantalla "Mis Suscripciones".
+     */
+    public function index()
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $subscriptions = CustomerSubscription::where('user_id', Auth::id())
+            ->with([
+                'plan.items.product:id,name,price,image_path',
+                'items.product:id,name,price,image_path',
+                'provider:id,business_name',
+                'payments' => fn ($query) => $query->orderByDesc('id')->limit(6),
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'subscriptions' => $subscriptions->map(function (CustomerSubscription $subscription) {
+                $payload = $this->subscriptionPayload($subscription);
+                $payload['payments'] = $subscription->payments
+                    ->map(fn (SubscriptionPayment $payment) => $this->paymentPayload($payment))
+                    ->values();
+
+                return $payload;
+            })->all(),
+        ]);
     }
 
     /**

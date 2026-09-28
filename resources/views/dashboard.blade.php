@@ -1190,6 +1190,18 @@
                 <div id="fd-myorders-list" style="display:none;"></div>
             </section>
 
+                    @elseif($page->url === 'finanzas')
+            @include('partials.salud-financiera')
+
+                    @elseif($page->url === 'retencion')
+            @include('partials.retencion')
+
+                    @elseif($page->url === 'suscripciones')
+            @include('partials.suscripciones-comercio')
+
+                    @elseif($page->url === 'mis-suscripciones')
+            @include('partials.mis-suscripciones')
+
                     @else
             <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
                 <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin-bottom:12px;">{{ $page->description }}</h2>
@@ -3982,6 +3994,10 @@
             if (key === 'inventario') loadInventory();
             if (key === 'comercios') loadComercios();
             if (key === 'mis-pedidos') loadMyOrders();
+            if (key === 'finanzas') loadFinances();
+            if (key === 'retencion') loadRetention();
+            if (key === 'suscripciones') loadSubRevenue();
+            if (key === 'mis-suscripciones') loadMySubscriptions();
             fdStartPolling(key);
         };
 

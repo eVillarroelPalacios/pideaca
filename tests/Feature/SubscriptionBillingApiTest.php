@@ -457,6 +457,43 @@ class SubscriptionBillingApiTest extends TestCase
 
     // ------------------------------------------------------------------ Cobros
 
+    public function test_guest_gets_401_listing_own_subscriptions(): void
+    {
+        $this->getJson('/api/v1/customer/subscriptions')
+            ->assertStatus(401)
+            ->assertJson(['error' => 'No autenticado']);
+    }
+
+    public function test_client_lists_own_subscriptions_with_plan_flavours_and_charges(): void
+    {
+        $plan = $this->createPlanConDosSabores();
+        $subscription = $this->subscribe($plan, $this->client, $this->address);
+        $subscription->items()->create(['product_id' => $this->otroProducto->id, 'quantity' => 2]);
+        $this->createPayment($subscription, SubscriptionPayment::STATUS_PAID, paidAt: now());
+
+        // Una suscripcion de otro cliente no puede aparecer en la lista.
+        $this->subscribe($this->createPlan(), $this->otroCliente, $this->otroAddress);
+
+        $this->actingAs($this->client)
+            ->getJson('/api/v1/customer/subscriptions')
+            ->assertOk()
+            ->assertJsonCount(1, 'subscriptions')
+            ->assertJsonPath('subscriptions.0.id', $subscription->id)
+            ->assertJsonPath('subscriptions.0.status', CustomerSubscription::STATUS_ACTIVE)
+            ->assertJsonPath('subscriptions.0.provider.business_name', 'Comercio Uno')
+            ->assertJsonPath('subscriptions.0.plan.title', 'Despensa Sabores')
+            ->assertJsonPath('subscriptions.0.items.0.quantity', 2)
+            ->assertJsonPath('subscriptions.0.payments.0.status', SubscriptionPayment::STATUS_PAID);
+    }
+
+    public function test_subscription_list_is_empty_for_a_client_without_subscriptions(): void
+    {
+        $this->actingAs($this->client)
+            ->getJson('/api/v1/customer/subscriptions')
+            ->assertOk()
+            ->assertJsonPath('subscriptions', []);
+    }
+
     public function test_provider_can_confirm_a_pending_charge(): void
     {
         $payment = $this->createPayment();

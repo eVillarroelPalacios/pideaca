@@ -1,29 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ModuleController;
-use App\Http\Controllers\UserStatusController;
-use App\Http\Controllers\TypeUserController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\EstadosDeLosGruposController;
-use App\Http\Controllers\SubGroupController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProviderServiceController;
-use App\Http\Controllers\AdvertisingController;
-use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AdvertisingController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EstadosDeLosGruposController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\SubGroupController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TypeUserController;
+use App\Http\Controllers\UserStatusController;
+use App\Http\Controllers\UsuarioController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AdvertisingController::class, 'index']);
 
@@ -76,10 +76,10 @@ Route::put('/admin/users/{user}/addresses/{address}', [UsuarioController::class,
 Route::delete('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'destroyAddress'])->name('admin.users.addresses.destroy');
 Route::post('/admin/users/{user}/images', [UsuarioController::class, 'storeImage'])->name('admin.users.images.store');
 Route::delete('/admin/users/{user}/images/{image}', [UsuarioController::class, 'destroyImage'])->name('admin.users.images.destroy');
-    Route::post('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'attachPage'])->name('admin.users.pages.attach');
-    Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
-    Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
-    Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
+Route::post('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'attachPage'])->name('admin.users.pages.attach');
+Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
+Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
+Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
 
 Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
 Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
@@ -130,9 +130,11 @@ Route::post('/api/v1/provider/inventory/adjust', [InventoryController::class, 'a
 Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 'movements'])->name('api.provider.inventory.movements');
 
 // Suscripciones y compras recurrentes
+Route::get('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'indexPlans'])->name('api.provider.subscription-plans.index');
 Route::post('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'storePlan'])->name('api.provider.subscription-plans.store');
 Route::get('/api/v1/public/providers/{provider}/subscription-plans', [SubscriptionController::class, 'publicPlans'])->name('api.public.providers.subscription-plans.index');
 Route::post('/api/v1/customer/subscriptions', [SubscriptionController::class, 'store'])->name('api.customer.subscriptions.store');
+Route::get('/api/v1/customer/subscriptions', [SubscriptionController::class, 'index'])->name('api.customer.subscriptions.index');
 Route::put('/api/v1/customer/subscriptions/{subscription}/status', [SubscriptionController::class, 'updateStatus'])->name('api.customer.subscriptions.status');
 Route::put('/api/v1/customer/subscriptions/{subscription}/items', [SubscriptionController::class, 'updateItems'])->name('api.customer.subscriptions.items.update');
 Route::get('/api/v1/provider/subscriptions/revenue', [SubscriptionController::class, 'revenue'])->name('api.provider.subscriptions.revenue');

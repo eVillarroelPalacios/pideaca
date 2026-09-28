@@ -127,6 +127,37 @@ class SubscriptionApiTest extends TestCase
         ])->assertStatus(401)->assertJsonPath('error', 'No autenticado');
     }
 
+    public function test_guest_gets_401_listing_provider_plans(): void
+    {
+        $this->getJson('/api/v1/provider/subscription-plans')
+            ->assertStatus(401)
+            ->assertJson(['error' => 'No autenticado']);
+    }
+
+    public function test_provider_lists_own_plans_including_hidden_ones(): void
+    {
+        $visible = $this->createPlan();
+        $hidden = $this->createPlan(isActive: false);
+
+        $otroPlan = SubscriptionPlan::create([
+            'provider_id' => $this->otherProvider->id,
+            'title' => 'Plan Ajeno',
+            'frequency' => SubscriptionPlan::FREQUENCY_MONTHLY,
+            'price' => 9000,
+            'is_active' => true,
+        ]);
+
+        $otroPlan->items()->create(['product_id' => $this->otherProduct->id, 'quantity' => 1]);
+
+        $this->actingAs($this->owner)
+            ->getJson('/api/v1/provider/subscription-plans')
+            ->assertOk()
+            ->assertJsonCount(2, 'plans')
+            ->assertJsonFragment(['id' => $visible->id, 'is_active' => true])
+            ->assertJsonFragment(['id' => $hidden->id, 'is_active' => false])
+            ->assertJsonMissing(['title' => 'Plan Ajeno']);
+    }
+
     public function test_client_without_commerce_cannot_create_plans(): void
     {
         $this->actingAs($this->client)
@@ -462,7 +493,8 @@ class SubscriptionApiTest extends TestCase
         string $title = 'Despensa Semanal',
         string $frequency = SubscriptionPlan::FREQUENCY_WEEKLY,
         float $price = 45000,
-        float $discount = 0
+        float $discount = 0,
+        bool $isActive = true
     ): SubscriptionPlan {
         $plan = SubscriptionPlan::create([
             'provider_id' => $this->provider->id,
@@ -470,7 +502,7 @@ class SubscriptionApiTest extends TestCase
             'frequency' => $frequency,
             'price' => $price,
             'discount_percentage' => $discount,
-            'is_active' => true,
+            'is_active' => $isActive,
         ]);
 
         $plan->items()->create([
