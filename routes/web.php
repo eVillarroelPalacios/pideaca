@@ -39,62 +39,80 @@ Route::post('/registro', [RegisterController::class, 'store'])->name('registro.s
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
-Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
-Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
-Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
+// Cada bloque de administracion pide la pagina que lo maneja en el menu, para
+// que el permiso de la API y el del menu sean el mismo.
+Route::middleware('page:modulos')->group(function () {
+    Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
+    Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
+    Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
+    Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
+});
 
-Route::get('/user-statuses', [UserStatusController::class, 'index'])->name('user-statuses.index');
-Route::post('/user-statuses', [UserStatusController::class, 'store'])->name('user-statuses.store');
-Route::put('/user-statuses/{userStatus}', [UserStatusController::class, 'update'])->name('user-statuses.update');
-Route::delete('/user-statuses/{userStatus}', [UserStatusController::class, 'destroy'])->name('user-statuses.destroy');
+Route::middleware('page:estados-usuarios')->group(function () {
+    Route::get('/user-statuses', [UserStatusController::class, 'index'])->name('user-statuses.index');
+    Route::post('/user-statuses', [UserStatusController::class, 'store'])->name('user-statuses.store');
+    Route::put('/user-statuses/{userStatus}', [UserStatusController::class, 'update'])->name('user-statuses.update');
+    Route::delete('/user-statuses/{userStatus}', [UserStatusController::class, 'destroy'])->name('user-statuses.destroy');
+});
 
 // Estado de los grupos
-Route::get('/group-statuses', [EstadosDeLosGruposController::class, 'index'])->name('group-statuses.index');
-Route::post('/group-statuses', [EstadosDeLosGruposController::class, 'store'])->name('group-statuses.store');
-Route::put('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'update'])->name('group-statuses.update');
-Route::delete('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'destroy'])->name('group-statuses.destroy');
+Route::middleware('page:estados-grupos')->group(function () {
+    Route::get('/group-statuses', [EstadosDeLosGruposController::class, 'index'])->name('group-statuses.index');
+    Route::post('/group-statuses', [EstadosDeLosGruposController::class, 'store'])->name('group-statuses.store');
+    Route::put('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'update'])->name('group-statuses.update');
+    Route::delete('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'destroy'])->name('group-statuses.destroy');
+});
 
-Route::get('/type-users', [TypeUserController::class, 'index'])->name('type-users.index');
-Route::post('/type-users', [TypeUserController::class, 'store'])->name('type-users.store');
-Route::put('/type-users/{typeUser}', [TypeUserController::class, 'update'])->name('type-users.update');
-Route::delete('/type-users/{typeUser}', [TypeUserController::class, 'destroy'])->name('type-users.destroy');
-Route::get('/type-users/pages-data', [TypeUserController::class, 'pagesData'])->name('type-users.pages-data');
-Route::put('/type-users/{typeUser}/pages', [TypeUserController::class, 'updatePages'])->name('type-users.pages.update');
-Route::post('/type-users/{typeUser}/pages/bulk', [TypeUserController::class, 'bulkPages'])->name('type-users.pages.bulk');
-Route::post('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'attachPage'])->name('type-users.pages.attach');
-Route::delete('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'detachPage'])->name('type-users.pages.detach');
+Route::middleware('page:tipo-usuarios')->group(function () {
+    Route::get('/type-users', [TypeUserController::class, 'index'])->name('type-users.index');
+    Route::post('/type-users', [TypeUserController::class, 'store'])->name('type-users.store');
+    Route::put('/type-users/{typeUser}', [TypeUserController::class, 'update'])->name('type-users.update');
+    Route::delete('/type-users/{typeUser}', [TypeUserController::class, 'destroy'])->name('type-users.destroy');
+    Route::get('/type-users/pages-data', [TypeUserController::class, 'pagesData'])->name('type-users.pages-data');
+    Route::put('/type-users/{typeUser}/pages', [TypeUserController::class, 'updatePages'])->name('type-users.pages.update');
+    Route::post('/type-users/{typeUser}/pages/bulk', [TypeUserController::class, 'bulkPages'])->name('type-users.pages.bulk');
+    Route::post('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'attachPage'])->name('type-users.pages.attach');
+    Route::delete('/type-users/{typeUser}/pages/{page}', [TypeUserController::class, 'detachPage'])->name('type-users.pages.detach');
+});
 
-Route::get('/admin/users', [UsuarioController::class, 'index'])->name('admin.users.index');
-Route::get('/admin/users/{user}', [UsuarioController::class, 'show'])->name('admin.users.show');
-Route::post('/admin/users', [UsuarioController::class, 'store'])->name('admin.users.store');
-Route::put('/admin/users/{user}', [UsuarioController::class, 'update'])->name('admin.users.update');
-Route::delete('/admin/users/{user}', [UsuarioController::class, 'destroy'])->name('admin.users.destroy');
-Route::put('/admin/users/{user}/provider', [UsuarioController::class, 'updateProvider'])->name('admin.users.provider.update');
-Route::post('/admin/users/{user}/addresses', [UsuarioController::class, 'storeAddress'])->name('admin.users.addresses.store');
-Route::put('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'updateAddress'])->name('admin.users.addresses.update');
-Route::delete('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'destroyAddress'])->name('admin.users.addresses.destroy');
-Route::post('/admin/users/{user}/images', [UsuarioController::class, 'storeImage'])->name('admin.users.images.store');
-Route::delete('/admin/users/{user}/images/{image}', [UsuarioController::class, 'destroyImage'])->name('admin.users.images.destroy');
-Route::post('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'attachPage'])->name('admin.users.pages.attach');
-Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
-Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
-Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
+Route::middleware('page:usuarios')->group(function () {
+    Route::get('/admin/users', [UsuarioController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/{user}', [UsuarioController::class, 'show'])->name('admin.users.show');
+    Route::post('/admin/users', [UsuarioController::class, 'store'])->name('admin.users.store');
+    Route::put('/admin/users/{user}', [UsuarioController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [UsuarioController::class, 'destroy'])->name('admin.users.destroy');
+    Route::put('/admin/users/{user}/provider', [UsuarioController::class, 'updateProvider'])->name('admin.users.provider.update');
+    Route::post('/admin/users/{user}/addresses', [UsuarioController::class, 'storeAddress'])->name('admin.users.addresses.store');
+    Route::put('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'updateAddress'])->name('admin.users.addresses.update');
+    Route::delete('/admin/users/{user}/addresses/{address}', [UsuarioController::class, 'destroyAddress'])->name('admin.users.addresses.destroy');
+    Route::post('/admin/users/{user}/images', [UsuarioController::class, 'storeImage'])->name('admin.users.images.store');
+    Route::delete('/admin/users/{user}/images/{image}', [UsuarioController::class, 'destroyImage'])->name('admin.users.images.destroy');
+    Route::post('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'attachPage'])->name('admin.users.pages.attach');
+    Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
+    Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
+    Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
+});
 
-Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
-Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
-Route::put('/pages/{page}', [PageController::class, 'update'])->name('pages.update');
-Route::delete('/pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+Route::middleware('page:paginas')->group(function () {
+    Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
+    Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
+    Route::put('/pages/{page}', [PageController::class, 'update'])->name('pages.update');
+    Route::delete('/pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+});
 
-Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
-Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
-Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+Route::middleware('page:grupos')->group(function () {
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+    Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
+    Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+});
 
-Route::get('/subgroups', [SubGroupController::class, 'index'])->name('subgroups.index');
-Route::post('/subgroups', [SubGroupController::class, 'store'])->name('subgroups.store');
-Route::put('/subgroups/{subgroup}', [SubGroupController::class, 'update'])->name('subgroups.update');
-Route::delete('/subgroups/{subgroup}', [SubGroupController::class, 'destroy'])->name('subgroups.destroy');
+Route::middleware('page:sub-grupos')->group(function () {
+    Route::get('/subgroups', [SubGroupController::class, 'index'])->name('subgroups.index');
+    Route::post('/subgroups', [SubGroupController::class, 'store'])->name('subgroups.store');
+    Route::put('/subgroups/{subgroup}', [SubGroupController::class, 'update'])->name('subgroups.update');
+    Route::delete('/subgroups/{subgroup}', [SubGroupController::class, 'destroy'])->name('subgroups.destroy');
+});
 
 Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');

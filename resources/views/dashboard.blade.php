@@ -45,9 +45,15 @@
                     </button>
                     <div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">
                         @foreach($module->pages as $page)
+                            @if($page->url)
                         <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('{{ $page->url }}')" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
+                            @else
+                        <div class="dropdown-item" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">
+                            {{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span>
+                        </div>
+                            @endif
                         @endforeach
                         @if($module->description === 'Administrar' || $loop->last)
                         <div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>
@@ -73,7 +79,11 @@
                         </button>
                         <div class="mobile-sub" style="display:none;width:100%;text-align:center;">
                             @foreach($module->pages as $page)
+                                @if($page->url)
                             <a href="#" onclick="showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                                @else
+                            <div title="Todavia no tiene seccion" style="display:block;color:#9ca3af;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">{{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>
+                                @endif
                             @endforeach
                             @if($module->description === 'Administrar' || $loop->last)
                             <div style="width:60%;height:1px;background:#e5e7eb;margin:6px auto;"></div>
@@ -1202,7 +1212,7 @@
                     @elseif($page->url === 'mis-suscripciones')
             @include('partials.mis-suscripciones')
 
-                    @else
+                    @elseif($page->url)
             <section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:900px;margin:24px auto;padding:0 20px;">
                 <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin-bottom:12px;">{{ $page->description }}</h2>
                 <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:0;padding:40px;text-align:center;">

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Group;
 use App\Models\GroupStatus;
 use App\Models\Page;
+use App\Models\TypeUser;
 use App\Models\User;
 use Database\Seeders\EstadosDeLosGruposPageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +33,10 @@ class EstadosDeLosGruposTest extends TestCase
             'email' => 'ennio@pideaca.com',
             'password' => 'password',
         ]);
+
+        // El endpoint pide la pagina que maneja el menu, asi que el admin de
+        // prueba necesita el alta de pagina que hace el seeder.
+        $this->seed(EstadosDeLosGruposPageSeeder::class);
     }
 
     // --- Pagina y asignacion ---
@@ -54,6 +59,15 @@ class EstadosDeLosGruposTest extends TestCase
 
         $this->assertSame(1, Page::where('url', 'estados-grupos')->count());
         $this->assertSame(1, $this->admin->pages()->where('url', 'estados-grupos')->count());
+    }
+
+    public function test_seeder_deja_la_pagina_en_la_plantilla_del_tipo_admin(): void
+    {
+        $admin = TypeUser::firstOrCreate(['description' => 'Admin']);
+
+        $this->seed(EstadosDeLosGruposPageSeeder::class);
+
+        $this->assertTrue($admin->fresh()->assignedPages()->where('url', 'estados-grupos')->exists());
     }
 
     public function test_dashboard_renders_the_group_statuses_section_for_user_one(): void

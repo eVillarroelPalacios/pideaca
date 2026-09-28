@@ -105,6 +105,28 @@ class User extends Authenticatable
             : collect();
     }
 
+    /**
+     * Permiso real del usuario: la pagina es la unidad de permiso del sistema
+     * (manda el menu), asi que se busca tanto en lo que se le asigno a el como
+     * en la plantilla de su tipo de usuario.
+     */
+    public function hasPageUrl(string ...$urls): bool
+    {
+        $urls = array_filter($urls);
+
+        if ($urls === []) {
+            return false;
+        }
+
+        return $this->pages()
+            ->whereIn('pages.url', $urls)
+            ->exists()
+            || $this->typeUser
+                ->assignedPages()
+                ->whereIn('pages.url', $urls)
+                ->exists();
+    }
+
     public function addresses()
     {
         return $this->hasMany(Address::class);

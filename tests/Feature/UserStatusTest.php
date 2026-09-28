@@ -14,7 +14,9 @@ class UserStatusTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private UserStatus $activo;
+
     private UserStatus $inactivo;
 
     protected function setUp(): void
@@ -26,6 +28,14 @@ class UserStatusTest extends TestCase
             'email' => 'ennio@pideaca.com',
             'password' => 'password',
         ]);
+
+        // El endpoint exige la pagina que maneja el menu.
+        $modulo = Module::firstOrCreate(['description' => 'Administrar']);
+        $pagina = Page::firstOrCreate(['url' => 'estados-usuarios'], [
+            'description' => 'Estados de usuarios',
+            'module_id' => $modulo->id,
+        ]);
+        $this->admin->pages()->syncWithoutDetaching([$pagina->id]);
 
         $this->activo = UserStatus::create(['status' => 'Activo']);
         $this->inactivo = UserStatus::create(['status' => 'Inactivo']);

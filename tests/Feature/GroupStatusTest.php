@@ -7,6 +7,7 @@ use App\Models\GroupStatus;
 use App\Models\Module;
 use App\Models\Page;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -26,6 +27,25 @@ class GroupStatusTest extends TestCase
             'email' => 'admin.grupos@pideaca.com',
             'password' => 'password',
         ]);
+
+        $this->admin->pages()->syncWithoutDetaching([
+            $this->pagina('estados-grupos')->id,
+            $this->pagina('grupos')->id,
+        ]);
+    }
+
+    /**
+     * El permiso de los endpoints de administracion sale de la pagina que
+     * maneja el menu, asi que el usuario de prueba necesita tenerla.
+     */
+    private function pagina(string $url): Page
+    {
+        $modulo = Module::firstOrCreate(['description' => 'Administrar']);
+
+        return Page::firstOrCreate(['url' => $url], [
+            'description' => $url,
+            'module_id' => $modulo->id,
+        ]);
     }
 
     // --- Catalogo ---
@@ -43,7 +63,7 @@ class GroupStatusTest extends TestCase
 
     public function test_group_status_values_are_unique(): void
     {
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         GroupStatus::create(['description' => 'Activo']);
     }
