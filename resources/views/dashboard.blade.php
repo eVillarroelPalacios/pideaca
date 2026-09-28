@@ -1089,6 +1089,10 @@
 
                     <div class="fd-cat-body">
                         <div id="fd-cat-panel-catalogo" class="fd-cat-panel active">
+                            <div class="fd-cat-panel-head">
+                                <h3>Mi catálogo</h3>
+                                <p>Vista previa de lo que ven tus clientes en la tienda.</p>
+                            </div>
 
                 <div id="fd-catalog-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando catálogo...</p>
@@ -1102,6 +1106,10 @@
             </div>
 
             <div id="fd-cat-panel-productos" class="fd-cat-panel">
+                <div class="fd-cat-panel-head">
+                    <h3>Productos</h3>
+                    <p>Alta y edición de productos, con sus variantes (Individual, Grande...) y agregados.</p>
+                </div>
                 <div id="fd-prod-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando productos...</p>
                 </div>
@@ -1112,6 +1120,10 @@
             </div>
 
             <div id="fd-cat-panel-categorias" class="fd-cat-panel">
+                <div class="fd-cat-panel-head">
+                    <h3>Categorías</h3>
+                    <p>Creá, renombrá y reordená las categorías del catálogo.</p>
+                </div>
                 <div id="fd-cats-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando categorías...</p>
                 </div>
@@ -1122,6 +1134,10 @@
             </div>
 
             <div id="fd-cat-panel-unidades" class="fd-cat-panel">
+                <div class="fd-cat-panel-head">
+                    <h3>Unidades de medida</h3>
+                    <p>Referencia de las unidades disponibles y cuántos productos las usan.</p>
+                </div>
                 <div id="fd-units-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando unidades de medida...</p>
                 </div>
@@ -2026,6 +2042,9 @@
     .fd-cat-body { flex: 1; min-width: 0; padding: 20px 22px; }
     .fd-cat-panel { display: none; }
     .fd-cat-panel.active { display: block; animation: tabFade .18s ease; }
+    .fd-cat-panel-head { margin-bottom: 14px; }
+    .fd-cat-panel-head h3 { font-size: 15px; font-weight: 700; color: #0c2a4d; margin: 0; }
+    .fd-cat-panel-head p { font-size: 12px; color: #6b7280; margin: 3px 0 0; }
     .fd-cat-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #f1f5f9; background: #fff; }
     .fd-cat-row:hover { background: #f8fafc; }
     .fd-cat-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
