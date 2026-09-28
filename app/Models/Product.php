@@ -68,4 +68,36 @@ class Product extends Model
     {
         return $this->hasMany(InventoryMovement::class);
     }
+
+    public function recipeItems(): HasMany
+    {
+        return $this->hasMany(ProductRecipe::class);
+    }
+
+    /**
+     * Costo total de produccion: suma de cada insumo por la cantidad que usa
+     * una unidad del producto. Sin ficha tecnica el costo es 0.
+     */
+    public function calculateCost(): float
+    {
+        return round(
+            $this->recipeItems->sum(fn (ProductRecipe $item) => (float) $item->quantity_required * (float) $item->supply->cost_per_unit),
+            2
+        );
+    }
+
+    /**
+     * Margen bruto sobre el precio de venta, en porcentaje.
+     * Sin precio de venta el margen no esta definido y devuelve null.
+     */
+    public function calculateProfitMargin(): ?float
+    {
+        $precio = (float) $this->price;
+
+        if ($precio <= 0) {
+            return null;
+        }
+
+        return round((($precio - $this->calculateCost()) / $precio) * 100, 2);
+    }
 }

@@ -21,6 +21,9 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\RecipeController;
 
 Route::get('/', [AdvertisingController::class, 'index']);
 
@@ -125,3 +128,23 @@ Route::get('/api/v1/provider/inventory', [InventoryController::class, 'index'])-
 Route::put('/api/v1/provider/inventory/settings', [InventoryController::class, 'settings'])->name('api.provider.inventory.settings');
 Route::post('/api/v1/provider/inventory/adjust', [InventoryController::class, 'adjust'])->name('api.provider.inventory.adjust');
 Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 'movements'])->name('api.provider.inventory.movements');
+
+// Suscripciones y compras recurrentes
+Route::post('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'storePlan'])->name('api.provider.subscription-plans.store');
+Route::get('/api/v1/public/providers/{provider}/subscription-plans', [SubscriptionController::class, 'publicPlans'])->name('api.public.providers.subscription-plans.index');
+Route::post('/api/v1/customer/subscriptions', [SubscriptionController::class, 'store'])->name('api.customer.subscriptions.store');
+Route::put('/api/v1/customer/subscriptions/{subscription}/status', [SubscriptionController::class, 'updateStatus'])->name('api.customer.subscriptions.status');
+Route::put('/api/v1/customer/subscriptions/{subscription}/items', [SubscriptionController::class, 'updateItems'])->name('api.customer.subscriptions.items.update');
+Route::get('/api/v1/provider/subscriptions/revenue', [SubscriptionController::class, 'revenue'])->name('api.provider.subscriptions.revenue');
+Route::put('/api/v1/provider/subscription-payments/{payment}', [SubscriptionController::class, 'updatePayment'])->name('api.provider.subscription-payments.update');
+
+// Motor de retencion automatica (reglas de recuperacion de clientes).
+Route::get('/api/v1/provider/marketing/rules', [MarketingController::class, 'index'])->name('api.provider.marketing.rules.index');
+Route::put('/api/v1/provider/marketing/rules', [MarketingController::class, 'update'])->name('api.provider.marketing.rules.update');
+
+// Costos de receta y salud financiera del comercio.
+Route::get('/api/v1/provider/supplies', [RecipeController::class, 'indexSupplies'])->name('api.provider.supplies.index');
+Route::post('/api/v1/provider/supplies', [RecipeController::class, 'storeSupply'])->name('api.provider.supplies.store');
+Route::get('/api/v1/provider/financial-health', [RecipeController::class, 'financialHealth'])->name('api.provider.financial-health.index');
+Route::get('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'showRecipe'])->name('api.provider.products.recipe.show');
+Route::post('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'storeRecipe'])->name('api.provider.products.recipe.store');

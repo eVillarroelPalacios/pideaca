@@ -21,6 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'user_status_id',
         'type_user_id',
@@ -125,5 +126,10 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class)->latest();
+    }
+
+    public function marketingLogs()
+    {
+        return $this->hasMany(MarketingLog::class);
     }
 }

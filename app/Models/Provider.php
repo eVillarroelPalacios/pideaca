@@ -79,6 +79,16 @@ class Provider extends Model
         return $this->hasMany(Order::class)->latest();
     }
 
+    public function subscriptionPlans(): HasMany
+    {
+        return $this->hasMany(SubscriptionPlan::class);
+    }
+
+    public function customerSubscriptions(): HasMany
+    {
+        return $this->hasMany(CustomerSubscription::class);
+    }
+
     public function bannerImages(): HasMany
     {
         return $this->hasMany(ProviderImage::class)

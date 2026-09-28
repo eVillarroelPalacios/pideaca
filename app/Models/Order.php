@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -49,6 +50,7 @@ class Order extends Model
         'provider_id',
         'user_id',
         'address_id',
+        'customer_subscription_id',
         'order_number',
         'status',
         'subtotal',
@@ -79,6 +81,22 @@ class Order extends Model
     public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class);
+    }
+
+    /**
+     * Suscripcion que genero el pedido; null en los pedidos del carrito.
+     */
+    public function customerSubscription(): BelongsTo
+    {
+        return $this->belongsTo(CustomerSubscription::class);
+    }
+
+    /**
+     * Numero de pedido legible y unico, con la misma clave que usaba el controlador.
+     */
+    public static function nextNumber(): string
+    {
+        return config('fastdelivery.order_number_prefix').'-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
     }
 
     public function items(): HasMany
