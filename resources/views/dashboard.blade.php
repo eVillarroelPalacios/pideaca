@@ -1054,10 +1054,16 @@
                         <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
                         <p id="fd-catalog-subtitle" style="font-size:13px;color:#6b7280;margin:4px 0 0;">{{ optional($user->provider)->business_name ?: 'Tu comercio' }}</p>
                     </div>
-                    <button type="button" onclick="loadProviderCatalog()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-                        Actualizar
-                    </button>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <button type="button" onclick="openProductModal(null)" title="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Agregar producto
+                        </button>
+                        <button type="button" onclick="loadProviderCatalog()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                            Actualizar
+                        </button>
+                    </div>
                 </div>
 
                 <div id="fd-catalog-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
@@ -1129,6 +1135,114 @@
 
                 <div id="fd-inventory-content" style="display:none;"></div>
             </section>
+
+            <div id="fd-inventory-stock-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+                <div style="background:#fff;padding:24px;width:100%;max-width:460px;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 4px;">Stock del producto</h3>
+                    <p id="fd-inventory-stock-name" style="font-size:12px;color:#64748b;margin:0 0 16px;"></p>
+                    <input type="hidden" id="fd-inventory-stock-id" />
+
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:16px;cursor:pointer;">
+                        <input type="checkbox" id="fd-inventory-stock-track" onchange="fdInvStockTrackChanged()" style="cursor:pointer;" />
+                        Controlar stock de este producto
+                    </label>
+
+                    <div id="fd-inventory-stock-fields" style="display:none;">
+                        <div style="margin-bottom:12px;">
+                            <label class="field-label" for="fd-inventory-stock-current">Stock actual</label>
+                            <input type="number" step="0.001" id="fd-inventory-stock-current" class="field-input" placeholder="0" />
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label class="field-label" for="fd-inventory-stock-min">Stock mínimo</label>
+                            <input type="number" step="0.001" min="0" id="fd-inventory-stock-min" class="field-input" placeholder="0" />
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label class="field-label" for="fd-inventory-stock-unit">Unidad de medida</label>
+                            <select id="fd-inventory-stock-unit" class="field-input"></select>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;margin-bottom:12px;cursor:pointer;">
+                            <input type="checkbox" id="fd-inventory-stock-negative" style="cursor:pointer;" />
+                            Permitir stock negativo
+                        </label>
+                        <div>
+                            <label class="field-label" for="fd-inventory-stock-notes">Motivo (opcional)</label>
+                            <input type="text" id="fd-inventory-stock-notes" class="field-input" placeholder="Ej: conteo de depósito" />
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <span class="save-msg err" id="fd-inventory-stock-error" style="display:none;margin-right:8px;"></span>
+                        <button type="button" class="btn-secondary" onclick="closeInventoryStockModal()" style="margin-right:8px;">Cancelar</button>
+                        <button type="button" class="btn-primary" onclick="saveInventoryStock()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fd-product-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+                <div style="background:#fff;padding:24px;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+                    <h3 id="fd-product-title" style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Nuevo producto</h3>
+                    <input type="hidden" id="fd-product-id" />
+
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-name">Nombre *</label>
+                        <input type="text" id="fd-product-name" class="field-input" placeholder="Ej: Empanada de carne" />
+                    </div>
+
+                    <div style="display:flex;gap:12px;margin-bottom:12px;">
+                        <div style="flex:1;">
+                            <label class="field-label" for="fd-product-category">Categoría *</label>
+                            <select id="fd-product-category" class="field-input"></select>
+                        </div>
+                        <div style="flex:1;">
+                            <label class="field-label" for="fd-product-price">Precio *</label>
+                            <input type="number" step="0.01" min="0" id="fd-product-price" class="field-input" placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-description">Descripción</label>
+                        <textarea id="fd-product-description" class="field-input" rows="2" placeholder="Opcional"></textarea>
+                    </div>
+
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
+                        <input type="checkbox" id="fd-product-available" checked style="cursor:pointer;" />
+                        Producto disponible para pedidos
+                    </label>
+
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
+                        <input type="checkbox" id="fd-product-track" onchange="fdProdTrackChanged()" style="cursor:pointer;" />
+                        Controlar stock (habilitar seguimiento)
+                    </label>
+
+                    <div id="fd-product-stock-fields" style="display:none;">
+                        <div style="display:flex;gap:12px;margin-bottom:12px;">
+                            <div style="flex:1;">
+                                <label class="field-label" for="fd-product-initial">Stock inicial</label>
+                                <input type="number" step="0.001" id="fd-product-initial" class="field-input" placeholder="0" />
+                            </div>
+                            <div style="flex:1;">
+                                <label class="field-label" for="fd-product-min">Stock mínimo</label>
+                                <input type="number" step="0.001" min="0" id="fd-product-min" class="field-input" placeholder="0" />
+                            </div>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label class="field-label" for="fd-product-unit">Unidad de medida</label>
+                            <select id="fd-product-unit" class="field-input"></select>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;margin-bottom:8px;cursor:pointer;">
+                            <input type="checkbox" id="fd-product-negative" style="cursor:pointer;" />
+                            Permitir stock negativo
+                        </label>
+                        <p style="font-size:11px;color:#94a3b8;margin:0;">El stock inicial solo aplica para la creación; después se edita desde Inventario.</p>
+                    </div>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <span class="save-msg err" id="fd-product-error" style="display:none;margin-right:8px;"></span>
+                        <button type="button" class="btn-secondary" onclick="closeProductModal()" style="margin-right:8px;">Cancelar</button>
+                        <button type="button" class="btn-primary" onclick="saveProduct()">Guardar</button>
+                    </div>
+                </div>
+            </div>
 
                     @elseif($page->url === 'comercios')
             <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
@@ -2822,6 +2936,166 @@
             });
     }
 
+    // --- Productos (alta y edición) ---
+
+    var fdProdData = null;
+
+    function fdProdLoad(callback) {
+        if (fdProdData) {
+            callback();
+            return;
+        }
+
+        fdFetchJson('{{ url("/api/v1/provider/products") }}')
+            .then(function (res) {
+                if (!res.ok) {
+                    fdToast((res.data && res.data.message) || 'No se pudieron cargar los datos del catálogo.', true);
+                    return;
+                }
+                fdProdData = res.data;
+                callback();
+            })
+            .catch(function () {
+                fdToast('No se pudo conectar con el servidor.', true);
+            });
+    }
+
+    function fdProdOptions() {
+        var out = { products: [], categories: [], units: [] };
+
+        (fdProdData.products || []).forEach(function (p) { out.products[p.id] = p; });
+        (fdProdData.categories || []).forEach(function (c) { out.categories.push(c); });
+        (fdProdData.unit_of_measures || []).forEach(function (u) { out.units.push(u); });
+
+        return out;
+    }
+
+    function fdProdCategories(selected) {
+        var opts = fdProdOptions().categories;
+        var html = '<option value="">Sin categoría</option>';
+
+        opts.forEach(function (c) {
+            html += '<option value="' + escapeHtml(String(c.id)) + '"'
+                + (String(c.id) === String(selected) ? ' selected' : '') + '>'
+                + escapeHtml(c.name) + '</option>';
+        });
+
+        return html;
+    }
+
+    function fdProdUnits(selected) {
+        var opts = fdProdOptions().units;
+        var html = '<option value="">Sin unidad</option>';
+
+        opts.forEach(function (u) {
+            html += '<option value="' + escapeHtml(String(u.id)) + '"'
+                + (String(u.id) === String(selected) ? ' selected' : '') + '>'
+                + escapeHtml(u.name) + ' (' + escapeHtml(u.symbol) + ')</option>';
+        });
+
+        return html;
+    }
+
+    function fdProdTrackChanged() {
+        var fields = document.getElementById('fd-product-stock-fields');
+        if (fields) fields.style.display = document.getElementById('fd-product-track').checked ? 'block' : 'none';
+    }
+
+    function openProductModal(productId) {
+        fdProdLoad(function () {
+            var editing = productId !== null && typeof productId !== 'undefined';
+            var p = editing ? fdProdOptions().products[productId] : null;
+
+            document.getElementById('fd-product-id').value = editing ? productId : '';
+            document.getElementById('fd-product-title').textContent = editing ? 'Editar producto' : 'Nuevo producto';
+            document.getElementById('fd-product-name').value = p ? p.name : '';
+            document.getElementById('fd-product-category').innerHTML = fdProdCategories(p ? p.category_id : '');
+            document.getElementById('fd-product-price').value = p ? p.price : '';
+            document.getElementById('fd-product-description').value = p && p.description ? p.description : '';
+            document.getElementById('fd-product-available').checked = !p || p.is_available !== false;
+            document.getElementById('fd-product-track').checked = !!p && !!p.track_stock;
+            document.getElementById('fd-product-unit').innerHTML = fdProdUnits(p ? p.unit_of_measure_id : '');
+            document.getElementById('fd-product-initial').value = '';
+            document.getElementById('fd-product-min').value = p && p.min_stock_alert !== null ? p.min_stock_alert : '';
+            document.getElementById('fd-product-negative').checked = !!p && p.inventory ? !!p.inventory.allow_negative_stock : false;
+
+            var error = document.getElementById('fd-product-error');
+            error.style.display = 'none';
+            error.textContent = '';
+
+            fdProdTrackChanged();
+            document.getElementById('fd-product-overlay').style.display = 'flex';
+        });
+    }
+
+    function closeProductModal() {
+        document.getElementById('fd-product-overlay').style.display = 'none';
+    }
+
+    function saveProduct() {
+        var id = document.getElementById('fd-product-id').value;
+        var error = document.getElementById('fd-product-error');
+        var track = document.getElementById('fd-product-track').checked;
+
+        var nombre = document.getElementById('fd-product-name').value.trim();
+        var categoria = document.getElementById('fd-product-category').value;
+        var precio = document.getElementById('fd-product-price').value;
+
+        if (!nombre || !categoria || precio === '') {
+            error.textContent = 'Completá nombre, categoría y precio.';
+            error.style.display = 'inline';
+            return;
+        }
+
+        var cuerpo = {
+            name: nombre,
+            category_id: Number(categoria),
+            price: Number(precio),
+            description: document.getElementById('fd-product-description').value.trim() || null,
+            is_available: document.getElementById('fd-product-available').checked,
+            track_stock: track
+        };
+
+        if (track) {
+            var inicial = document.getElementById('fd-product-initial').value;
+            var minimo = document.getElementById('fd-product-min').value;
+            var unidad = document.getElementById('fd-product-unit').value;
+
+            if (id === '') {
+                cuerpo.initial_stock = inicial === '' ? 0 : Number(inicial);
+            } else {
+                cuerpo.initial_stock = 0;
+            }
+
+            cuerpo.min_stock_alert = minimo === '' ? null : Number(minimo);
+            cuerpo.unit_of_measure_id = unidad === '' ? null : Number(unidad);
+            cuerpo.allow_negative_stock = document.getElementById('fd-product-negative').checked;
+        }
+
+        error.style.display = 'none';
+
+        var method = id ? 'PUT' : 'POST';
+        var url = '{{ url("/api/v1/provider/products") }}' + (id ? '/' + encodeURIComponent(id) : '');
+
+        fdFetchJson(url, { method: method, body: JSON.stringify(cuerpo) })
+            .then(function (res) {
+                if (!res.ok) {
+                    var mensaje = (res.data && (res.data.message || Object.values(res.data.errors || {})[0])) || 'No se pudo guardar el producto.';
+                    error.textContent = mensaje;
+                    error.style.display = 'inline';
+                    return;
+                }
+                closeProductModal();
+                fdToast(id ? 'Producto actualizado.' : 'Producto creado.', false);
+                fdProdData = null;
+                loadProviderCatalog();
+            })
+            .catch(function () {
+                error.textContent = 'No se pudo conectar con el servidor.';
+                error.style.display = 'inline';
+            });
+    }
+
     // --- Inventario ---
 
     function fdSetInventoryState(state, text) {
@@ -2859,6 +3133,7 @@
                 }
 
                 var products = res.data.products || [];
+                fdInventoryData = res.data;
                 if (!products.length) {
                     fdSetInventoryState('message', 'Todavía no hay productos en tu catálogo.\nCargá productos desde Mi Catálogo para empezar a controlar el stock.');
                     return;
@@ -2902,6 +3177,151 @@
         return String(Math.round(n * 1000) / 1000);
     }
 
+    var fdInventoryData = null;
+
+    function fdInvUnitOptions(selectedId) {
+        var units = (fdInventoryData && fdInventoryData.unit_of_measures) || [];
+        var html = '<option value="">Sin unidad</option>';
+
+        units.forEach(function (u) {
+            html += '<option value="' + escapeHtml(String(u.id)) + '"'
+                + (String(u.id) === String(selectedId) ? ' selected' : '')
+                + (u.is_integer_only ? ' data-integer="1"' : '') + '>'
+                + escapeHtml(u.name) + ' (' + escapeHtml(u.symbol) + ')</option>';
+        });
+
+        return html;
+    }
+
+    function fdInvProduct(productId) {
+        var products = (fdInventoryData && fdInventoryData.products) || [];
+
+        for (var i = 0; i < products.length; i++) {
+            if (String(products[i].product_id) === String(productId)) return products[i];
+        }
+
+        return null;
+    }
+
+    function fdInvStockTrackChanged() {
+        var fields = document.getElementById('fd-inventory-stock-fields');
+        if (fields) fields.style.display = document.getElementById('fd-inventory-stock-track').checked ? 'block' : 'none';
+    }
+
+    // Interruptor rapido de la fila: activa o desactiva el seguimiento sin
+    // entrar al modal, conservando la cantidad y el minimo ya cargados.
+    function fdInvToggleTrack(productId, checkbox) {
+        var producto = fdInvProduct(productId);
+        if (!producto) return;
+
+        var cuerpo = { track_stock: checkbox.checked };
+
+        if (checkbox.checked) {
+            cuerpo.current_stock = Number(producto.current_stock) || 0;
+            if (producto.min_stock_alert !== null && typeof producto.min_stock_alert !== 'undefined') {
+                cuerpo.min_stock_alert = producto.min_stock_alert;
+            }
+            if (producto.unit_of_measure) cuerpo.unit_of_measure_id = producto.unit_of_measure.id;
+        }
+
+        checkbox.disabled = true;
+
+        fdFetchJson('{{ url("/api/v1/provider/inventory/products") }}/' + encodeURIComponent(productId), {
+            method: 'PUT',
+            body: JSON.stringify(cuerpo)
+        })
+            .then(function (res) {
+                checkbox.disabled = false;
+                if (!res.ok) {
+                    checkbox.checked = !checkbox.checked;
+                    fdToast((res.data && res.data.message) || 'No se pudo cambiar el seguimiento del stock.', true);
+                    return;
+                }
+                fdToast(checkbox.checked ? 'Seguimiento de stock activado.' : 'Seguimiento de stock desactivado.', false);
+                loadInventory();
+            })
+            .catch(function () {
+                checkbox.disabled = false;
+                checkbox.checked = !checkbox.checked;
+                fdToast('No se pudo conectar con el servidor.', true);
+            });
+    }
+
+    function openInventoryStockModal(productId) {
+        var producto = fdInvProduct(productId);
+        if (!producto) return;
+
+        document.getElementById('fd-inventory-stock-id').value = producto.product_id;
+        document.getElementById('fd-inventory-stock-name').textContent = producto.name;
+        document.getElementById('fd-inventory-stock-track').checked = !!producto.track_stock;
+        document.getElementById('fd-inventory-stock-current').value = fdInvNum(producto.current_stock) === '—' ? '' : fdInvNum(producto.current_stock);
+        document.getElementById('fd-inventory-stock-min').value = (producto.min_stock_alert === null || typeof producto.min_stock_alert === 'undefined') ? '' : fdInvNum(producto.min_stock_alert);
+        document.getElementById('fd-inventory-stock-unit').innerHTML = fdInvUnitOptions(producto.unit_of_measure ? producto.unit_of_measure.id : '');
+        document.getElementById('fd-inventory-stock-negative').checked = !!producto.allow_negative_stock;
+        document.getElementById('fd-inventory-stock-notes').value = '';
+
+        var error = document.getElementById('fd-inventory-stock-error');
+        error.style.display = 'none';
+        error.textContent = '';
+
+        fdInvStockTrackChanged();
+        document.getElementById('fd-inventory-stock-overlay').style.display = 'flex';
+    }
+
+    function closeInventoryStockModal() {
+        document.getElementById('fd-inventory-stock-overlay').style.display = 'none';
+    }
+
+    function saveInventoryStock() {
+        var productId = document.getElementById('fd-inventory-stock-id').value;
+        var track = document.getElementById('fd-inventory-stock-track').checked;
+        var error = document.getElementById('fd-inventory-stock-error');
+
+        var cuerpo = { track_stock: track };
+
+        if (track) {
+            var actual = document.getElementById('fd-inventory-stock-current').value;
+            var minimo = document.getElementById('fd-inventory-stock-min').value;
+            var unidad = document.getElementById('fd-inventory-stock-unit').value;
+
+            if (actual === '') {
+                error.textContent = 'Indicá el stock actual.';
+                error.style.display = 'inline';
+                return;
+            }
+
+            cuerpo.current_stock = Number(actual);
+            cuerpo.allow_negative_stock = document.getElementById('fd-inventory-stock-negative').checked;
+            cuerpo.min_stock_alert = minimo === '' ? null : Number(minimo);
+            cuerpo.unit_of_measure_id = unidad === '' ? null : Number(unidad);
+
+            var notas = document.getElementById('fd-inventory-stock-notes').value;
+            if (notas) cuerpo.notes = notas;
+        }
+
+        error.style.display = 'none';
+
+        fdFetchJson('{{ url("/api/v1/provider/inventory/products") }}/' + encodeURIComponent(productId), {
+            method: 'PUT',
+            body: JSON.stringify(cuerpo)
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    var mensaje = (res.data && (res.data.message || Object.values(res.data.errors || {})[0])) || 'No se pudo guardar el stock.';
+                    error.textContent = mensaje;
+                    error.style.display = 'inline';
+                    return;
+                }
+                closeInventoryStockModal();
+                fdToast('Stock actualizado.', false);
+                loadInventory();
+            })
+            .catch(function () {
+                error.textContent = 'No se pudo conectar con el servidor.';
+                error.style.display = 'inline';
+            });
+    }
+
     function fdRenderInventory(data) {
         var products = data.products || [];
         var enabled = !!(data.provider && data.provider.has_inventory_control);
@@ -2930,6 +3350,7 @@
             + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Disponible</th>'
             + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Mínimo</th>'
             + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Estado</th>'
+            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Acciones</th>'
             + '</tr></thead><tbody>';
 
         products.forEach(function (p, i) {
@@ -2953,12 +3374,25 @@
                 + (typeof p.min_stock_alert !== 'undefined' && p.min_stock_alert !== null ? fdInvNum(p.min_stock_alert) : '—')
                 + '</td>'
                 + '<td style="padding:10px 12px;">' + status + '</td>'
+                + '<td style="padding:10px 12px;white-space:nowrap;text-align:left;">' + fdInvRowActions(p) + '</td>'
                 + '</tr>';
         });
 
         html += '</tbody></table></div>';
 
         return html;
+    }
+
+    function fdInvRowActions(p) {
+        var id = escapeHtml(String(p.product_id));
+        var toggle = '<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#475569;cursor:pointer;white-space:nowrap;" title="Cambiar seguimiento de stock">'
+            + '<input type="checkbox" ' + (p.track_stock ? 'checked' : '')
+            + ' onchange="fdInvToggleTrack(\'' + id + '\', this)" style="cursor:pointer;">'
+            + '<span>' + (p.track_stock ? 'Con seguimiento' : 'Sin seguimiento') + '</span>'
+            + '</label>';
+        var edit = '<button type="button" onclick="openInventoryStockModal(\'' + id + '\')" style="margin-left:10px;background:#fff;color:#D24C19;border:1px solid #D24C19;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:600;">Editar</button>';
+
+        return toggle + edit;
     }
 
     function fdRenderCatalog(categories, provider) {
@@ -3007,8 +3441,23 @@
             html += '<p style="font-size:12px;color:#64748b;margin:4px 0 0;">' + escapeHtml(p.description) + '</p>';
         }
 
+        if (p.track_stock) {
+            var stock = p.inventory ? Number(p.inventory.current_stock || 0) : 0;
+            var minimo = (typeof p.min_stock_alert !== 'undefined' && p.min_stock_alert !== null) ? Number(p.min_stock_alert) : null;
+            var bajo = minimo !== null && stock < minimo;
+
+            html += '<p style="font-size:11px;color:' + (bajo ? '#b91c1c' : '#475569') + ';margin:4px 0 0;">'
+                + (bajo ? fdBadge('Stock bajo', '#b91c1c', '#fee2e2') : fdBadge('Con stock', '#047857', '#d1fae5'))
+                + ' <span style="margin-left:4px;">' + fdInvNum(stock) + ' disponible'
+                + (minimo !== null ? ' · mínimo ' + fdInvNum(minimo) : '')
+                + '</span></p>';
+        }
+
         html += '</div>'
-            + '<div style="font-size:14px;font-weight:700;color:#D24C19;white-space:nowrap;">' + fdMoney(p.price) + '</div>'
+            + '<div style="display:flex;align-items:center;gap:10px;white-space:nowrap;">'
+            + '<button type="button" onclick="openProductModal(' + escapeHtml(String(p.id)) + ')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:5px 10px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:600;">Editar</button>'
+            + '<div style="font-size:14px;font-weight:700;color:#D24C19;">' + fdMoney(p.price) + '</div>'
+            + '</div>'
             + '</div>';
 
         var variants = p.variants || [];

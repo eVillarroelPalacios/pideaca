@@ -15,6 +15,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
@@ -145,7 +146,13 @@ Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.m
 Route::get('/api/v1/provider/inventory', [InventoryController::class, 'index'])->name('api.provider.inventory.index');
 Route::put('/api/v1/provider/inventory/settings', [InventoryController::class, 'settings'])->name('api.provider.inventory.settings');
 Route::post('/api/v1/provider/inventory/adjust', [InventoryController::class, 'adjust'])->name('api.provider.inventory.adjust');
+Route::put('/api/v1/provider/inventory/products/{product}', [InventoryController::class, 'updateProduct'])->name('api.provider.inventory.product.update');
 Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 'movements'])->name('api.provider.inventory.movements');
+
+// Productos del comercio (mi catalogo) con su control de stock
+Route::get('/api/v1/provider/products', [ProductController::class, 'index'])->name('api.provider.products.index');
+Route::post('/api/v1/provider/products', [ProductController::class, 'store'])->name('api.provider.products.store');
+Route::put('/api/v1/provider/products/{product}', [ProductController::class, 'update'])->name('api.provider.products.update');
 
 // Suscripciones y compras recurrentes
 Route::get('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'indexPlans'])->name('api.provider.subscription-plans.index');
