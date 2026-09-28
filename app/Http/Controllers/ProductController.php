@@ -60,6 +60,63 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Alta de una categoria del catalogo. Sin esto el comercio no podia crear
+     * categorias propias: solo podia elegir las que venian en el seeder.
+     */
+    public function storeCategory(Request $request)
+    {
+        $resolved = $this->currentProvider();
+
+        if ($resolved instanceof JsonResponse) {
+            return $resolved;
+        }
+
+        $provider = $resolved;
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:80'],
+        ], [
+            'name.min' => 'El nombre de la categoría debe tener al menos 2 caracteres.',
+        ]);
+
+        $espacios = is_string($data['name']) ? preg_replace('/\s+/u', ' ', $data['name']) : null;
+        $nombre = is_string($espacios) ? trim($espacios) : $data['name'];
+
+        if (! is_string($nombre) || mb_strlen($nombre) < 2) {
+            throw ValidationException::withMessages([
+                'name' => 'El nombre de la categoría debe tener al menos 2 caracteres.',
+            ]);
+        }
+
+        $duplicada = Category::where('provider_id', $provider->id)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($nombre)])
+            ->exists();
+
+        if ($duplicada) {
+            throw ValidationException::withMessages([
+                'name' => 'Ya tenés una categoría con ese nombre.',
+            ]);
+        }
+
+        $category = Category::create([
+            'provider_id' => $provider->id,
+            'name' => $nombre,
+            'sort_order' => (int) (Category::where('provider_id', $provider->id)->max('sort_order')) + 1,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'sort_order' => $category->sort_order,
+                'is_active' => (bool) $category->is_active,
+            ],
+        ], 201);
+    }
+
     public function store(Request $request)
     {
         $resolved = $this->currentProvider();

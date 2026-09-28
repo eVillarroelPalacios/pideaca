@@ -345,4 +345,79 @@ class ProviderProductsTest extends TestCase
             ->assertOk()
             ->assertJsonCount(0, 'products');
     }
+
+    // --- Categorías ---
+
+    public function test_visitante_no_puede_crear_categorias(): void
+    {
+        $this->postJson('/api/v1/provider/categories', ['name' => 'Bebidas'])
+            ->assertUnauthorized();
+    }
+
+    public function test_usuario_sin_comercio_no_puede_crear_categorias(): void
+    {
+        $cliente = User::create([
+            'name' => 'Cliente',
+            'email' => 'cliente-categorias@example.com',
+            'password' => 'password',
+        ]);
+
+        $this->actingAs($cliente)
+            ->postJson('/api/v1/provider/categories', ['name' => 'Bebidas'])
+            ->assertForbidden();
+    }
+
+    public function test_crea_una_categoria_y_queda_en_el_listado(): void
+    {
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/categories', ['name' => '  Bebidas   frías '])
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('category.name', 'Bebidas frías');
+
+        $this->actingAs($this->owner)
+            ->getJson($this->url)
+            ->assertOk()
+            ->assertJsonFragment(['name' => 'Bebidas frías']);
+
+        $this->assertDatabaseHas('categories', [
+            'provider_id' => $this->provider->id,
+            'name' => 'Bebidas frías',
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_rechaza_categorias_duplicadas_del_mismo_comercio(): void
+    {
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/categories', ['name' => 'almacen'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/categories', ['name' => '  Almacen  '])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_el_nombre_de_categoria_no_puede_ser_demasiado_corto(): void
+    {
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/categories', ['name' => '   '])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_otro_comercio_puede_usar_el_mismo_nombre_de_categoria(): void
+    {
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/categories', ['name' => 'Bebidas'])
+            ->assertCreated();
+
+        $this->actingAs($this->otro)
+            ->postJson('/api/v1/provider/categories', ['name' => 'Bebidas'])
+            ->assertCreated();
+
+        $this->assertDatabaseCount('categories', 4);
+    }
 }

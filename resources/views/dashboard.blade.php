@@ -1189,14 +1189,30 @@
                     </div>
 
                     <div style="display:flex;gap:12px;margin-bottom:12px;">
-                        <div style="flex:1;">
-                            <label class="field-label" for="fd-product-category">Categoría *</label>
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;">
+                                <label class="field-label" for="fd-product-category" style="margin-bottom:6px;">Categoría *</label>
+                                <button type="button" id="fd-product-newcategory-btn" onclick="fdProdShowNewCategory()" style="background:none;border:none;padding:0;margin-bottom:6px;color:#D24C19;font-size:11px;font-weight:700;cursor:pointer;">+ Nueva</button>
+                            </div>
                             <select id="fd-product-category" class="field-input"></select>
                         </div>
-                        <div style="flex:1;">
+                        <div style="flex:1;min-width:0;">
                             <label class="field-label" for="fd-product-price">Precio *</label>
                             <input type="number" step="0.01" min="0" id="fd-product-price" class="field-input" placeholder="0.00" />
                         </div>
+                    </div>
+
+                    <div id="fd-product-newcategory-box" style="display:none;margin-bottom:12px;">
+                        <label class="field-label" for="fd-product-newcategory-input">Nueva categoría</label>
+                        <div style="display:flex;gap:8px;align-items:flex-end;">
+                            <div style="flex:1;min-width:0;">
+                                <input type="text" id="fd-product-newcategory-input" class="field-input" maxlength="80" placeholder="Ej: Bebidas frías"
+                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); fdProdCreateCategory(); }" />
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="fdProdCancelNewCategory()">Cancelar</button>
+                            <button type="button" id="fd-product-newcategory-ok" class="btn-primary" onclick="fdProdCreateCategory()">Agregar</button>
+                        </div>
+                        <span class="save-msg err" id="fd-product-newcategory-error" style="display:none;margin-top:6px;"></span>
                     </div>
 
                     <div style="margin-bottom:12px;">
@@ -3001,6 +3017,80 @@
         if (fields) fields.style.display = document.getElementById('fd-product-track').checked ? 'block' : 'none';
     }
 
+    function fdProdNewCategoryError(mensaje) {
+        var error = document.getElementById('fd-product-newcategory-error');
+        error.textContent = mensaje;
+        error.style.display = mensaje ? 'inline-block' : 'none';
+    }
+
+    function fdProdShowNewCategory() {
+        document.getElementById('fd-product-newcategory-box').style.display = 'block';
+        document.getElementById('fd-product-newcategory-btn').style.visibility = 'hidden';
+        document.getElementById('fd-product-newcategory-input').value = '';
+        fdProdNewCategoryError('');
+        document.getElementById('fd-product-newcategory-input').focus();
+    }
+
+    function fdProdCancelNewCategory() {
+        document.getElementById('fd-product-newcategory-box').style.display = 'none';
+        document.getElementById('fd-product-newcategory-btn').style.visibility = 'visible';
+        document.getElementById('fd-product-newcategory-input').value = '';
+        fdProdNewCategoryError('');
+    }
+
+    // Crea la categoria y, si viene un callback, deja la recién creada seleccionada
+    // en el select para que "Guardar" la use directamente.
+    function fdProdCreateCategory(alTerminar) {
+        var input = document.getElementById('fd-product-newcategory-input');
+        var boton = document.getElementById('fd-product-newcategory-ok');
+        var nombre = input.value.trim();
+
+        if (nombre.length < 2) {
+            fdProdNewCategoryError('Escribí el nombre de la categoría.');
+            return;
+        }
+
+        if (boton.disabled) return;
+
+        fdProdNewCategoryError('');
+        boton.disabled = true;
+        boton.textContent = 'Agregando...';
+
+        fdFetchJson('{{ url("/api/v1/provider/categories") }}', {
+            method: 'POST',
+            body: JSON.stringify({ name: nombre })
+        })
+            .then(function (res) {
+                boton.disabled = false;
+                boton.textContent = 'Agregar';
+
+                if (!res.ok) {
+                    fdProdNewCategoryError((res.data && (res.data.message || Object.values(res.data.errors || {})[0])) || 'No se pudo crear la categoría.');
+                    return;
+                }
+
+                var cat = res.data.category;
+                if (fdProdData) {
+                    fdProdData.categories = fdProdData.categories || [];
+                    fdProdData.categories.push(cat);
+                }
+
+                document.getElementById('fd-product-category').innerHTML = fdProdCategories(cat.id);
+                fdProdCancelNewCategory();
+
+                if (typeof alTerminar === 'function') {
+                    alTerminar(cat);
+                } else {
+                    fdToast('Categoría "' + cat.name + '" creada.', false);
+                }
+            })
+            .catch(function () {
+                boton.disabled = false;
+                boton.textContent = 'Agregar';
+                fdProdNewCategoryError('No se pudo conectar con el servidor.');
+            });
+    }
+
     function openProductModal(productId) {
         fdProdLoad(function () {
             var editing = productId !== null && typeof productId !== 'undefined';
@@ -3023,6 +3113,7 @@
             error.style.display = 'none';
             error.textContent = '';
 
+            fdProdCancelNewCategory();
             fdProdTrackChanged();
             document.getElementById('fd-product-overlay').style.display = 'flex';
         });
@@ -3040,6 +3131,13 @@
         var nombre = document.getElementById('fd-product-name').value.trim();
         var categoria = document.getElementById('fd-product-category').value;
         var precio = document.getElementById('fd-product-price').value;
+
+        // Si quedó una categoría tipeada y sin dar de alta, primero se crea (queda
+        // seleccionada y se limpia el input) y recién después se guarda el producto.
+        if (document.getElementById('fd-product-newcategory-input').value.trim()) {
+            fdProdCreateCategory(function () { saveProduct(); });
+            return;
+        }
 
         if (!nombre || !categoria || precio === '') {
             error.textContent = 'Completá nombre, categoría y precio.';

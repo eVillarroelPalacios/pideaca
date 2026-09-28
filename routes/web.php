@@ -153,6 +153,7 @@ Route::get('/api/v1/provider/inventory/movements', [InventoryController::class, 
 Route::get('/api/v1/provider/products', [ProductController::class, 'index'])->name('api.provider.products.index');
 Route::post('/api/v1/provider/products', [ProductController::class, 'store'])->name('api.provider.products.store');
 Route::put('/api/v1/provider/products/{product}', [ProductController::class, 'update'])->name('api.provider.products.update');
+Route::post('/api/v1/provider/categories', [ProductController::class, 'storeCategory'])->name('api.provider.categories.store');
 
 // Suscripciones y compras recurrentes
 Route::get('/api/v1/provider/subscription-plans', [SubscriptionController::class, 'indexPlans'])->name('api.provider.subscription-plans.index');
