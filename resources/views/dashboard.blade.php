@@ -620,7 +620,7 @@
 
     /* --- Mi catálogo: sidebar de secciones (catálogo, productos, categorías, unidades) --- */
     .fd-cat-layout { display: flex; align-items: stretch; background: #ffffff; border: 1px solid #e5e7eb; }
-    #fd-cat-sidebar { width: 218px; min-width: 218px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
+    #fd-cat-sidebar { width: 170px; min-width: 170px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
     .fd-cat-menu-title { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; padding: 16px 20px 8px; }
     .fd-cat-body { flex: 1; min-width: 0; padding: 20px 22px; }
     .fd-cat-panel { display: none; }
@@ -631,13 +631,46 @@
     .fd-cat-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #f1f5f9; background: #fff; }
     .fd-cat-row:hover { background: #f8fafc; }
     .fd-cat-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .fd-cat-topbar { display: none; }
+    #fd-cat-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 240; }
+    #fd-cat-overlay.open { display: block; }
     @media (max-width: 860px) {
+        #dash-mi-catalogo { margin-top: 0 !important; }
+        .fd-cat-header { display: none !important; }
+        .fd-cat-topbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 44px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 20px;
+            margin: 0 -20px 14px;
+            position: sticky;
+            top: 60px;
+            z-index: 40;
+        }
         .fd-cat-layout { flex-direction: column; }
-        #fd-cat-sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #e5e7eb; flex-direction: row; flex-wrap: wrap; padding: 6px; }
-        .fd-cat-menu-title { display: none; }
-        #fd-cat-sidebar .sidebar-link { border-left: none; border-bottom: 3px solid transparent; padding: 8px 12px; }
-        #fd-cat-sidebar .sidebar-link.active { border-left-color: transparent; border-bottom-color: #D24C19; }
+        #fd-cat-sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 250px;
+            min-width: 250px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: none;
+            transform: translateX(-100%);
+            transition: transform .25s ease;
+            z-index: 250;
+        }
+        #fd-cat-sidebar.open { transform: translateX(0); }
         .fd-cat-body { padding: 16px 12px; }
+    }
+    @media (min-width: 861px) {
+        #fd-cat-overlay { display: none !important; }
     }
 
     @media (max-width: 768px) {
@@ -651,8 +684,6 @@
     }
 </style>
 <script>
-    history.replaceState(null, '', '{{ url("/") }}');
-
     function toggleMenu() {
         var menu = document.getElementById('mobile-menu');
         menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
@@ -687,7 +718,7 @@
         sections.forEach(function (s) { s.style.display = 'none'; });
         var target = document.getElementById('dash-' + key);
         if (target) target.style.display = 'block';
-        history.replaceState(null, '', '{{ url('/') }}');
+        history.replaceState(null, '', '{{ url('/dashboard') }}');
         closeDropdowns();
         var menu = document.getElementById('mobile-menu');
         if (menu) menu.style.display = 'none';
@@ -1683,6 +1714,13 @@
         unidades:  { loading: 'fd-units-loading',   message: 'fd-units-message',   content: 'fd-units-content',   text: 'fd-units-message-text' }
     };
 
+    var FD_CAT_LABELS = {
+        catalogo: 'Mi catálogo',
+        productos: 'Productos',
+        categorias: 'Categorías',
+        unidades: 'Uds. de medida'
+    };
+
     function fdPanelState(ids, state, text) {
         ['loading', 'message', 'content'].forEach(function (k) {
             var el = document.getElementById(ids[k]);
@@ -1706,7 +1744,26 @@
             p.classList.toggle('active', p.id === 'fd-cat-panel-' + key);
         });
 
+        var bc = document.getElementById('fd-cat-breadcrumb');
+        if (bc) bc.textContent = FD_CAT_LABELS[key] || key;
+        fdCatCloseSidebar();
+
         fdCatLoad(key);
+    }
+
+    function fdCatToggleSidebar() {
+        var sb = document.getElementById('fd-cat-sidebar');
+        var ov = document.getElementById('fd-cat-overlay');
+        if (!sb) return;
+        var open = sb.classList.toggle('open');
+        if (ov) ov.classList.toggle('open', open);
+    }
+
+    function fdCatCloseSidebar() {
+        var sb = document.getElementById('fd-cat-sidebar');
+        var ov = document.getElementById('fd-cat-overlay');
+        if (sb) sb.classList.remove('open');
+        if (ov) ov.classList.remove('open');
     }
 
     function fdCatLoad(key) {
@@ -1757,26 +1814,62 @@
             });
     }
 
-    function fdRenderProducts(data) {
-        var products = data.products || [];
-        var categorias = (data.categories || []).length;
+    var fdProdCatFilter = '';
 
-        if (!products.length) {
+    function fdProdFilterChange(value) {
+        fdProdCatFilter = value || '';
+        if (!fdProdData) return;
+        var content = document.getElementById('fd-prod-content');
+        if (content) content.innerHTML = fdRenderProducts(fdProdData);
+    }
+
+    function fdRenderProducts(data) {
+        var all = data.products || [];
+        var cats = data.categories || [];
+
+        var selected = String(fdProdCatFilter || '');
+        if (selected && !cats.some(function (c) { return String(c.id) === selected; })) {
+            selected = '';
+            fdProdCatFilter = '';
+        }
+
+        var products = selected
+            ? all.filter(function (p) { return String(p.category_id) === selected; })
+            : all;
+
+        if (!all.length) {
             return '<div style="background:#fff;border:1px solid #e5e7eb;padding:36px 20px;text-align:center;">'
                 + '<p style="font-size:14px;color:#6b7280;margin:0 0 14px;">Todavía no cargaste productos.</p>'
                 + '<button type="button" class="btn-primary" onclick="openProductModal(null)">+ Agregar producto</button>'
                 + '</div>';
         }
 
-        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'
+        var combo = '<div style="margin-left:auto;display:flex;align-items:center;gap:6px;">'
+            + '<label for="fd-prod-cat-filter" style="font-size:12px;color:#6b7280;font-weight:600;">Categoría</label>'
+            + '<select id="fd-prod-cat-filter" onchange="fdProdFilterChange(this.value)" style="font-size:13px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:0;background:#fff;color:#0f172a;cursor:pointer;">'
+            + '<option value="">Todas las categorías</option>'
+            + cats.map(function (c) {
+                return '<option value="' + escapeHtml(String(c.id)) + '"' + (String(c.id) === selected ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+            }).join('')
+            + '</select>'
+            + '</div>';
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">'
             + fdBadge(products.length + ' productos', '#0c2a4d', '#eef2f7')
-            + fdBadge(categorias + ' categorías', '#0c2a4d', '#eef2f7')
-            + '</div>'
-            + '<div style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;">'
+            + fdBadge(cats.length + ' categorías', '#0c2a4d', '#eef2f7')
+            + combo
+            + '</div>';
+
+        if (!products.length) {
+            return html + '<div style="background:#fff;border:1px solid #e5e7eb;padding:32px 20px;text-align:center;">'
+                + '<p style="font-size:13px;color:#6b7280;margin:0;">No hay productos en esta categoría.</p>'
+                + '</div>';
+        }
+
+        html += '<div style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;">'
             + '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
             + '<thead><tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
             + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Producto</th>'
-            + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Categoría</th>'
             + '<th style="text-align:right;padding:10px 12px;color:#fff;font-weight:600;">Precio</th>'
             + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Variantes</th>'
             + '<th style="text-align:left;padding:10px 12px;color:#fff;font-weight:600;">Agregados</th>'
@@ -1809,7 +1902,6 @@
                 + escapeHtml(p.name)
                 + (p.is_available === false ? ' ' + fdBadge('No disponible', '#b91c1c', '#fee2e2') : '')
                 + '</td>'
-                + '<td style="padding:10px 12px;color:#6b7280;">' + escapeHtml(p.category_name || '—') + '</td>'
                 + '<td style="padding:10px 12px;text-align:right;color:#D24C19;font-weight:700;">' + fdMoney(p.price) + '</td>'
                 + '<td style="padding:10px 12px;color:#475569;min-width:150px;">'
                 + (variantes.length ? fdBadge(String(variantes.length), '#0c2a4d', '#eef2f7') + ' ' : '') + vtxt

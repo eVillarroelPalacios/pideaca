@@ -1,22 +1,27 @@
             <section id="dash-mi-catalogo" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <div class="fd-cat-topbar">
+                    <button type="button" onclick="fdCatToggleSidebar()" aria-label="Abrir menú" style="background:none;border:none;cursor:pointer;padding:4px;color:#0f172a;display:flex;align-items:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    </button>
+                    <span style="font-size:12px;color:#64748b;">Mi Catálogo</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                    <span style="font-size:12px;color:#0f172a;font-weight:600;" id="fd-cat-breadcrumb">Mi catálogo</span>
+                    <div style="flex:1;"></div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:12px;color:#0f172a;font-weight:600;">{{ $user->name }}</span>
+                        <div style="width:28px;height:28px;border-radius:50%;background:#D24C19;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                    </div>
+                </div>
+
+                <div class="fd-cat-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
                     <div>
                         <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
                         <p id="fd-catalog-subtitle" style="font-size:13px;color:#6b7280;margin:4px 0 0;">{{ optional($user->provider)->business_name ?: 'Tu comercio' }}</p>
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        <button type="button" onclick="openProductModal(null)" title="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            Agregar producto
-                        </button>
-                        <button type="button" onclick="fdCatReload()" title="Actualizar catálogo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-                            Actualizar
-                        </button>
-                    </div>
                 </div>
 
                 <div class="fd-cat-layout">
+                    <div id="fd-cat-overlay" onclick="fdCatToggleSidebar()"></div>
                     <aside id="fd-cat-sidebar">
                         <div class="fd-cat-menu-title">Organización</div>
                         <a href="#" class="sidebar-link active" data-cat-panel="catalogo" onclick="event.preventDefault();fdCatTab('catalogo')">
@@ -33,7 +38,7 @@
                         </a>
                         <a href="#" class="sidebar-link" data-cat-panel="unidades" onclick="event.preventDefault();fdCatTab('unidades')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14.5 12.5 12 15m2.5-6.5L12 9m-4.5 3.5L7 14"/></svg>
-                            <span>Unidades de medida</span>
+                            <span>Uds. de medida</span>
                         </a>
                     </aside>
 
@@ -56,9 +61,15 @@
             </div>
 
             <div id="fd-cat-panel-productos" class="fd-cat-panel">
-                <div class="fd-cat-panel-head">
-                    <h3>Productos</h3>
-                    <p>Alta y edición de productos, con sus variantes (Individual, Grande...) y agregados.</p>
+                <div class="fd-cat-panel-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                    <div>
+                        <h3>Productos</h3>
+                        <p>Alta y edición de productos, con sus variantes (Individual, Grande...) y agregados.</p>
+                    </div>
+                    <button type="button" onclick="openProductModal(null)" title="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        Agregar producto
+                    </button>
                 </div>
                 <div id="fd-prod-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando productos...</p>
