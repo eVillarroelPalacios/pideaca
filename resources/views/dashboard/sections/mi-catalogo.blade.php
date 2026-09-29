@@ -66,9 +66,8 @@
                         <h3>Productos</h3>
                         <p>Alta y edición de productos, con sus variantes (Individual, Grande...) y agregados.</p>
                     </div>
-                    <button type="button" onclick="openProductModal(null)" title="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;flex-shrink:0;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                        Agregar producto
+                    <button type="button" onclick="openProductModal(null)" title="Agregar producto" aria-label="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                     </button>
                 </div>
                 <div id="fd-prod-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">

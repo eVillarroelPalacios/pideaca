@@ -122,6 +122,7 @@
                     .btn-primary:hover{background:#ffffff;color:#D24C19;border-color:#D24C19;}
                     .btn-secondary{background:#fff;border:1px solid #cbd5e1;color:#334155;border-radius:4px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
                     .btn-secondary:hover{background:#f8fafc;}
+                    .btn-icon{display:inline-flex;align-items:center;justify-content:center;padding:7px 8px;line-height:0;}
                     .btn-danger{background:#fff;border:1px solid #fecaca;color:#dc2626;border-radius:4px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
                     .btn-danger:hover{background:#fef2f2;}
                     .save-msg{font-size:12px;font-weight:600;display:none;}
@@ -1693,6 +1694,8 @@
                     return;
                 }
 
+                fdPrevData = { categories: categories, provider: res.data.provider };
+
                 document.getElementById('fd-catalog-content').innerHTML =
                     fdRenderCatalog(categories, res.data.provider);
 
@@ -1816,6 +1819,10 @@
 
     var fdProdCatFilter = '';
 
+    var FD_ICON_EDIT = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+    var FD_ICON_VARIANTS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>';
+    var FD_ICON_ADDONS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
+
     function fdProdFilterChange(value) {
         fdProdCatFilter = value || '';
         if (!fdProdData) return;
@@ -1910,9 +1917,9 @@
                 + '<td style="padding:10px 12px;">' + stock + '</td>'
                 + '<td style="padding:10px 12px;white-space:nowrap;">'
                 + '<div class="fd-cat-actions">'
-                + '<button type="button" class="btn-secondary" onclick="openProductModal(' + id + ')">Editar</button>'
-                + '<button type="button" class="btn-secondary" onclick="openVariantModal(' + id + ')">Variantes</button>'
-                + '<button type="button" class="btn-secondary" onclick="openOptionModal(' + id + ')">Agregados</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Editar" aria-label="Editar" onclick="openProductModal(' + id + ')">' + FD_ICON_EDIT + '</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Variantes" aria-label="Variantes" onclick="openVariantModal(' + id + ')">' + FD_ICON_VARIANTS + '</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Agregados" aria-label="Agregados" onclick="openOptionModal(' + id + ')">' + FD_ICON_ADDONS + '</button>'
                 + '</div></td>'
                 + '</tr>';
         });
@@ -3057,24 +3064,58 @@
         return toggle + edit;
     }
 
-    function fdRenderCatalog(categories, provider) {
-        var totalProducts = 0;
-        categories.forEach(function (c) { totalProducts += (c.products || []).length; });
+    var fdPrevCatFilter = '';
+    var fdPrevData = null;
 
-        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
-            + fdBadge(categories.length + ' categorías', '#0c2a4d', '#eef2f7')
-            + fdBadge(totalProducts + ' productos', '#0c2a4d', '#eef2f7')
-            + (provider && provider.zone ? fdBadge(provider.zone, '#9a3412', '#fff7ed') : '')
-            + (provider && provider.is_active === false ? fdBadge('Comercio pausado', '#b91c1c', '#fee2e2') : '')
+    function fdPrevFilterChange(value) {
+        fdPrevCatFilter = value || '';
+        if (!fdPrevData) return;
+        var content = document.getElementById('fd-catalog-content');
+        if (content) content.innerHTML = fdRenderCatalog(fdPrevData.categories, fdPrevData.provider);
+    }
+
+    function fdRenderCatalog(categories, provider) {
+        var selected = String(fdPrevCatFilter || '');
+        if (selected && !categories.some(function (c) { return String(c.id) === selected; })) {
+            selected = '';
+            fdPrevCatFilter = '';
+        }
+
+        var shown = selected
+            ? categories.filter(function (c) { return String(c.id) === selected; })
+            : categories;
+
+        var shownProducts = 0;
+        shown.forEach(function (c) { shownProducts += (c.products || []).length; });
+
+        var combo = '<div style="margin-left:auto;display:flex;align-items:center;gap:6px;">'
+            + '<label for="fd-prev-cat-filter" style="font-size:12px;color:#6b7280;font-weight:600;">Categoría</label>'
+            + '<select id="fd-prev-cat-filter" onchange="fdPrevFilterChange(this.value)" style="font-size:13px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:0;background:#fff;color:#0f172a;cursor:pointer;">'
+            + '<option value="">Todas las categorías</option>'
+            + categories.map(function (c) {
+                return '<option value="' + escapeHtml(String(c.id)) + '"' + (String(c.id) === selected ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+            }).join('')
+            + '</select>'
             + '</div>';
 
-        categories.forEach(function (cat) {
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">'
+            + fdBadge(shown.length + (shown.length === 1 ? ' categoría' : ' categorías'), '#0c2a4d', '#eef2f7')
+            + fdBadge(shownProducts + (shownProducts === 1 ? ' producto' : ' productos'), '#0c2a4d', '#eef2f7')
+            + (provider && provider.zone ? fdBadge(provider.zone, '#9a3412', '#fff7ed') : '')
+            + (provider && provider.is_active === false ? fdBadge('Comercio pausado', '#b91c1c', '#fee2e2') : '')
+            + combo
+            + '</div>';
+
+        shown.forEach(function (cat) {
             var products = cat.products || [];
+
+            var stripTitle = selected ? 'Filtrando: ' + escapeHtml(cat.name) : escapeHtml(cat.name);
+            var stripCount = products.length + (products.length === 1 ? ' producto' : ' productos');
 
             html += '<div style="background:#fff;border:1px solid #e5e7eb;margin-bottom:16px;overflow:hidden;">'
                 + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">'
-                + '<span style="font-size:13px;font-weight:700;color:#fff;">' + escapeHtml(cat.name) + '</span>'
-                + '<span style="font-size:11px;color:rgba(255,255,255,.75);">' + products.length + ' productos</span>'
+                + '<span style="font-size:13px;font-weight:700;color:#fff;">' + stripTitle + '</span>'
+                + '<span style="font-size:11px;color:rgba(255,255,255,.75);">' + stripCount + '</span>'
                 + '</div>';
 
             if (!products.length) {
