@@ -1900,7 +1900,7 @@
 
             var stock = p.track_stock
                 ? fdBadge(fdInvNum(p.current_stock) + (p.unit_of_measure ? ' ' + p.unit_of_measure.symbol : ''), '#047857', '#d1fae5')
-                : fdBadge('Sin seguimiento', '#64748b', '#f1f5f9');
+                : fdBadge('S/S', '#64748b', '#f1f5f9');
 
             var id = escapeHtml(String(p.id));
 
@@ -3028,7 +3028,7 @@
                 : '—';
 
             var status;
-            if (!p.track_stock) status = fdBadge('Sin seguimiento', '#64748b', '#f1f5f9');
+            if (!p.track_stock) status = fdBadge('S/S', '#64748b', '#f1f5f9');
             else if (p.low_stock) status = fdBadge('Stock bajo', '#b91c1c', '#fee2e2');
             else if (Number(p.available_stock) <= 0) status = fdBadge('Sin stock', '#b91c1c', '#fee2e2');
             else status = fdBadge('OK', '#047857', '#d1fae5');
@@ -3057,7 +3057,7 @@
         var toggle = '<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#475569;cursor:pointer;white-space:nowrap;" title="Cambiar seguimiento de stock">'
             + '<input type="checkbox" ' + (p.track_stock ? 'checked' : '')
             + ' onchange="fdInvToggleTrack(\'' + id + '\', this)" style="cursor:pointer;">'
-            + '<span>' + (p.track_stock ? 'Con seguimiento' : 'Sin seguimiento') + '</span>'
+            + '<span>' + (p.track_stock ? 'Con seguimiento' : 'S/S') + '</span>'
             + '</label>';
         var edit = '<button type="button" onclick="openInventoryStockModal(\'' + id + '\')" style="margin-left:10px;background:#fff;color:#D24C19;border:1px solid #D24C19;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:600;">Editar</button>';
 
