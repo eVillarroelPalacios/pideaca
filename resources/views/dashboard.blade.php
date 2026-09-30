@@ -3158,7 +3158,7 @@
 
         html += '</div>'
             + '<div style="display:flex;align-items:center;gap:10px;white-space:nowrap;">'
-            + '<button type="button" onclick="openProductModal(' + escapeHtml(String(p.id)) + ')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:5px 10px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:600;">Editar</button>'
+            + '<button type="button" title="Editar" aria-label="Editar" onclick="openProductModal(' + escapeHtml(String(p.id)) + ')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px 8px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">' + FD_ICON_EDIT + '</button>'
             + '<div style="font-size:14px;font-weight:700;color:#D24C19;">' + fdMoney(p.price) + '</div>'
             + '</div>'
             + '</div>';
