@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductInventory;
@@ -30,11 +31,17 @@ class InventoryController extends Controller
         $provider = $resolved;
 
         $products = $provider->products()
-            ->with(['unitOfMeasure', 'inventory'])
+            ->with(['unitOfMeasure', 'inventory', 'category:id,name'])
             ->orderBy('name')
             ->get();
 
         $items = $products->map(fn (Product $product) => $this->itemPayload($product));
+
+        $categories = Category::where('provider_id', $provider->id)
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -43,6 +50,13 @@ class InventoryController extends Controller
                 'business_name' => $provider->business_name,
                 'has_inventory_control' => $provider->usesInventory(),
             ],
+            'categories' => $categories->map(fn (Category $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'sort_order' => $category->sort_order,
+                'is_active' => (bool) $category->is_active,
+                'products_count' => (int) $category->products_count,
+            ])->values(),
             'low_stock_count' => $items->filter(fn (array $item) => $item['low_stock'])->count(),
             'unit_of_measures' => UnitOfMeasure::orderBy('id')->get([
                 'id', 'name', 'symbol', 'base_conversion_factor', 'is_integer_only',
@@ -194,6 +208,8 @@ class InventoryController extends Controller
         return [
             'product_id' => $product->id,
             'name' => $product->name,
+            'category_id' => $product->category_id,
+            'category_name' => $product->category ? $product->category->name : null,
             'is_available' => (bool) $product->is_available,
             'track_stock' => (bool) $product->track_stock,
             'min_stock_alert' => $min,

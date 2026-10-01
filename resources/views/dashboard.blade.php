@@ -2852,6 +2852,7 @@
     }
 
     var fdInventoryData = null;
+    var fdInvCatFilter = '';
 
     function fdInvUnitOptions(selectedId) {
         var units = (fdInventoryData && fdInventoryData.unit_of_measures) || [];
@@ -2996,21 +2997,58 @@
             });
     }
 
-    function fdRenderInventory(data) {
-        var products = data.products || [];
-        var enabled = !!(data.provider && data.provider.has_inventory_control);
-        var lowCount = data.low_stock_count || 0;
+    function fdInvFilterChange(value) {
+        fdInvCatFilter = value || '';
+        if (!fdInventoryData) return;
+        var content = document.getElementById('fd-inventory-content');
+        if (content) content.innerHTML = fdRenderInventory(fdInventoryData);
+    }
 
-        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+    function fdRenderInventory(data) {
+        var all = data.products || [];
+        var cats = data.categories || [];
+        var enabled = !!(data.provider && data.provider.has_inventory_control);
+
+        var selected = String(fdInvCatFilter || '');
+        if (selected && !cats.some(function (c) { return String(c.id) === selected; })) {
+            selected = '';
+            fdInvCatFilter = '';
+        }
+
+        var products = selected
+            ? all.filter(function (p) { return String(p.category_id) === selected; })
+            : all;
+
+        var lowCount = products.filter(function (p) { return p.low_stock; }).length;
+
+        var combo = '<div style="margin-left:auto;display:flex;align-items:center;gap:6px;">'
+            + '<label for="fd-inv-cat-filter" style="font-size:12px;color:#6b7280;font-weight:600;">Categoría</label>'
+            + '<select id="fd-inv-cat-filter" onchange="fdInvFilterChange(this.value)" style="font-size:13px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:0;background:#fff;color:#0f172a;cursor:pointer;">'
+            + '<option value="">Todas las categorías</option>'
+            + cats.map(function (c) {
+                return '<option value="' + escapeHtml(String(c.id)) + '"' + (String(c.id) === selected ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+            }).join('')
+            + '</select>'
+            + '</div>';
+
+        var html = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">'
             + fdBadge(products.length + ' productos', '#0c2a4d', '#eef2f7')
+            + fdBadge(cats.length + ' categorías', '#0c2a4d', '#eef2f7')
             + fdBadge(lowCount + ' con stock bajo', lowCount ? '#b91c1c' : '#047857', lowCount ? '#fee2e2' : '#d1fae5')
             + fdBadge(enabled ? 'Control activo' : 'Control desactivado', enabled ? '#047857' : '#9a3412', enabled ? '#d1fae5' : '#fff7ed')
+            + combo
             + '</div>';
 
         if (!enabled) {
             html += '<div style="background:#fffbeb;border:1px solid #fde68a;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e;">'
                 + 'El control de inventario está desactivado: las ventas no descuentan stock y los ajustes no se aplican. '
                 + 'Activalo con el interruptor de arriba.'
+                + '</div>';
+        }
+
+        if (!products.length) {
+            return html + '<div style="background:#fff;border:1px solid #e5e7eb;padding:32px 20px;text-align:center;">'
+                + '<p style="font-size:13px;color:#6b7280;margin:0;">No hay productos en esta categoría.</p>'
                 + '</div>';
         }
 
