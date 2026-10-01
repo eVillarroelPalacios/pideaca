@@ -122,9 +122,9 @@
                     .btn-primary:hover{background:#ffffff;color:#D24C19;border-color:#D24C19;}
                     .btn-secondary{background:#fff;border:1px solid #cbd5e1;color:#334155;border-radius:4px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
                     .btn-secondary:hover{background:#f8fafc;}
-                    .btn-icon{display:inline-flex;align-items:center;justify-content:center;padding:7px 8px;line-height:0;}
                     .btn-danger{background:#fff;border:1px solid #fecaca;color:#dc2626;border-radius:4px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
                     .btn-danger:hover{background:#fef2f2;}
+                    .btn-icon{display:inline-flex;align-items:center;justify-content:center;padding:7px 8px;line-height:0;}
                     .save-msg{font-size:12px;font-weight:600;display:none;}
                     .save-msg.ok{color:#059669;}
                     .save-msg.err{color:#dc2626;}
@@ -1822,6 +1822,11 @@
     var FD_ICON_EDIT = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
     var FD_ICON_VARIANTS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>';
     var FD_ICON_ADDONS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
+    var FD_ICON_PLUS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>';
+    var FD_ICON_SAVE = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg>';
+    var FD_ICON_UP = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>';
+    var FD_ICON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
+    var FD_ICON_TRASH = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
 
     function fdProdFilterChange(value) {
         fdProdCatFilter = value || '';
@@ -1956,7 +1961,7 @@
             + '<label class="field-label" for="fd-cat-new-name">Nueva categoría</label>'
             + '<div style="display:flex;gap:8px;align-items:flex-start;">'
             + '<div style="flex:1;min-width:0;"><input type="text" id="fd-cat-new-name" class="field-input" maxlength="80" placeholder="Ej: Bebidas frías"></div>'
-            + '<button type="button" class="btn-primary" onclick="fdCatCreate()">Agregar</button>'
+            + '<button type="button" class="btn-primary btn-icon" title="Agregar" aria-label="Agregar" onclick="fdCatCreate()">' + FD_ICON_PLUS + '</button>'
             + '</div>'
             + '<span class="save-msg err" id="fd-cat-new-error" style="display:none;margin-top:6px;"></span>'
             + '</div>';
@@ -1973,10 +1978,10 @@
                 + fdBadge(c.products_count + ' producto(s)', c.products_count ? '#0c2a4d' : '#64748b', c.products_count ? '#eef2f7' : '#f1f5f9')
                 + (c.is_active ? '' : fdBadge('Oculta', '#9a3412', '#fff7ed'))
                 + '<div class="fd-cat-actions">'
-                + '<button type="button" class="btn-secondary" onclick="fdCatRename(this)">Guardar</button>'
-                + '<button type="button" class="btn-secondary" title="Subir" onclick="fdCatMove(this, -1)">&#8593;</button>'
-                + '<button type="button" class="btn-secondary" title="Bajar" onclick="fdCatMove(this, 1)">&#8595;</button>'
-                + '<button type="button" class="btn-danger" onclick="fdCatRemove(this)">Eliminar</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Guardar" aria-label="Guardar" onclick="fdCatRename(this)">' + FD_ICON_SAVE + '</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Subir" aria-label="Subir" onclick="fdCatMove(this, -1)">' + FD_ICON_UP + '</button>'
+                + '<button type="button" class="btn-secondary btn-icon" title="Bajar" aria-label="Bajar" onclick="fdCatMove(this, 1)">' + FD_ICON_DOWN + '</button>'
+                + '<button type="button" class="btn-danger btn-icon" title="Eliminar" aria-label="Eliminar" onclick="fdCatRemove(this)">' + FD_ICON_TRASH + '</button>'
                 + '</div>'
                 + '</div>';
         });
@@ -3057,9 +3062,9 @@
         var toggle = '<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#475569;cursor:pointer;white-space:nowrap;" title="Cambiar seguimiento de stock">'
             + '<input type="checkbox" ' + (p.track_stock ? 'checked' : '')
             + ' onchange="fdInvToggleTrack(\'' + id + '\', this)" style="cursor:pointer;">'
-            + '<span>' + (p.track_stock ? 'Con seguimiento' : 'S/S') + '</span>'
+            + '<span>' + (p.track_stock ? 'C/S' : 'S/S') + '</span>'
             + '</label>';
-        var edit = '<button type="button" onclick="openInventoryStockModal(\'' + id + '\')" style="margin-left:10px;background:#fff;color:#D24C19;border:1px solid #D24C19;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;font-weight:600;">Editar</button>';
+        var edit = '<button type="button" title="Editar" aria-label="Editar" onclick="openInventoryStockModal(\'' + id + '\')" style="margin-left:10px;background:#fff;color:#D24C19;border:1px solid #D24C19;padding:5px 7px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">' + FD_ICON_EDIT + '</button>';
 
         return toggle + edit;
     }
