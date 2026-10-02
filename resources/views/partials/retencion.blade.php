@@ -180,5 +180,8 @@
             })
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
+
+    window.loadRetention = loadRetention;
+    window.saveRetentionRule = saveRetentionRule;
 })();
 </script>

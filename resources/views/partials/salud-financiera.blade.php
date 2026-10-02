@@ -423,5 +423,16 @@
         var box = document.getElementById('fin-recipe');
         if (box) box.style.display = 'none';
     }
+
+    window.loadFinances = loadFinances;
+    window.finGoPage = finGoPage;
+    window.openSupplyForm = openSupplyForm;
+    window.closeSupplyForm = closeSupplyForm;
+    window.saveSupply = saveSupply;
+    window.openRecipe = openRecipe;
+    window.closeRecipe = closeRecipe;
+    window.saveRecipe = saveRecipe;
+    window.addRecipeRow = addRecipeRow;
+    window.updateRecipeTotal = updateRecipeTotal;
 })();
 </script>

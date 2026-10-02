@@ -457,5 +457,13 @@
             })
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
+
+    window.loadSubRevenue = loadSubRevenue;
+    window.openSubPlanForm = openSubPlanForm;
+    window.closeSubPlanForm = closeSubPlanForm;
+    window.addSubPlanRow = addSubPlanRow;
+    window.updateSubPlanEstimate = updateSubPlanEstimate;
+    window.saveSubPlan = saveSubPlan;
+    window.updateSubCharge = updateSubCharge;
 })();
 </script>
