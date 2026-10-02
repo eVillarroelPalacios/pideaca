@@ -404,18 +404,21 @@ class SubscriptionOrdersCommandTest extends TestCase
 
     public function test_preferred_weekday_never_moves_the_delivery_backwards(): void
     {
-        // El plan es diario y el cliente quiere sabados: la proxima fecha tiene
-        // que avanzar hasta el proximo sabado, no caer en el dia siguiente.
+        // El plan es diario y el cliente pide un dia preferido: la proxima
+        // fecha tiene que saltar hasta ese dia, no quedar en el dia siguiente.
+        // El dia se calcula desde hoy para que el salto sea siempre de 2 dias,
+        // sea cual sea el dia de la semana en que corre la prueba.
         $plan = $this->createPlan(SubscriptionPlan::FREQUENCY_DAILY);
         $subscription = $this->subscribe($plan, today()->toDateString());
-        $subscription->update(['preferred_delivery_day' => 6]);
+        $preferido = today()->addDays(2)->dayOfWeekIso;
+        $subscription->update(['preferred_delivery_day' => $preferido]);
 
         $this->artisan('subscriptions:generate-orders')->assertSuccessful();
 
         $proxima = $subscription->fresh()->next_delivery_date;
 
-        $this->assertSame(6, $proxima->dayOfWeekIso);
-        $this->assertGreaterThan(1, (int) today()->diffInDays($proxima, false));
+        $this->assertSame($preferido, $proxima->dayOfWeekIso);
+        $this->assertSame(2, (int) today()->diffInDays($proxima, false));
     }
 
     public function test_preferred_delivery_time_is_left_visible_for_the_kitchen(): void
