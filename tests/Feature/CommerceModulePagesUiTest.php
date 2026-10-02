@@ -143,7 +143,7 @@ class CommerceModulePagesUiTest extends TestCase
             ->assertSee('dash-finanzas', false)
             ->assertSee('dash-retencion', false)
             ->assertSee('dash-suscripciones', false)
-            ->assertDontSee('dash-mis-suscripciones', false)
+            ->assertDontSee('id="dash-mis-suscripciones"', false)
             ->assertSee('loadFinances()', false)
             ->assertSee('loadRetention()', false)
             ->assertSee('loadSubRevenue()', false);

@@ -3532,13 +3532,32 @@
             html += '<div style="font-size:11px;color:#047857;background:#ecfdf5;padding:6px 8px;">' + escapeHtml(p.promo) + '</div>';
         }
 
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;">'
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;flex-wrap:wrap;">'
             + '<span style="font-size:11px;color:#6b7280;">' + Number(p.products_count || 0) + ' productos · ' + Number(p.categories_count || 0) + ' categorías</span>'
+            + '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
+            + (Number(p.active_subscription_plans_count || 0) > 0
+                ? '<button type="button" onclick="fdSubscribeToProvider(' + Number(p.id) + ')" title="Suscribirse a un plan de este comercio" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Suscribirse</button>'
+                : '')
             + '<button type="button" onclick="openFdShop(' + Number(p.id) + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Ver catálogo</button>'
+            + '</span>'
             + '</div>'
             + '</div>';
 
         return html;
+    }
+
+    function fdSubscribeToProvider(providerId) {
+        var section = document.getElementById('dash-mis-suscripciones');
+        if (!section) {
+            fdToast('No tenés habilitada la sección Mis Suscripciones.', true);
+            return;
+        }
+
+        showDashSection('mis-suscripciones');
+
+        if (typeof openSubNewForm === 'function') {
+            openSubNewForm(Number(providerId));
+        }
     }
 
     function openFdShop(providerId) {

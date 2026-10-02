@@ -16,6 +16,7 @@ use App\Models\ProductOption;
 use App\Models\ProductOptionGroup;
 use App\Models\ProductVariant;
 use App\Models\Provider;
+use App\Models\SubscriptionPlan;
 use App\Models\TypeUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -188,6 +189,44 @@ class ClientPanelTest extends TestCase
 
         $empty = $this->getJson('/api/providers?search=zzzz')->json('providers');
         $this->assertSame([], $empty);
+    }
+
+    public function test_providers_listing_reports_active_subscription_plans(): void
+    {
+        $otroUser = User::create([
+            'name' => 'Sin Planes',
+            'email' => 'sinplanes@example.com',
+            'type_user_id' => $this->prestadorType->id,
+            'password' => 'password',
+        ]);
+        $otro = Provider::create([
+            'user_id' => $otroUser->id,
+            'business_name' => 'Kiosco Sin Planes',
+            'is_active' => true,
+        ]);
+
+        SubscriptionPlan::create([
+            'provider_id' => $this->provider->id,
+            'title' => 'Mega Ganga',
+            'frequency' => SubscriptionPlan::FREQUENCY_WEEKLY,
+            'price' => 5500,
+            'discount_percentage' => 10,
+            'is_active' => true,
+        ]);
+        SubscriptionPlan::create([
+            'provider_id' => $this->provider->id,
+            'title' => 'Plan oculto',
+            'frequency' => SubscriptionPlan::FREQUENCY_MONTHLY,
+            'price' => 9000,
+            'discount_percentage' => 0,
+            'is_active' => false,
+        ]);
+
+        $porId = collect($this->getJson('/api/providers')->json('providers'))->keyBy('id');
+
+        // Solo los planes visibles habilitan el boton Suscribirse de la tarjeta
+        $this->assertSame(1, $porId[$this->provider->id]['active_subscription_plans_count']);
+        $this->assertSame(0, $porId[$otro->id]['active_subscription_plans_count']);
     }
 
     public function test_providers_listing_only_returns_the_modules_category(): void

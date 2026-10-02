@@ -383,7 +383,7 @@
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
 
-    function openSubNewForm() {
+    function openSubNewForm(preselectProviderId) {
         var form = document.getElementById('mysub-form');
         form.style.display = 'block';
         form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -391,11 +391,21 @@
         loadMySubAddresses();
 
         var provider = document.getElementById('mysub-provider');
-        if (mySubState.providers.length) {
+
+        function renderProviders(list) {
             provider.innerHTML = '<option value="">Elegí un comercio</option>'
-                + mySubState.providers.map(function (p) {
+                + list.map(function (p) {
                     return '<option value="' + p.id + '">' + escapeHtml(p.business_name) + '</option>';
                 }).join('');
+
+            if (preselectProviderId) {
+                provider.value = String(preselectProviderId);
+                if (provider.value) onMySubProviderChange();
+            }
+        }
+
+        if (mySubState.providers.length) {
+            renderProviders(mySubState.providers);
         } else {
             provider.innerHTML = '<option value="">Cargando comercios...</option>';
             fdFetchJson(MYSUB_URL.providers)
@@ -404,11 +414,9 @@
                         provider.innerHTML = '<option value="">No se pudieron cargar los comercios</option>';
                         return;
                     }
+
                     mySubState.providers = res.data.providers || [];
-                    provider.innerHTML = '<option value="">Elegí un comercio</option>'
-                        + mySubState.providers.map(function (p) {
-                            return '<option value="' + p.id + '">' + escapeHtml(p.business_name) + '</option>';
-                        }).join('');
+                    renderProviders(mySubState.providers);
                 })
                 .catch(function () {
                     provider.innerHTML = '<option value="">No se pudo conectar con el servidor</option>';
@@ -580,5 +588,18 @@
             })
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
+
+    window.loadMySubscriptions = loadMySubscriptions;
+    window.changeMySubStatus = changeMySubStatus;
+    window.openMySubItems = openMySubItems;
+    window.closeMySubItems = closeMySubItems;
+    window.updateMySubItemsTotal = updateMySubItemsTotal;
+    window.saveMySubItems = saveMySubItems;
+    window.openSubNewForm = openSubNewForm;
+    window.closeSubNewForm = closeSubNewForm;
+    window.onMySubProviderChange = onMySubProviderChange;
+    window.onMySubPlanChange = onMySubPlanChange;
+    window.updateMySubFlavorTotal = updateMySubFlavorTotal;
+    window.createMySubscription = createMySubscription;
 })();
 </script>

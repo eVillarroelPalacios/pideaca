@@ -45,6 +45,7 @@ class ProviderController extends Controller
             ->withCount([
                 'categories as categories_count' => fn ($query) => $query->reorder()->where('is_active', true),
                 'products as products_count' => fn ($query) => $query->reorder()->where('is_available', true),
+                'subscriptionPlans as active_subscription_plans_count' => fn ($query) => $query->where('is_active', true),
             ])
             ->with('category:id,description')
             ->orderBy('business_name')
@@ -63,6 +64,7 @@ class ProviderController extends Controller
                 'banner_image' => $provider->banner_image,
                 'categories_count' => (int) $provider->categories_count,
                 'products_count' => (int) $provider->products_count,
+                'active_subscription_plans_count' => (int) $provider->active_subscription_plans_count,
             ]);
 
         return response()->json([
