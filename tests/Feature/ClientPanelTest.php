@@ -391,15 +391,25 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_renders_the_favorite_shops_tabs(): void
     {
-        $this->actingAs($this->client)
-            ->get('/dashboard')
-            ->assertOk()
-            ->assertSee('id="fd-shops-tabs"', false)
-            ->assertSee('id="fd-shops-tab-favorites"', false)
-            ->assertSee('id="fd-shops-tab-all"', false)
-            ->assertSee("fdShopsTab('favorites')", false)
-            ->assertSee('function fdToggleFavorite(', false)
-            ->assertSee('function fdShopsTab(', false);
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertStringContainsString('id="fd-shops-tabs"', $html);
+        $this->assertStringContainsString("fdShopsTab('favorites')", $html);
+        $this->assertStringContainsString('function fdToggleFavorite(', $html);
+        $this->assertStringContainsString('function fdShopsTab(', $html);
+
+        // Los botones de la seccion quedaron solo-icono: accesibles por
+        // title/aria-label y sin etiqueta de texto visible.
+        $tabs = substr($html, strpos($html, 'id="fd-shops-tabs"'), 3000);
+        $this->assertStringContainsString('aria-label="Mis favoritos"', $tabs);
+        $this->assertStringContainsString('aria-label="Todos los comercios"', $tabs);
+        $this->assertMatchesRegularExpression('/id="fd-shops-tab-all"[^>]*>\s*<svg/', $tabs);
+        $this->assertDoesNotMatchRegularExpression('/<\/svg>\s*Mis favoritos/', $tabs);
+        $this->assertDoesNotMatchRegularExpression('/<\/svg>\s*Todos los comercios/', $tabs);
+
+        $header = substr($html, strpos($html, 'id="fd-shops-search"'), 600);
+        $this->assertStringContainsString('aria-label="Actualizar comercios"', $header);
+        $this->assertDoesNotMatchRegularExpression('/<\/svg>\s*Actualizar\s*<\/button>/', $header);
     }
 
     public function test_providers_listing_only_returns_the_modules_category(): void
@@ -621,6 +631,23 @@ class ClientPanelTest extends TestCase
             ->assertSee('value="cliente.demo@example.com"', false)
             ->assertDontSee('Próximamente podrás gestionar comercios aquí.')
             ->assertDontSee('Próximamente podrás gestionar mis pedidos aquí.');
+    }
+
+    public function test_shop_confirm_button_sits_inside_the_modal_below_the_cart(): void
+    {
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+
+        $cartPos = strpos($html, 'id="fd-shop-cart"');
+        $btnPos = strpos($html, 'id="fd-shop-submit"');
+
+        $this->assertNotFalse($cartPos);
+        $this->assertNotFalse($btnPos);
+        $this->assertGreaterThan($cartPos, $btnPos, 'El botón de confirmar debe ir debajo del carrito (nota para el comercio).');
+
+        $btnTag = substr($html, $btnPos, 400);
+        $this->assertStringNotContainsString('position:absolute', $btnTag, 'El botón ya no debe ser flotante.');
+        $this->assertStringContainsString('width:100%;background:#D24C19', $btnTag);
+        $this->assertStringContainsString('Confirmar compra', $btnTag);
     }
 
     public function test_dashboard_does_not_show_client_sections_to_a_prestador(): void

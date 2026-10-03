@@ -6,8 +6,8 @@
             <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Tus pedidos automáticos y el día que querés recibirlos</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" onclick="openSubNewForm()" style="background:#D24C19;color:#fff;border:none;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">+ Suscribirme</button>
-            <button type="button" onclick="loadMySubscriptions()" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">Actualizar</button>
+            <button type="button" onclick="openSubNewForm()" title="Suscribirme" aria-label="Suscribirme" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg></button>
+            <button type="button" onclick="loadMySubscriptions()" title="Actualizar suscripciones" aria-label="Actualizar suscripciones" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button>
         </div>
     </div>
 
@@ -83,8 +83,8 @@
         </div>
 
         <div style="display:flex;gap:8px;align-items:center;">
-            <button type="button" onclick="createMySubscription()" style="background:#D24C19;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Confirmar suscripción</button>
-            <button type="button" onclick="closeSubNewForm()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cancelar</button>
+            <button type="button" onclick="createMySubscription()" title="Confirmar suscripción" aria-label="Confirmar suscripción" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
+            <button type="button" onclick="closeSubNewForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
     </div>
 
@@ -94,8 +94,8 @@
         <div id="mysub-items-rows"></div>
         <p id="mysub-items-hint" style="font-size:12px;margin:8px 0 0;color:#6b7280;font-weight:600;"></p>
         <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-            <button type="button" onclick="saveMySubItems()" style="background:#D24C19;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Guardar</button>
-            <button type="button" onclick="closeMySubItems()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cerrar</button>
+            <button type="button" onclick="saveMySubItems()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
+            <button type="button" onclick="closeMySubItems()" title="Cerrar" aria-label="Cerrar" style="background:#fff;color:#374151;border:1px solid #d1d5db;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
     </div>
 </section>
@@ -165,8 +165,10 @@
                     box.innerHTML = '<div style="background:#fff;border:1px dashed #d1d5db;padding:40px 24px;text-align:center;">'
                         + '<p style="font-size:14px;color:#6b7280;margin:0 0 12px;">'
                         + 'Todavía no tenés suscripciones. Buscá un comercio y armá tu plan.</p>'
-                        + '<button type="button" onclick="openSubNewForm()" style="background:#D24C19;color:#fff;border:none;'
-                        + 'padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Elegir plan</button></div>';
+                        + '<button type="button" onclick="openSubNewForm()" title="Elegir plan" aria-label="Elegir plan" style="background:#D24C19;color:#fff;border:none;'
+                        + 'width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
+                        + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>'
+                        + '</button></div>';
                 } else {
                     box.innerHTML = mySubState.subscriptions.map(function (sub) {
                         var plan = sub.plan || {};
@@ -224,15 +226,15 @@
                             + (canEdit
                                 ? '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
                                     + (plan.items && plan.items.length > 1
-                                        ? '<button type="button" onclick="openMySubItems(' + sub.id + ')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cambiar sabores</button>'
+                                        ? '<button type="button" onclick="openMySubItems(' + sub.id + ')" title="Cambiar sabores" aria-label="Cambiar sabores" style="background:#fff;color:#D24C19;border:1px solid #D24C19;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg></button>'
                                         : '')
                                     + (sub.status === 'ACTIVE'
-                                        ? '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'PAUSED\')" style="background:#fff;color:#b45309;border:1px solid #fde68a;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Pausar</button>'
+                                        ? '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'PAUSED\')" title="Pausar" aria-label="Pausar" style="background:#fff;color:#b45309;border:1px solid #fde68a;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></button>'
                                         : '')
                                     + (sub.status === 'PAUSED'
-                                        ? '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'ACTIVE\')" style="background:#047857;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Reanudar</button>'
+                                        ? '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'ACTIVE\')" title="Reanudar" aria-label="Reanudar" style="background:#047857;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg></button>'
                                         : '')
-                                    + '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'CANCELLED\')" style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cancelar</button>'
+                                    + '<button type="button" onclick="changeMySubStatus(' + sub.id + ', \'CANCELLED\')" title="Cancelar suscripción" aria-label="Cancelar suscripción" style="background:#fff;color:#b91c1c;border:1px solid #fecaca;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'
                                     + '</div>'
                                 : '')
                             + '</div>';

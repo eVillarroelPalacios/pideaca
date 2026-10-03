@@ -3280,6 +3280,10 @@
     var fdOrdersLastHtml = '';
     var fdMyOrdersLastHtml = '';
 
+    // Mis Pedidos: pestaña activa (pedidos de hoy / historial) y pedido completos.
+    var fdMyOrdersActive = 'today';
+    var fdMyOrdersAll = [];
+
     function loadProviderOrders(silent) {
         var providerId = fdProviderId('dash-pedidos');
         if (!providerId) {
@@ -3461,12 +3465,13 @@
         var allBtn = document.getElementById('fd-shops-tab-all');
         var isFav = fdShopsTabActive === 'favorites';
 
+        var tabBase = 'padding:7px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;';
         if (favBtn) favBtn.style.cssText = isFav
-            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;'
-            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;';
+            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;' + tabBase
+            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;' + tabBase;
         if (allBtn) allBtn.style.cssText = !isFav
-            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;'
-            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;';
+            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;' + tabBase
+            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;' + tabBase;
 
         [['favorites', 'fd-shops-count-favorites'], ['all', 'fd-shops-count-all']].forEach(function (pair) {
             var el = document.getElementById(pair[1]);
@@ -3483,6 +3488,14 @@
         fdShopsTabActive = tab;
         fdPaintShopsTabs();
         loadComercios();
+    }
+
+    // Estado vacio de Favoritos: solo el boton con icono, sin descripcion.
+    function fdShopsFavoritesEmptyHtml() {
+        return '<button type="button" onclick="fdShopsTab(\'all\')" title="Ver todos los comercios" aria-label="Ver todos los comercios" '
+            + 'style="background:#D24C19;color:#fff;border:none;padding:8px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>'
+            + '</button>';
     }
 
     function fdSetMyOrdersState(state, text) {
@@ -3547,8 +3560,7 @@
 
                 if (!providers.length) {
                     if (isFavorites) {
-                        fdSetShopsState('message', 'Todavía no marcaste comercios como favoritos.\nBuscá en "Todos los comercios" y tocá la estrella para guardarlos.',
-                            '<button type="button" onclick="fdShopsTab(\'all\')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Ver todos los comercios</button>');
+                        fdSetShopsState('message', '', fdShopsFavoritesEmptyHtml());
                     } else {
                         fdSetShopsState('message', search
                             ? 'No encontramos comercios con ese nombre.'
@@ -3652,8 +3664,7 @@
                     var grid = document.getElementById('fd-shops-grid');
                     var stillThere = grid && grid.querySelector ? grid.querySelector('[data-fd-provider]') : null;
                     if (!stillThere) {
-                        fdSetShopsState('message', 'Todavía no marcaste comercios como favoritos.\nBuscá en "Todos los comercios" y tocá la estrella para guardarlos.',
-                            '<button type="button" onclick="fdShopsTab(\'all\')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Ver todos los comercios</button>');
+                        fdSetShopsState('message', '', fdShopsFavoritesEmptyHtml());
                     }
                 }
 
@@ -3688,6 +3699,7 @@
         document.getElementById('fd-shop-body').innerHTML =
             '<p style="font-size:13px;color:#6b7280;text-align:center;padding:32px 0;margin:0;">Cargando catálogo...</p>';
         document.getElementById('fd-shop-cart').innerHTML = '';
+        fdShopPaintBadge();
 
         fdLoadShopAddresses();
 
@@ -3727,6 +3739,7 @@
         FD_SHOP.providerId = null;
         FD_SHOP.catalog = null;
         FD_SHOP.cart = [];
+        fdShopPaintBadge();
     }
 
     function fdRenderShopCatalog(categories) {
@@ -3749,13 +3762,24 @@
         var groups = p.option_groups || [];
         var maxQty = Number(FD_SHOP.settings.max_quantity_per_item || 20);
 
-        var html = '<div id="fd-p-' + p.id + '" style="background:#fff;border:1px solid #e5e7eb;padding:12px 14px;margin-bottom:10px;">'
+        var initial = escapeHtml(String(p.name || '?').charAt(0).toUpperCase());
+        var photo = '<div style="width:88px;height:88px;flex:none;border-radius:6px;overflow:hidden;background:#eef2f6;display:flex;align-items:center;justify-content:center;position:relative;">'
+            + '<span style="font-size:26px;font-weight:800;color:#94a3b8;">' + initial + '</span>'
+            + (p.image_path
+                ? '<img src="{{ asset("images/") }}/' + escapeHtml(p.image_path) + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove();" />'
+                : '')
+            + '</div>';
+
+        var html = '<div id="fd-p-' + p.id + '" style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px 14px;margin-bottom:10px;">'
+            + '<div style="display:flex;gap:12px;align-items:flex-start;">'
+            + photo
+            + '<div style="flex:1;min-width:0;">'
             + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">'
             + '<div style="min-width:0;">'
-            + '<div style="font-size:14px;font-weight:600;color:#0c2a4d;">' + escapeHtml(p.name) + '</div>'
+            + '<div style="font-size:14px;font-weight:700;color:#0f172a;">' + escapeHtml(p.name) + '</div>'
             + (p.description ? '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + escapeHtml(p.description) + '</div>' : '')
             + '</div>'
-            + '<div style="font-size:14px;font-weight:700;color:#D24C19;white-space:nowrap;">'
+            + '<div style="font-size:14px;font-weight:700;color:#0f172a;white-space:nowrap;">'
             + fdMoney(variants.length ? variants[0].price : p.price) + '</div>'
             + '</div>';
 
@@ -3779,26 +3803,29 @@
             var max = Number(g.max_choices || 0);
             var hint = (min > 0 ? 'obligatorio' : 'opcional') + (max > 0 ? ', hasta ' + max : '');
 
-            html += '<div style="margin-top:8px;font-size:12px;color:#334155;">'
-                + '<b>' + escapeHtml(g.name) + '</b> <span style="color:#94a3b8;">(' + hint + ')</span>'
+            html += '<div style="margin-top:10px;font-size:12px;color:#334155;">'
+                + '<div style="font-weight:700;color:#0f172a;">' + escapeHtml(g.name) + ' <span style="color:#94a3b8;font-weight:500;">(' + hint + ')</span></div>'
                 + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">'
                 + opts.map(function (o) {
                     return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;background:#f8fafc;border:1px solid #e5e7eb;padding:5px 8px;cursor:pointer;">'
-                        + '<input type="checkbox" class="fd-opt" data-product="' + p.id + '" data-group="' + g.id + '" value="' + o.id + '" />'
+                        + '<input type="checkbox" class="fd-opt" data-product="' + p.id + '" data-group="' + g.id + '" data-extra="' + Number(o.extra_price || 0) + '" value="' + o.id + '" style="accent-color:#D24C19;cursor:pointer;" />'
                         + escapeHtml(o.name)
-                        + (Number(o.extra_price) > 0 ? ' <span style="color:#047857;">+' + fdMoney(o.extra_price) + '</span>' : '')
+                        + (Number(o.extra_price) > 0 ? ' <span style="margin-left:4px;color:#D24C19;font-weight:700;">+' + fdMoney(o.extra_price) + '</span>' : '')
                         + '</label>';
                 }).join('')
                 + '</div></div>';
         });
 
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">'
+        html += '</div></div>'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">'
             + '<div style="display:flex;align-items:center;gap:6px;">'
-            + '<button type="button" onclick="fdShopQty(' + p.id + ', -1)" style="width:28px;height:28px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;">−</button>'
-            + '<input type="number" id="fd-qty-' + p.id + '" value="1" min="1" readonly style="width:56px;text-align:center;padding:5px 0;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />'
-            + '<button type="button" onclick="fdShopQty(' + p.id + ', 1)" style="width:28px;height:28px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;">+</button>'
+            + '<button type="button" onclick="fdShopQty(' + p.id + ', -1)" title="Quitar una unidad" aria-label="Quitar una unidad" style="width:30px;height:30px;border:1px solid #e5e7eb;background:#f3f4f6;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;color:#374151;">−</button>'
+            + '<input type="number" id="fd-qty-' + p.id + '" value="1" min="1" readonly style="width:48px;text-align:center;padding:5px 0;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;background:#fff;" />'
+            + '<button type="button" onclick="fdShopQty(' + p.id + ', 1)" title="Agregar una unidad" aria-label="Agregar una unidad" style="width:30px;height:30px;border:1px solid #e5e7eb;background:#f3f4f6;border-radius:4px;cursor:pointer;font-size:15px;line-height:1;color:#374151;">+</button>'
             + '</div>'
-            + '<button type="button" onclick="fdShopAdd(' + p.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Agregar</button>'
+            + '<button type="button" class="btn-icon" onclick="fdShopAdd(' + p.id + ')" title="Agregar al carrito" aria-label="Agregar al carrito" style="background:#D24C19;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/><line x1="12" x2="12" y1="10" y2="16"/><line x1="9" x2="15" y1="13" y2="13"/></svg>'
+            + '</button>'
             + '</div>'
             + '<div id="fd-p-msg-' + p.id + '" style="display:none;font-size:11px;color:#b91c1c;margin-top:6px;"></div>'
             + '</div>';
@@ -3898,26 +3925,101 @@
             optionLabels.push(box.parentNode.textContent.trim());
         });
 
-        FD_SHOP.cart.push({
-            product_id: Number(p.id),
-            variant_id: variantId,
-            quantity: quantity,
-            product_name: p.name,
-            variant_name: variantName,
-            unit_price: unitPrice,
-            options: options,
-            options_extra: optionsExtra,
-            option_labels: optionLabels
+        var maxItems = Number(FD_SHOP.settings.max_items_per_order || 30);
+        var sortedOptions = options.slice().sort();
+        var sameLine = -1;
+
+        FD_SHOP.cart.forEach(function (line, i) {
+            if (sameLine !== -1) return;
+            if (Number(line.product_id) === Number(p.id)
+                && line.variant_id === variantId
+                && (line.options || []).slice().sort().join(',') === sortedOptions.join(',')) {
+                sameLine = i;
+            }
         });
+
+        if (sameLine !== -1) {
+            var merged = FD_SHOP.cart[sameLine];
+            if (Number(merged.quantity) + quantity > maxQty) {
+                showMsg('Máximo ' + maxQty + ' unidades por producto.');
+                return;
+            }
+            merged.quantity = Number(merged.quantity) + quantity;
+        } else {
+            if (FD_SHOP.cart.length >= maxItems) {
+                showMsg('Podés llevar hasta ' + maxItems + ' productos distintos por pedido.');
+                return;
+            }
+
+            FD_SHOP.cart.push({
+                product_id: Number(p.id),
+                variant_id: variantId,
+                quantity: quantity,
+                product_name: p.name,
+                variant_name: variantName,
+                unit_price: unitPrice,
+                options: options,
+                options_extra: optionsExtra,
+                option_labels: optionLabels
+            });
+        }
 
         if (qtyEl) qtyEl.value = 1;
         hideMsg();
         fdRenderShopCart();
+        fdToast('Agregado al carrito');
     }
 
     function fdShopRemove(index) {
         FD_SHOP.cart.splice(Number(index), 1);
         fdRenderShopCart();
+    }
+
+    function fdShopLineQty(index, delta) {
+        var line = FD_SHOP.cart[Number(index)];
+        if (!line) return;
+
+        var max = Number(FD_SHOP.settings.max_quantity_per_item || 20);
+        var next = Number(line.quantity) + Number(delta);
+
+        if (next < 1) {
+            fdShopRemove(index);
+            return;
+        }
+
+        line.quantity = Math.min(next, Math.max(max, 1));
+        fdRenderShopCart();
+    }
+
+    function fdShopPaintBadge() {
+        var badge = document.getElementById('fd-shop-cart-badge');
+        var confirmBtn = document.getElementById('fd-shop-submit');
+        if (!badge) return;
+
+        var units = 0;
+        var subtotal = 0;
+        FD_SHOP.cart.forEach(function (line) {
+            units += Number(line.quantity);
+            subtotal += (Number(line.unit_price) + Number(line.options_extra)) * Number(line.quantity);
+        });
+
+        if (!units) {
+            badge.style.display = 'none';
+            badge.innerHTML = '';
+            if (confirmBtn) {
+                confirmBtn.style.display = 'none';
+                confirmBtn.disabled = false;
+                confirmBtn.title = 'Confirmar compra';
+            }
+            return;
+        }
+
+        badge.style.display = 'inline-flex';
+        badge.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>'
+            + '<span style="background:#D24C19;color:#fff;border-radius:9999px;min-width:17px;height:17px;padding:0 5px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">' + units + '</span>'
+            + '<b>' + fdMoney(subtotal) + '</b>';
+
+        if (confirmBtn) confirmBtn.style.display = 'inline-flex';
     }
 
     function fdLoadShopAddresses() {
@@ -3945,8 +4047,10 @@
         var keepPayment = prevPayment ? prevPayment.value : '';
 
         if (!FD_SHOP.cart.length) {
-            el.innerHTML = '<div style="font-size:12px;color:#6b7280;text-align:center;">'
+            el.innerHTML = '<div style="font-size:12px;color:#6b7280;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>'
                 + 'Tu carrito está vacío. Agregá productos para continuar.</div>';
+            fdShopPaintBadge();
             return;
         }
 
@@ -3955,7 +4059,7 @@
             var lineTotal = (Number(line.unit_price) + Number(line.options_extra)) * Number(line.quantity);
             subtotal += lineTotal;
 
-            return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;">'
+            return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px dashed #e5e7eb;">'
                 + '<div style="min-width:0;">'
                 + '<b>' + Number(line.quantity) + '×</b> ' + escapeHtml(line.product_name)
                 + (line.variant_name ? ' <span style="color:#94a3b8;">(' + escapeHtml(line.variant_name) + ')</span>' : '')
@@ -3963,9 +4067,16 @@
                     ? '<div style="font-size:11px;color:#6b7280;">' + line.option_labels.map(escapeHtml).join(', ') + '</div>'
                     : '')
                 + '</div>'
-                + '<div style="display:flex;align-items:center;gap:8px;white-space:nowrap;">'
+                + '<div style="display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none;">'
+                + '<span style="display:flex;align-items:center;gap:4px;">'
+                + '<button type="button" onclick="fdShopLineQty(' + index + ', -1)" title="Quitar una unidad" aria-label="Quitar una unidad" style="width:24px;height:24px;border:1px solid #e5e7eb;background:#f3f4f6;border-radius:4px;cursor:pointer;font-size:13px;line-height:1;color:#374151;">−</button>'
+                + '<span style="min-width:18px;text-align:center;font-weight:600;">' + Number(line.quantity) + '</span>'
+                + '<button type="button" onclick="fdShopLineQty(' + index + ', 1)" title="Agregar una unidad" aria-label="Agregar una unidad" style="width:24px;height:24px;border:1px solid #e5e7eb;background:#f3f4f6;border-radius:4px;cursor:pointer;font-size:13px;line-height:1;color:#374151;">+</button>'
+                + '</span>'
                 + '<span style="font-weight:600;">' + fdMoney(lineTotal) + '</span>'
-                + '<button type="button" onclick="fdShopRemove(' + index + ')" title="Quitar" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:15px;line-height:1;padding:0;">&times;</button>'
+                + '<button type="button" class="btn-icon" onclick="fdShopRemove(' + index + ')" title="Quitar del carrito" aria-label="Quitar del carrito" style="background:none;color:#dc2626;border:none;border-radius:4px;cursor:pointer;padding:2px;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>'
+                + '</button>'
                 + '</div></div>';
         }).join('');
 
@@ -3998,7 +4109,14 @@
                 + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
         }).join('');
 
-        el.innerHTML = lines
+        var units = 0;
+        FD_SHOP.cart.forEach(function (line) { units += Number(line.quantity); });
+
+        el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">'
+            + '<span style="font-size:12px;font-weight:800;color:#0c2a4d;text-transform:uppercase;letter-spacing:.4px;">Tu carrito</span>'
+            + '<span style="font-size:11px;color:#6b7280;">' + units + (units === 1 ? ' unidad' : ' unidades') + ' · ' + FD_SHOP.cart.length + (FD_SHOP.cart.length === 1 ? ' producto' : ' productos') + '</span>'
+            + '</div>'
+            + lines
             + '<div style="border-top:1px solid #e5e7eb;margin-top:8px;padding-top:8px;font-size:13px;">'
             + fdTotalRow('Subtotal', fdMoney(subtotal), false)
             + fdTotalRow('Envío', fdMoney(fee), false)
@@ -4015,16 +4133,21 @@
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nota para el comercio</label>'
             + '<textarea id="fd-shop-notes" rows="2" maxlength="1000" placeholder="Ej: sin cebolla, timbre roto, etc." style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">'
             + escapeHtml(keepNotes) + '</textarea></div>'
-            + '<div id="fd-shop-msg" style="display:none;font-size:12px;color:#b91c1c;margin-top:8px;"></div>'
-            + '<div style="display:flex;justify-content:flex-end;margin-top:10px;">'
-            + '<button type="button" id="fd-shop-submit" onclick="fdShopSubmit()" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;">'
-            + 'Confirmar pedido · ' + fdMoney(total)
-            + '</button></div>';
+            + '<div id="fd-shop-msg" style="display:none;font-size:12px;color:#b91c1c;margin-top:8px;"></div>';
+
+        var submitBtn = document.getElementById('fd-shop-submit');
+        if (submitBtn && !submitBtn.disabled) {
+            submitBtn.title = 'Confirmar compra · ' + fdMoney(total);
+            submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+                + '<span>Confirmar compra · ' + fdMoney(total) + '</span>';
+        }
 
         if (keepNotes) {
             var notes = document.getElementById('fd-shop-notes');
             if (notes) notes.value = keepNotes;
         }
+
+        fdShopPaintBadge();
     }
 
     function fdShopShowMsg(text, isError) {
@@ -4071,7 +4194,11 @@
         };
 
         FD_SHOP.busy = true;
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviando...'; }
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.title = 'Enviando...';
+            submitBtn.style.opacity = '0.65';
+        }
 
         fetch('{{ url("/api/orders") }}', {
             method: 'POST',
@@ -4087,12 +4214,18 @@
             FD_SHOP.busy = false;
 
             if (!res.ok) {
-                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirmar pedido'; }
                 var message = (res.data && res.data.message) || 'No se pudo registrar el pedido.';
                 if (res.data && res.data.errors) {
                     var firstKey = Object.keys(res.data.errors)[0];
                     message = res.data.errors[firstKey][0];
                 }
+                // Repinta el carrito: conserva dirección/nota/pago y devuelve
+                // el botón con el total por si el usuario reintenta.
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                }
+                fdRenderShopCart();
                 fdShopShowMsg(message, true);
                 return;
             }
@@ -4100,21 +4233,27 @@
             var orderNumber = (res.data.order && res.data.order.order_number) || '';
 
             FD_SHOP.cart = [];
+            fdShopPaintBadge();
             document.getElementById('fd-shop-cart').innerHTML =
                 '<div style="text-align:center;padding:6px 0;">'
                 + '<div style="font-size:14px;font-weight:700;color:#047857;margin-bottom:6px;">Pedido registrado</div>'
                 + '<div style="font-size:12px;color:#64748b;">'
                 + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
                 + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
-                + '<button type="button" onclick="closeFdShop();showDashSection(\'mis-pedidos\');" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
-                + 'Ver mis pedidos</button>'
+                + '<button type="button" onclick="closeFdShop();showDashSection(\'mis-pedidos\');" title="Ver mis pedidos" aria-label="Ver mis pedidos" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
+                + '</button>'
                 + '</div>';
 
             loadMyOrders();
         })
         .catch(function () {
             FD_SHOP.busy = false;
-            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Confirmar pedido'; }
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            }
+            fdRenderShopCart();
             fdShopShowMsg('No se pudo conectar con el servidor.', true);
         });
     }
@@ -4150,35 +4289,144 @@
                 var orders = res.data.orders || [];
                 var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
 
+                fdMyOrdersAll = orders;
+                var groups = fdMyOrdersSplit();
+
                 var summary = document.getElementById('fd-myorders-summary');
                 if (summary) {
                     summary.textContent = (orders.length
-                        ? orders.length + ' pedidos' + (pending ? ' · ' + pending + ' pendientes' : '')
+                        ? groups.today.length + ' de hoy · ' + groups.history.length + ' en historial'
+                            + (pending ? ' · ' + pending + ' pendientes' : '')
                         : 'Tus pedidos y su estado')
                         + ' · actualizado ' + fdClock();
                 }
 
                 if (!orders.length) {
                     fdMyOrdersLastHtml = '';
+                    fdMyOrdersPaintTabs(groups);
                     fdSetMyOrdersState('message', savedFilter
                         ? 'No hay pedidos con ese estado.'
                         : 'Todavía no hiciste pedidos.\nEntrá a Comercios y armá tu primer pedido.');
                     return;
                 }
 
-                var html = orders.map(fdRenderMyOrder).join('');
-                var list = document.getElementById('fd-myorders-list');
-
-                if (silent && html === fdMyOrdersLastHtml && list.style.display === 'block') return;
-
-                fdMyOrdersLastHtml = html;
-                list.innerHTML = html;
-                fdSetMyOrdersState('content');
+                fdMyOrdersRender(silent);
             })
             .catch(function () {
                 if (silent) return;
                 fdSetMyOrdersState('message', 'No se pudo conectar con el servidor.');
             });
+    }
+
+    function fdMyOrdersIsToday(o) {
+        var d = new Date(String((o && o.created_at) || '').replace(' ', 'T'));
+        if (isNaN(d.getTime())) return false;
+
+        var now = new Date();
+        return d.getFullYear() === now.getFullYear()
+            && d.getMonth() === now.getMonth()
+            && d.getDate() === now.getDate();
+    }
+
+    function fdMyOrdersSplit() {
+        var groups = { today: [], history: [] };
+        fdMyOrdersAll.forEach(function (o) {
+            groups[fdMyOrdersIsToday(o) ? 'today' : 'history'].push(o);
+        });
+        return groups;
+    }
+
+    function fdMyOrdersPaintTabs(groups) {
+        var keys = ['today', 'history'];
+        keys.forEach(function (key) {
+            var count = groups[key].length;
+
+            var badge = document.getElementById('fd-myorders-count-' + key);
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count ? 'inline-flex' : 'none';
+            }
+
+            var btn = document.getElementById('fd-myorders-tab-' + key);
+            if (btn) {
+                var on = fdMyOrdersActive === key;
+                btn.style.background = on ? '#fff1eb' : '#fff';
+                btn.style.color = on ? '#D24C19' : '#6b7280';
+                btn.style.border = on ? '1px solid #D24C19' : '1px solid #e5e7eb';
+            }
+        });
+
+        var range = document.getElementById('fd-myorders-range');
+        if (range) range.style.display = fdMyOrdersActive === 'history' ? 'flex' : 'none';
+    }
+
+    function fdMyOrdersClearRange() {
+        var from = document.getElementById('fd-myorders-date-from');
+        var to = document.getElementById('fd-myorders-date-to');
+        if (from) from.value = '';
+        if (to) to.value = '';
+        fdMyOrdersLastHtml = '';
+        fdMyOrdersRender(false);
+    }
+
+    function fdMyOrdersTab(tab) {
+        fdMyOrdersActive = tab === 'history' ? 'history' : 'today';
+        fdMyOrdersLastHtml = '';
+        fdMyOrdersRender(false);
+    }
+
+    function fdMyOrdersRender(silent) {
+        var groups = fdMyOrdersSplit();
+        fdMyOrdersPaintTabs(groups);
+
+        var list = fdMyOrdersActive === 'today' ? groups.today : groups.history;
+        var rangeActive = false;
+
+        if (fdMyOrdersActive === 'history') {
+            var fromEl = document.getElementById('fd-myorders-date-from');
+            var toEl = document.getElementById('fd-myorders-date-to');
+            var from = fromEl ? fromEl.value : '';
+            var to = toEl ? toEl.value : '';
+
+            if (from || to) {
+                rangeActive = true;
+                list = list.filter(function (o) {
+                    var day = String((o && o.created_at) || '').slice(0, 10);
+                    if (!day) return false;
+                    return (!from || day >= from) && (!to || day <= to);
+                });
+            }
+        }
+
+        if (!list.length) {
+            fdMyOrdersLastHtml = '';
+
+            var filterEl = document.getElementById('fd-myorders-filter');
+            var text;
+            if (rangeActive) {
+                text = 'No hay pedidos en ese rango de fechas.';
+            } else if (filterEl && filterEl.value) {
+                text = 'No hay pedidos con ese estado en esta sección.';
+            } else if (!fdMyOrdersAll.length) {
+                text = 'Todavía no hiciste pedidos.\nEntrá a Comercios y armá tu primer pedido.';
+            } else if (fdMyOrdersActive === 'today') {
+                text = 'No tenés pedidos hoy.\nPasá por la pestaña de historial para ver los anteriores.';
+            } else {
+                text = 'Todavía no hay pedidos en el historial.';
+            }
+
+            fdSetMyOrdersState('message', text);
+            return;
+        }
+
+        var html = list.map(fdRenderMyOrder).join('');
+        var listEl = document.getElementById('fd-myorders-list');
+
+        if (silent && html === fdMyOrdersLastHtml && listEl.style.display === 'block') return;
+
+        fdMyOrdersLastHtml = html;
+        listEl.innerHTML = html;
+        fdSetMyOrdersState('content');
     }
 
     var FD_TRACK_STEPS = [
@@ -4187,6 +4435,19 @@
         ['in_preparation', 'En preparación'],
         ['on_the_way', 'En camino'],
         ['delivered', 'Entregado']
+    ];
+
+    var FD_TRACK_ICONS = [
+        // Recibido: cliente
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/><path d="M4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>',
+        // Confirmado: reloj
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        // En preparación: fuego de cocina
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.6a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/></svg>',
+        // En camino: camión
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+        // Entregado: casa
+        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>'
     ];
 
     function fdTrackHtml(status) {
@@ -4198,20 +4459,32 @@
         FD_TRACK_STEPS.forEach(function (step, i) { if (step[0] === status) current = i; });
         if (current < 0) return '';
 
-        var html = '<div data-track="' + status + '" style="display:flex;gap:6px;padding:14px 16px 4px;flex-wrap:wrap;">';
+        var html = '<div data-track="' + status + '" style="display:flex;align-items:flex-start;padding:16px 16px 8px;overflow-x:auto;">';
 
         FD_TRACK_STEPS.forEach(function (step, i) {
             var done = i < current;
             var active = i === current;
-            var border = active ? '#fdba74' : (done ? '#a7f3d0' : '#e5e7eb');
-            var bg = active ? '#fff7ed' : (done ? '#ecfdf5' : '#f8fafc');
-            var titleColor = active ? '#9a3412' : (done ? '#047857' : '#94a3b8');
-            var textColor = active ? '#9a3412' : (done ? '#065f46' : '#94a3b8');
+            var passed = done || active;
+            var circleBg = passed ? '#D24C19' : '#e2e8f0';
+            var circleBorder = passed ? '#D24C19' : '#e2e8f0';
+            var iconColor = passed ? '#fff' : '#64748b';
+            var labelColor = active ? '#D24C19' : (done ? '#334155' : '#94a3b8');
+            var ring = active ? 'box-shadow:0 0 0 4px #ffe9df;' : '';
 
-            html += '<div style="flex:1 1 110px;min-width:104px;border:1px solid ' + border + ';background:' + bg + ';padding:7px 10px;border-radius:4px;">'
-                + '<div style="font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:' + titleColor + ';font-weight:700;">' + (done ? 'Listo' : (active ? 'Ahora' : 'Pendiente')) + '</div>'
-                + '<div style="font-size:12px;color:' + textColor + ';font-weight:' + (active ? '700' : '600') + ';margin-top:2px;">' + escapeHtml(step[1]) + '</div>'
+            html += '<div style="display:flex;flex-direction:column;align-items:center;width:72px;flex:none;">'
+                + '<div style="height:14px;line-height:14px;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#D24C19;">'
+                + (active ? 'Ahora' : '') + '</div>'
+                + '<div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:' + circleBg + ';border:1px solid ' + circleBorder + ';' + ring + '">'
+                + '<span style="display:flex;line-height:0;color:' + iconColor + ';">' + FD_TRACK_ICONS[i] + '</span>'
+                + '</div>'
+                + '<div style="margin-top:7px;font-size:10px;line-height:1.25;text-align:center;color:' + labelColor + ';font-weight:' + (active ? '700' : (done ? '600' : '500')) + ';">'
+                + escapeHtml(step[1]) + '</div>'
                 + '</div>';
+
+            if (i < FD_TRACK_STEPS.length - 1) {
+                var lineColor = i <= current ? '#D24C19' : '#e2e8f0';
+                html += '<div style="flex:1;min-width:14px;height:3px;border-radius:2px;background:' + lineColor + ';margin-top:28px;"></div>';
+            }
         });
 
         return html + '</div>';
