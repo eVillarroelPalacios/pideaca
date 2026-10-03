@@ -16,6 +16,7 @@ use App\Models\ProductOption;
 use App\Models\ProductOptionGroup;
 use App\Models\ProductVariant;
 use App\Models\Provider;
+use App\Models\ProviderImage;
 use App\Models\SubscriptionPlan;
 use App\Models\TypeUser;
 use App\Models\User;
@@ -227,6 +228,72 @@ class ClientPanelTest extends TestCase
         // Solo los planes visibles habilitan el boton Suscribirse de la tarjeta
         $this->assertSame(1, $porId[$this->provider->id]['active_subscription_plans_count']);
         $this->assertSame(0, $porId[$otro->id]['active_subscription_plans_count']);
+    }
+
+    public function test_providers_listing_filters_only_commerces_with_active_plans(): void
+    {
+        $otroUser = User::create([
+            'name' => 'Comercio Sin Planes',
+            'email' => 'comercio.sinplanes@example.com',
+            'type_user_id' => $this->prestadorType->id,
+            'password' => 'password',
+        ]);
+        $otro = Provider::create([
+            'user_id' => $otroUser->id,
+            'business_name' => 'Kiosco Sin Planes',
+            'is_active' => true,
+        ]);
+
+        // Sin el filtro sigue llegando el listado completo (lo usa la pagina Comercios)
+        $this->assertCount(2, $this->getJson('/api/providers')->json('providers'));
+
+        SubscriptionPlan::create([
+            'provider_id' => $this->provider->id,
+            'title' => 'Mega Ganga',
+            'frequency' => SubscriptionPlan::FREQUENCY_WEEKLY,
+            'price' => 5500,
+            'discount_percentage' => 0,
+            'is_active' => true,
+        ]);
+        SubscriptionPlan::create([
+            'provider_id' => $this->provider->id,
+            'title' => 'Oculto',
+            'frequency' => SubscriptionPlan::FREQUENCY_MONTHLY,
+            'price' => 9000,
+            'discount_percentage' => 0,
+            'is_active' => false,
+        ]);
+
+        $conPlanes = $this->getJson('/api/providers?only_with_plans=1')->json('providers');
+
+        // El combo de comercios de Nueva suscripcion usa este filtro
+        $this->assertCount(1, $conPlanes);
+        $this->assertSame($this->provider->id, $conPlanes[0]['id']);
+        $this->assertNotContains($otro->id, array_column($conPlanes, 'id'));
+
+        // only_with_plans=0 no filtra nada
+        $this->assertCount(2, $this->getJson('/api/providers?only_with_plans=0')->json('providers'));
+    }
+
+    public function test_providers_listing_includes_the_publicidad_image(): void
+    {
+        $sinImagen = $this->getJson('/api/providers')->json('providers');
+        $this->assertNull($sinImagen[0]['publicidad_image']);
+
+        ProviderImage::create([
+            'provider_id' => $this->provider->id,
+            'image_path' => 'provider_'.$this->provider->id.'.png',
+            'image_type' => 'publicidad',
+            'is_primary' => true,
+            'sort_order' => 1,
+        ]);
+
+        $conImagen = $this->getJson('/api/providers')->json('providers');
+
+        $this->assertSame(
+            asset('images/publicidad/provider_'.$this->provider->id.'.png'),
+            $conImagen[0]['publicidad_image']
+        );
     }
 
     public function test_providers_listing_only_returns_the_modules_category(): void

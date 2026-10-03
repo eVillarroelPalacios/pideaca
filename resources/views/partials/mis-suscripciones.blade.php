@@ -108,7 +108,7 @@
         status: '{{ url("/api/v1/customer/subscriptions") }}',
         items: '{{ url("/api/v1/customer/subscriptions") }}',
         addresses: '{{ url("/api/me/addresses") }}',
-        providers: '{{ url("/api/providers") }}',
+        providers: '{{ url("/api/providers") }}?only_with_plans=1',
         publicPlans: '{{ url("/api/v1/public/providers") }}'
     };
 
@@ -393,6 +393,11 @@
         var provider = document.getElementById('mysub-provider');
 
         function renderProviders(list) {
+            if (!list.length) {
+                provider.innerHTML = '<option value="">No hay comercios con planes disponibles</option>';
+                return;
+            }
+
             provider.innerHTML = '<option value="">Elegí un comercio</option>'
                 + list.map(function (p) {
                     return '<option value="' + p.id + '">' + escapeHtml(p.business_name) + '</option>';

@@ -1827,6 +1827,8 @@
     var FD_ICON_UP = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>';
     var FD_ICON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
     var FD_ICON_TRASH = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+    var FD_ICON_BOOK = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>';
+    var FD_ICON_USER_PLUS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>';
 
     function fdProdFilterChange(value) {
         fdProdCatFilter = value || '';
@@ -3514,8 +3516,13 @@
         var initial = escapeHtml((p.business_name || '?').replace(/^\s+/, '').charAt(0).toUpperCase());
         var meta = p.rubro || p.zone || 'Comercio';
 
-        var html = '<div style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">'
-            + '<div style="display:flex;gap:12px;align-items:center;">'
+        var html = '<div style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
+
+        if (p.publicidad_image) {
+            html += '<img src="' + escapeHtml(p.publicidad_image) + '" alt="Publicidad de ' + escapeHtml(p.business_name || '') + '" style="width:calc(100% + 32px);margin:-16px -16px 0;display:block;height:70px;object-fit:cover;background:#f1f5f9;" />';
+        }
+
+        html += '<div style="display:flex;gap:12px;align-items:center;">'
             + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + initial + '</div>'
             + '<div style="min-width:0;">'
             + '<div style="font-size:14px;font-weight:700;color:#0c2a4d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(p.business_name) + '</div>'
@@ -3523,10 +3530,6 @@
             + '</div>'
             + (p.rating ? '<div style="margin-left:auto;font-size:12px;font-weight:700;color:#b45309;white-space:nowrap;">★ ' + escapeHtml(Number(p.rating).toFixed(1)) + '</div>' : '')
             + '</div>';
-
-        if (p.description) {
-            html += '<p style="margin:0;font-size:12px;color:#64748b;line-height:1.45;">' + escapeHtml(p.description) + '</p>';
-        }
 
         if (p.promo) {
             html += '<div style="font-size:11px;color:#047857;background:#ecfdf5;padding:6px 8px;">' + escapeHtml(p.promo) + '</div>';
@@ -3536,9 +3539,9 @@
             + '<span style="font-size:11px;color:#6b7280;">' + Number(p.products_count || 0) + ' productos · ' + Number(p.categories_count || 0) + ' categorías</span>'
             + '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
             + (Number(p.active_subscription_plans_count || 0) > 0
-                ? '<button type="button" onclick="fdSubscribeToProvider(' + Number(p.id) + ')" title="Suscribirse a un plan de este comercio" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Suscribirse</button>'
+                ? '<button type="button" class="btn-icon" onclick="fdSubscribeToProvider(' + Number(p.id) + ')" title="Suscribirse a un plan de este comercio" aria-label="Suscribirse" style="background:#fff;color:#D24C19;border:1px solid #D24C19;border-radius:4px;cursor:pointer;">' + FD_ICON_USER_PLUS + '</button>'
                 : '')
-            + '<button type="button" onclick="openFdShop(' + Number(p.id) + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Ver catálogo</button>'
+            + '<button type="button" class="btn-icon" onclick="openFdShop(' + Number(p.id) + ')" title="Ver catálogo" aria-label="Ver catálogo" style="background:#D24C19;color:#fff;border:none;border-radius:4px;cursor:pointer;">' + FD_ICON_BOOK + '</button>'
             + '</span>'
             + '</div>'
             + '</div>';
