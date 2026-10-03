@@ -139,6 +139,7 @@ Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.
 
 // Modulo A - Fast Delivery
 Route::get('/api/providers', [ProviderController::class, 'index'])->name('api.providers.index');
+Route::post('/api/providers/{provider}/favorite', [ProviderController::class, 'toggleFavorite'])->name('api.providers.favorite');
 Route::get('/api/providers/{provider}/catalog', [CatalogController::class, 'show'])->name('api.providers.catalog');
 Route::get('/api/providers/{provider}/orders', [OrderController::class, 'index'])->name('api.providers.orders');
 Route::get('/api/orders/mine', [OrderController::class, 'mine'])->name('api.orders.mine');

@@ -154,4 +154,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(MarketingLog::class);
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }

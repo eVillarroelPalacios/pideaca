@@ -13,12 +13,25 @@
                     </div>
                 </div>
 
+                <div id="fd-shops-tabs" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+                    <button type="button" id="fd-shops-tab-favorites" onclick="fdShopsTab('favorites')" style="background:#fff1eb;color:#D24C19;border:1px solid #D24C19;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"/></svg>
+                        Mis favoritos
+                        <span id="fd-shops-count-favorites" style="background:#D24C19;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+                    </button>
+                    <button type="button" id="fd-shops-tab-all" onclick="fdShopsTab('all')" style="background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                        Todos los comercios
+                        <span id="fd-shops-count-all" style="background:#6b7280;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+                    </button>
+                </div>
+
                 <div id="fd-shops-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
                     <p style="font-size:13px;color:#6b7280;margin:0;">Cargando comercios...</p>
                 </div>
 
                 <div id="fd-shops-message" style="display:none;background:white;border:1px solid #e5e7eb;padding:48px 24px;text-align:center;">
                     <p id="fd-shops-message-text" style="font-size:14px;color:#6b7280;margin:0;white-space:pre-line;">No se pudieron cargar los comercios.</p>
+                    <div id="fd-shops-message-action" style="margin-top:14px;"></div>
                 </div>
 
                 <div id="fd-shops-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;"></div>

@@ -1829,6 +1829,8 @@
     var FD_ICON_TRASH = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
     var FD_ICON_BOOK = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>';
     var FD_ICON_USER_PLUS = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>';
+    var FD_ICON_STAR = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"/></svg>';
+    var FD_ICON_STAR_FILLED = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"/></svg>';
 
     function fdProdFilterChange(value) {
         fdProdCatFilter = value || '';
@@ -3437,8 +3439,10 @@
     var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false };
     var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
     var fdShopsTimer = null;
+    var fdShopsTabActive = 'favorites';
+    var fdShopsCounts = { favorites: 0, all: 0 };
 
-    function fdSetShopsState(state, text) {
+    function fdSetShopsState(state, text, actionHtml) {
         var map = { loading: 'fd-shops-loading', message: 'fd-shops-message', content: 'fd-shops-grid' };
         Object.keys(map).forEach(function (k) {
             var el = document.getElementById(map[k]);
@@ -3448,6 +3452,37 @@
             var msg = document.getElementById('fd-shops-message-text');
             if (msg) msg.textContent = text;
         }
+        var action = document.getElementById('fd-shops-message-action');
+        if (action) action.innerHTML = actionHtml || '';
+    }
+
+    function fdPaintShopsTabs() {
+        var favBtn = document.getElementById('fd-shops-tab-favorites');
+        var allBtn = document.getElementById('fd-shops-tab-all');
+        var isFav = fdShopsTabActive === 'favorites';
+
+        if (favBtn) favBtn.style.cssText = isFav
+            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;'
+            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;';
+        if (allBtn) allBtn.style.cssText = !isFav
+            ? 'background:#fff1eb;color:#D24C19;border:1px solid #D24C19;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;'
+            : 'background:#fff;color:#6b7280;border:1px solid #e5e7eb;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;';
+
+        [['favorites', 'fd-shops-count-favorites'], ['all', 'fd-shops-count-all']].forEach(function (pair) {
+            var el = document.getElementById(pair[1]);
+            if (!el) return;
+            var count = fdShopsCounts[pair[0]];
+            el.textContent = count;
+            el.style.display = count > 0 ? 'inline-block' : 'none';
+        });
+    }
+
+    function fdShopsTab(tab) {
+        if (tab !== 'favorites' && tab !== 'all') return;
+        if (fdShopsTabActive === tab) return;
+        fdShopsTabActive = tab;
+        fdPaintShopsTabs();
+        loadComercios();
     }
 
     function fdSetMyOrdersState(state, text) {
@@ -3473,10 +3508,12 @@
         var section = document.getElementById('dash-comercios');
         var moduleId = section ? parseInt(section.getAttribute('data-module-id'), 10) : NaN;
         var params = [];
+        var isFavorites = fdShopsTabActive === 'favorites';
 
         // Solo comercios de la categoria que corresponde al modulo abierto
         if (moduleId > 0) params.push('module_id=' + moduleId);
         if (search) params.push('search=' + encodeURIComponent(search));
+        if (isFavorites) params.push('favorite=1');
 
         fdSetShopsState('loading');
 
@@ -3489,18 +3526,34 @@
 
                 var providers = res.data.providers || [];
                 FD_SHOP.settings = res.data.settings || {};
+                fdShopsCounts = {
+                    favorites: Number(res.data.favorites_count || 0),
+                    all: Number(res.data.total_count || 0),
+                };
+                fdPaintShopsTabs();
 
                 var summary = document.getElementById('fd-shops-summary');
                 if (summary) {
-                    summary.textContent = providers.length
-                        ? providers.length + ' comercios disponibles'
-                        : 'Comercios con envío a tu domicilio';
+                    if (isFavorites) {
+                        summary.textContent = fdShopsCounts.favorites
+                            ? fdShopsCounts.favorites + ' comercios favoritos'
+                            : 'Tus comercios concurrentes';
+                    } else {
+                        summary.textContent = providers.length
+                            ? providers.length + ' comercios disponibles'
+                            : 'Comercios con envío a tu domicilio';
+                    }
                 }
 
                 if (!providers.length) {
-                    fdSetShopsState('message', search
-                        ? 'No encontramos comercios con ese nombre.'
-                        : 'Todavía no hay comercios publicados.\nPronto vas a poder pedir desde acá.');
+                    if (isFavorites) {
+                        fdSetShopsState('message', 'Todavía no marcaste comercios como favoritos.\nBuscá en "Todos los comercios" y tocá la estrella para guardarlos.',
+                            '<button type="button" onclick="fdShopsTab(\'all\')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Ver todos los comercios</button>');
+                    } else {
+                        fdSetShopsState('message', search
+                            ? 'No encontramos comercios con ese nombre.'
+                            : 'Todavía no hay comercios publicados.\nPronto vas a poder pedir desde acá.');
+                    }
                     return;
                 }
 
@@ -3516,7 +3569,7 @@
         var initial = escapeHtml((p.business_name || '?').replace(/^\s+/, '').charAt(0).toUpperCase());
         var meta = p.rubro || p.zone || 'Comercio';
 
-        var html = '<div style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
+        var html = '<div data-fd-provider="' + Number(p.id) + '" style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
 
         if (p.publicidad_image) {
             html += '<img src="' + escapeHtml(p.publicidad_image) + '" alt="Publicidad de ' + escapeHtml(p.business_name || '') + '" style="width:calc(100% + 32px);margin:-16px -16px 0;display:block;height:70px;object-fit:cover;background:#f1f5f9;" />';
@@ -3538,6 +3591,11 @@
         html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;flex-wrap:wrap;">'
             + '<span style="font-size:11px;color:#6b7280;">' + Number(p.products_count || 0) + ' productos · ' + Number(p.categories_count || 0) + ' categorías</span>'
             + '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
+            + '<button type="button" class="btn-icon" onclick="fdToggleFavorite(' + Number(p.id) + ', this)" '
+            + 'title="' + (p.is_favorite ? 'Quitar de favoritos' : 'Agregar a favoritos') + '" '
+            + 'aria-label="' + (p.is_favorite ? 'Quitar de favoritos' : 'Agregar a favoritos') + '" '
+            + 'style="background:#fff;color:' + (p.is_favorite ? '#D24C19' : '#94a3b8') + ';border:1px solid ' + (p.is_favorite ? '#D24C19' : '#d1d5db') + ';border-radius:4px;cursor:pointer;">'
+            + (p.is_favorite ? FD_ICON_STAR_FILLED : FD_ICON_STAR) + '</button>'
             + (Number(p.active_subscription_plans_count || 0) > 0
                 ? '<button type="button" class="btn-icon" onclick="fdSubscribeToProvider(' + Number(p.id) + ')" title="Suscribirse a un plan de este comercio" aria-label="Suscribirse" style="background:#fff;color:#D24C19;border:1px solid #D24C19;border-radius:4px;cursor:pointer;">' + FD_ICON_USER_PLUS + '</button>'
                 : '')
@@ -3561,6 +3619,59 @@
         if (typeof openSubNewForm === 'function') {
             openSubNewForm(Number(providerId));
         }
+    }
+
+    function fdToggleFavorite(providerId, btn) {
+        if (btn) btn.disabled = true;
+
+        fdFetchJson('{{ url("/api/providers") }}/' + Number(providerId) + '/favorite', { method: 'POST' })
+            .then(function (res) {
+                if (!res.ok) {
+                    fdToast((res.data && res.data.message) || 'No se pudo actualizar el favorito.', true);
+                    return;
+                }
+
+                var isFav = !!(res.data && res.data.is_favorite);
+                fdShopsCounts.favorites = Number(res.data.favorites_count || 0);
+                fdPaintShopsTabs();
+                fdToast(isFav ? 'Comercio agregado a tus favoritos ★' : 'Comercio quitado de tus favoritos');
+
+                var card = btn && btn.closest ? btn.closest('[data-fd-provider]') : null;
+                if (btn) {
+                    var label = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+                    btn.title = label;
+                    if (btn.setAttribute) btn.setAttribute('aria-label', label);
+                    btn.style = btn.style || {};
+                    btn.style.color = isFav ? '#D24C19' : '#94a3b8';
+                    btn.style.borderColor = isFav ? '#D24C19' : '#d1d5db';
+                    btn.innerHTML = isFav ? FD_ICON_STAR_FILLED : FD_ICON_STAR;
+                }
+
+                if (card && !isFav && fdShopsTabActive === 'favorites' && card.parentNode) {
+                    card.parentNode.removeChild(card);
+                    var grid = document.getElementById('fd-shops-grid');
+                    var stillThere = grid && grid.querySelector ? grid.querySelector('[data-fd-provider]') : null;
+                    if (!stillThere) {
+                        fdSetShopsState('message', 'Todavía no marcaste comercios como favoritos.\nBuscá en "Todos los comercios" y tocá la estrella para guardarlos.',
+                            '<button type="button" onclick="fdShopsTab(\'all\')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Ver todos los comercios</button>');
+                    }
+                }
+
+                if (fdShopsTabActive === 'favorites') {
+                    var summary = document.getElementById('fd-shops-summary');
+                    if (summary) {
+                        summary.textContent = fdShopsCounts.favorites
+                            ? fdShopsCounts.favorites + ' comercios favoritos'
+                            : 'Tus comercios concurrentes';
+                    }
+                }
+            })
+            .catch(function () {
+                fdToast('No se pudo conectar con el servidor.', true);
+            })
+            .then(function () {
+                if (btn) btn.disabled = false;
+            });
     }
 
     function openFdShop(providerId) {

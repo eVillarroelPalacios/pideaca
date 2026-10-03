@@ -89,6 +89,11 @@ class Provider extends Model
         return $this->hasMany(CustomerSubscription::class);
     }
 
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
     public function bannerImages(): HasMany
     {
         return $this->hasMany(ProviderImage::class)

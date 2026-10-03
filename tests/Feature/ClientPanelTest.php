@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Country;
+use App\Models\Favorite;
 use App\Models\Group;
 use App\Models\GroupStatus;
 use App\Models\Module;
@@ -277,8 +278,26 @@ class ClientPanelTest extends TestCase
 
     public function test_providers_listing_includes_the_publicidad_image(): void
     {
-        $sinImagen = $this->getJson('/api/providers')->json('providers');
-        $this->assertNull($sinImagen[0]['publicidad_image']);
+        // Sin imagen registrada el valor queda null salvo que exista el archivo
+        // provider_<id>.<ext> del sitio de publicidad: se usa un id alto para
+        // que ese fallback no encuentre nada.
+        $sinImagenUser = User::create([
+            'name' => 'Comercio Sin Imagen',
+            'email' => 'sin.imagen@example.com',
+            'type_user_id' => $this->prestadorType->id,
+            'password' => 'password',
+        ]);
+        Provider::query()->insert([
+            'id' => 9999,
+            'user_id' => $sinImagenUser->id,
+            'business_name' => 'Comercio Sin Imagen',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $listado = collect($this->getJson('/api/providers')->json('providers'))->keyBy('id');
+        $this->assertNull($listado[9999]['publicidad_image']);
 
         ProviderImage::create([
             'provider_id' => $this->provider->id,
@@ -288,12 +307,99 @@ class ClientPanelTest extends TestCase
             'sort_order' => 1,
         ]);
 
-        $conImagen = $this->getJson('/api/providers')->json('providers');
+        $conImagen = collect($this->getJson('/api/providers')->json('providers'))->keyBy('id');
 
         $this->assertSame(
             asset('images/publicidad/provider_'.$this->provider->id.'.png'),
-            $conImagen[0]['publicidad_image']
+            $conImagen[$this->provider->id]['publicidad_image']
         );
+    }
+
+    public function test_favorite_toggle_requires_authentication(): void
+    {
+        $this->postJson("/api/providers/{$this->provider->id}/favorite")->assertStatus(401);
+        $this->getJson('/api/providers?favorite=1')->assertStatus(401);
+    }
+
+    public function test_client_can_favorite_and_unfavorite_a_commerce(): void
+    {
+        $add = $this->actingAs($this->client)
+            ->postJson("/api/providers/{$this->provider->id}/favorite");
+
+        $add->assertOk()->assertJsonPath('success', true)->assertJsonPath('is_favorite', true);
+        $this->assertSame(1, $add->json('favorites_count'));
+        $this->assertDatabaseHas('favorites', [
+            'user_id' => $this->client->id,
+            'provider_id' => $this->provider->id,
+        ]);
+
+        // Un segundo clic lo quita (y el contador baja)
+        $remove = $this->actingAs($this->client)
+            ->postJson("/api/providers/{$this->provider->id}/favorite");
+
+        $remove->assertOk()->assertJsonPath('is_favorite', false);
+        $this->assertSame(0, $remove->json('favorites_count'));
+        $this->assertDatabaseMissing('favorites', [
+            'user_id' => $this->client->id,
+            'provider_id' => $this->provider->id,
+        ]);
+    }
+
+    public function test_providers_listing_filters_favorites_and_flags_them(): void
+    {
+        $otroUser = User::create([
+            'name' => 'Kiosco',
+            'email' => 'kiosco@example.com',
+            'type_user_id' => $this->prestadorType->id,
+            'password' => 'password',
+        ]);
+        $otro = Provider::create([
+            'user_id' => $otroUser->id,
+            'business_name' => 'Kiosco El Sol',
+            'is_active' => true,
+        ]);
+
+        // Sin favoritos la pestaña viene vacía pero el total sigue disponible
+        $sinFavoritos = $this->actingAs($this->client)->getJson('/api/providers?favorite=1');
+        $sinFavoritos->assertOk();
+        $this->assertSame([], $sinFavoritos->json('providers'));
+        $this->assertSame(0, $sinFavoritos->json('favorites_count'));
+        $this->assertSame(2, $sinFavoritos->json('total_count'));
+
+        Favorite::create(['user_id' => $this->client->id, 'provider_id' => $this->provider->id]);
+
+        $favoritos = $this->actingAs($this->client)->getJson('/api/providers?favorite=1');
+        $favoritos->assertOk();
+        $this->assertCount(1, $favoritos->json('providers'));
+        $this->assertSame($this->provider->id, $favoritos->json('providers.0.id'));
+        $this->assertTrue($favoritos->json('providers.0.is_favorite'));
+        $this->assertSame(1, $favoritos->json('favorites_count'));
+        $this->assertSame(2, $favoritos->json('total_count'));
+
+        // En el listado completo cada tarjeta sabe si esta marcada
+        $todos = $this->actingAs($this->client)->getJson('/api/providers');
+        $porId = collect($todos->json('providers'))->keyBy('id');
+        $this->assertTrue($porId[$this->provider->id]['is_favorite']);
+        $this->assertFalse($porId[$otro->id]['is_favorite']);
+
+        // Los favoritos de otro cliente no se filtran ni se cuentan
+        Favorite::create(['user_id' => $this->otherClient->id, 'provider_id' => $otro->id]);
+        $ajenos = $this->actingAs($this->client)->getJson('/api/providers?favorite=1');
+        $this->assertCount(1, $ajenos->json('providers'));
+        $this->assertSame($this->provider->id, $ajenos->json('providers.0.id'));
+    }
+
+    public function test_dashboard_renders_the_favorite_shops_tabs(): void
+    {
+        $this->actingAs($this->client)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('id="fd-shops-tabs"', false)
+            ->assertSee('id="fd-shops-tab-favorites"', false)
+            ->assertSee('id="fd-shops-tab-all"', false)
+            ->assertSee("fdShopsTab('favorites')", false)
+            ->assertSee('function fdToggleFavorite(', false)
+            ->assertSee('function fdShopsTab(', false);
     }
 
     public function test_providers_listing_only_returns_the_modules_category(): void
