@@ -337,6 +337,31 @@ class ProviderPanelTest extends TestCase
         $response->assertDontSee('Próximamente podrás gestionar pedidos');
     }
 
+    public function test_provider_orders_are_split_into_today_and_history_tabs(): void
+    {
+        $html = $this->actingAs($this->owner)->get('/dashboard')->assertOk()->getContent();
+
+        // Dos pestañas con sus contadores
+        $this->assertStringContainsString('id="fd-orders-tab-today"', $html);
+        $this->assertStringContainsString('id="fd-orders-tab-history"', $html);
+        $this->assertStringContainsString('id="fd-orders-count-today"', $html);
+        $this->assertStringContainsString('id="fd-orders-count-history"', $html);
+        $this->assertStringContainsString("onclick=\"fdOrdersTab('today')\"", $html);
+        $this->assertStringContainsString("onclick=\"fdOrdersTab('history')\"", $html);
+
+        // Separación de grupos y pintado de las pestañas
+        $this->assertStringContainsString('function fdOrdersSplit()', $html);
+        $this->assertStringContainsString('function fdOrdersPaintTabs(groups)', $html);
+        $this->assertStringContainsString('function fdOrdersTab(tab)', $html);
+        $this->assertStringContainsString('function fdOrdersRender(silent)', $html);
+        $this->assertStringContainsString("groups[fdMyOrdersIsToday(o) ? 'today' : 'history'].push(o);", $html);
+        $this->assertStringContainsString("var fdOrdersActive = 'today';", $html);
+        $this->assertStringContainsString("fdOrdersActive = tab === 'history' ? 'history' : 'today';", $html);
+
+        // El resumen cuenta los pedidos de cada pestaña
+        $this->assertStringContainsString("' de hoy · ' + groups.history.length + ' en historial'", $html);
+    }
+
     public function test_dashboard_hides_the_prestador_sections_from_a_cliente(): void
     {
         $cliente = TypeUser::where('description', 'Cliente')->firstOrFail();

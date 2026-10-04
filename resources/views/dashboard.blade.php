@@ -1616,27 +1616,42 @@
 
     var FD_ORDER_CANCELLABLE = ['pending', 'confirmed', 'in_preparation'];
 
+    // Icono de cada accion del flujo (botones solo-icono, el texto vive en title/aria-label).
+    var FD_ORDER_ACTION_ICONS = {
+        'confirmed': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        'in_preparation': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.6a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"/><path d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"/></svg>',
+        'on_the_way': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+        'delivered': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>',
+        'cancelled': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
+    };
+
     function fdOrderActions(o) {
+        var iconBtn = 'display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;cursor:pointer;';
         var html = '<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">';
         var flow = FD_ORDER_FLOW[o.status];
 
         if (flow) {
-            html += '<button type="button" data-order-action onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)" '
-                + 'style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
-                + escapeHtml(flow[1]) + '</button>';
+            html += '<button type="button" data-order-action title="' + escapeHtml(flow[1]) + '" aria-label="' + escapeHtml(flow[1]) + '" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)" '
+                + 'style="background:#D24C19;color:#fff;border:none;' + iconBtn + '">'
+                + FD_ORDER_ACTION_ICONS[flow[0]] + '</button>';
         }
 
         if (FD_ORDER_CANCELLABLE.indexOf(o.status) !== -1) {
-            html += '<button type="button" data-order-action onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)" '
-                + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">'
-                + 'Cancelar</button>';
+            html += '<button type="button" data-order-action title="Cancelar" aria-label="Cancelar" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)" '
+                + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;' + iconBtn + '">'
+                + FD_ORDER_ACTION_ICONS['cancelled'] + '</button>';
         }
 
         return html + '</div>';
     }
 
     function fdUpdateOrderStatus(orderId, status, btn) {
-        if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.title = 'Guardando...';
+            btn.setAttribute('aria-label', 'Guardando...');
+        }
 
         fdFetchJson('{{ url("/api/orders") }}/' + orderId + '/status', {
             method: 'PATCH',
@@ -3327,6 +3342,11 @@
     var fdMyOrdersHistoryPage = 1;
     var FD_MYORDERS_PER_PAGE = 3;
 
+    // Pedidos del comercio: pestaña activa (pedidos de hoy / historial) y el
+    // listado completo para separar los dos grupos.
+    var fdOrdersActive = 'today';
+    var fdOrdersAll = [];
+
     function loadProviderOrders(silent) {
         var providerId = fdProviderId('dash-pedidos');
         if (!providerId) {
@@ -3365,35 +3385,101 @@
                 var provider = res.data.provider || {};
                 var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
 
+                fdOrdersAll = orders;
+                var groups = fdOrdersSplit();
+
                 var summary = document.getElementById('fd-orders-summary');
                 if (summary) {
                     summary.textContent = (provider.business_name || 'Tu comercio') +
-                        ' · ' + orders.length + ' pedidos' +
+                        ' · ' + groups.today.length + ' de hoy · ' + groups.history.length + ' en historial' +
                         (pending ? ' · ' + pending + ' pendientes' : '') +
                         ' · actualizado ' + fdClock();
                 }
 
                 if (!orders.length) {
                     fdOrdersLastHtml = '';
+                    fdOrdersPaintTabs(groups);
                     fdSetOrdersState('message', savedFilter
                         ? 'No hay pedidos con ese estado.'
                         : 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.');
                     return;
                 }
 
-                var html = orders.map(fdRenderOrder).join('');
-                var list = document.getElementById('fd-orders-list');
-
-                if (silent && html === fdOrdersLastHtml && list.style.display === 'block') return;
-
-                fdOrdersLastHtml = html;
-                list.innerHTML = html;
-                fdSetOrdersState('content');
+                fdOrdersRender(silent);
             })
             .catch(function () {
                 if (silent) return;
                 fdSetOrdersState('message', 'No se pudo conectar con el servidor.');
             });
+    }
+
+    function fdOrdersSplit() {
+        var groups = { today: [], history: [] };
+        fdOrdersAll.forEach(function (o) {
+            groups[fdMyOrdersIsToday(o) ? 'today' : 'history'].push(o);
+        });
+        return groups;
+    }
+
+    function fdOrdersPaintTabs(groups) {
+        ['today', 'history'].forEach(function (key) {
+            var count = groups[key].length;
+
+            var badge = document.getElementById('fd-orders-count-' + key);
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count ? 'inline-flex' : 'none';
+            }
+
+            var btn = document.getElementById('fd-orders-tab-' + key);
+            if (btn) {
+                var on = fdOrdersActive === key;
+                btn.style.background = on ? '#fff1eb' : '#fff';
+                btn.style.color = on ? '#D24C19' : '#6b7280';
+                btn.style.border = on ? '1px solid #D24C19' : '1px solid #e5e7eb';
+            }
+        });
+    }
+
+    function fdOrdersTab(tab) {
+        fdOrdersActive = tab === 'history' ? 'history' : 'today';
+        fdOrdersLastHtml = '';
+        fdOrdersRender(false);
+    }
+
+    function fdOrdersRender(silent) {
+        var groups = fdOrdersSplit();
+        fdOrdersPaintTabs(groups);
+
+        var list = fdOrdersActive === 'today' ? groups.today : groups.history;
+
+        if (!list.length) {
+            fdOrdersLastHtml = '';
+
+            var filterEl = document.getElementById('fd-orders-filter');
+            var text;
+            if (filterEl && filterEl.value) {
+                text = 'No hay pedidos con ese estado en esta sección.';
+            } else if (!fdOrdersAll.length) {
+                text = 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.';
+            } else if (fdOrdersActive === 'today') {
+                text = 'No tenés pedidos hoy.\nPasá por la pestaña de historial para ver los anteriores.';
+            } else {
+                text = 'Todavía no hay pedidos en el historial.';
+            }
+
+            fdSetOrdersState('message', text);
+            return;
+        }
+
+        var html = list.map(fdRenderOrder).join('');
+        var listEl = document.getElementById('fd-orders-list');
+
+        if (silent && html === fdOrdersLastHtml && listEl.style.display === 'block') return;
+
+        fdOrdersLastHtml = html;
+        listEl.innerHTML = html;
+        fdSetOrdersState('content');
     }
 
     function fdRenderOrder(o) {
