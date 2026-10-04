@@ -35,8 +35,8 @@
                 <div id="fd-shops-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;"></div>
             </section>
 
-            <div id="fd-shop-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;align-items:center;justify-content:center;">
-                <div style="background:#fff;width:100%;max-width:880px;max-height:90vh;margin:16px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+            <section id="fd-shop-overlay" class="dash-section" style="display:none;max-width:1100px;margin:0 auto;padding:0 20px 24px;">
+                <div style="background:#fff;width:100%;max-width:880px;margin:16px auto 0;display:flex;flex-direction:column;border:1px solid #e5e7eb;max-height:calc(100vh - 200px);overflow:hidden;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 18px;border-bottom:1px solid #e5e7eb;">
                         <div style="min-width:0;">
                             <h3 id="fd-shop-title" style="margin:0;font-size:16px;font-weight:700;color:#0c2a4d;"></h3>
@@ -44,11 +44,21 @@
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;flex:none;">
                             <span id="fd-shop-cart-badge" style="display:none;align-items:center;gap:6px;background:#fff1eb;color:#D24C19;border:1px solid #f5c6ad;border-radius:9999px;padding:5px 10px;font-size:12px;font-weight:700;white-space:nowrap;"></span>
-                            <button type="button" onclick="closeFdShop()" title="Cerrar" style="background:none;border:none;font-size:26px;line-height:1;color:#64748b;cursor:pointer;padding:0 4px;">&times;</button>
+                            <button type="button" onclick="fdShopBack()" title="Volver a comercios" aria-label="Volver a comercios" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:7px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+                                Volver
+                            </button>
                         </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
+                        <label for="fd-shop-category" style="font-size:11px;font-weight:700;color:#0c2a4d;text-transform:uppercase;letter-spacing:.4px;flex:none;">Categoría</label>
+                        <select id="fd-shop-category" onchange="fdShopCategoryFilter()" style="flex:1;max-width:340px;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">
+                            <option value="">Todas las categorías</option>
+                        </select>
                     </div>
                     <div id="fd-shop-body" style="padding:16px 18px;overflow:auto;flex:1 1 auto;"></div>
                     <div id="fd-shop-cart" style="border-top:1px solid #e5e7eb;padding:14px 18px;background:#f8fafc;max-height:42vh;overflow:auto;"></div>
+                    <div id="fd-shop-msg" style="display:none;font-size:12px;font-weight:600;color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:9px 12px;margin:10px 18px 0;"></div>
                     <div style="padding:12px 18px 16px;">
                         <button type="button" id="fd-shop-submit" onclick="fdShopSubmit()" title="Confirmar compra" aria-label="Confirmar compra" style="display:none;width:100%;background:#D24C19;color:#fff;border:none;padding:12px 14px;border-radius:4px;cursor:pointer;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(210,76,25,.3);">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -56,4 +66,4 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>

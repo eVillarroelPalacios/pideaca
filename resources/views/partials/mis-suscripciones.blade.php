@@ -385,7 +385,7 @@
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
 
-    function openSubNewForm(preselectProviderId) {
+    function openSubNewForm(preselectProviderId, preselectProviderName) {
         var form = document.getElementById('mysub-form');
         form.style.display = 'block';
         form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -393,21 +393,41 @@
         loadMySubAddresses();
 
         var provider = document.getElementById('mysub-provider');
+        provider.disabled = false;
+        provider.title = '';
 
         function renderProviders(list) {
-            if (!list.length) {
+            var items = (list || []).slice();
+
+            // Viene desde la tarjeta del comercio: si el comercio no figura en
+            // la lista (p. ej. sin planes), igual se fija con su nombre.
+            if (preselectProviderId && !items.some(function (p) { return Number(p.id) === Number(preselectProviderId); })) {
+                items.push({
+                    id: Number(preselectProviderId),
+                    business_name: preselectProviderName || 'Comercio'
+                });
+            }
+
+            if (!items.length) {
                 provider.innerHTML = '<option value="">No hay comercios con planes disponibles</option>';
                 return;
             }
 
-            provider.innerHTML = '<option value="">Elegí un comercio</option>'
-                + list.map(function (p) {
+            provider.innerHTML = (preselectProviderId ? '' : '<option value="">Elegí un comercio</option>')
+                + items.map(function (p) {
                     return '<option value="' + p.id + '">' + escapeHtml(p.business_name) + '</option>';
                 }).join('');
 
             if (preselectProviderId) {
                 provider.value = String(preselectProviderId);
-                if (provider.value) onMySubProviderChange();
+
+                if (provider.value) {
+                    provider.disabled = true;
+                    provider.title = 'Comercio fijado desde la tarjeta';
+                    onMySubProviderChange();
+                } else {
+                    provider.disabled = false;
+                }
             }
         }
 
@@ -418,6 +438,10 @@
             fdFetchJson(MYSUB_URL.providers)
                 .then(function (res) {
                     if (!res.ok) {
+                        if (preselectProviderId) {
+                            renderProviders([]);
+                            return;
+                        }
                         provider.innerHTML = '<option value="">No se pudieron cargar los comercios</option>';
                         return;
                     }
@@ -426,6 +450,10 @@
                     renderProviders(mySubState.providers);
                 })
                 .catch(function () {
+                    if (preselectProviderId) {
+                        renderProviders([]);
+                        return;
+                    }
                     provider.innerHTML = '<option value="">No se pudo conectar con el servidor</option>';
                 });
         }
@@ -434,6 +462,12 @@
     function closeSubNewForm() {
         var form = document.getElementById('mysub-form');
         if (form) form.style.display = 'none';
+
+        var provider = document.getElementById('mysub-provider');
+        if (provider) {
+            provider.disabled = false;
+            provider.title = '';
+        }
     }
 
     function loadMySubAddresses() {

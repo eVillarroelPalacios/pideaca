@@ -633,7 +633,7 @@ class ClientPanelTest extends TestCase
             ->assertDontSee('Próximamente podrás gestionar mis pedidos aquí.');
     }
 
-    public function test_shop_confirm_button_sits_inside_the_modal_below_the_cart(): void
+    public function test_shop_confirm_button_sits_inside_the_shop_section_below_the_cart(): void
     {
         $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
 
@@ -644,10 +644,83 @@ class ClientPanelTest extends TestCase
         $this->assertNotFalse($btnPos);
         $this->assertGreaterThan($cartPos, $btnPos, 'El botón de confirmar debe ir debajo del carrito (nota para el comercio).');
 
+        // La tienda se abre como seccion del dashboard, no como modal fijo.
+        $this->assertStringContainsString('id="fd-shop-overlay" class="dash-section"', $html);
+
+        $overlayTag = substr($html, strpos($html, 'id="fd-shop-overlay"'), 160);
+        $this->assertStringNotContainsString('position:fixed', $overlayTag, 'La tienda ya no debe ser un modal fijo.');
+
         $btnTag = substr($html, $btnPos, 400);
         $this->assertStringNotContainsString('position:absolute', $btnTag, 'El botón ya no debe ser flotante.');
         $this->assertStringContainsString('width:100%;background:#D24C19', $btnTag);
         $this->assertStringContainsString('Confirmar compra', $btnTag);
+    }
+
+    public function test_shop_has_a_category_combo_that_filters_the_catalog(): void
+    {
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+
+        $comboPos = strpos($html, 'id="fd-shop-category"');
+        $bodyPos = strpos($html, 'id="fd-shop-body"');
+
+        $this->assertNotFalse($comboPos, 'Falta el combo de categorías del comercio en la tienda.');
+        $this->assertNotFalse($bodyPos);
+        $this->assertLessThan($bodyPos, $comboPos, 'El combo debe ir entre el encabezado de la tienda y el catálogo.');
+        $this->assertStringContainsString('onchange="fdShopCategoryFilter()"', $html);
+        $this->assertStringContainsString('function fdShopCategoryFilter()', $html);
+        $this->assertStringContainsString('function fdShopFillCategoryFilter(', $html);
+        $this->assertStringContainsString('<option value="">Todas las categorías</option>', $html);
+        $this->assertStringContainsString("FD_SHOP.categoryFilter = '';", $html);
+    }
+
+    public function test_shop_error_message_is_visible_next_to_the_confirm_button(): void
+    {
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+
+        $cartPos = strpos($html, 'id="fd-shop-cart"');
+        $msgPos = strpos($html, 'id="fd-shop-msg"');
+        $submitPos = strpos($html, 'id="fd-shop-submit"');
+
+        $this->assertNotFalse($msgPos, 'Falta el mensaje de la tienda.');
+        $this->assertGreaterThan($cartPos, $msgPos, 'El mensaje debe ir después del carrito.');
+        $this->assertLessThan($submitPos, $msgPos, 'El mensaje debe ir junto al botón de confirmar.');
+        $this->assertSame(1, substr_count($html, 'id="fd-shop-msg"'), 'El mensaje no debe duplicarse dentro del HTML del carrito.');
+
+        // Productos sin stock: el catálogo los muestra deshabilitados.
+        $this->assertStringContainsString('p.is_out_of_stock', $html);
+        $this->assertStringContainsString('Sin stock</span>', $html);
+        $this->assertStringContainsString("if (p.is_out_of_stock) {\n            showMsg('Sin stock en este momento.');", $html);
+    }
+
+    public function test_history_tab_shows_three_orders_per_page(): void
+    {
+        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertStringContainsString('id="fd-myorders-pagination" style="display:none;', $html);
+        $this->assertStringContainsString('var FD_MYORDERS_PER_PAGE = 3;', $html);
+        $this->assertStringContainsString('function fdMyOrdersGoPage(page)', $html);
+        $this->assertStringContainsString('function fdMyOrdersPaintPagination(totalPages)', $html);
+        $this->assertStringContainsString('function fdMyOrdersRangeChange()', $html);
+
+        // El historial corta la lista en páginas de 3
+        $this->assertStringContainsString('(fdMyOrdersHistoryPage - 1) * FD_MYORDERS_PER_PAGE', $html);
+        $this->assertStringContainsString('Math.ceil(list.length / FD_MYORDERS_PER_PAGE)', $html);
+
+        // Cambiar de pestaña, filtro o rango vuelve a la primera página
+        $this->assertStringContainsString('onchange="fdMyOrdersRangeChange()"', $html);
+        $this->assertStringContainsString("fdMyOrdersActive = tab === 'history' ? 'history' : 'today';\n        fdMyOrdersHistoryPage = 1;", $html);
+        $this->assertStringContainsString('Página \' + page + \' de \' + totalPages', $html);
+    }
+
+    public function test_dashboard_browser_back_stays_on_the_user_sections(): void
+    {
+        $response = $this->actingAs($this->client)->get('/dashboard');
+
+        $response->assertOk()
+            ->assertSee("history.pushState(state, '', ", false)
+            ->assertSee("window.addEventListener('popstate'", false)
+            ->assertSee('function fdShopBack()', false)
+            ->assertSee('function fdShopGo(key)', false);
     }
 
     public function test_dashboard_does_not_show_client_sections_to_a_prestador(): void

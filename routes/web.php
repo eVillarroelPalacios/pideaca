@@ -25,6 +25,7 @@ use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TypeUserController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\UnitOfMeasureController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VariantController;
@@ -66,6 +67,14 @@ Route::middleware('page:estados-grupos')->group(function () {
     Route::post('/group-statuses', [EstadosDeLosGruposController::class, 'store'])->name('group-statuses.store');
     Route::put('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'update'])->name('group-statuses.update');
     Route::delete('/group-statuses/{groupStatus}', [EstadosDeLosGruposController::class, 'destroy'])->name('group-statuses.destroy');
+});
+
+// Unidades de medida (catalogo global del inventario)
+Route::middleware('page:unidades-medida')->group(function () {
+    Route::get('/units-of-measure', [UnitOfMeasureController::class, 'index'])->name('units-of-measure.index');
+    Route::post('/units-of-measure', [UnitOfMeasureController::class, 'store'])->name('units-of-measure.store');
+    Route::put('/units-of-measure/{unitOfMeasure}', [UnitOfMeasureController::class, 'update'])->name('units-of-measure.update');
+    Route::delete('/units-of-measure/{unitOfMeasure}', [UnitOfMeasureController::class, 'destroy'])->name('units-of-measure.destroy');
 });
 
 Route::middleware('page:tipo-usuarios')->group(function () {

@@ -23,4 +23,14 @@ class UnitOfMeasure extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function supplies(): HasMany
+    {
+        return $this->hasMany(Supply::class);
+    }
+
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
 }

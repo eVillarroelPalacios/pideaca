@@ -26,9 +26,9 @@
 
                     <div id="fd-myorders-range" style="display:none;gap:6px;align-items:center;flex-wrap:wrap;margin-left:4px;">
                         <label for="fd-myorders-date-from" style="font-size:11px;color:#6b7280;">Desde</label>
-                        <input type="date" id="fd-myorders-date-from" onchange="fdMyOrdersRender(false)" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                        <input type="date" id="fd-myorders-date-from" onchange="fdMyOrdersRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
                         <label for="fd-myorders-date-to" style="font-size:11px;color:#6b7280;">Hasta</label>
-                        <input type="date" id="fd-myorders-date-to" onchange="fdMyOrdersRender(false)" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                        <input type="date" id="fd-myorders-date-to" onchange="fdMyOrdersRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
                         <button type="button" onclick="fdMyOrdersClearRange()" title="Limpiar rango de fechas" aria-label="Limpiar rango de fechas" style="background:#fff;color:#6b7280;border:1px solid #d1d5db;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                         </button>
@@ -44,4 +44,5 @@
                 </div>
 
                 <div id="fd-myorders-list" style="display:none;"></div>
+                <div id="fd-myorders-pagination" style="display:none;justify-content:center;align-items:center;gap:10px;margin-top:14px;"></div>
             </section>

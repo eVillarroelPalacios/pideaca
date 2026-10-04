@@ -168,6 +168,57 @@ class CommerceModulePagesUiTest extends TestCase
             ->assertDontSee('dash-suscripciones', false);
     }
 
+    public function test_opening_from_a_merchant_card_locks_the_provider_combo(): void
+    {
+        $this->actingAs($this->cliente);
+
+        $html = $this->get('/dashboard')->assertOk()->getContent();
+
+        // La tarjeta del comercio pasa id y nombre a la suscripcion
+        $this->assertStringContainsString('function fdSubscribeToProvider(providerId, providerName)', $html);
+        $this->assertStringContainsString("fdSubscribeToProvider(' + Number(p.id) + ',&quot;'", $html);
+        $this->assertStringContainsString("openSubNewForm(Number(providerId), providerName || '')", $html);
+
+        // El combo de comercios queda fijo con el nombre del comercio elegido
+        $this->assertStringContainsString('function openSubNewForm(preselectProviderId, preselectProviderName)', $html);
+        $this->assertStringContainsString('provider.disabled = true;', $html);
+        $this->assertStringContainsString("provider.title = 'Comercio fijado desde la tarjeta';", $html);
+        $this->assertStringContainsString('onMySubProviderChange();', $html);
+
+        // Al cerrar el formulario el combo se rehabilita para el proximo alta
+        $this->assertMatchesRegularExpression(
+            '/function closeSubNewForm\(\)\s*\{(?:(?!function).)*?provider\.disabled = false;/s',
+            $html
+        );
+
+        // El boton + de la seccion abre el formulario sin preseleccion
+        $this->assertStringContainsString('onclick="openSubNewForm()"', $html);
+    }
+
+    public function test_navigating_to_subscriptions_from_the_nav_unlocks_the_provider_combo(): void
+    {
+        $this->actingAs($this->cliente);
+
+        $html = $this->get('/dashboard')->assertOk()->getContent();
+
+        // Entrar a Mis Suscripciones desde el nav habilita el combo de comercios
+        $this->assertStringContainsString("if (key === 'mis-suscripciones') {", $html);
+        $this->assertStringContainsString('subProvider.disabled = false;', $html);
+        $this->assertStringContainsString("subProvider.title = '';", $html);
+        $this->assertStringContainsString('loadMySubscriptions();', $html);
+
+        // El desbloqueo ocurre antes de que la tarjeta vuelva a fijarlo:
+        // fdSubscribeToProvider primero muestra la seccion (desbloquea) y
+        // recien despues llama a openSubNewForm (fija y bloquea).
+        $fnPos = strpos($html, 'function fdSubscribeToProvider');
+        $this->assertNotFalse($fnPos);
+        $sectionCall = strpos($html, "showDashSection('mis-suscripciones');", $fnPos);
+        $openCall = strpos($html, 'openSubNewForm(Number(providerId)', $fnPos);
+        $this->assertNotFalse($sectionCall);
+        $this->assertNotFalse($openCall);
+        $this->assertLessThan($openCall, $sectionCall);
+    }
+
     public function test_client_can_subscribe_through_the_api_used_by_the_new_page(): void
     {
         $this->subscribeClient();
