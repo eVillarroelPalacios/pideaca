@@ -22,6 +22,16 @@ class MarketingCampaignRule extends Model
     ];
 
     /**
+     * Tokens que el mensaje no puede perder: sin ellos el circuito de la
+     * campana pierde personalizacion y el cliente no recibe el cupon.
+     */
+    public const REQUIRED_TOKENS = [
+        '{nombre}',
+        '{comercio}',
+        '{cupon}',
+    ];
+
+    /**
      * Texto inicial que el comercio puede personalizar; los tokens son los que
      * el motor reemplaza al renderizar.
      */
@@ -46,6 +56,29 @@ class MarketingCampaignRule extends Model
         'day_of_week' => 'integer',
         'is_enabled' => 'boolean',
     ];
+
+    /**
+     * Tokens que no puede perder un mensaje de este tipo: los de la plantilla
+     * por defecto ({dias} en INACTIVE_CUSTOMER) mas los tres obligatorios.
+     *
+     * @return array<int, string>
+     */
+    public static function requiredTokensFor(string $type): array
+    {
+        $tokens = [];
+
+        $fuente = self::DEFAULT_TEMPLATES[$type] ?? '';
+
+        foreach (preg_match_all('/\{[a-z_]+\}/', $fuente, $coincidencias) ? $coincidencias[0] : [] as $token) {
+            $tokens[$token] = true;
+        }
+
+        foreach (self::REQUIRED_TOKENS as $token) {
+            $tokens[$token] = true;
+        }
+
+        return array_keys($tokens);
+    }
 
     public function provider(): BelongsTo
     {

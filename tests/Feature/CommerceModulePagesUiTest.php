@@ -149,6 +149,47 @@ class CommerceModulePagesUiTest extends TestCase
             ->assertSee('loadSubRevenue()', false);
     }
 
+    public function test_retention_page_shows_a_sidebar_with_one_section_per_campaign(): void
+    {
+        $this->actingAs($this->prestador);
+
+        $html = $this->get('/dashboard')->assertOk()->getContent();
+
+        // Sidebar a la izquierda con una entrada por campana de retencion
+        $this->assertStringContainsString('id="ret-sidebar"', $html);
+        $this->assertStringContainsString('id="ret-legend"', $html);
+        $this->assertStringContainsString('function retTab(type)', $html);
+
+        foreach (['INACTIVE_CUSTOMER', 'RECURRING_DAY_REMINDER', 'WELCOME_BACK'] as $type) {
+            $this->assertStringContainsString('data-ret-panel="'.$type.'"', $html);
+            $this->assertStringContainsString('id="ret-panel-'.$type.'"', $html);
+            $this->assertStringContainsString('id="ret-slot-'.$type.'"', $html);
+            $this->assertStringContainsString('id="ret-dot-'.$type.'"', $html);
+        }
+
+        // Cada campana tiene su seccion con titulo y ayuda
+        $this->assertStringContainsString('Cliente inactivo', $html);
+        $this->assertStringContainsString('Recordatorio del día de entrega', $html);
+        $this->assertStringContainsString('Bienvenida de regreso', $html);
+
+        // El mensaje no se puede guardar ni borrar tokens {nombre}, {comercio} o {cupon}
+        $this->assertStringContainsString("var RET_REQUIRED_TOKENS = ['{nombre}', '{comercio}', '{cupon}']", $html);
+        $this->assertStringContainsString('El mensaje no puede perder', $html);
+        $this->assertStringContainsString('function retGuardMessage(el)', $html);
+        $this->assertStringContainsString('oninput="retGuardMessage(this)"', $html);
+        $this->assertStringContainsString('No se pueden borrar', $html);
+
+        // En responsive el sidebar entra desde la izquierda como Mi Panel
+        $this->assertStringContainsString('class="ret-topbar"', $html);
+        $this->assertStringContainsString('id="ret-menu-toggle"', $html);
+        $this->assertStringContainsString('id="ret-overlay"', $html);
+        $this->assertStringContainsString('id="ret-nav"', $html);
+        $this->assertStringContainsString('id="ret-menu-current"', $html);
+        $this->assertStringContainsString('function retToggleMenu()', $html);
+        $this->assertStringContainsString('transform: translateX(-100%)', $html);
+        $this->assertStringContainsString('@media (max-width: 860px)', $html);
+    }
+
     public function test_client_gets_only_the_customer_page(): void
     {
         $this->actingAs($this->cliente);

@@ -137,7 +137,7 @@ class MarketingApiTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson('/api/v1/provider/marketing/rules', [
                 'days_inactive' => 20,
-                'message_template' => 'Hola {nombre}, hace {dias} dias que no pides. Cupon {cupon}',
+                'message_template' => 'Hola {nombre}, hace {dias} dias que no pides en {comercio}. Cupon {cupon}',
                 'discount_code' => 'BIENVENIDO20',
                 'is_enabled' => true,
             ])
@@ -169,7 +169,7 @@ class MarketingApiTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson('/api/v1/provider/marketing/rules', [
                 'days_inactive' => 45,
-                'message_template' => 'Hola {nombre}, te guardamos {comercio}',
+                'message_template' => 'Hola {nombre}, hace {dias} dias que te guardamos en {comercio}. Cupon {cupon}',
                 'discount_code' => '45OFF',
                 'is_enabled' => true,
             ])
@@ -181,7 +181,7 @@ class MarketingApiTest extends TestCase
         $this->assertSame(1, MarketingCampaignRule::where('provider_id', $this->provider->id)->count());
         $this->assertDatabaseHas('marketing_campaign_rules', [
             'id' => $regla->id,
-            'message_template' => 'Hola {nombre}, te guardamos {comercio}',
+            'message_template' => 'Hola {nombre}, hace {dias} dias que te guardamos en {comercio}. Cupon {cupon}',
             'discount_code' => '45OFF',
             'is_enabled' => true,
         ]);
@@ -200,7 +200,7 @@ class MarketingApiTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson('/api/v1/provider/marketing/rules', [
                 'days_inactive' => 15,
-                'message_template' => 'Hola {nombre}',
+                'message_template' => 'Hola {nombre}, hace {dias} dias que no pides en {comercio}. Cupon {cupon}',
                 'is_enabled' => false,
             ])
             ->assertStatus(200)
@@ -218,7 +218,7 @@ class MarketingApiTest extends TestCase
             ->putJson('/api/v1/provider/marketing/rules', [
                 'rule_type' => MarketingCampaignRule::TYPE_RECURRING_DAY_REMINDER,
                 'day_of_week' => 6,
-                'message_template' => 'Hoy es tu dia en {comercio}',
+                'message_template' => 'Hola {nombre}, hoy es tu dia en {comercio}. Cupon {cupon}',
                 'is_enabled' => true,
             ])
             ->assertStatus(201)
@@ -228,7 +228,7 @@ class MarketingApiTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson('/api/v1/provider/marketing/rules', [
                 'rule_type' => MarketingCampaignRule::TYPE_WELCOME_BACK,
-                'message_template' => 'Vuelve a {comercio}',
+                'message_template' => 'Hola {nombre}, vuelve a {comercio}. Cupon {cupon}',
                 'is_enabled' => true,
             ])
             ->assertStatus(201)
@@ -272,6 +272,41 @@ class MarketingApiTest extends TestCase
             ->assertJsonValidationErrors(['day_of_week']);
     }
 
+    public function test_update_rejects_messages_without_the_required_tokens(): void
+    {
+        $completo = 'Hola {nombre}, hace {dias} dias que no pides en {comercio}. Cupon {cupon}';
+
+        $this->assertSame(
+            ['{nombre}', '{dias}', '{comercio}', '{cupon}'],
+            MarketingCampaignRule::requiredTokensFor(MarketingCampaignRule::TYPE_INACTIVE_CUSTOMER)
+        );
+
+        foreach (MarketingCampaignRule::requiredTokensFor(MarketingCampaignRule::TYPE_INACTIVE_CUSTOMER) as $token) {
+            $respuesta = $this->actingAs($this->owner)
+                ->putJson('/api/v1/provider/marketing/rules', [
+                    'days_inactive' => 20,
+                    'message_template' => str_replace($token, '', $completo),
+                    'is_enabled' => true,
+                ])
+                ->assertStatus(422)
+                ->assertJsonValidationErrors(['message_template']);
+
+            $this->assertStringContainsString($token, (string) $respuesta->json('errors.message_template.0'));
+        }
+
+        $this->assertSame(0, MarketingCampaignRule::where('provider_id', $this->provider->id)->count());
+
+        $this->actingAs($this->owner)
+            ->putJson('/api/v1/provider/marketing/rules', [
+                'days_inactive' => 20,
+                'message_template' => $completo,
+                'is_enabled' => true,
+            ])
+            ->assertStatus(201);
+
+        $this->assertSame(1, MarketingCampaignRule::where('provider_id', $this->provider->id)->count());
+    }
+
     public function test_update_does_not_touch_other_providers_rules(): void
     {
         $ajena = MarketingCampaignRule::create([
@@ -285,7 +320,7 @@ class MarketingApiTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson('/api/v1/provider/marketing/rules', [
                 'days_inactive' => 20,
-                'message_template' => 'Mio',
+                'message_template' => 'Hola {nombre}, hace {dias} dias que no pides en {comercio}. Cupon {cupon}',
                 'is_enabled' => true,
             ])
             ->assertStatus(201);

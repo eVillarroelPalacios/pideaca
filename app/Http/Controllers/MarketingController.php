@@ -68,7 +68,32 @@ class MarketingController extends Controller
                 'nullable', 'integer', 'min:1', 'max:7',
                 Rule::requiredIf(fn () => $request->input('rule_type') === MarketingCampaignRule::TYPE_RECURRING_DAY_REMINDER),
             ],
-            'message_template' => ['required', 'string', 'max:1000'],
+            'message_template' => [
+                'required', 'string', 'max:1000',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    if (! is_string($value)) {
+                        return;
+                    }
+
+                    $tipo = $request->input('rule_type');
+
+                    if (! is_string($tipo) || ! in_array($tipo, MarketingCampaignRule::TYPES, true)) {
+                        $tipo = MarketingCampaignRule::TYPE_INACTIVE_CUSTOMER;
+                    }
+
+                    $faltantes = [];
+
+                    foreach (MarketingCampaignRule::requiredTokensFor($tipo) as $token) {
+                        if (! str_contains($value, $token)) {
+                            $faltantes[] = $token;
+                        }
+                    }
+
+                    if ($faltantes !== []) {
+                        $fail('El mensaje no puede perder '.implode(', ', $faltantes).'; esos tokens se completan solos al enviar.');
+                    }
+                },
+            ],
             'discount_code' => ['nullable', 'string', 'max:50'],
             'is_enabled' => ['required', 'boolean'],
         ]);
