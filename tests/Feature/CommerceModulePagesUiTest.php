@@ -289,6 +289,52 @@ class CommerceModulePagesUiTest extends TestCase
             ->assertJsonPath('subscriptions.0.items', []);
     }
 
+    public function test_financial_health_page_shows_a_sidebar_with_one_section_per_block(): void
+    {
+        $this->actingAs($this->prestador);
+
+        $html = $this->get('/dashboard')->assertOk()->getContent();
+
+        // Sidebar a la izquierda con una entrada por seccion
+        $this->assertStringContainsString('id="fin-sidebar"', $html);
+        $this->assertStringContainsString('id="fin-nav"', $html);
+        $this->assertStringContainsString('function finTab(key)', $html);
+        $this->assertStringContainsString('function finToggleMenu()', $html);
+        $this->assertStringContainsString('id="fin-menu-current"', $html);
+
+        foreach (['productos', 'insumos', 'ficha'] as $key) {
+            $this->assertStringContainsString('data-fin-panel="'.$key.'"', $html);
+            $this->assertStringContainsString('id="fin-panel-'.$key.'"', $html);
+        }
+
+        // Cada bloque vive dentro de su seccion: productos -> tabla e
+        // insumos -> lista y formulario y ficha -> editor de receta.
+        $posProductos = strpos($html, 'id="fin-panel-productos"');
+        $posTabla = strpos($html, 'id="fin-rows"');
+        $posInsumos = strpos($html, 'id="fin-panel-insumos"');
+        $posSupplies = strpos($html, 'id="fin-supplies"');
+        $posForm = strpos($html, 'id="fin-supply-form"');
+        $posFicha = strpos($html, 'id="fin-panel-ficha"');
+        $posRecipe = strpos($html, 'id="fin-recipe"');
+
+        $this->assertLessThan($posInsumos, $posTabla, 'la tabla de productos va antes que la seccion Insumos');
+        $this->assertLessThan($posFicha, $posSupplies, 'la lista de insumos va antes que la seccion Ficha tecnica');
+        $this->assertGreaterThan($posProductos, $posTabla, 'la tabla queda dentro de la seccion Productos');
+        $this->assertGreaterThan($posInsumos, $posForm, 'el formulario queda dentro de la seccion Insumos');
+        $this->assertGreaterThan($posFicha, $posRecipe, 'el editor de ficha queda dentro de su seccion');
+
+        // La ficha avisa como abrirse y el boton + Insumo esta en su seccion
+        $this->assertStringContainsString('Elegí un producto en la sección Productos', $html);
+        $this->assertStringContainsString('id="fin-recipe-hint"', $html);
+
+        // En responsive el sidebar entra desde la izquierda como Mi Panel
+        $this->assertStringContainsString('class="fin-topbar"', $html);
+        $this->assertStringContainsString('id="fin-menu-toggle"', $html);
+        $this->assertStringContainsString('id="fin-overlay"', $html);
+        $this->assertStringContainsString('transform: translateX(-100%)', $html);
+        $this->assertStringContainsString('@media (max-width: 860px)', $html);
+    }
+
     public function test_provider_sees_finances_retention_and_revenue_from_the_dashboard(): void
     {
         $this->actingAs($this->prestador);
