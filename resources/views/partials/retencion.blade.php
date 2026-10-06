@@ -100,7 +100,7 @@
                 </button>
                 <span style="font-size:12px;color:#64748b;">Campañas</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-                <span id="ret-menu-current" style="font-size:12px;color:#0f172a;font-weight:600;">Cliente inactivo</span>
+                <span id="ret-menu-current" style="font-size:12px;color:#0f172a;font-weight:600;">Reactivación</span>
             </div>
 
             <div id="ret-overlay" onclick="retToggleMenu()" title="Cerrar" aria-hidden="true"></div>
@@ -109,21 +109,21 @@
                 <div id="ret-nav">
                 <div class="ret-menu-title">Campañas</div>
 
-                <a href="#" class="sidebar-link active" id="ret-link-INACTIVE_CUSTOMER" data-ret-panel="INACTIVE_CUSTOMER" title="Cliente inactivo" onclick="event.preventDefault();retTab('INACTIVE_CUSTOMER')">
+                <a href="#" class="sidebar-link active" id="ret-link-INACTIVE_CUSTOMER" data-ret-panel="INACTIVE_CUSTOMER" title="Reactivación" onclick="event.preventDefault();retTab('INACTIVE_CUSTOMER')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                    <span style="flex:1;min-width:0;">Cliente inactivo</span>
+                    <span style="flex:1;min-width:0;">Reactivación</span>
                     <span class="ret-dot" id="ret-dot-INACTIVE_CUSTOMER" title="Sin configurar"></span>
                 </a>
 
-                <a href="#" class="sidebar-link" id="ret-link-RECURRING_DAY_REMINDER" data-ret-panel="RECURRING_DAY_REMINDER" title="Recordatorio del día de entrega" onclick="event.preventDefault();retTab('RECURRING_DAY_REMINDER')">
+                <a href="#" class="sidebar-link" id="ret-link-RECURRING_DAY_REMINDER" data-ret-panel="RECURRING_DAY_REMINDER" title="Aviso de Envío" onclick="event.preventDefault();retTab('RECURRING_DAY_REMINDER')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><rect width="18" height="18" x="3" y="4" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 2v4"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18"/></svg>
-                    <span style="flex:1;min-width:0;">Recordatorio de entrega</span>
+                    <span style="flex:1;min-width:0;">Aviso de Envío</span>
                     <span class="ret-dot" id="ret-dot-RECURRING_DAY_REMINDER" title="Sin configurar"></span>
                 </a>
 
-                <a href="#" class="sidebar-link" id="ret-link-WELCOME_BACK" data-ret-panel="WELCOME_BACK" title="Bienvenida de regreso" onclick="event.preventDefault();retTab('WELCOME_BACK')">
+                <a href="#" class="sidebar-link" id="ret-link-WELCOME_BACK" data-ret-panel="WELCOME_BACK" title="Reencuentro" onclick="event.preventDefault();retTab('WELCOME_BACK')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"/></svg>
-                    <span style="flex:1;min-width:0;">Bienvenida de regreso</span>
+                    <span style="flex:1;min-width:0;">Reencuentro</span>
                     <span class="ret-dot" id="ret-dot-WELCOME_BACK" title="Sin configurar"></span>
                 </a>
 
@@ -138,7 +138,7 @@
             <div class="ret-body">
                 <div class="ret-panel active" id="ret-panel-INACTIVE_CUSTOMER">
                     <div class="ret-panel-head">
-                        <h3>Cliente inactivo</h3>
+                        <h3>Reactivación</h3>
                         <p>Avisa cuando el cliente lleva varios días sin pedirte nada.</p>
                     </div>
                     <div id="ret-slot-INACTIVE_CUSTOMER"></div>
@@ -146,7 +146,7 @@
 
                 <div class="ret-panel" id="ret-panel-RECURRING_DAY_REMINDER">
                     <div class="ret-panel-head">
-                        <h3>Recordatorio del día de entrega</h3>
+                        <h3>Aviso de Envío</h3>
                         <p>Recuerda el pedido recurrente antes de que llegue el día.</p>
                     </div>
                     <div id="ret-slot-RECURRING_DAY_REMINDER"></div>
@@ -154,7 +154,7 @@
 
                 <div class="ret-panel" id="ret-panel-WELCOME_BACK">
                     <div class="ret-panel-head">
-                        <h3>Bienvenida de regreso</h3>
+                        <h3>Reencuentro</h3>
                         <p>Recupera clientes que dejaron de comprar hace tiempo.</p>
                     </div>
                     <div id="ret-slot-WELCOME_BACK"></div>
@@ -178,15 +178,15 @@
 
     var RET_META = {
         INACTIVE_CUSTOMER: {
-            title: 'Cliente inactivo',
+            title: 'Reactivación',
             hint: 'Avisa cuando el cliente lleva varios dias sin pedirte nada.'
         },
         RECURRING_DAY_REMINDER: {
-            title: 'Recordatorio del dia de entrega',
+            title: 'Aviso de Envío',
             hint: 'Recuerda el pedido recurrente antes de que llegue el dia.'
         },
         WELCOME_BACK: {
-            title: 'Bienvenida de regreso',
+            title: 'Reencuentro',
             hint: 'Recupera clientes que dejaron de comprar hace tiempo.'
         }
     };
@@ -310,7 +310,7 @@
     }
 
     // Tokens que el mensaje de cada campana no puede perder: los de la
-    // plantilla por defecto (p.ej. {dias} en Cliente inactivo) mas los bases.
+    // plantilla por defecto (p.ej. {dias} en Reactivación) mas los bases.
     function retTokenList(type, defaults) {
         var lista = [];
         var encontrados = ((((defaults || {})[type]) || '').match(/\{[a-z_]+\}/g) || []).concat(RET_REQUIRED_TOKENS);

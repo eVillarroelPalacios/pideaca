@@ -168,9 +168,9 @@ class CommerceModulePagesUiTest extends TestCase
         }
 
         // Cada campana tiene su seccion con titulo y ayuda
-        $this->assertStringContainsString('Cliente inactivo', $html);
-        $this->assertStringContainsString('Recordatorio del día de entrega', $html);
-        $this->assertStringContainsString('Bienvenida de regreso', $html);
+        $this->assertStringContainsString('Reactivación', $html);
+        $this->assertStringContainsString('Aviso de Envío', $html);
+        $this->assertStringContainsString('Reencuentro', $html);
 
         // El mensaje no se puede guardar ni borrar tokens {nombre}, {comercio} o {cupon}
         $this->assertStringContainsString("var RET_REQUIRED_TOKENS = ['{nombre}', '{comercio}', '{cupon}']", $html);
