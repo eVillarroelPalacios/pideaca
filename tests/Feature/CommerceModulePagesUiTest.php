@@ -190,6 +190,19 @@ class CommerceModulePagesUiTest extends TestCase
         $this->assertStringContainsString('@media (max-width: 860px)', $html);
     }
 
+    public function test_dashboard_body_can_grow_so_the_sticky_header_stays_pinned(): void
+    {
+        $this->actingAs($this->prestador);
+
+        $html = $this->get('/dashboard')->assertOk()->getContent();
+
+        // html, body { height:100% } dejaba la caja del body igual al viewport:
+        // el nav sticky se despegaba al scrollear y el header quedaba cortado.
+        $this->assertStringNotContainsString('html, body { height: 100%; }', $html);
+        $this->assertStringContainsString('body { min-height: 100%; }', $html);
+        $this->assertStringContainsString('position:sticky;top:0;z-index:50', $html);
+    }
+
     public function test_client_gets_only_the_customer_page(): void
     {
         $this->actingAs($this->cliente);

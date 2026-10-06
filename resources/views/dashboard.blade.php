@@ -574,7 +574,11 @@
     </body>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
+    html { height: 100%; }
+    /* El body debe poder crecer con el contenido: con height:100% la caja del
+       body quedaba igual al viewport y el nav sticky se despegaba (header
+       cortado) al scrollear mas alla de esa altura. */
+    body { min-height: 100%; }
 
     .header-btn:hover { background: rgba(255,255,255,0.1) !important; color: #ffffff !important; border-color: #ffffff !important; }
     .nav-link {
