@@ -453,7 +453,7 @@ class RecipeApiTest extends TestCase
             ->assertJsonCount(0, 'products.0.alerts');
     }
 
-    public function test_producto_sin_ficha_tecnica_avisa_que_el_margen_no_es_real(): void
+    public function test_producto_sin_ficha_tecnica_avisa_que_costo_y_margen_no_estan_calculados(): void
     {
         $this->producto($this->provider, $this->category, 3500, 'Empanada Sin Receta');
 
@@ -463,7 +463,8 @@ class RecipeApiTest extends TestCase
             ->assertJsonPath('products.0.has_recipe', false)
             ->assertJsonPath('products.0.production_cost', 0)
             ->assertJsonPath('products.0.alerts.0.code', 'sin_ficha_tecnica')
-            ->assertJsonPath('products.0.alerts.0.severity', 'info');
+            ->assertJsonPath('products.0.alerts.0.severity', 'info')
+            ->assertJsonPath('products.0.alerts.0.message', 'Sin ficha técnica: costo y margen no calculados');
     }
 
     public function test_producto_sin_precio_no_calcula_margen(): void

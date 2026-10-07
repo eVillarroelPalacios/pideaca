@@ -2,15 +2,15 @@
 <style>
     /* --- Salud financiera: sidebar de secciones (productos, insumos, ficha) --- */
     .fin-layout { display: flex; align-items: stretch; background: #ffffff; border: 1px solid #e5e7eb; }
-    #fin-sidebar { width: 210px; min-width: 210px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
-    .fin-menu-title { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; padding: 16px 20px 8px; }
+    #fin-sidebar { width: 168px; min-width: 168px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
+    .fin-menu-title { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; padding: 16px 14px 8px; }
     .fin-body { flex: 1; min-width: 0; padding: 20px 22px; }
     .fin-panel { display: none; }
     .fin-panel.active { display: block; animation: tabFade .18s ease; }
     .fin-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
     .fin-panel-head h3 { font-size: 15px; font-weight: 700; color: #0c2a4d; margin: 0; }
     .fin-panel-head p { font-size: 12px; color: #6b7280; margin: 3px 0 0; }
-    #fin-sidebar .sidebar-link { font-size: 12px; gap: 8px; padding: 9px 16px; align-items: center; }
+    #fin-sidebar .sidebar-link { font-size: 12px; gap: 8px; padding: 9px 10px; align-items: center; }
     .fin-topbar { display: none; }
     #fin-menu-toggle { display: none; }
     #fin-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 240; }
@@ -47,8 +47,8 @@
             position: fixed;
             top: 60px;
             left: 0;
-            width: 250px;
-            min-width: 250px;
+            width: 210px;
+            min-width: 210px;
             height: calc(100vh - 60px);
             overflow-y: auto;
             background: #ffffff;
@@ -373,7 +373,6 @@
         return fdFetchJson(FIN_URL.supplies)
             .then(function (res) {
                 if (!res.ok) return;
-
                 finState.supplies = res.data.supplies || [];
                 finState.units = res.data.units_of_measure || [];
 
@@ -405,6 +404,9 @@
                             + '</td></tr>';
                     }).join('')
                     + '</tbody></table></div>';
+            })
+            .catch(function () {
+                // Si la peticion falla la lista queda vacia: addRecipeRow reintenta.
             });
     }
 
@@ -419,7 +421,7 @@
 
         var unit = document.getElementById('fin-supply-unit');
         if (unit) {
-            unit.innerHTML = finState.units.map(function (u) {
+            unit.innerHTML = (finState.units || []).map(function (u) {
                 return '<option value="' + u.id + '">' + escapeHtml(u.name) + '</option>';
             }).join('');
         }
@@ -504,15 +506,17 @@
 
     function renderRecipeRows(items) {
         var box = document.getElementById('fin-recipe-items');
+        if (!box) return;
 
-        if (!items.length) {
+        // Pinta la lista entera: asi desaparece el "Cargando ficha...".
+        if (items.length) {
+            box.innerHTML = items.map(function (item) {
+                return finRecipeRowHtml(item.supply_id, item.quantity_required);
+            }).join('');
+        } else {
             box.innerHTML = '<p style="font-size:12px;color:#6b7280;margin:0 0 10px;">'
                 + 'Este producto todavía no tiene ficha técnica. Agregá los insumos que necesita para calcular su costo.</p>';
         }
-
-        box.innerHTML += items.map(function (item) {
-            return finRecipeRowHtml(item.supply_id, item.quantity_required);
-        }).join('');
     }
 
     function finRecipeRowHtml(supplyId, quantity) {
@@ -532,11 +536,43 @@
     }
 
     function addRecipeRow() {
-        if (!finState.supplies.length) {
-            fdToast('Primero cargá al menos un insumo.', true);
+        var box = document.getElementById('fin-recipe-items');
+
+        if (!box) {
+            var recipe = document.getElementById('fin-recipe');
+            if (!recipe) {
+                fdToast('Abrí la ficha técnica de un producto desde la sección Productos.', true);
+                return;
+            }
+            box = document.createElement('div');
+            box.id = 'fin-recipe-items';
+            recipe.appendChild(box);
+        }
+
+        if (finState.supplies.length) {
+            finAppendRecipeRow(box);
             return;
         }
-        document.getElementById('fin-recipe-items').insertAdjacentHTML('beforeend', finRecipeRowHtml(null, ''));
+
+        // Los insumos todavia no llegaron (o fallaron): los pedimos y reintentamos.
+        loadSupplies()
+            .catch(function () {})
+            .then(function () { finAppendRecipeRow(box); });
+    }
+
+    function finAppendRecipeRow(box) {
+        try {
+            box.insertAdjacentHTML('beforeend', finRecipeRowHtml(null, ''));
+
+            var fila = box.lastElementChild;
+            if (fila && fila.scrollIntoView) fila.scrollIntoView({ block: 'nearest' });
+
+            if (!finState.supplies.length) {
+                fdToast('Cargá al menos un insumo en la sección Insumos para elegirlo acá.', true);
+            }
+        } catch (e) {
+            fdToast('No se pudo agregar el insumo: ' + (e && e.message ? e.message : e), true);
+        }
     }
 
     function saveRecipe() {

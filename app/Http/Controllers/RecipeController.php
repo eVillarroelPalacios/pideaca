@@ -274,7 +274,7 @@ class RecipeController extends Controller
             $alertas[] = [
                 'code' => 'sin_ficha_tecnica',
                 'severity' => 'info',
-                'message' => 'El producto no tiene ficha tecnica, el costo de produccion es 0 y el margen no es real.',
+                'message' => 'Sin ficha técnica: costo y margen no calculados',
             ];
         }
 
