@@ -23,6 +23,16 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <span id="fd-orders-count-history" style="background:#6b7280;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
                     </button>
+
+                    <div id="fd-orders-range" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:4px;">
+                        <label for="fd-orders-date-from" style="font-size:11px;color:#6b7280;">Desde</label>
+                        <input type="date" id="fd-orders-date-from" onchange="fdOrdersRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                        <label for="fd-orders-date-to" style="font-size:11px;color:#6b7280;">Hasta</label>
+                        <input type="date" id="fd-orders-date-to" onchange="fdOrdersRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                        <button type="button" onclick="fdOrdersClearRange()" title="Limpiar rango de fechas" aria-label="Limpiar rango de fechas" style="background:#fff;color:#6b7280;border:1px solid #d1d5db;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="fd-orders-loading" style="display:none;background:white;border:1px solid #e5e7eb;padding:40px;text-align:center;">
@@ -34,4 +44,5 @@
                 </div>
 
                 <div id="fd-orders-list" style="display:none;"></div>
+                <div id="fd-orders-pagination" style="display:none;justify-content:center;align-items:center;gap:10px;margin-top:14px;"></div>
             </section>

@@ -3346,10 +3346,15 @@
     var fdMyOrdersHistoryPage = 1;
     var FD_MYORDERS_PER_PAGE = 3;
 
-    // Pedidos del comercio: pestaña activa (pedidos de hoy / historial) y el
-    // listado completo para separar los dos grupos.
+    // Pedidos del comercio: pestaña activa (pedidos de hoy / historial), el
+    // listado de la página actual, la paginación del servidor y el rango de
+    // fechas. Los contadores de las pestañas vienen del servidor.
     var fdOrdersActive = 'today';
     var fdOrdersAll = [];
+    var fdOrdersCounts = { today: 0, history: 0 };
+    var fdOrdersPage = 1;
+    var fdOrdersPagination = null;
+    var FD_ORDERS_PER_PAGE = 10;
 
     function loadProviderOrders(silent) {
         var providerId = fdProviderId('dash-pedidos');
@@ -3361,10 +3366,25 @@
         var filterEl = document.getElementById('fd-orders-filter');
         var savedFilter = filterEl ? filterEl.value : '';
 
-        if (!silent) fdSetOrdersState('loading');
+        if (!silent) {
+            fdOrdersPage = 1;
+            fdOrdersLastHtml = '';
+            fdSetOrdersState('loading');
 
-        var url = '{{ url("/api/providers") }}/' + providerId + '/orders';
-        if (savedFilter) url += '?status=' + encodeURIComponent(savedFilter);
+            var pagBox = document.getElementById('fd-orders-pagination');
+            if (pagBox) { pagBox.style.display = 'none'; pagBox.innerHTML = ''; }
+        }
+
+        var params = ['tab=' + encodeURIComponent(fdOrdersActive)];
+        if (savedFilter) params.push('status=' + encodeURIComponent(savedFilter));
+        if (fdOrdersRangeActive()) {
+            params.push('date_from=' + encodeURIComponent(fdOrdersDateFrom()));
+            params.push('date_to=' + encodeURIComponent(fdOrdersDateTo()));
+        }
+        params.push('page=' + fdOrdersPage);
+        params.push('per_page=' + FD_ORDERS_PER_PAGE);
+
+        var url = '{{ url("/api/providers") }}/' + providerId + '/orders?' + params.join('&');
 
         fdFetchJson(url)
             .then(function (res) {
@@ -3390,22 +3410,22 @@
                 var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
 
                 fdOrdersAll = orders;
-                var groups = fdOrdersSplit();
+                fdOrdersCounts = res.data.counts || { today: 0, history: 0 };
+                fdOrdersPagination = res.data.pagination || null;
 
                 var summary = document.getElementById('fd-orders-summary');
                 if (summary) {
                     summary.textContent = (provider.business_name || 'Tu comercio') +
-                        ' · ' + groups.today.length + ' de hoy · ' + groups.history.length + ' en historial' +
+                        ' · ' + (fdOrdersCounts.today || 0) + ' de hoy · ' + (fdOrdersCounts.history || 0) + ' en historial' +
                         (pending ? ' · ' + pending + ' pendientes' : '') +
                         ' · actualizado ' + fdClock();
                 }
 
                 if (!orders.length) {
                     fdOrdersLastHtml = '';
-                    fdOrdersPaintTabs(groups);
-                    fdSetOrdersState('message', savedFilter
-                        ? 'No hay pedidos con ese estado.'
-                        : 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.');
+                    fdOrdersPaintTabs();
+                    fdOrdersPaintPagination();
+                    fdSetOrdersState('message', fdOrdersEmptyText());
                     return;
                 }
 
@@ -3417,17 +3437,52 @@
             });
     }
 
-    function fdOrdersSplit() {
-        var groups = { today: [], history: [] };
-        fdOrdersAll.forEach(function (o) {
-            groups[fdMyOrdersIsToday(o) ? 'today' : 'history'].push(o);
-        });
-        return groups;
+    function fdOrdersDateFrom() {
+        var el = document.getElementById('fd-orders-date-from');
+        return el ? el.value : '';
     }
 
-    function fdOrdersPaintTabs(groups) {
+    function fdOrdersDateTo() {
+        var el = document.getElementById('fd-orders-date-to');
+        return el ? el.value : '';
+    }
+
+    function fdOrdersRangeActive() {
+        return !!(fdOrdersDateFrom() || fdOrdersDateTo());
+    }
+
+    // Cambia el rango de fechas: el servidor filtra y la pagina vuelve a 1.
+    function fdOrdersRangeChange() {
+        fdOrdersLastHtml = '';
+        loadProviderOrders();
+    }
+
+    function fdOrdersClearRange() {
+        var fromEl = document.getElementById('fd-orders-date-from');
+        var toEl = document.getElementById('fd-orders-date-to');
+        if (fromEl) fromEl.value = '';
+        if (toEl) toEl.value = '';
+        fdOrdersLastHtml = '';
+        loadProviderOrders();
+    }
+
+    function fdOrdersEmptyText() {
+        var filterEl = document.getElementById('fd-orders-filter');
+
+        if (fdOrdersRangeActive()) return 'No hay pedidos en ese rango de fechas.';
+        if (filterEl && filterEl.value) return 'No hay pedidos con ese estado en esta sección.';
+        if (!Number(fdOrdersCounts.today) && !Number(fdOrdersCounts.history)) {
+            return 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.';
+        }
+        if (fdOrdersActive === 'today') {
+            return 'No tenés pedidos hoy.\nPasá por la pestaña de historial para ver los anteriores.';
+        }
+        return 'Todavía no hay pedidos en el historial.';
+    }
+
+    function fdOrdersPaintTabs() {
         ['today', 'history'].forEach(function (key) {
-            var count = groups[key].length;
+            var count = Number((fdOrdersCounts || {})[key] || 0);
 
             var badge = document.getElementById('fd-orders-count-' + key);
             if (badge) {
@@ -3445,34 +3500,59 @@
         });
     }
 
+    // La pestaña se manda al servidor: hoy e historial se filtran en la query.
     function fdOrdersTab(tab) {
         fdOrdersActive = tab === 'history' ? 'history' : 'today';
+        loadProviderOrders();
+    }
+
+    function fdOrdersGoPage(step) {
+        var pag = fdOrdersPagination;
+        if (!pag) return;
+
+        var next = Math.min(Math.max(1, fdOrdersPage + step), pag.last_page);
+        if (next === fdOrdersPage) return;
+
+        fdOrdersPage = next;
         fdOrdersLastHtml = '';
-        fdOrdersRender(false);
+        loadProviderOrders(true);
+    }
+
+    function fdOrdersPaintPagination() {
+        var box = document.getElementById('fd-orders-pagination');
+        if (!box) return;
+
+        var pag = fdOrdersPagination;
+        if (!pag || pag.last_page <= 1 || !fdOrdersAll.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        var base = 'background:#fff;color:#374151;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;'
+            + 'display:inline-flex;align-items:center;justify-content:center;line-height:0;';
+        var prev = pag.current_page > 1;
+        var next = pag.current_page < pag.last_page;
+
+        box.innerHTML = '<button type="button" onclick="fdOrdersGoPage(-1)" title="Página anterior" aria-label="Página anterior" '
+            + (prev ? '' : 'disabled ') + 'style="' + base + (prev ? 'cursor:pointer;' : 'opacity:.5;') + '">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>'
+            + '<span style="font-size:12px;color:#6b7280;">Página ' + pag.current_page + ' de ' + pag.last_page + '</span>'
+            + '<button type="button" onclick="fdOrdersGoPage(1)" title="Página siguiente" aria-label="Página siguiente" '
+            + (next ? '' : 'disabled ') + 'style="' + base + (next ? 'cursor:pointer;' : 'opacity:.5;') + '">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>';
+        box.style.display = 'flex';
     }
 
     function fdOrdersRender(silent) {
-        var groups = fdOrdersSplit();
-        fdOrdersPaintTabs(groups);
+        fdOrdersPaintTabs();
 
-        var list = fdOrdersActive === 'today' ? groups.today : groups.history;
+        var list = fdOrdersAll;
 
         if (!list.length) {
             fdOrdersLastHtml = '';
-
-            var filterEl = document.getElementById('fd-orders-filter');
-            var text;
-            if (filterEl && filterEl.value) {
-                text = 'No hay pedidos con ese estado en esta sección.';
-            } else if (!fdOrdersAll.length) {
-                text = 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.';
-            } else if (fdOrdersActive === 'today') {
-                text = 'No tenés pedidos hoy.\nPasá por la pestaña de historial para ver los anteriores.';
-            } else {
-                text = 'Todavía no hay pedidos en el historial.';
-            }
-
-            fdSetOrdersState('message', text);
+            fdOrdersPaintPagination();
+            fdSetOrdersState('message', fdOrdersEmptyText());
             return;
         }
 
@@ -3484,6 +3564,7 @@
         fdOrdersLastHtml = html;
         listEl.innerHTML = html;
         fdSetOrdersState('content');
+        fdOrdersPaintPagination();
     }
 
     function fdRenderOrder(o) {

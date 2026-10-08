@@ -12,6 +12,8 @@ use App\Models\ProductVariant;
 use App\Models\Provider;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -24,7 +26,9 @@ class OrderController extends Controller
      * Pedidos recibidos por un comercio: alimenta la vista "Pedidos" del prestador.
      *
      * Solo el dueño del comercio puede verlos, y nunca se filtran pedidos
-     * de otro comercio aunque se pida otro id.
+     * de otro comercio aunque se pida otro id. Soporta filtro por estado,
+     * rango de fechas (date_from/date_to), pestaña (today/history) y
+     * paginación (page via paginate + per_page).
      */
     public function index(Request $request, Provider $provider)
     {
@@ -39,17 +43,20 @@ class OrderController extends Controller
             ], 403);
         }
 
-        $status = $request->query('status');
+        $data = $request->validate([
+            'status' => ['nullable', 'string', 'in:'.implode(',', Order::STATUSES)],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'tab' => ['nullable', 'string', 'in:today,history'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
 
-        if (is_string($status) && $status !== '' && ! in_array($status, Order::STATUSES, true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El estado indicado no es válido.',
-                'errors' => ['status' => ['El estado indicado no es válido.']],
-            ], 422);
-        }
+        $status = $data['status'] ?? null;
+        $tab = $data['tab'] ?? null;
+        $dateFrom = ! empty($data['date_from']) ? Carbon::parse($data['date_from'])->startOfDay() : null;
+        $dateTo = ! empty($data['date_to']) ? Carbon::parse($data['date_to'])->endOfDay() : null;
 
-        $orders = $provider->orders()
+        $base = $provider->orders()
             ->with([
                 'user:id,name,email',
                 'items.options',
@@ -57,8 +64,20 @@ class OrderController extends Controller
                 'payments:id,order_id,provider,status,amount,created_at',
             ])
             ->when($status, fn ($query) => $query->withStatus($status))
-            ->take(100)
-            ->get();
+            ->when($dateFrom, fn ($query) => $query->where('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->where('created_at', '<=', $dateTo));
+
+        // Contadores de las dos pestañas (hoy / historial) con los mismos filtros.
+        $counts = [
+            'today' => (clone $base)->whereDate('created_at', today())->count(),
+            'history' => (clone $base)->whereDate('created_at', '<', today())->count(),
+        ];
+
+        $orders = (clone $base)
+            ->when($tab === 'today', fn ($query) => $query->whereDate('created_at', today()))
+            ->when($tab === 'history', fn ($query) => $query->whereDate('created_at', '<', today()))
+            ->paginate((int) ($data['per_page'] ?? 20))
+            ->withQueryString();
 
         return response()->json([
             'success' => true,
@@ -68,7 +87,14 @@ class OrderController extends Controller
                 'is_active' => (bool) $provider->is_active,
             ],
             'statuses' => Order::STATUSES,
-            'orders' => $orders,
+            'orders' => $orders->items(),
+            'pagination' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'per_page' => $orders->perPage(),
+                'total' => $orders->total(),
+            ],
+            'counts' => $counts,
         ]);
     }
 
@@ -293,7 +319,7 @@ class OrderController extends Controller
      * Resuelve una linea del carrito contra la base: producto, variante, precio
      * unitario y opciones validas. Ningun valor proviene del cliente.
      *
-     * @return array{product: Product, variant: ProductVariant|null, unit_price: float, options: \Illuminate\Support\Collection}
+     * @return array{product: Product, variant: ProductVariant|null, unit_price: float, options: Collection}
      */
     private function resolveLine(Provider $provider, array $line, int $index): array
     {
@@ -337,7 +363,7 @@ class OrderController extends Controller
     /**
      * Valida que las opciones pertenezcan al producto y devuelve el modelo real.
      *
-     * @return \Illuminate\Support\Collection<int, ProductOption>
+     * @return Collection<int, ProductOption>
      */
     private function resolveOptions(Product $product, array $line, int $index)
     {

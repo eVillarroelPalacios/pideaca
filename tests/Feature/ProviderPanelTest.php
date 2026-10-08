@@ -283,6 +283,100 @@ class ProviderPanelTest extends TestCase
         $this->assertSame(['PANEL-0006', 'PANEL-0005'], array_column($orders, 'order_number'));
     }
 
+    public function test_orders_endpoint_filters_by_date_range(): void
+    {
+        $this->makeOrder($this->provider, 'RANGO-0001', Order::STATUS_PENDING);
+        $this->makeOrder($this->provider, 'RANGO-0002', Order::STATUS_PENDING);
+
+        Order::where('order_number', 'RANGO-0002')
+            ->update(['created_at' => now()->subDays(5)]);
+
+        $hoy = now()->toDateString();
+        $desde = now()->subDays(6)->toDateString();
+        $hasta = now()->subDays(4)->toDateString();
+
+        // El rango cubre solamente el pedido viejo
+        $orders = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?date_from={$desde}&date_to={$hasta}")
+            ->assertOk()
+            ->json('orders');
+
+        $this->assertSame(['RANGO-0002'], array_column($orders, 'order_number'));
+
+        // Un rango de un solo día llega solo al pedido de hoy
+        $orders = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?date_from={$hoy}&date_to={$hoy}")
+            ->json('orders');
+
+        $this->assertSame(['RANGO-0001'], array_column($orders, 'order_number'));
+    }
+
+    public function test_orders_endpoint_rejects_an_inverted_date_range(): void
+    {
+        $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?date_from=2026-10-05&date_to=2026-10-01")
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors' => ['date_to']]);
+
+        $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?date_from=ayer")
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors' => ['date_from']]);
+    }
+
+    public function test_orders_endpoint_paginates_orders(): void
+    {
+        $this->makeOrder($this->provider, 'PAG-0001', Order::STATUS_PENDING);
+        $this->makeOrder($this->provider, 'PAG-0002', Order::STATUS_PENDING);
+        $this->makeOrder($this->provider, 'PAG-0003', Order::STATUS_PENDING);
+
+        $pagina1 = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?per_page=2&page=1")
+            ->assertOk()
+            ->assertJsonPath('pagination.current_page', 1)
+            ->assertJsonPath('pagination.last_page', 2)
+            ->assertJsonPath('pagination.per_page', 2)
+            ->assertJsonPath('pagination.total', 3);
+
+        $this->assertCount(2, $pagina1->json('orders'));
+
+        $pagina2 = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?per_page=2&page=2")
+            ->assertJsonPath('pagination.current_page', 2);
+
+        $this->assertCount(1, $pagina2->json('orders'));
+    }
+
+    public function test_orders_endpoint_filters_by_tab_today_and_history(): void
+    {
+        $this->makeOrder($this->provider, 'TAB-0001', Order::STATUS_PENDING);
+        $this->makeOrder($this->provider, 'TAB-0002', Order::STATUS_PENDING);
+
+        Order::where('order_number', 'TAB-0002')
+            ->update(['created_at' => now()->subDays(3)]);
+
+        $hoy = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?tab=today")
+            ->assertOk();
+
+        $this->assertSame(['TAB-0001'], array_column($hoy->json('orders'), 'order_number'));
+        $this->assertSame(1, $hoy->json('counts.today'));
+        $this->assertSame(1, $hoy->json('counts.history'));
+
+        $historial = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?tab=history")
+            ->assertOk();
+
+        $this->assertSame(['TAB-0002'], array_column($historial->json('orders'), 'order_number'));
+
+        // Sin pestaña siguen llegando todos, como antes de paginar
+        $todos = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders")
+            ->assertOk();
+
+        $this->assertCount(2, $todos->json('orders'));
+    }
+
     public function test_owner_can_view_their_own_inactive_catalog(): void
     {
         $this->provider->update(['is_active' => false]);
@@ -320,7 +414,14 @@ class ProviderPanelTest extends TestCase
         $response->assertSee('loadProviderOrders()', false);
         $response->assertSee(url('/api/providers'), false);
         $response->assertSee("'/catalog'", false);
-        $response->assertSee("'/orders'", false);
+        $response->assertSee("'/orders?'", false);
+
+        // Rango de fechas y paginación del listado de pedidos
+        $response->assertSee('id="fd-orders-date-from"', false);
+        $response->assertSee('id="fd-orders-date-to"', false);
+        $response->assertSee('id="fd-orders-pagination"', false);
+        $response->assertSee('function fdOrdersRangeChange()', false);
+        $response->assertSee('function fdOrdersGoPage(step)', false);
 
         // Mi Perfil: el enlace "Usuarios" del sidebar no se oculta a los prestadores
         $response->assertSee('id="sidebar-link-usuarios"', false);
@@ -349,17 +450,22 @@ class ProviderPanelTest extends TestCase
         $this->assertStringContainsString("onclick=\"fdOrdersTab('today')\"", $html);
         $this->assertStringContainsString("onclick=\"fdOrdersTab('history')\"", $html);
 
-        // Separación de grupos y pintado de las pestañas
-        $this->assertStringContainsString('function fdOrdersSplit()', $html);
-        $this->assertStringContainsString('function fdOrdersPaintTabs(groups)', $html);
+        // Las pestañas se filtran en el servidor, con contadores y paginación
+        $this->assertStringContainsString('function fdOrdersPaintTabs()', $html);
         $this->assertStringContainsString('function fdOrdersTab(tab)', $html);
         $this->assertStringContainsString('function fdOrdersRender(silent)', $html);
-        $this->assertStringContainsString("groups[fdMyOrdersIsToday(o) ? 'today' : 'history'].push(o);", $html);
+        $this->assertStringContainsString('function fdOrdersGoPage(step)', $html);
+        $this->assertStringContainsString('function fdOrdersPaintPagination()', $html);
+        $this->assertStringContainsString('function fdOrdersRangeChange()', $html);
         $this->assertStringContainsString("var fdOrdersActive = 'today';", $html);
         $this->assertStringContainsString("fdOrdersActive = tab === 'history' ? 'history' : 'today';", $html);
+        $this->assertStringContainsString("'tab=' + encodeURIComponent(fdOrdersActive)", $html);
+        $this->assertStringContainsString("'date_from=' + encodeURIComponent(fdOrdersDateFrom())", $html);
+        $this->assertStringContainsString("'date_to=' + encodeURIComponent(fdOrdersDateTo())", $html);
+        $this->assertStringContainsString("'page=' + fdOrdersPage", $html);
 
-        // El resumen cuenta los pedidos de cada pestaña
-        $this->assertStringContainsString("' de hoy · ' + groups.history.length + ' en historial'", $html);
+        // El resumen cuenta los pedidos de cada pestaña con los del servidor
+        $this->assertStringContainsString("' de hoy · ' + (fdOrdersCounts.history || 0) + ' en historial'", $html);
     }
 
     public function test_dashboard_hides_the_prestador_sections_from_a_cliente(): void
