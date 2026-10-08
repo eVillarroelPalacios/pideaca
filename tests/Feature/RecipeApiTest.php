@@ -87,9 +87,11 @@ class RecipeApiTest extends TestCase
     public function test_guest_gets_401_on_all_recipe_endpoints(): void
     {
         $producto = $this->producto($this->provider, $this->category, 3500);
+        $insumo = $this->insumo('Carne Picada', 10000);
 
         $this->getJson('/api/v1/provider/supplies')->assertStatus(401);
         $this->postJson('/api/v1/provider/supplies', [])->assertStatus(401);
+        $this->deleteJson('/api/v1/provider/supplies/'.$insumo->id)->assertStatus(401);
         $this->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', [])->assertStatus(401);
         $this->getJson('/api/v1/provider/financial-health')->assertStatus(401);
     }
@@ -105,6 +107,9 @@ class RecipeApiTest extends TestCase
         $this->actingAs($cliente)->getJson('/api/v1/provider/supplies')->assertStatus(403);
         $this->actingAs($cliente)->getJson('/api/v1/provider/financial-health')->assertStatus(403);
         $this->actingAs($cliente)->postJson('/api/v1/provider/supplies', [])->assertStatus(403);
+
+        $insumo = $this->insumo('Carne Picada', 10000);
+        $this->actingAs($cliente)->deleteJson('/api/v1/provider/supplies/'.$insumo->id)->assertStatus(403);
     }
 
     // ------------------------------------------------------------- insumos
@@ -232,6 +237,81 @@ class RecipeApiTest extends TestCase
             ->assertJsonPath('units_of_measure.0.symbol', 'und');
     }
 
+    public function test_no_puede_eliminar_un_insumo_en_uso_por_una_ficha(): void
+    {
+        $producto = $this->producto($this->provider, $this->category, 3500);
+        $carne = $this->insumo('Carne Picada', 10000);
+
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', [
+                'items' => [['supply_id' => $carne->id, 'quantity_required' => 0.1]],
+            ])
+            ->assertStatus(200);
+
+        $this->actingAs($this->owner)
+            ->getJson('/api/v1/provider/supplies')
+            ->assertStatus(200)
+            ->assertJsonPath('supplies.0.recipes_count', 1);
+
+        // En uso por una ficha: se rechaza y no se borra nada.
+        $this->actingAs($this->owner)
+            ->deleteJson('/api/v1/provider/supplies/'.$carne->id)
+            ->assertStatus(409)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('recipes_count', 1);
+
+        $this->assertDatabaseCount('supplies', 1);
+        $this->assertDatabaseCount('product_recipes', 1);
+
+        $this->actingAs($this->owner)
+            ->getJson('/api/v1/provider/financial-health')
+            ->assertStatus(200)
+            ->assertJsonPath('products.0.has_recipe', true)
+            ->assertJsonPath('products.0.production_cost', 1000);
+
+        // Al quitarlo de la ficha, ahi si se puede eliminar.
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', ['items' => []])
+            ->assertStatus(200);
+
+        $this->actingAs($this->owner)
+            ->deleteJson('/api/v1/provider/supplies/'.$carne->id)
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseCount('supplies', 0);
+        $this->assertDatabaseCount('product_recipes', 0);
+    }
+
+    public function test_elimina_un_insumo_no_usado_por_ninguna_ficha(): void
+    {
+        $insumo = $this->insumo('Carne Picada', 10000);
+
+        $this->actingAs($this->owner)
+            ->deleteJson('/api/v1/provider/supplies/'.$insumo->id)
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Insumo eliminado.');
+
+        $this->assertDatabaseCount('supplies', 0);
+    }
+
+    public function test_no_puede_eliminar_un_insumo_de_otro_comercio(): void
+    {
+        $ajeno = Supply::create([
+            'provider_id' => $this->otherProvider->id,
+            'name' => 'Insumo Ajeno',
+            'unit_of_measure_id' => $this->unidad->id,
+            'cost_per_unit' => 1000,
+        ]);
+
+        $this->actingAs($this->owner)
+            ->deleteJson('/api/v1/provider/supplies/'.$ajeno->id)
+            ->assertStatus(404);
+
+        $this->assertDatabaseHas('supplies', ['id' => $ajeno->id]);
+    }
+
     // -------------------------------------------------------- ficha tecnica
 
     public function test_asigna_ficha_tecnica_y_calcula_costo_y_margen(): void
@@ -343,11 +423,6 @@ class RecipeApiTest extends TestCase
             ->assertJsonValidationErrors(['items']);
 
         $this->actingAs($this->owner)
-            ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', ['items' => []])
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['items']);
-
-        $this->actingAs($this->owner)
             ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', [
                 'items' => [['supply_id' => $insumo->id, 'quantity_required' => 0]],
             ])
@@ -363,6 +438,35 @@ class RecipeApiTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['items.0.supply_id']);
+    }
+
+    public function test_se_puede_vaciar_la_ficha_tecnica_borrando_todos_los_insumos(): void
+    {
+        $producto = $this->producto($this->provider, $this->category, 3500);
+        $carne = $this->insumo('Carne Picada', 10000);
+
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', [
+                'items' => [['supply_id' => $carne->id, 'quantity_required' => 0.1]],
+            ])
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'recipe.items');
+
+        $this->actingAs($this->owner)
+            ->postJson('/api/v1/provider/products/'.$producto->id.'/recipe', ['items' => []])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(0, 'recipe.items')
+            ->assertJsonPath('production_cost', 0);
+
+        $this->assertDatabaseCount('product_recipes', 0);
+
+        $this->actingAs($this->owner)
+            ->getJson('/api/v1/provider/financial-health')
+            ->assertStatus(200)
+            ->assertJsonPath('products.0.has_recipe', false)
+            ->assertJsonPath('products.0.production_cost', 0)
+            ->assertJsonPath('products.0.alerts.0.code', 'sin_ficha_tecnica');
     }
 
     public function test_consulta_la_ficha_tecnica_guardada(): void

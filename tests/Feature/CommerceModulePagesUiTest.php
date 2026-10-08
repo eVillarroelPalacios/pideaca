@@ -289,7 +289,7 @@ class CommerceModulePagesUiTest extends TestCase
             ->assertJsonPath('subscriptions.0.items', []);
     }
 
-    public function test_financial_health_page_shows_a_sidebar_with_one_section_per_block(): void
+    public function test_financial_health_page_shows_a_sidebar_with_two_sections_and_two_modals(): void
     {
         $this->actingAs($this->prestador);
 
@@ -302,30 +302,48 @@ class CommerceModulePagesUiTest extends TestCase
         $this->assertStringContainsString('function finToggleMenu()', $html);
         $this->assertStringContainsString('id="fin-menu-current"', $html);
 
-        foreach (['productos', 'insumos', 'ficha'] as $key) {
+        foreach (['productos', 'insumos'] as $key) {
             $this->assertStringContainsString('data-fin-panel="'.$key.'"', $html);
             $this->assertStringContainsString('id="fin-panel-'.$key.'"', $html);
         }
 
+        // La ficha tecnica dejo de ser una seccion del sidebar
+        $this->assertStringNotContainsString('data-fin-panel="ficha"', $html);
+        $this->assertStringNotContainsString('id="fin-panel-ficha"', $html);
+
         // Cada bloque vive dentro de su seccion: productos -> tabla e
-        // insumos -> lista y formulario y ficha -> editor de receta.
+        // insumos -> lista. El alta/edicion de insumos se hace en modal.
         $posProductos = strpos($html, 'id="fin-panel-productos"');
         $posTabla = strpos($html, 'id="fin-rows"');
         $posInsumos = strpos($html, 'id="fin-panel-insumos"');
         $posSupplies = strpos($html, 'id="fin-supplies"');
-        $posForm = strpos($html, 'id="fin-supply-form"');
-        $posFicha = strpos($html, 'id="fin-panel-ficha"');
-        $posRecipe = strpos($html, 'id="fin-recipe"');
+        $posContenido = strpos($html, 'id="fin-content"');
 
         $this->assertLessThan($posInsumos, $posTabla, 'la tabla de productos va antes que la seccion Insumos');
-        $this->assertLessThan($posFicha, $posSupplies, 'la lista de insumos va antes que la seccion Ficha tecnica');
         $this->assertGreaterThan($posProductos, $posTabla, 'la tabla queda dentro de la seccion Productos');
-        $this->assertGreaterThan($posInsumos, $posForm, 'el formulario queda dentro de la seccion Insumos');
-        $this->assertGreaterThan($posFicha, $posRecipe, 'el editor de ficha queda dentro de su seccion');
+        $this->assertGreaterThan($posInsumos, $posSupplies, 'la lista de insumos queda dentro de la seccion Insumos');
 
-        // La ficha avisa como abrirse y el boton + Insumo esta en su seccion
-        $this->assertStringContainsString('Elegí un producto en la sección Productos', $html);
-        $this->assertStringContainsString('id="fin-recipe-hint"', $html);
+        // El formulario de insumo vive en un modal fuera de las secciones
+        $posSupplyModal = strpos($html, 'id="fin-supply-modal"');
+        $posSupplyDialog = strpos($html, 'id="fin-supply-dialog"');
+        $posForm = strpos($html, 'id="fin-supply-form"');
+
+        $this->assertGreaterThan($posContenido, $posSupplyModal, 'el modal de insumo queda fuera del contenido');
+        $this->assertGreaterThan($posSupplyModal, $posSupplyDialog, 'el dialogo vive dentro del modal de insumo');
+        $this->assertGreaterThan($posSupplyDialog, $posForm, 'el formulario vive dentro del dialogo');
+        $this->assertStringContainsString('onclick="closeSupplyForm()"', $html);
+        $this->assertStringContainsString('aria-labelledby="fin-supply-form-title"', $html);
+
+        // El editor de la ficha abre en una ventana modal fuera de las secciones
+        $posModal = strpos($html, 'id="fin-recipe-modal"');
+        $posDialogo = strpos($html, 'id="fin-recipe-dialog"');
+        $posRecipe = strpos($html, 'id="fin-recipe"');
+
+        $this->assertGreaterThan($posContenido, $posModal, 'el modal queda fuera del contenido del sidebar');
+        $this->assertGreaterThan($posModal, $posDialogo, 'el dialogo vive dentro del modal');
+        $this->assertGreaterThan($posDialogo, $posRecipe, 'el editor de la ficha vive dentro del dialogo');
+        $this->assertStringContainsString('role="dialog" aria-modal="true"', $html);
+        $this->assertStringContainsString('onclick="closeRecipe()"', $html);
 
         // En responsive el sidebar entra desde la izquierda como Mi Panel
         $this->assertStringContainsString('class="fin-topbar"', $html);

@@ -205,6 +205,7 @@ Route::put('/api/v1/provider/marketing/rules', [MarketingController::class, 'upd
 // Costos de receta y salud financiera del comercio.
 Route::get('/api/v1/provider/supplies', [RecipeController::class, 'indexSupplies'])->name('api.provider.supplies.index');
 Route::post('/api/v1/provider/supplies', [RecipeController::class, 'storeSupply'])->name('api.provider.supplies.store');
+Route::delete('/api/v1/provider/supplies/{supply}', [RecipeController::class, 'destroySupply'])->name('api.provider.supplies.destroy');
 Route::get('/api/v1/provider/financial-health', [RecipeController::class, 'financialHealth'])->name('api.provider.financial-health.index');
 Route::get('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'showRecipe'])->name('api.provider.products.recipe.show');
 Route::post('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'storeRecipe'])->name('api.provider.products.recipe.store');

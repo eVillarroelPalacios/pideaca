@@ -68,6 +68,45 @@ class RecipeController extends Controller
     }
 
     /**
+     * DELETE /api/v1/provider/supplies/{supply}
+     *
+     * Borra el insumo solo si ninguna ficha tecnica lo esta usando;
+     * si esta en uso se responde 409 y no se toca nada.
+     */
+    public function destroySupply(Supply $supply): JsonResponse
+    {
+        $provider = $this->currentProvider();
+
+        if ($provider instanceof JsonResponse) {
+            return $provider;
+        }
+
+        if ($supply->provider_id !== $provider->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El insumo no pertenece a tu comercio.',
+            ], 404);
+        }
+
+        $enFichas = $supply->recipes()->count();
+
+        if ($enFichas > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar: el insumo está en uso en '.$enFichas.' ficha(s) técnica(s). Quitálo de esas fichas antes de borrarlo.',
+                'recipes_count' => $enFichas,
+            ], 409);
+        }
+
+        $supply->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Insumo eliminado.',
+        ]);
+    }
+
+    /**
      * GET /api/v1/provider/supplies
      *
      * Listado de insumos del comercio, usado para armar la ficha tecnica.
@@ -82,6 +121,7 @@ class RecipeController extends Controller
 
         $supplies = Supply::where('provider_id', $provider->id)
             ->with('unitOfMeasure')
+            ->withCount('recipes')
             ->orderBy('name')
             ->get();
 
@@ -119,7 +159,7 @@ class RecipeController extends Controller
         }
 
         $datos = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
+            'items' => ['present', 'array'],
             'items.*.supply_id' => ['required', 'integer', 'distinct'],
             'items.*.quantity_required' => ['required', 'numeric', 'gt:0', 'max:99999.999'],
         ]);
@@ -296,6 +336,7 @@ class RecipeController extends Controller
                 'symbol' => $supply->unitOfMeasure->symbol,
             ] : null,
             'cost_per_unit' => (float) $supply->cost_per_unit,
+            'recipes_count' => (int) ($supply->recipes_count ?? $supply->recipes()->count()),
         ];
     }
 

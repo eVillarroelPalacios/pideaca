@@ -1,6 +1,6 @@
-{{-- Salud financiera del comercio: productos, insumos y ficha tecnica. --}}
+{{-- Salud financiera del comercio: productos e insumos; la ficha tecnica y el alta/edicion de insumos abren en modal. --}}
 <style>
-    /* --- Salud financiera: sidebar de secciones (productos, insumos, ficha) --- */
+    /* --- Salud financiera: sidebar de secciones (productos, insumos) --- */
     .fin-layout { display: flex; align-items: stretch; background: #ffffff; border: 1px solid #e5e7eb; }
     #fin-sidebar { width: 168px; min-width: 168px; background: #f8fafc; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; padding-bottom: 8px; }
     .fin-menu-title { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #94a3b8; padding: 16px 14px 8px; }
@@ -16,6 +16,37 @@
     #fin-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 240; }
     #fin-overlay.open { display: block; }
     #fin-nav { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
+    /* --- Modal de ficha tecnica --- */
+    #fin-recipe-modal { display: none; position: fixed; inset: 0; z-index: 300; }
+    #fin-recipe-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .55); }
+    #fin-recipe-dialog {
+        position: relative;
+        margin: 6vh auto;
+        width: min(760px, 94vw);
+        max-height: 88vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .35);
+    }
+    .fin-recipe-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 8px; }
+
+    /* --- Modal de alta/edicion de insumo --- */
+    #fin-supply-modal { display: none; position: fixed; inset: 0; z-index: 300; }
+    #fin-supply-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, .55); }
+    #fin-supply-dialog {
+        position: relative;
+        margin: 12vh auto;
+        width: min(640px, 94vw);
+        max-height: 80vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .35);
+    }
     @media (max-width: 860px) {
         .fin-layout { flex-direction: column; }
         /* Barra superior con la seccion actual, como Mi Panel */
@@ -61,6 +92,11 @@
         }
         #fin-sidebar.open { transform: translateX(0); }
         .fin-body { padding: 16px 12px; }
+        #fin-recipe-modal { z-index: 320; }
+        #fin-recipe-dialog { margin: 0; width: 100vw; max-height: 100vh; min-height: 100vh; border: none; border-radius: 0; }
+        .fin-recipe-row { grid-template-columns: 1fr; }
+        #fin-supply-modal { z-index: 320; }
+        #fin-supply-dialog { margin: 0; width: 100vw; max-height: 100vh; min-height: 100vh; border: none; border-radius: 0; }
     }
     @media (min-width: 861px) {
         #fin-overlay { display: none !important; }
@@ -111,11 +147,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20.25h12m-7.5-3v3m3-3v3m-10.5-3h12A2.25 2.25 0 0 0 19.5 18V7.5a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25Zm13.5-11.25V6a2.25 2.25 0 0 0-2.25-2.25H7.5A2.25 2.25 0 0 0 5.25 6v2.625m13.5-2.625h-1.5m-11.25 0H3.75"/></svg>
                     <span style="flex:1;min-width:0;">Insumos</span>
                 </a>
-
-                <a href="#" class="sidebar-link" id="fin-link-ficha" data-fin-panel="ficha" title="Ficha técnica" onclick="event.preventDefault();finTab('ficha')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                    <span style="flex:1;min-width:0;">Ficha técnica</span>
-                </a>
                 </div>
             </aside>
 
@@ -142,8 +173,8 @@
                     <div id="fin-pager" style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px;color:#6b7280;">
                         <span id="fin-pager-label"></span>
                         <span style="display:flex;gap:6px;">
-                            <button type="button" onclick="finGoPage(-1)" style="background:#fff;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Anterior</button>
-                            <button type="button" onclick="finGoPage(1)" style="background:#fff;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Siguiente</button>
+                            <button type="button" onclick="finGoPage(-1)" title="Página anterior" aria-label="Página anterior" style="background:#fff;border:1px solid #d1d5db;padding:5px 7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+                            <button type="button" onclick="finGoPage(1)" title="Página siguiente" aria-label="Página siguiente" style="background:#fff;border:1px solid #d1d5db;padding:5px 7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
                         </span>
                     </div>
                 </div>
@@ -154,57 +185,57 @@
                             <h3>Insumos</h3>
                             <p>Lo que necesita tu comercio para producir. El costo de cada insumo se usa para calcular el margen.</p>
                         </div>
-                        <button type="button" onclick="openSupplyForm()" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">+ Insumo</button>
+                        <button type="button" onclick="openSupplyForm()" title="Agregar insumo" aria-label="Agregar insumo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
                     </div>
                     <div id="fin-supplies"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <div id="fin-supply-form" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;margin-top:16px;">
-                        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 12px;" id="fin-supply-form-title">Nuevo insumo</h3>
-                        <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;">
-                            <div>
-                                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Nombre</label>
-                                <input type="text" id="fin-supply-name" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
-                            </div>
-                            <div>
-                                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Unidad</label>
-                                <select id="fin-supply-unit" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;"></select>
-                            </div>
-                            <div>
-                                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Costo por unidad</label>
-                                <input type="number" step="0.01" min="0" id="fin-supply-cost" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
-                            </div>
-                            <div style="display:flex;gap:6px;">
-                                <button type="button" onclick="saveSupply()" style="background:#D24C19;color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Guardar</button>
-                                <button type="button" onclick="closeSupplyForm()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cancelar</button>
-                            </div>
-                        </div>
+    <div id="fin-recipe-modal" role="dialog" aria-modal="true" aria-labelledby="fin-recipe-title">
+        <div id="fin-recipe-backdrop" onclick="closeRecipe()" title="Cerrar" aria-hidden="true"></div>
+        <div id="fin-recipe-dialog" tabindex="-1" style="outline:none;">
+            <div id="fin-recipe" style="padding:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                    <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0;" id="fin-recipe-title">Ficha técnica</h3>
+                    <div style="display:flex;gap:6px;">
+                        <button type="button" onclick="addRecipeRow()" title="Agregar insumo" aria-label="Agregar insumo" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                        <button type="button" onclick="saveRecipe()" title="Guardar ficha" aria-label="Guardar ficha" style="background:#D24C19;color:#fff;border:none;padding:7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
+                        <button type="button" onclick="closeRecipe()" title="Cerrar" aria-label="Cerrar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:7px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                     </div>
                 </div>
+                <div id="fin-recipe-items"></div>
+                <div id="fin-recipe-total" style="margin-top:12px;font-size:13px;font-weight:600;color:#0c2a4d;"></div>
+            </div>
+        </div>
+    </div>
 
-                <div class="fin-panel" id="fin-panel-ficha">
-                    <div class="fin-panel-head">
-                        <div>
-                            <h3>Ficha técnica</h3>
-                            <p>Insumos y cantidades de cada producto para calcular su costo de producción.</p>
-                        </div>
+    <div id="fin-supply-modal" role="dialog" aria-modal="true" aria-labelledby="fin-supply-form-title">
+        <div id="fin-supply-backdrop" onclick="closeSupplyForm()" title="Cerrar" aria-hidden="true"></div>
+        <div id="fin-supply-dialog" tabindex="-1" style="outline:none;">
+            <div id="fin-supply-form" style="padding:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;">
+                    <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0;" id="fin-supply-form-title">Nuevo insumo</h3>
+                    <button type="button" onclick="closeSupplyForm()" title="Cerrar" aria-label="Cerrar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                </div>
+                <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end;">
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Nombre</label>
+                        <input type="text" id="fin-supply-name" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
                     </div>
-
-                    <p id="fin-recipe-hint" style="background:#f9fafb;border:1px dashed #d1d5db;padding:24px;text-align:center;font-size:13px;color:#6b7280;margin:0;">
-                        Elegí un producto en la sección Productos y tocá "Cargar" o "Editar" para ver su ficha técnica.
-                    </p>
-
-                    <div id="fin-recipe" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-                            <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0;" id="fin-recipe-title">Ficha técnica</h3>
-                            <div style="display:flex;gap:6px;">
-                                <button type="button" onclick="addRecipeRow()" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">+ Insumo</button>
-                                <button type="button" onclick="saveRecipe()" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Guardar ficha</button>
-                                <button type="button" onclick="closeRecipe()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cerrar</button>
-                            </div>
-                        </div>
-                        <div id="fin-recipe-items"></div>
-                        <div id="fin-recipe-total" style="margin-top:12px;font-size:13px;font-weight:600;color:#0c2a4d;"></div>
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Unidad</label>
+                        <select id="fin-supply-unit" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;"></select>
                     </div>
+                    <div>
+                        <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Costo por unidad</label>
+                        <input type="number" step="0.01" min="0" id="fin-supply-cost" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
+                    </div>
+                </div>
+                <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:16px;">
+                    <button type="button" onclick="saveSupply()" title="Guardar insumo" aria-label="Guardar insumo" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
+                    <button type="button" onclick="closeSupplyForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
                 </div>
             </div>
         </div>
@@ -219,13 +250,29 @@
         recipe: '{{ url("/api/v1/provider/products") }}'
     };
 
-    var finState = { page: 1, products: [], supplies: [], units: [], recipeProduct: null, editingSupply: null, active: 'productos' };
+    var finState = { page: 1, products: [], supplies: [], units: [], recipeProduct: null, editingSupply: null, active: 'productos', dirty: false };
 
     var FIN_SECTIONS = {
         productos: 'Productos',
-        insumos: 'Insumos',
-        ficha: 'Ficha técnica'
+        insumos: 'Insumos'
     };
+
+    // Iconos de los botones (los botones no llevan texto, solo title/aria-label).
+    var FIN_ICONS = {
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        pencil: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
+        check: '<path d="M20 6 9 17l-5-5"/>',
+        x: '<path d="M18 6 6 18M6 6l12 12"/>',
+        filePlus: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="M12 11v6M9 14h6"/>'
+    };
+
+    function finIcon(name, size) {
+        var s = size || 15;
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s
+            + '" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+            + 'stroke-linejoin="round" aria-hidden="true">' + (FIN_ICONS[name] || '') + '</svg>';
+    }
 
     function finSetState(state, text) {
         var map = { loading: 'fin-loading', message: 'fin-message', content: 'fin-content' };
@@ -344,8 +391,10 @@
                             + '<td style="padding:10px 12px;text-align:right;">' + finMarginBadge(row.profit_margin, threshold) + '</td>'
                             + '<td style="padding:10px 12px;font-size:11px;">' + (finAlerts(row) || fdBadge('OK', '#047857', '#d1fae5')) + '</td>'
                             + '<td style="padding:10px 12px;text-align:right;">'
-                            + '<button type="button" onclick="openRecipe(' + row.product_id + ')" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">'
-                            + (row.has_recipe ? 'Editar' : 'Cargar') + '</button></td>'
+                            + '<button type="button" onclick="openRecipe(' + row.product_id + ')" title="'
+                            + (row.has_recipe ? 'Editar ficha' : 'Cargar ficha') + '" aria-label="'
+                            + (row.has_recipe ? 'Editar ficha' : 'Cargar ficha') + '" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">'
+                            + finIcon(row.has_recipe ? 'pencil' : 'filePlus', 14) + '</button></td>'
                             + '</tr>';
                     }).join('');
                 }
@@ -381,7 +430,7 @@
 
                 if (!finState.supplies.length) {
                     box.innerHTML = '<div style="background:#f9fafb;border:1px dashed #d1d5db;padding:24px;text-align:center;font-size:13px;color:#6b7280;">'
-                        + 'Todavía no cargaste insumos. Usá el botón "+ Insumo" para empezar.</div>';
+                        + 'Todavía no cargaste insumos. Usá el botón de agregar insumo (+) para empezar.</div>';
                     return;
                 }
 
@@ -394,13 +443,16 @@
                     + '<th style="text-align:right;padding:8px 12px;font-weight:600;color:#374151;"></th>'
                     + '</tr></thead><tbody>'
                     + finState.supplies.map(function (s) {
+                        var enUso = Number(s.recipes_count || 0) > 0;
                         return '<tr style="border-top:1px solid #f3f4f6;">'
                             + '<td style="padding:8px 12px;">' + escapeHtml(s.name) + '</td>'
                             + '<td style="padding:8px 12px;color:#6b7280;">'
                             + escapeHtml(s.unit_of_measure ? s.unit_of_measure.name : '—') + '</td>'
                             + '<td style="padding:8px 12px;text-align:right;">' + fdMoney(s.cost_per_unit) + '</td>'
-                            + '<td style="padding:8px 12px;text-align:right;">'
-                            + '<button type="button" onclick="openSupplyForm(' + s.id + ')" style="background:none;border:none;color:#D24C19;font-size:12px;font-weight:600;cursor:pointer;">Editar</button>'
+                            + '<td style="padding:8px 12px;text-align:right;white-space:nowrap;">'
+                            + '<button type="button" onclick="openSupplyForm(' + s.id + ')" title="Editar" aria-label="Editar" style="background:none;border:none;color:#D24C19;cursor:pointer;padding:4px;display:inline-flex;align-items:center;line-height:0;">' + finIcon('pencil', 15) + '</button>'
+                            + (enUso ? '<span title="Se usa en ' + s.recipes_count + ' ficha(s) técnica(s)" style="color:#9ca3af;font-size:11px;font-weight:600;margin:0 8px;">en uso</span>' : '')
+                            + '<button type="button" onclick="deleteSupply(' + s.id + ')" title="Eliminar" aria-label="Eliminar" style="background:none;border:none;color:#b91c1c;cursor:pointer;padding:4px;display:inline-flex;align-items:center;line-height:0;">' + finIcon('trash', 15) + '</button>'
                             + '</td></tr>';
                     }).join('')
                     + '</tbody></table></div>';
@@ -434,14 +486,27 @@
 
         if (form) {
             form.style.display = 'block';
-            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+
+        var modal = document.getElementById('fin-supply-modal');
+        if (modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        var dialog = document.getElementById('fin-supply-dialog');
+        if (dialog) dialog.focus();
+        else if (name) name.focus();
     }
 
     function closeSupplyForm() {
         finState.editingSupply = null;
         var form = document.getElementById('fin-supply-form');
         if (form) form.style.display = 'none';
+
+        var modal = document.getElementById('fin-supply-modal');
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
     }
 
     function saveSupply() {
@@ -466,25 +531,52 @@
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
     }
 
+    function deleteSupply(id) {
+        var supply = finState.supplies.filter(function (s) { return s.id === id; })[0];
+        if (!supply) return;
+
+        var enFichas = Number(supply.recipes_count || 0);
+
+        if (enFichas > 0) {
+            fdToast('No se puede eliminar "' + supply.name + '": se usa en ' + enFichas
+                + ' ficha(s) técnica(s). Quitálo de esas fichas antes de borrarlo.', true);
+            return;
+        }
+
+        if (!window.confirm('¿Eliminar el insumo "' + supply.name + '"?')) return;
+
+        fdFetchJson(FIN_URL.supplies + '/' + id, { method: 'DELETE' })
+            .then(function (res) {
+                if (!res.ok) {
+                    fdToast((res.data && res.data.message) || 'No se pudo eliminar el insumo.', true);
+                    loadFinances();
+                    return;
+                }
+
+                fdToast(res.data.message || 'Insumo eliminado.', false);
+
+                if (finState.editingSupply && finState.editingSupply.id === id) closeSupplyForm();
+
+                loadFinances();
+            })
+            .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
+    }
+
     function openRecipe(productId) {
         var row = finState.products.filter(function (p) { return p.product_id === productId; })[0];
         if (!row) return;
 
         finState.recipeProduct = row;
 
-        var hint = document.getElementById('fin-recipe-hint');
-        if (hint) hint.style.display = 'none';
-
         var title = document.getElementById('fin-recipe-title');
         if (title) title.textContent = 'Ficha técnica · ' + row.name;
 
-        var box = document.getElementById('fin-recipe');
-        if (box) {
-            box.style.display = 'block';
-            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        var modal = document.getElementById('fin-recipe-modal');
+        if (modal) modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
 
-        finTab('ficha');
+        var dialog = document.getElementById('fin-recipe-dialog');
+        if (dialog && dialog.focus) dialog.focus();
 
         var items = document.getElementById('fin-recipe-items');
         items.innerHTML = '<p style="font-size:12px;color:#6b7280;">Cargando ficha...</p>';
@@ -497,6 +589,7 @@
                     return;
                 }
                 renderRecipeRows(res.data.recipe.items || []);
+                finState.dirty = false;
                 updateRecipeTotal();
             })
             .catch(function () {
@@ -525,13 +618,14 @@
                 + escapeHtml(s.name) + '</option>';
         }).join('');
 
-        return '<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;margin-bottom:8px;">'
-            + '<select class="fin-recipe-supply" onchange="updateRecipeTotal()" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;">'
+        return '<div class="fin-recipe-row">'
+            + '<select class="fin-recipe-supply" onchange="finRecipeChanged()" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;">'
             + (options || '<option value="">Cargá insumos primero</option>') + '</select>'
-            + '<input type="number" step="0.001" min="0.001" oninput="updateRecipeTotal()" class="fin-recipe-qty" value="' + (quantity || '') + '" '
+            + '<input type="number" step="0.001" min="0.001" oninput="finRecipeChanged()" class="fin-recipe-qty" value="' + (quantity || '') + '" '
             + 'style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" placeholder="Cantidad" />'
-            + '<button type="button" onclick="this.parentNode.parentNode.remove()" '
-            + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:8px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Quitar</button>'
+            + '<button type="button" onclick="finRemoveRecipeRow(this)" title="Quitar insumo" aria-label="Quitar insumo" '
+            + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">'
+            + finIcon('trash', 15) + '</button>'
             + '</div>';
     }
 
@@ -567,12 +661,27 @@
             var fila = box.lastElementChild;
             if (fila && fila.scrollIntoView) fila.scrollIntoView({ block: 'nearest' });
 
+            finState.dirty = true;
+            updateRecipeTotal();
+
             if (!finState.supplies.length) {
                 fdToast('Cargá al menos un insumo en la sección Insumos para elegirlo acá.', true);
             }
         } catch (e) {
             fdToast('No se pudo agregar el insumo: ' + (e && e.message ? e.message : e), true);
         }
+    }
+
+    function finRemoveRecipeRow(btn) {
+        var fila = btn && btn.parentNode;
+        if (fila && fila.parentNode) fila.parentNode.removeChild(fila);
+        finState.dirty = true;
+        updateRecipeTotal();
+    }
+
+    function finRecipeChanged() {
+        finState.dirty = true;
+        updateRecipeTotal();
     }
 
     function saveRecipe() {
@@ -584,11 +693,18 @@
 
         for (var i = 0; i < selects.length; i++) {
             if (!selects[i].value) continue;
-            items.push({ supply_id: Number(selects[i].value), quantity_required: Number(quantities[i].value) });
+
+            var cantidad = Number(quantities[i].value);
+            if (!(cantidad > 0)) {
+                fdToast('Poné la cantidad de cada insumo antes de guardar.', true);
+                return;
+            }
+
+            items.push({ supply_id: Number(selects[i].value), quantity_required: cantidad });
         }
 
-        if (!items.length) {
-            fdToast('Agregá al menos un insumo a la ficha.', true);
+        if (!items.length && selects.length) {
+            fdToast('Elegí un insumo en cada fila antes de guardar.', true);
             return;
         }
 
@@ -603,6 +719,8 @@
                 }
                 fdToast('Ficha técnica guardada. Costo: ' + fdMoney(res.data.production_cost)
                     + ' · Margen: ' + (res.data.profit_margin === null ? '—' : finNum(res.data.profit_margin) + '%'), false);
+                finState.dirty = false;
+                updateRecipeTotal();
                 loadFinances();
             })
             .catch(function () { fdToast('No se pudo conectar con el servidor.', true); });
@@ -623,19 +741,40 @@
             sum += Number(quantities[i].value || 0) * Number(supply.cost_per_unit || 0);
         }
 
-        total.textContent = finState.recipeProduct
-            ? 'Costo estimado: ' + fdMoney(Math.round(sum * 100) / 100)
-                + (missing ? ' · completá las cantidades' : '')
-            : '';
+        if (!finState.recipeProduct) {
+            total.innerHTML = '';
+            return;
+        }
+
+        var texto = 'Costo estimado: ' + fdMoney(Math.round(sum * 100) / 100)
+            + (missing ? ' · completá las cantidades' : '');
+
+        total.innerHTML = escapeHtml(texto)
+            + (finState.dirty ? ' <span style="color:#b45309;">· cambios sin guardar</span>' : '');
     }
 
     function closeRecipe() {
         finState.recipeProduct = null;
-        var box = document.getElementById('fin-recipe');
-        if (box) box.style.display = 'none';
-        var hint = document.getElementById('fin-recipe-hint');
-        if (hint) hint.style.display = 'block';
+        finState.dirty = false;
+
+        var modal = document.getElementById('fin-recipe-modal');
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
+
+        updateRecipeTotal();
     }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+
+        var supplyModal = document.getElementById('fin-supply-modal');
+        if (supplyModal && supplyModal.style.display === 'block') {
+            closeSupplyForm();
+            return;
+        }
+
+        closeRecipe();
+    });
 
     window.loadFinances = loadFinances;
     window.finGoPage = finGoPage;
@@ -644,10 +783,13 @@
     window.openSupplyForm = openSupplyForm;
     window.closeSupplyForm = closeSupplyForm;
     window.saveSupply = saveSupply;
+    window.deleteSupply = deleteSupply;
     window.openRecipe = openRecipe;
     window.closeRecipe = closeRecipe;
     window.saveRecipe = saveRecipe;
     window.addRecipeRow = addRecipeRow;
+    window.finRecipeChanged = finRecipeChanged;
+    window.finRemoveRecipeRow = finRemoveRecipeRow;
     window.updateRecipeTotal = updateRecipeTotal;
 })();
 </script>
