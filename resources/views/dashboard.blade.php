@@ -2990,7 +2990,6 @@
         if (!producto) return;
 
         document.getElementById('fd-inventory-stock-id').value = producto.product_id;
-        document.getElementById('fd-inventory-stock-name').textContent = producto.name;
         document.getElementById('fd-inventory-stock-track').checked = !!producto.track_stock;
         document.getElementById('fd-inventory-stock-current').value = fdInvNum(producto.current_stock) === '—' ? '' : fdInvNum(producto.current_stock);
         document.getElementById('fd-inventory-stock-min').value = (producto.min_stock_alert === null || typeof producto.min_stock_alert === 'undefined') ? '' : fdInvNum(producto.min_stock_alert);
@@ -3377,7 +3376,7 @@
 
         var params = ['tab=' + encodeURIComponent(fdOrdersActive)];
         if (savedFilter) params.push('status=' + encodeURIComponent(savedFilter));
-        if (fdOrdersRangeActive()) {
+        if (fdOrdersActive === 'history' && fdOrdersRangeActive()) {
             params.push('date_from=' + encodeURIComponent(fdOrdersDateFrom()));
             params.push('date_to=' + encodeURIComponent(fdOrdersDateTo()));
         }
@@ -3469,7 +3468,7 @@
     function fdOrdersEmptyText() {
         var filterEl = document.getElementById('fd-orders-filter');
 
-        if (fdOrdersRangeActive()) return 'No hay pedidos en ese rango de fechas.';
+        if (fdOrdersActive === 'history' && fdOrdersRangeActive()) return 'No hay pedidos en ese rango de fechas.';
         if (filterEl && filterEl.value) return 'No hay pedidos con ese estado en esta sección.';
         if (!Number(fdOrdersCounts.today) && !Number(fdOrdersCounts.history)) {
             return 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.';
@@ -3500,9 +3499,16 @@
         });
     }
 
+    // El rango de fechas vive solo en el historial: "del día" siempre es hoy.
+    function fdOrdersPaintRange() {
+        var box = document.getElementById('fd-orders-range');
+        if (box) box.style.display = fdOrdersActive === 'history' ? 'flex' : 'none';
+    }
+
     // La pestaña se manda al servidor: hoy e historial se filtran en la query.
     function fdOrdersTab(tab) {
         fdOrdersActive = tab === 'history' ? 'history' : 'today';
+        fdOrdersPaintRange();
         loadProviderOrders();
     }
 

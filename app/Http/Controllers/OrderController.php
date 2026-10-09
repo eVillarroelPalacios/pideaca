@@ -53,8 +53,10 @@ class OrderController extends Controller
 
         $status = $data['status'] ?? null;
         $tab = $data['tab'] ?? null;
-        $dateFrom = ! empty($data['date_from']) ? Carbon::parse($data['date_from'])->startOfDay() : null;
-        $dateTo = ! empty($data['date_to']) ? Carbon::parse($data['date_to'])->endOfDay() : null;
+
+        // La sección "del día" no usa rango de fechas: solo el historial filtra por fecha.
+        $dateFrom = $tab !== 'today' && ! empty($data['date_from']) ? Carbon::parse($data['date_from'])->startOfDay() : null;
+        $dateTo = $tab !== 'today' && ! empty($data['date_to']) ? Carbon::parse($data['date_to'])->endOfDay() : null;
 
         $base = $provider->orders()
             ->with([

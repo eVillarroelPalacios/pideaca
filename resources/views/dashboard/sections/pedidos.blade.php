@@ -24,7 +24,7 @@
                         <span id="fd-orders-count-history" style="background:#6b7280;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
                     </button>
 
-                    <div id="fd-orders-range" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:4px;">
+                    <div id="fd-orders-range" style="display:none;gap:6px;align-items:center;flex-wrap:wrap;margin-left:4px;">
                         <label for="fd-orders-date-from" style="font-size:11px;color:#6b7280;">Desde</label>
                         <input type="date" id="fd-orders-date-from" onchange="fdOrdersRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
                         <label for="fd-orders-date-to" style="font-size:11px;color:#6b7280;">Hasta</label>

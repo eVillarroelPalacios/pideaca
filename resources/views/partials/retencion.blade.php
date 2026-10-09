@@ -73,9 +73,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
-            <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Avisos automáticos para que ningún cliente se te escape</p>
         </div>
-        <button type="button" onclick="loadRetention()" title="Actualizar retención" aria-label="Actualizar retención" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button>
     </div>
 
     <div id="ret-banner" style="display:none;background:#eff6ff;border-left:3px solid #2563eb;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#1e3a8a;">
@@ -402,8 +400,9 @@
             + '<p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">Usá {nombre}, {comercio}, {dias} y {cupon}; se completan solos al enviar. '
             + retHintTokens(retTokens[type]) + ' son obligatorios y no se pueden borrar.</p>'
             + '</div>'
-            + '<button type="button" onclick="saveRetentionRule(\'' + type + '\')" '
-            + 'style="background:#D24C19;color:#fff;border:none;padding:8px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Guardar</button>'
+            + '<button type="button" onclick="saveRetentionRule(\'' + type + '\')" title="Guardar" aria-label="Guardar" '
+            + 'style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
             + '</div>';
     }
 

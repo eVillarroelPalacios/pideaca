@@ -324,6 +324,21 @@ class ProviderPanelTest extends TestCase
             ->assertJsonStructure(['errors' => ['date_from']]);
     }
 
+    public function test_orders_endpoint_ignores_the_date_range_on_the_today_tab(): void
+    {
+        $this->makeOrder($this->provider, 'HOY-0001', Order::STATUS_PENDING);
+
+        // Un rango que excluye a todos: si el filtro aplicara, la lista vendría vacía
+        $desde = now()->subDays(10)->toDateString();
+        $hasta = now()->subDays(5)->toDateString();
+
+        $hoy = $this->actingAs($this->owner)
+            ->getJson("/api/providers/{$this->provider->id}/orders?tab=today&date_from={$desde}&date_to={$hasta}")
+            ->assertOk();
+
+        $this->assertSame(['HOY-0001'], array_column($hoy->json('orders'), 'order_number'));
+    }
+
     public function test_orders_endpoint_paginates_orders(): void
     {
         $this->makeOrder($this->provider, 'PAG-0001', Order::STATUS_PENDING);
@@ -463,6 +478,11 @@ class ProviderPanelTest extends TestCase
         $this->assertStringContainsString("'date_from=' + encodeURIComponent(fdOrdersDateFrom())", $html);
         $this->assertStringContainsString("'date_to=' + encodeURIComponent(fdOrdersDateTo())", $html);
         $this->assertStringContainsString("'page=' + fdOrdersPage", $html);
+
+        // El rango de fechas vive solo en la pestaña de historial
+        $this->assertStringContainsString('function fdOrdersPaintRange()', $html);
+        $this->assertStringContainsString("fdOrdersActive === 'history' ? 'flex' : 'none'", $html);
+        $this->assertStringContainsString("if (fdOrdersActive === 'history' && fdOrdersRangeActive())", $html);
 
         // El resumen cuenta los pedidos de cada pestaña con los del servidor
         $this->assertStringContainsString("' de hoy · ' + (fdOrdersCounts.history || 0) + ' en historial'", $html);
