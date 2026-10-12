@@ -438,6 +438,12 @@ class ProviderPanelTest extends TestCase
         $response->assertSee('function fdOrdersRangeChange()', false);
         $response->assertSee('function fdOrdersGoPage(step)', false);
 
+        // Mi catálogo pagina los productos de a 10 y los reagrupa por categoría
+        $response->assertSee('id="fd-catalog-pagination"', false);
+        $response->assertSee('function fdCatGoPage(step)', false);
+        $response->assertSee('function fdCatPaintPagination()', false);
+        $response->assertSee('var FD_CAT_PER_PAGE = 10;', false);
+
         // Mi Perfil: el enlace "Usuarios" del sidebar no se oculta a los prestadores
         $response->assertSee('id="sidebar-link-usuarios"', false);
 

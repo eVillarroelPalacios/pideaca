@@ -318,14 +318,15 @@
                                 <div class="profile-panel" data-panel="horarios">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg> Horarios de atención</h3>
-                                        <p class="pcard-sub">Configurá los horarios de apertura de tu negocio por día.</p>
                                         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
                                             <button type="button" class="btn-secondary" onclick="copyMonFri()" style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Aplicar Lunes a Viernes</button>
                                         </div>
                                         <div id="hours-list" style="display:flex;flex-direction:column;gap:8px;"></div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="tab2-msg"></span>
-                                            <button type="button" class="btn-primary" onclick="submitProvider('tab2-msg')">Guardar horarios</button>
+                                            <button type="button" onclick="submitProvider('tab2-msg')" title="Guardar horarios" aria-label="Guardar horarios" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -333,8 +334,10 @@
                                 <div class="profile-panel" data-panel="servicios">
                                     <div class="pcard">
                                         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:2px;">
-                                            <div><h3 class="pcard-title" style="margin-bottom:4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg> Servicios</h3><p class="pcard-sub" style="margin-bottom:0;">Los servicios que brindás en tu negocio.</p></div>
-                                            <button type="button" class="btn-primary" onclick="openServiceModal()">+ Agregar servicio</button>
+                                            <div><h3 class="pcard-title" style="margin-bottom:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg> Servicios</h3></div>
+                                            <button type="button" onclick="openServiceModal()" title="Agregar servicio" aria-label="Agregar servicio" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                            </button>
                                         </div>
                                         <div id="services-loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">Cargando servicios...</div>
                                         <div id="services-empty" style="display:none;text-align:center;padding:24px;color:#94a3b8;font-size:12px;border:1px dashed #e2e8f0;border-radius:1rem;">Todavía no agregaste servicios.</div>
@@ -376,7 +379,6 @@
                                 <div class="profile-panel{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg> Mi Dirección</h3>
-                                        <p class="pcard-sub">{{ $esPerfilPrestador ? 'Configurá la ubicación de tu negocio para que los clientes te encuentren.' : 'Configurá la dirección a la que querés recibir tus pedidos.' }}</p>
                                         <div class="profile-field-grid">
                                             <div>
                                                 <label class="field-label">País</label>
@@ -413,7 +415,9 @@
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="direccion-msg"></span>
-                                            <button type="button" class="btn-primary" onclick="submitAddress()">Guardar dirección</button>
+                                            <button type="button" onclick="submitAddress()" title="Guardar dirección" aria-label="Guardar dirección" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -425,21 +429,21 @@
                                 <div class="profile-panel{{ $perfilPanelInicial === 'cuenta' ? ' active' : '' }}" data-panel="cuenta">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Datos personales</h3>
-                                        <p class="pcard-sub">Información de tu cuenta de usuario.</p>
                                         <div class="profile-field-grid">
                                             <div><label class="field-label">Nombre</label><input type="text" id="profile-name" class="field-input" value="{{ $user->name }}" /><span class="err-msg" id="profile-name-error"></span></div>
-                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" value="{{ $user->email }}" /><span class="err-msg" id="profile-email-error"></span></div>
+                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" value="{{ $user->email }}" readonly style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;" /><span class="err-msg" id="profile-email-error"></span></div>
                                             <div><label class="field-label">Estado</label><span id="profile-status" class="status-badge" style="{{ $estadoPerfilEstilo }}">{{ $estadoPerfil }}</span></div>
                                             <div><label class="field-label">Tipo de usuario</label><span id="profile-type" class="status-badge">{{ $user->typeUser?->description ?? '-' }}</span></div>
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="profile-msg"></span>
-                                            <button type="button" class="btn-primary" onclick="submitProfile()">Guardar</button>
+                                            <button type="button" onclick="submitProfile()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg> Cambiar contraseña</h3>
-                                        <p class="pcard-sub">Usá una contraseña segura de al menos 8 caracteres.</p>
                                         <div class="profile-field-grid">
                                             <div><label class="field-label">Nueva contraseña</label>
                                                 <div style="position:relative;">
@@ -456,7 +460,9 @@
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="pw-msg"></span>
-                                            <button type="button" class="btn-primary" onclick="submitPassword()">Guardar contraseña</button>
+                                            <button type="button" onclick="submitPassword()" title="Guardar contraseña" aria-label="Guardar contraseña" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -470,12 +476,15 @@
                     <div style="background:#fff;border-radius:0;padding:24px;width:100%;max-width:420px;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
                         <h3 id="service-modal-title" style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Agregar servicio</h3>
                         <input type="hidden" id="service-edit-id" />
-                        <div style="margin-bottom:12px;"><label class="field-label">Nombre del servicio</label><input type="text" id="service-name" class="field-input" placeholder="Ej: Pizza a la piedra" /><span class="err-msg" id="service-name-error"></span></div>
-                        <div><label class="field-label">Descripción (opcional)</label><textarea id="service-description" rows="3" class="field-input" placeholder="Breve descripción del servicio..."></textarea></div>
+                        <div><label class="field-label">Nombre del servicio</label><input type="text" id="service-name" class="field-input" placeholder="Ej: Pizza a la piedra" /><span class="err-msg" id="service-name-error"></span></div>
                         <div style="margin-top:20px;text-align:right;">
                             <span class="save-msg err" id="service-msg" style="display:none;margin-right:8px;"></span>
-                            <button type="button" class="btn-secondary" onclick="closeServiceModal()" style="margin-right:8px;">Cancelar</button>
-                            <button type="button" class="btn-primary" onclick="submitService()">Guardar</button>
+                            <button type="button" onclick="closeServiceModal()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-right:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                            </button>
+                            <button type="button" onclick="submitService()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1690,6 +1699,10 @@
             var el = document.getElementById(map[k]);
             if (el) el.style.display = (k === state) ? 'block' : 'none';
         });
+
+        var pag = document.getElementById('fd-catalog-pagination');
+        if (pag && state !== 'content') { pag.style.display = 'none'; pag.innerHTML = ''; }
+
         if (state === 'message' && typeof text !== 'undefined') {
             var msg = document.getElementById('fd-catalog-message-text');
             if (msg) msg.textContent = text;
@@ -1754,11 +1767,13 @@
                 }
 
                 fdPrevData = { categories: categories, provider: res.data.provider };
+                fdCatPage = 1;
 
                 document.getElementById('fd-catalog-content').innerHTML =
                     fdRenderCatalog(categories, res.data.provider);
 
                 fdSetCatalogState('content');
+                fdCatPaintPagination();
             })
             .catch(function () {
                 fdSetCatalogState('message', 'No se pudo conectar con el servidor.');
@@ -2355,7 +2370,6 @@
             document.getElementById('fd-product-name').value = p ? p.name : '';
             document.getElementById('fd-product-category').innerHTML = fdProdCategories(p ? p.category_id : '');
             document.getElementById('fd-product-price').value = p ? p.price : '';
-            document.getElementById('fd-product-description').value = p && p.description ? p.description : '';
             document.getElementById('fd-product-available').checked = !p || p.is_available !== false;
             document.getElementById('fd-product-track').checked = !!p && !!p.track_stock;
             document.getElementById('fd-product-unit').innerHTML = fdProdUnits(p ? p.unit_of_measure_id : '');
@@ -2403,7 +2417,6 @@
             name: nombre,
             category_id: Number(categoria),
             price: Number(precio),
-            description: document.getElementById('fd-product-description').value.trim() || null,
             is_available: document.getElementById('fd-product-available').checked,
             track_stock: track
         };
@@ -2637,7 +2650,9 @@
             + '<div class="fd-opt-options" style="margin-top:6px;">'
             + (g.options || []).map(function (o) { return fdOptOptionRow(o); }).join('')
             + '</div>'
-            + '<button type="button" class="btn-secondary" style="margin-top:8px;" onclick="fdOptAddOption(this)">+ Agregar opción</button>'
+            + '<button type="button" onclick="fdOptAddOption(this)" title="Agregar opción" aria-label="Agregar opción" style="margin-top:8px;background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>'
+            + '</button>'
             + '</div>';
     }
 
@@ -2674,7 +2689,6 @@
                 (g.options || []).forEach(function (o) { fdOptOpcionesOriginales.push(String(o.id)); });
             });
 
-            document.getElementById('fd-opt-product').textContent = producto.name;
             document.getElementById('fd-opt-groups').innerHTML =
                 (producto.option_groups || []).map(function (g) { return fdOptGroupCard(g); }).join('');
 
@@ -3171,12 +3185,95 @@
 
     var fdPrevCatFilter = '';
     var fdPrevData = null;
+    var fdCatPage = 1;
+    var FD_CAT_PER_PAGE = 10;
+    var fdCatTotalPages = 1;
 
     function fdPrevFilterChange(value) {
         fdPrevCatFilter = value || '';
+        fdCatPage = 1;
         if (!fdPrevData) return;
         var content = document.getElementById('fd-catalog-content');
         if (content) content.innerHTML = fdRenderCatalog(fdPrevData.categories, fdPrevData.provider);
+        fdCatPaintPagination();
+    }
+
+    // Aplana los productos del catálogo (respetando el orden de sus categorías)
+    // para paginarlos de a 10 y reagrupar por categoría solo la página visible.
+    function fdCatPageSlice(categories, selected) {
+        var shown = selected
+            ? categories.filter(function (c) { return String(c.id) === selected; })
+            : categories;
+
+        var flat = [];
+        shown.forEach(function (c) {
+            (c.products || []).forEach(function (p) { flat.push({ cat: c, product: p }); });
+        });
+
+        fdCatTotalPages = Math.max(1, Math.ceil(flat.length / FD_CAT_PER_PAGE));
+        if (fdCatPage > fdCatTotalPages) fdCatPage = fdCatTotalPages;
+        if (fdCatPage < 1) fdCatPage = 1;
+
+        var start = (fdCatPage - 1) * FD_CAT_PER_PAGE;
+        var end = start + FD_CAT_PER_PAGE;
+
+        var pageCategories = [];
+        var cursor = 0;
+        shown.forEach(function (c) {
+            var products = c.products || [];
+            var inPage = [];
+
+            products.forEach(function (p) {
+                if (cursor >= start && cursor < end) inPage.push(p);
+                cursor++;
+            });
+
+            if (inPage.length) {
+                pageCategories.push({ cat: c, products: inPage });
+            } else if (!products.length && fdCatPage === 1) {
+                // Las categorías vacías solo se muestran en la primera página.
+                pageCategories.push({ cat: c, products: [] });
+            }
+        });
+
+        return { shown: shown, flatCount: flat.length, pageCategories: pageCategories };
+    }
+
+    function fdCatPaintPagination() {
+        var box = document.getElementById('fd-catalog-pagination');
+        if (!box) return;
+
+        if (fdCatTotalPages <= 1) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        var base = 'background:#fff;color:#374151;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;'
+            + 'display:inline-flex;align-items:center;justify-content:center;line-height:0;';
+        var prev = fdCatPage > 1;
+        var next = fdCatPage < fdCatTotalPages;
+
+        box.innerHTML = '<button type="button" onclick="fdCatGoPage(-1)" title="Página anterior" aria-label="Página anterior" '
+            + (prev ? '' : 'disabled ') + 'style="' + base + (prev ? 'cursor:pointer;' : 'opacity:.5;') + '">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>'
+            + '<span style="font-size:12px;color:#6b7280;">Página ' + fdCatPage + ' de ' + fdCatTotalPages + '</span>'
+            + '<button type="button" onclick="fdCatGoPage(1)" title="Página siguiente" aria-label="Página siguiente" '
+            + (next ? '' : 'disabled ') + 'style="' + base + (next ? 'cursor:pointer;' : 'opacity:.5;') + '">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>';
+        box.style.display = 'flex';
+    }
+
+    function fdCatGoPage(step) {
+        var next = Math.min(Math.max(1, fdCatPage + step), fdCatTotalPages);
+        if (next === fdCatPage) return;
+
+        fdCatPage = next;
+        if (fdPrevData) {
+            var content = document.getElementById('fd-catalog-content');
+            if (content) content.innerHTML = fdRenderCatalog(fdPrevData.categories, fdPrevData.provider);
+        }
+        fdCatPaintPagination();
     }
 
     function fdRenderCatalog(categories, provider) {
@@ -3186,12 +3283,11 @@
             fdPrevCatFilter = '';
         }
 
-        var shown = selected
-            ? categories.filter(function (c) { return String(c.id) === selected; })
-            : categories;
+        var page = fdCatPageSlice(categories, selected);
+        var shown = page.shown;
+        var pageCategories = page.pageCategories;
 
-        var shownProducts = 0;
-        shown.forEach(function (c) { shownProducts += (c.products || []).length; });
+        var shownProducts = page.flatCount;
 
         var combo = '<div style="margin-left:auto;display:flex;align-items:center;gap:6px;">'
             + '<label for="fd-prev-cat-filter" style="font-size:12px;color:#6b7280;font-weight:600;">Categoría</label>'
@@ -3211,8 +3307,9 @@
             + combo
             + '</div>';
 
-        shown.forEach(function (cat) {
-            var products = cat.products || [];
+        pageCategories.forEach(function (entry) {
+            var cat = entry.cat;
+            var products = entry.products;
 
             var stripTitle = selected ? 'Filtrando: ' + escapeHtml(cat.name) : escapeHtml(cat.name);
             var stripCount = products.length + (products.length === 1 ? ' producto' : ' productos');
@@ -8981,11 +9078,11 @@
                 var addBtn = document.createElement('button');
                 addBtn.type = 'button';
                 addBtn.className = 'add-shift-btn';
+                addBtn.title = 'Agregar turno';
+                addBtn.setAttribute('aria-label', 'Agregar turno');
                 addBtn.setAttribute('data-day', day.key);
-                addBtn.style.cssText = 'background:none;border:1px dashed #d1d5db;border-radius:0;padding:5px 12px;font-size:11px;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;';
-                addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg> Agregar turno';
-                addBtn.addEventListener('mouseenter', function() { this.style.borderColor = '#D24C19'; this.style.color = '#D24C19'; });
-                addBtn.addEventListener('mouseleave', function() { this.style.borderColor = '#d1d5db'; this.style.color = '#64748b'; });
+                addBtn.style.cssText = 'background:#D24C19;color:#fff;border:none;padding:5px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;';
+                addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>';
                 addBtn.addEventListener('click', function() {
                     addShift(day.key);
                 });
@@ -9275,7 +9372,6 @@
     function openServiceModal() {
         document.getElementById('service-edit-id').value = '';
         document.getElementById('service-name').value = '';
-        document.getElementById('service-description').value = '';
         document.getElementById('service-name').classList.remove('err');
         document.getElementById('service-name-error').style.display = 'none';
         document.getElementById('service-msg').style.display = 'none';
@@ -9286,7 +9382,6 @@
     function openEditServiceModal(id, name, description) {
         document.getElementById('service-edit-id').value = id;
         document.getElementById('service-name').value = name;
-        document.getElementById('service-description').value = description || '';
         document.getElementById('service-name').classList.remove('err');
         document.getElementById('service-name-error').style.display = 'none';
         document.getElementById('service-msg').style.display = 'none';
@@ -9302,8 +9397,6 @@
         var editId = document.getElementById('service-edit-id').value;
         var nameEl = document.getElementById('service-name');
         var name = nameEl.value.trim();
-        var descEl = document.getElementById('service-description');
-        var description = descEl.value.trim();
         var errEl = document.getElementById('service-name-error');
         var msgEl = document.getElementById('service-msg');
         errEl.style.display = 'none';
@@ -9323,7 +9416,7 @@
         fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ name: name, description: description })
+            body: JSON.stringify({ name: name })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -9877,30 +9970,23 @@
 
     function submitProfile() {
         var nameEl = document.getElementById('profile-name');
-        var emailEl = document.getElementById('profile-email');
         var errName = document.getElementById('profile-name-error');
-        var errEmail = document.getElementById('profile-email-error');
         var name = nameEl.value.trim();
-        var email = emailEl.value.trim();
 
         errName.style.display = 'none';
-        errEmail.style.display = 'none';
         nameEl.classList.remove('err');
-        emailEl.classList.remove('err');
 
         if (!name) { nameEl.classList.add('err'); errName.textContent = 'El nombre es obligatorio.'; errName.style.display = 'block'; return; }
-        if (!email) { emailEl.classList.add('err'); errEmail.textContent = 'El correo es obligatorio.'; errEmail.style.display = 'block'; return; }
 
         fetch('{{ url("/profile") }}', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ name: name, email: email })
+            body: JSON.stringify({ name: name })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.errors) {
                 if (data.errors.name) { nameEl.classList.add('err'); errName.textContent = data.errors.name[0]; errName.style.display = 'block'; }
-                if (data.errors.email) { emailEl.classList.add('err'); errEmail.textContent = data.errors.email[0]; errEmail.style.display = 'block'; }
                 return;
             }
             if (data.success) {

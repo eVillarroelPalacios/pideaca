@@ -92,7 +92,7 @@ class ProviderServiceController extends Controller
 
         $service->update([
             'name' => $request->name,
-            'description' => $request->description,
+            'description' => $request->input('description', $service->description),
         ]);
 
         return response()->json([

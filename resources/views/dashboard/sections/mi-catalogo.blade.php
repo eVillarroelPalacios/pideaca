@@ -58,6 +58,8 @@
                 </div>
 
                 <div id="fd-catalog-content" style="display:none;"></div>
+
+                <div id="fd-catalog-pagination" style="display:none;gap:6px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap;"></div>
             </div>
 
             <div id="fd-cat-panel-productos" class="fd-cat-panel">

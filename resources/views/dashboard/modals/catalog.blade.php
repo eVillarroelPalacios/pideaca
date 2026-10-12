@@ -35,11 +35,6 @@
                         <span class="save-msg err" id="fd-product-newcategory-error" style="display:none;margin-top:6px;"></span>
                     </div>
 
-                    <div style="margin-bottom:12px;">
-                        <label class="field-label" for="fd-product-description">Descripción</label>
-                        <textarea id="fd-product-description" class="field-input" rows="2" placeholder="Opcional"></textarea>
-                    </div>
-
                     <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;cursor:pointer;">
                         <input type="checkbox" id="fd-product-available" checked style="cursor:pointer;" />
                         Producto disponible para pedidos
@@ -74,20 +69,20 @@
 
                     <div style="margin-top:20px;text-align:right;">
                         <span class="save-msg err" id="fd-product-error" style="display:none;margin-right:8px;"></span>
-                        <button type="button" class="btn-secondary" onclick="closeProductModal()" style="margin-right:8px;">Cancelar</button>
-                        <button type="button" class="btn-primary" onclick="saveProduct()">Guardar</button>
+                        <button type="button" onclick="closeProductModal()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-right:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </button>
+                        <button type="button" onclick="saveProduct()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div id="fd-variant-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
                 <div style="background:#fff;padding:24px;width:100%;max-width:660px;max-height:86vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
-                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 4px;">Variantes</h3>
-                    <p id="fd-variant-product" style="font-size:12px;color:#64748b;margin:0 0 8px;"></p>
-                    <p style="font-size:12px;color:#64748b;margin:0 0 16px;">
-                        Los tamaños o formatos del producto (Individual, Grande, Familiar...).
-                        <strong>El precio que paga el cliente es el de la variante elegida</strong>; si no tiene variantes se usa el precio base.
-                    </p>
+                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Variantes</h3>
+                    <p id="fd-variant-product" style="font-size:12px;color:#64748b;margin:0 0 16px;"></p>
 
                     <div id="fd-variant-rows"></div>
 
@@ -95,29 +90,34 @@
 
                     <div style="margin-top:20px;text-align:right;">
                         <span class="save-msg err" id="fd-variant-error" style="display:none;margin-right:8px;"></span>
-                        <button type="button" class="btn-secondary" onclick="closeVariantModal()" style="margin-right:8px;">Cancelar</button>
-                        <button type="button" class="btn-primary" onclick="saveVariants()">Guardar</button>
+                        <button type="button" onclick="closeVariantModal()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-right:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </button>
+                        <button type="button" onclick="saveVariants()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div id="fd-opt-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
                 <div style="background:#fff;padding:24px;width:100%;max-width:720px;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
-                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 4px;">Agregados</h3>
-                    <p id="fd-opt-product" style="font-size:12px;color:#64748b;margin:0 0 8px;"></p>
-                    <p style="font-size:12px;color:#64748b;margin:0 0 16px;">
-                        Grupos de opciones con precio extra (ej.: Muzzarella extra +$900).
-                        El <strong>mínimo</strong> y el <strong>máximo</strong> definen cuántas opciones se pueden elegir al pedir.
-                    </p>
+                    <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Agregados</h3>
 
                     <div id="fd-opt-groups"></div>
 
-                    <button type="button" class="btn-secondary" style="margin-top:4px;" onclick="fdOptAddGroup()">+ Agregar grupo</button>
+                    <button type="button" onclick="fdOptAddGroup()" title="Agregar grupo" aria-label="Agregar grupo" style="margin-top:4px;background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    </button>
 
                     <div style="margin-top:20px;text-align:right;">
                         <span class="save-msg err" id="fd-opt-error" style="display:none;margin-right:8px;"></span>
-                        <button type="button" class="btn-secondary" onclick="closeOptionModal()" style="margin-right:8px;">Cancelar</button>
-                        <button type="button" class="btn-primary" onclick="saveOptions()">Guardar</button>
+                        <button type="button" onclick="closeOptionModal()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-right:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                        </button>
+                        <button type="button" onclick="saveOptions()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
