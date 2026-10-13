@@ -8959,7 +8959,8 @@
             }
             if (data.success) {
                 profileProvider = data.provider;
-                showMsg(msgId, data.message, true);
+                var successMsg = (msgId === 'tab2-msg') ? 'Horarios de atención actualizados correctamente.' : data.message;
+                showMsg(msgId, successMsg, true);
             } else {
                 showMsg(msgId, data.message || 'Error al guardar.', false);
             }

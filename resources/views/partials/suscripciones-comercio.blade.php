@@ -1,14 +1,10 @@
 {{-- Panel del comercio: planes, ingresos recurrentes y cobros por confirmar. --}}
 <section id="dash-{{ $page->url }}" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-        <div>
-            <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
-            <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Planes, ingresos recurrentes y cobros de tus suscriptores</p>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button type="button" onclick="openSubPlanForm()" style="background:#D24C19;color:#fff;border:none;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">+ Plan</button>
-            <button type="button" onclick="loadSubRevenue()" title="Actualizar suscripciones" aria-label="Actualizar suscripciones" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button>
-        </div>
+        <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
+        <button type="button" onclick="openSubPlanForm()" title="Agregar plan" aria-label="Agregar plan" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        </button>
     </div>
 
     <div id="sub-loading" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:40px;text-align:center;">
@@ -26,7 +22,6 @@
         <div id="sub-plans" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;margin-bottom:24px;"></div>
 
         <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 10px;">Cobros por confirmar</h3>
-        <p style="font-size:12px;color:#6b7280;margin:0 0 10px;">Marcá como pagado cuando recibas el pago en efectivo o por transferencia. Si el cobro falló, registralo así el cliente vuelve a intentarlo.</p>
         <div id="sub-charges" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;margin-bottom:24px;"></div>
 
         <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 10px;">Historial por período</h3>
@@ -74,13 +69,19 @@
         <div style="margin-bottom:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                 <label style="font-size:11px;font-weight:600;color:#6b7280;">Productos del plan</label>
-                <button type="button" onclick="addSubPlanRow()" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">+ Producto</button>
+                <button type="button" onclick="addSubPlanRow()" title="Agregar producto" aria-label="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                </button>
             </div>
             <div id="sub-plan-items"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-            <button type="button" onclick="saveSubPlan()" style="background:#D24C19;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Guardar plan</button>
-            <button type="button" onclick="closeSubPlanForm()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cancelar</button>
+            <button type="button" onclick="saveSubPlan()" title="Guardar plan" aria-label="Guardar plan" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </button>
+            <button type="button" onclick="closeSubPlanForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
             <span id="sub-plan-estimate" style="font-size:12px;color:#6b7280;"></span>
         </div>
     </div>
@@ -206,8 +207,8 @@
                                 + '<td style="padding:8px 12px;text-align:right;font-weight:600;">' + fdMoney(c.total) + '</td>'
                                 + '<td style="padding:8px 12px;text-align:center;">' + subBadge(c.status) + '</td>'
                                 + '<td style="padding:8px 12px;text-align:right;white-space:nowrap;">'
-                                + '<button type="button" onclick="updateSubCharge(' + c.id + ', \'PAID\')" style="background:#047857;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">Confirmar</button> '
-                                + '<button type="button" onclick="updateSubCharge(' + c.id + ', \'FAILED\')" style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;">Fallido</button>'
+                                + '<button type="button" onclick="updateSubCharge(' + c.id + ', \'PAID\')" title="Confirmar pago" aria-label="Confirmar pago" style="background:#047857;color:#fff;border:none;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button> '
+                                + '<button type="button" onclick="updateSubCharge(' + c.id + ', \'FAILED\')" title="Marcar fallido" aria-label="Marcar fallido" style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>'
                                 + '</td></tr>';
                         }).join('')
                         + '</tbody></table>'
@@ -293,8 +294,7 @@
                                 + ' · ' + fdMoney(plan.price) + ' · ' + escapeHtml(plan.charge_amount) + '/ciclo</span>'
                                 + '<span style="display:flex;gap:6px;align-items:center;">'
                                 + (plan.is_active ? fdBadge('Visible', '#047857', '#d1fae5') : fdBadge('Oculto', '#6b7280', '#f3f4f6'))
-                                + '<button type="button" onclick="openSubPlanForm(' + plan.id + ')" style="background:none;border:none;'
-                                + 'color:#D24C19;font-size:12px;font-weight:600;cursor:pointer;">Editar</button></span></div>';
+                                + '<button type="button" onclick="openSubPlanForm(' + plan.id + ')" title="Editar plan" aria-label="Editar plan" style="background:none;border:none;color:#D24C19;cursor:pointer;display:inline-flex;align-items:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z"/><path d="m15 5 4 4"/></svg></button></span></div>';
                         }).join('');
 
                     box.parentNode.insertBefore(list, box);
@@ -388,8 +388,8 @@
             + options + '</select>'
             + '<input type="number" min="1" value="' + (quantity || 1) + '" oninput="updateSubPlanEstimate()" class="sub-plan-qty" '
             + 'style="padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />'
-            + '<button type="button" onclick="this.parentNode.parentNode.remove()" style="background:#fff;color:#b91c1c;'
-            + 'border:1px solid #fecaca;padding:8px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Quitar</button>'
+            + '<button type="button" onclick="this.parentNode.parentNode.remove()" title="Quitar producto" aria-label="Quitar producto" style="background:#fff;color:#b91c1c;'
+            + 'border:1px solid #fecaca;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>'
             + '</div>');
 
         updateSubPlanEstimate();
