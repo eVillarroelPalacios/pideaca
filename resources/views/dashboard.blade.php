@@ -301,7 +301,6 @@
                                     </div>
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg> Contacto y promoción</h3>
-                                        <p class="pcard-sub">Formas de contacto, zonas de cobertura y tu promoción destacada.</p>
                                         <div class="profile-field-grid">
                                             <div><label class="field-label">Teléfono</label><input type="text" id="provider-phone" class="field-input" placeholder="+54 11 ..." /></div>
                                             <div><label class="field-label">WhatsApp</label><input type="text" id="provider-whatsapp" class="field-input" placeholder="5411..." /></div>
@@ -310,7 +309,9 @@
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
                                             <span class="save-msg" id="tab1-msg"></span>
-                                            <button type="button" class="btn-primary" onclick="submitProvider('tab1-msg')">Guardar negocio</button>
+                                            <button type="button" onclick="submitProvider('tab1-msg')" title="Guardar negocio" aria-label="Guardar negocio" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -6370,6 +6371,10 @@
         if (!pane) return;
         pane.setAttribute('data-user-id', (u && u.id != null) ? String(u.id) : '');
 
+        if (!u) {
+            pane.innerHTML = '';
+            return;
+        }
         var selectedName = u.name || '-';
         var isSecondary = false;
         var accEmail = (u.email || '').toLowerCase();
@@ -8773,17 +8778,21 @@
         profilePrevPanelId = null;
         selectedUser = profilePrevUser;
         userSelectScope = profilePrevScope;
-        if (selectedUser) {
-            renderUserAccount(selectedUser);
-        } else {
-            var g = document.getElementById('user-account-pane-gestion');
-            var p = document.getElementById('user-account-pane-paginas');
-            var cg = document.getElementById('user-tab-count-gestion');
-            var cp = document.getElementById('user-tab-count-paginas');
-            if (g && profilePrevPaneG !== null) g.innerHTML = profilePrevPaneG;
-            if (p && profilePrevPaneP !== null) p.innerHTML = profilePrevPaneP;
-            if (cg && profilePrevCountG !== null) cg.textContent = profilePrevCountG;
-            if (cp && profilePrevCountP !== null) cp.textContent = profilePrevCountP;
+        try {
+            if (selectedUser) {
+                renderUserAccount(selectedUser);
+            } else {
+                var g = document.getElementById('user-account-pane-gestion');
+                var p = document.getElementById('user-account-pane-paginas');
+                var cg = document.getElementById('user-tab-count-gestion');
+                var cp = document.getElementById('user-tab-count-paginas');
+                if (g && profilePrevPaneG !== null) g.innerHTML = profilePrevPaneG;
+                if (p && profilePrevPaneP !== null) p.innerHTML = profilePrevPaneP;
+                if (cg && profilePrevCountG !== null) cg.textContent = profilePrevCountG;
+                if (cp && profilePrevCountP !== null) cp.textContent = profilePrevCountP;
+            }
+        } catch (e) {
+            console.error('Error al restaurar panel de cuenta:', e);
         }
         updateCreateUserBtnVisibility();
     }
@@ -8791,8 +8800,12 @@
     function showProfilePanel(key) {
         if (key === 'imagenes' && !profileCanAdvertise) key = profileIsPrestador ? 'negocio' : 'cuenta';
         if (key === 'usuarios' && !document.querySelector('.sidebar-link[data-panel="usuarios"]')) key = 'cuenta';
-        if (key === 'usuarios') mountProfileUsuariosPanel();
-        else unmountProfileUsuariosPanel();
+        try {
+            if (key === 'usuarios') mountProfileUsuariosPanel();
+            else unmountProfileUsuariosPanel();
+        } catch (e) {
+            console.error('Error al cambiar de panel de perfil:', e);
+        }
         if (key === 'direccion') loadAddress();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
             link.classList.toggle('active', link.dataset.panel === key);
