@@ -7,7 +7,6 @@
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" onclick="openSubNewForm()" title="Suscribirme" aria-label="Suscribirme" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg></button>
-            <button type="button" onclick="loadMySubscriptions()" title="Actualizar suscripciones" aria-label="Actualizar suscripciones" style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></button>
         </div>
     </div>
 
@@ -23,8 +22,22 @@
         <div id="mysub-list" style="display:flex;flex-direction:column;gap:14px;"></div>
     </div>
 
-    <div id="mysub-form" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;margin-top:16px;">
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 12px;">Nueva suscripción</h3>
+    <div id="mysub-items-form" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;margin-top:16px;">
+        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 4px;" id="mysub-items-title">Cambiar sabores</h3>
+        <p style="font-size:12px;color:#6b7280;margin:0 0 12px;">Podés cambiar los productos entre sí, pero la cantidad total del plan se mantiene.</p>
+        <div id="mysub-items-rows"></div>
+        <p id="mysub-items-hint" style="font-size:12px;margin:8px 0 0;color:#6b7280;font-weight:600;"></p>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
+            <button type="button" onclick="saveMySubItems()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
+            <button type="button" onclick="closeMySubItems()" title="Cerrar" aria-label="Cerrar" style="background:#fff;color:#374151;border:1px solid #d1d5db;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        </div>
+    </div>
+</section>
+
+<div id="mysub-form-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:24px;width:100%;max-width:720px;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+    <div id="mysub-form">
+        <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;">Nueva suscripción</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;">
             <div>
                 <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Comercio</label>
@@ -87,18 +100,8 @@
             <button type="button" onclick="closeSubNewForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
         </div>
     </div>
-
-    <div id="mysub-items-form" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;margin-top:16px;">
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 4px;" id="mysub-items-title">Cambiar sabores</h3>
-        <p style="font-size:12px;color:#6b7280;margin:0 0 12px;">Podés cambiar los productos entre sí, pero la cantidad total del plan se mantiene.</p>
-        <div id="mysub-items-rows"></div>
-        <p id="mysub-items-hint" style="font-size:12px;margin:8px 0 0;color:#6b7280;font-weight:600;"></p>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-            <button type="button" onclick="saveMySubItems()" title="Guardar" aria-label="Guardar" style="background:#D24C19;color:#fff;border:none;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>
-            <button type="button" onclick="closeMySubItems()" title="Cerrar" aria-label="Cerrar" style="background:#fff;color:#374151;border:1px solid #d1d5db;width:34px;height:34px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-        </div>
     </div>
-</section>
+</div>
 
 <script>
 (function () {
@@ -386,9 +389,8 @@
     }
 
     function openSubNewForm(preselectProviderId, preselectProviderName) {
-        var form = document.getElementById('mysub-form');
-        form.style.display = 'block';
-        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        var overlay = document.getElementById('mysub-form-overlay');
+        if (overlay) overlay.style.display = 'flex';
 
         loadMySubAddresses();
 
@@ -460,8 +462,8 @@
     }
 
     function closeSubNewForm() {
-        var form = document.getElementById('mysub-form');
-        if (form) form.style.display = 'none';
+        var overlay = document.getElementById('mysub-form-overlay');
+        if (overlay) overlay.style.display = 'none';
 
         var provider = document.getElementById('mysub-provider');
         if (provider) {

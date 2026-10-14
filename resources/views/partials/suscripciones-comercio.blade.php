@@ -21,15 +21,15 @@
         <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px;">
             <button type="button" class="sub-tab active" data-sub-tab="planes" onclick="switchSubTab('planes')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v7.125c0 .621.504 1.125 1.125 1.125h9.75a5.625 5.625 0 0 0 5.625-5.625V4.5M3.75 21V9.75"/></svg>
-                Ingresos por plan
+                <span class="tab-label">Ingresos por plan</span>
             </button>
             <button type="button" class="sub-tab" data-sub-tab="cobros" onclick="switchSubTab('cobros')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
-                Cobros por confirmar
+                <span class="tab-label">Cobros por confirmar</span>
             </button>
             <button type="button" class="sub-tab" data-sub-tab="historial" onclick="switchSubTab('historial')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                Historial por período
+                <span class="tab-label">Historial por período</span>
             </button>
         </div>
 

@@ -39,6 +39,8 @@
                     <button class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;">
                         @if($module->icon)
                         <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
+                        @elseif($module->description === 'Comercio & Gastronomía')
+                        <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
                         @endif
                         {{ $module->description }}
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
@@ -73,6 +75,8 @@
                         <button onclick="toggleMobileSub(this)" style="width:100%;background:none;border:none;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
                             @if($module->icon)
                             <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
+                            @elseif($module->description === 'Comercio & Gastronomía')
+                            <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
                             @endif
                             {{ $module->description }}
                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
@@ -80,7 +84,7 @@
                         <div class="mobile-sub" style="display:none;width:100%;text-align:center;">
                             @foreach($module->pages as $page)
                                 @if($page->url)
-                            <a href="#" onclick="showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                            <a href="#" onclick="event.preventDefault();showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
                                 @else
                             <div title="Todavia no tiene seccion" style="display:block;color:#9ca3af;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">{{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>
                                 @endif
@@ -695,6 +699,14 @@
         #menu-toggle { display: block !important; }
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
+        .tab-label { display: none !important; }
+        #fd-myorders-range, #fd-orders-range {
+            margin-left: 0 !important;
+            width: 100% !important;
+            justify-content: flex-start !important;
+            margin-top: 8px !important;
+            padding-bottom: 0 !important;
+        }
     }
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }
@@ -768,6 +780,7 @@
                 if (typeof FD_SHOP !== 'undefined' && FD_SHOP.providerId && shop) {
                     document.querySelectorAll('.dash-section').forEach(function (s) { s.style.display = 'none'; });
                     shop.style.display = 'block';
+                    fdStartShopPolling();
                 } else {
                     showDashSection(FD_SECTION_SHOP_FALLBACK);
                 }
@@ -4062,6 +4075,7 @@
                 document.getElementById('fd-shop-body').innerHTML =
                     fdRenderShopCatalog(res.data.categories || []);
                 fdRenderShopCart();
+                fdStartShopPolling();
             })
             .catch(function () {
                 document.getElementById('fd-shop-body').innerHTML =
@@ -4076,6 +4090,93 @@
         FD_SHOP.catalog = null;
         FD_SHOP.cart = [];
         fdShopPaintBadge();
+        fdStopShopPolling();
+    }
+
+    // Mientras la tienda esta abierta, el catalogo se refresca solo para que
+    // los cambios del prestador (precios, stock, productos) se vean sin F5.
+    var fdShopPollTimer = null;
+
+    function fdStopShopPolling() {
+        if (fdShopPollTimer) clearInterval(fdShopPollTimer);
+        fdShopPollTimer = null;
+    }
+
+    function fdStartShopPolling() {
+        fdStopShopPolling();
+        if (!FD_SHOP.providerId) return;
+        fdShopPollTimer = setInterval(function () {
+            if (document.hidden) return;
+            var overlay = document.getElementById('fd-shop-overlay');
+            if (!overlay || overlay.style.display === 'none' || !FD_SHOP.providerId) {
+                fdStopShopPolling();
+                return;
+            }
+            fdShopRefreshSilent();
+        }, 8000);
+    }
+
+    function fdShopRefreshSilent() {
+        if (!FD_SHOP.providerId || FD_SHOP.busy) return;
+
+        fdFetchJson('{{ url("/api/providers") }}/' + FD_SHOP.providerId + '/catalog?only_available=1')
+            .then(function (res) {
+                if (!res.ok || !FD_SHOP.providerId) return;
+
+                FD_SHOP.catalog = res.data;
+                FD_SHOP.settings = res.data.settings || FD_SHOP.settings;
+
+                var provider = res.data.provider || {};
+                FD_SHOP.providerName = provider.business_name || '';
+
+                var title = document.getElementById('fd-shop-title');
+                if (title) title.textContent = provider.business_name || 'Comercio';
+
+                var hours = provider.hours;
+                var hoursText = Array.isArray(hours) ? hours.join(' · ') : (typeof hours === 'string' ? hours : '');
+                var subtitle = document.getElementById('fd-shop-subtitle');
+                if (subtitle) subtitle.textContent = [provider.zone, hoursText].filter(Boolean).join(' · ');
+
+                var sel = document.getElementById('fd-shop-category');
+                var prevFilter = sel ? String(sel.value) : '';
+                fdShopFillCategoryFilter(res.data.categories || []);
+                if (sel) {
+                    var options = sel.options;
+                    var restored = false;
+                    for (var i = 0; i < options.length; i++) {
+                        if (options[i].value === prevFilter) { sel.value = prevFilter; restored = true; break; }
+                    }
+                    if (!restored) sel.value = '';
+                }
+                FD_SHOP.categoryFilter = sel ? String(sel.value) : '';
+
+                // Filtra el carrito: saca lineas de productos que ya no existen o estan agotados.
+                var available = {};
+                (res.data.categories || []).forEach(function (c) {
+                    (c.products || []).forEach(function (p) { available[p.id] = p; });
+                });
+                var before = FD_SHOP.cart.length;
+                FD_SHOP.cart = FD_SHOP.cart.filter(function (line) {
+                    var p = available[line.product_id];
+                    return p && !p.is_out_of_stock;
+                });
+                if (FD_SHOP.cart.length !== before) {
+                    fdShopShowMsg('Algunos productos del carrito ya no estan disponibles y se quitaron.', true);
+                }
+
+                var categories = res.data.categories || [];
+                if (FD_SHOP.categoryFilter !== '') {
+                    var index = Number(FD_SHOP.categoryFilter);
+                    categories = !isNaN(index) && res.data.categories && res.data.categories[index]
+                        ? [res.data.categories[index]]
+                        : [];
+                }
+
+                var body = document.getElementById('fd-shop-body');
+                if (body) body.innerHTML = fdRenderShopCatalog(categories);
+                fdRenderShopCart();
+            })
+            .catch(function () {});
     }
 
     // Volver desde la tienda: si la abrimos empujando el estado 'tienda',
@@ -4825,17 +4926,29 @@
         }
 
         var page = fdMyOrdersHistoryPage;
-        var iconLeft = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
-        var iconRight = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+        var iconLeft = '&#10094;';
+        var iconRight = '&#10095;';
+
+        var dots = '';
+        for (var p = 1; p <= totalPages; p++) {
+            dots += '<span onclick="fdMyOrdersGoPage(' + p + ')" style="padding:2px 6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s ease;color:'
+                + (p === page ? '#D24C19;' : '#9ca3af;') + '" onmouseover="if(' + p + '!==' + page + ')this.style.color=\'#D24C19\'" onmouseout="if(' + p + '!==' + page + ')this.style.color=\'#9ca3af\'">'
+                + p + '</span>';
+        }
+
+        var prevDisabled = page <= 1;
+        var nextDisabled = page >= totalPages;
 
         pag.style.display = 'flex';
-        pag.innerHTML = '<button type="button" onclick="fdMyOrdersGoPage(' + (page - 1) + ')" title="Página anterior" aria-label="Página anterior" ' + (page <= 1 ? 'disabled ' : '')
-            + 'style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;'
-            + (page <= 1 ? 'opacity:.45;cursor:not-allowed;' : '') + '">' + iconLeft + '</button>'
-            + '<span style="font-size:12px;color:#374151;font-weight:600;">Página ' + page + ' de ' + totalPages + '</span>'
-            + '<button type="button" onclick="fdMyOrdersGoPage(' + (page + 1) + ')" title="Página siguiente" aria-label="Página siguiente" ' + (page >= totalPages ? 'disabled ' : '')
-            + 'style="background:#fff;color:#D24C19;border:1px solid #D24C19;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;'
-            + (page >= totalPages ? 'opacity:.45;cursor:not-allowed;' : '') + '">' + iconRight + '</button>';
+        pag.innerHTML = '<button type="button" onclick="fdMyOrdersGoPage(' + (page - 1) + ')" title="Página anterior" aria-label="Página anterior" '
+            + (prevDisabled ? '' : 'onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\'" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#374151\'" ')
+            + 'style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;display:inline-flex;align-items:center;justify-content:center;line-height:0;transition:all 0.2s ease;opacity:'
+            + (prevDisabled ? '0.4;' : '1;') + 'pointer-events:' + (prevDisabled ? 'none;' : 'auto;') + '">' + iconLeft + '</button>'
+            + dots
+            + '<button type="button" onclick="fdMyOrdersGoPage(' + (page + 1) + ')" title="Página siguiente" aria-label="Página siguiente" '
+            + (nextDisabled ? '' : 'onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\'" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#374151\'" ')
+            + 'style="background:white;border:1px solid #d1d5db;border-radius:50%;width:32px;height:32px;font-size:14px;cursor:pointer;color:#374151;display:inline-flex;align-items:center;justify-content:center;line-height:0;transition:all 0.2s ease;opacity:'
+            + (nextDisabled ? '0.4;' : '1;') + 'pointer-events:' + (nextDisabled ? 'none;' : 'auto;') + '">' + iconRight + '</button>';
     }
 
     function fdMyOrdersRender(silent) {
@@ -5090,9 +5203,9 @@
             if (key === 'retencion') loadRetention();
             if (key === 'suscripciones') loadSubRevenue();
             if (key === 'mis-suscripciones') {
-                // Al entrar por el nav el combo de comercios vuelve a quedar
-                // habilitado; si el origen es la tarjeta del comercio,
-                // openSubNewForm() lo fija recien despues de esta llamada.
+                // Al entrar por el nav se cierra el modal de nueva suscripcion.
+                var subOverlay = document.getElementById('mysub-form-overlay');
+                if (subOverlay) subOverlay.style.display = 'none';
                 var subProvider = document.getElementById('mysub-provider');
                 if (subProvider) {
                     subProvider.disabled = false;
