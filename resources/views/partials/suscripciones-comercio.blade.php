@@ -18,74 +18,96 @@
     <div id="sub-content" style="display:none;">
         <div id="sub-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;"></div>
 
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 10px;">Ingresos por plan</h3>
-        <div id="sub-plans" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;margin-bottom:24px;"></div>
-
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 10px;">Cobros por confirmar</h3>
-        <div id="sub-charges" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;margin-bottom:24px;"></div>
-
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 10px;">Historial por período</h3>
-        <div id="sub-history" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;"></div>
-    </div>
-
-    <div id="sub-plan-form" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:20px;margin-top:16px;">
-        <h3 style="font-size:15px;font-weight:700;color:#0c2a4d;margin:0 0 12px;" id="sub-plan-form-title">Nuevo plan</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
-            <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Nombre del plan</label>
-                <input type="text" id="sub-plan-title" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
-            </div>
-            <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Frecuencia</label>
-                <select id="sub-plan-frequency" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;">
-                    <option value="DAILY">Diaria</option>
-                    <option value="WEEKLY">Semanal</option>
-                    <option value="BIWEEKLY">Quincenal</option>
-                    <option value="MONTHLY">Mensual</option>
-                </select>
-            </div>
-            <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Precio</label>
-                <input type="number" step="0.01" min="0" id="sub-plan-price" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
-            </div>
-            <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Descuento %</label>
-                <input type="number" step="0.01" min="0" max="100" id="sub-plan-discount" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" placeholder="0" />
-            </div>
-            <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Cupos (opcional)</label>
-                <input type="number" min="1" id="sub-plan-capacity" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" placeholder="Ilimitado" />
-            </div>
-            <div style="display:flex;align-items:flex-end;">
-                <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;cursor:pointer;padding-bottom:8px;">
-                    <input type="checkbox" id="sub-plan-active" checked style="width:16px;height:16px;cursor:pointer;" /> Plan visible
-                </label>
-            </div>
-        </div>
-        <div style="margin-bottom:12px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Descripción</label>
-            <textarea id="sub-plan-description" rows="2" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;"></textarea>
-        </div>
-        <div style="margin-bottom:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <label style="font-size:11px;font-weight:600;color:#6b7280;">Productos del plan</label>
-                <button type="button" onclick="addSubPlanRow()" title="Agregar producto" aria-label="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                </button>
-            </div>
-            <div id="sub-plan-items"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-            <button type="button" onclick="saveSubPlan()" title="Guardar plan" aria-label="Guardar plan" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px;">
+            <button type="button" class="sub-tab active" data-sub-tab="planes" onclick="switchSubTab('planes')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v7.125c0 .621.504 1.125 1.125 1.125h9.75a5.625 5.625 0 0 0 5.625-5.625V4.5M3.75 21V9.75"/></svg>
+                Ingresos por plan
             </button>
-            <button type="button" onclick="closeSubPlanForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            <button type="button" class="sub-tab" data-sub-tab="cobros" onclick="switchSubTab('cobros')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+                Cobros por confirmar
             </button>
-            <span id="sub-plan-estimate" style="font-size:12px;color:#6b7280;"></span>
+            <button type="button" class="sub-tab" data-sub-tab="historial" onclick="switchSubTab('historial')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                Historial por período
+            </button>
+        </div>
+
+        <div id="sub-pane-planes" class="sub-pane">
+            <div id="sub-plans" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;"></div>
+        </div>
+
+        <div id="sub-pane-cobros" class="sub-pane" style="display:none;">
+            <div id="sub-charges" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;"></div>
+        </div>
+
+        <div id="sub-pane-historial" class="sub-pane" style="display:none;">
+            <div id="sub-history" style="background:#fff;border:1px solid #e5e7eb;overflow-x:auto;"></div>
         </div>
     </div>
 </section>
+
+<div id="sub-plan-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:24px;width:100%;max-width:760px;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,0.2);box-sizing:border-box;">
+        <div id="sub-plan-form">
+            <h3 style="font-size:16px;font-weight:800;color:#0f172a;margin:0 0 16px;" id="sub-plan-form-title">Nuevo plan</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Nombre del plan</label>
+                    <input type="text" id="sub-plan-title" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Frecuencia</label>
+                    <select id="sub-plan-frequency" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;">
+                        <option value="DAILY">Diaria</option>
+                        <option value="WEEKLY">Semanal</option>
+                        <option value="BIWEEKLY">Quincenal</option>
+                        <option value="MONTHLY">Mensual</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Precio</label>
+                    <input type="number" step="0.01" min="0" id="sub-plan-price" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Descuento %</label>
+                    <input type="number" step="0.01" min="0" max="100" id="sub-plan-discount" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" placeholder="0" />
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Cupos (opcional)</label>
+                    <input type="number" min="1" id="sub-plan-capacity" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;" placeholder="Ilimitado" />
+                </div>
+                <div style="display:flex;align-items:flex-end;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;cursor:pointer;padding-bottom:8px;">
+                        <input type="checkbox" id="sub-plan-active" checked style="width:16px;height:16px;cursor:pointer;" /> Plan visible
+                    </label>
+                </div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Descripción</label>
+                <textarea id="sub-plan-description" rows="2" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;"></textarea>
+            </div>
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <label style="font-size:11px;font-weight:600;color:#6b7280;">Productos del plan</label>
+                    <button type="button" onclick="addSubPlanRow()" title="Agregar producto" aria-label="Agregar producto" style="background:#D24C19;color:#fff;border:none;padding:6px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    </button>
+                </div>
+                <div id="sub-plan-items"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:20px;">
+                <button type="button" onclick="saveSubPlan()" title="Guardar plan" aria-label="Guardar plan" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+                <button type="button" onclick="closeSubPlanForm()" title="Cancelar" aria-label="Cancelar" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                </button>
+                <span id="sub-plan-estimate" style="font-size:12px;color:#6b7280;"></span>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 (function () {
@@ -121,6 +143,23 @@
             var msg = document.getElementById('sub-message-text');
             if (msg) msg.textContent = text;
         }
+    }
+
+    var subActiveTab = 'planes';
+
+    function switchSubTab(tab) {
+        subActiveTab = tab || 'planes';
+        document.querySelectorAll('.sub-tab').forEach(function(btn) {
+            var active = btn.getAttribute('data-sub-tab') === subActiveTab;
+            btn.classList.toggle('active', active);
+            btn.style.color = active ? '#D24C19' : '#64748b';
+            btn.style.borderBottomColor = active ? '#D24C19' : 'transparent';
+            btn.style.background = active ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'none';
+        });
+        ['planes', 'cobros', 'historial'].forEach(function(k) {
+            var pane = document.getElementById('sub-pane-' + k);
+            if (pane) pane.style.display = (k === subActiveTab) ? 'block' : 'none';
+        });
     }
 
     function subKpi(label, value, hint, color) {
@@ -241,6 +280,7 @@
                         + 'Sin cobros registrados en los últimos meses.</p>';
 
                 subSetState('content');
+                switchSubTab(subActiveTab);
                 loadSubPlans();
             })
             .catch(function () {
@@ -355,17 +395,14 @@
 
         updateSubPlanEstimate();
 
-        var form = document.getElementById('sub-plan-form');
-        if (form) {
-            form.style.display = 'block';
-            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        var overlay = document.getElementById('sub-plan-overlay');
+        if (overlay) overlay.style.display = 'flex';
     }
 
     function closeSubPlanForm() {
         subState.editing = null;
-        var form = document.getElementById('sub-plan-form');
-        if (form) form.style.display = 'none';
+        var overlay = document.getElementById('sub-plan-overlay');
+        if (overlay) overlay.style.display = 'none';
     }
 
     function addSubPlanRow(productId, quantity) {
@@ -465,5 +502,6 @@
     window.updateSubPlanEstimate = updateSubPlanEstimate;
     window.saveSubPlan = saveSubPlan;
     window.updateSubCharge = updateSubCharge;
+    window.switchSubTab = switchSubTab;
 })();
 </script>

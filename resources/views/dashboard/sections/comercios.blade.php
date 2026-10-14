@@ -44,9 +44,8 @@
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;flex:none;">
                             <span id="fd-shop-cart-badge" style="display:none;align-items:center;gap:6px;background:#fff1eb;color:#D24C19;border:1px solid #f5c6ad;border-radius:9999px;padding:5px 10px;font-size:12px;font-weight:700;white-space:nowrap;"></span>
-                            <button type="button" onclick="fdShopBack()" title="Volver a comercios" aria-label="Volver a comercios" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:7px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
-                                Volver
+                            <button type="button" onclick="fdShopBack()" title="Volver a comercios" aria-label="Volver a comercios" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 10px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                             </button>
                         </div>
                     </div>

@@ -3590,9 +3590,9 @@
             var btn = document.getElementById('fd-orders-tab-' + key);
             if (btn) {
                 var on = fdOrdersActive === key;
-                btn.style.background = on ? '#fff1eb' : '#fff';
-                btn.style.color = on ? '#D24C19' : '#6b7280';
-                btn.style.border = on ? '1px solid #D24C19' : '1px solid #e5e7eb';
+                btn.style.color = on ? '#D24C19' : '#64748b';
+                btn.style.borderBottomColor = on ? '#D24C19' : 'transparent';
+                btn.style.background = on ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'none';
             }
         });
     }
@@ -3833,7 +3833,7 @@
         fdShopsTimer = setTimeout(loadComercios, 300);
     }
 
-    function loadComercios() {
+    function loadComercios(silent) {
         var input = document.getElementById('fd-shops-search');
         var search = input ? input.value.trim() : '';
         var section = document.getElementById('dash-comercios');
@@ -3846,11 +3846,12 @@
         if (search) params.push('search=' + encodeURIComponent(search));
         if (isFavorites) params.push('favorite=1');
 
-        fdSetShopsState('loading');
+        if (!silent) fdSetShopsState('loading');
 
         fdFetchJson('{{ url("/api/providers") }}' + (params.length ? '?' + params.join('&') : ''))
             .then(function (res) {
                 if (!res.ok) {
+                    if (silent) return;
                     fdSetShopsState('message', (res.data && res.data.message) || 'No se pudieron cargar los comercios.');
                     return;
                 }
@@ -3887,10 +3888,14 @@
                     return;
                 }
 
-                document.getElementById('fd-shops-grid').innerHTML = providers.map(fdRenderProviderCard).join('');
+                var html = providers.map(fdRenderProviderCard).join('');
+                var grid = document.getElementById('fd-shops-grid');
+                if (silent && grid && grid.style.display === 'grid' && grid.innerHTML === html) return;
+                if (grid) grid.innerHTML = html;
                 fdSetShopsState('content');
             })
             .catch(function () {
+                if (silent) return;
                 fdSetShopsState('message', 'No se pudo conectar con el servidor.');
             });
     }
@@ -4765,9 +4770,9 @@
             var btn = document.getElementById('fd-myorders-tab-' + key);
             if (btn) {
                 var on = fdMyOrdersActive === key;
-                btn.style.background = on ? '#fff1eb' : '#fff';
-                btn.style.color = on ? '#D24C19' : '#6b7280';
-                btn.style.border = on ? '1px solid #D24C19' : '1px solid #e5e7eb';
+                btn.style.color = on ? '#D24C19' : '#64748b';
+                btn.style.borderBottomColor = on ? '#D24C19' : 'transparent';
+                btn.style.background = on ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'none';
             }
         });
 
@@ -5031,7 +5036,8 @@
 
     var FD_POLL_SECTIONS = {
         'mis-pedidos': function () { loadMyOrders(true); },
-        'pedidos': function () { loadProviderOrders(true); }
+        'pedidos': function () { loadProviderOrders(true); },
+        'comercios': function () { loadComercios(true); }
     };
     var FD_POLL_MS = 8000;
     var fdPollTimer = null;
