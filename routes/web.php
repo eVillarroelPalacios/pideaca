@@ -21,6 +21,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TypeUserController;
@@ -209,3 +210,20 @@ Route::delete('/api/v1/provider/supplies/{supply}', [RecipeController::class, 'd
 Route::get('/api/v1/provider/financial-health', [RecipeController::class, 'financialHealth'])->name('api.provider.financial-health.index');
 Route::get('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'showRecipe'])->name('api.provider.products.recipe.show');
 Route::post('/api/v1/provider/products/{product}/recipe', [RecipeController::class, 'storeRecipe'])->name('api.provider.products.recipe.store');
+
+// Reportes del negocio: Prestador (Merchant) y Cliente (Customer).
+// La autenticacion y el rol se resuelven dentro del controlador, igual que
+// el resto de los endpoints /api/v1 de este modulo.
+Route::middleware('page:reportes')->group(function () {
+    Route::get('/api/v1/provider/reports/margins', [ReportController::class, 'getMarginAndRecipeCost'])->name('api.provider.reports.margins');
+    Route::get('/api/v1/provider/reports/mrr', [ReportController::class, 'getMRRAndSubscriptions'])->name('api.provider.reports.mrr');
+    Route::get('/api/v1/provider/reports/commission-savings', [ReportController::class, 'getCommissionSavings'])->name('api.provider.reports.commission-savings');
+    Route::get('/api/v1/provider/reports/ltv-risk', [ReportController::class, 'getLTVAndAtRiskCustomers'])->name('api.provider.reports.ltv-risk');
+    Route::get('/api/v1/provider/reports/campaigns', [ReportController::class, 'getCampaignPerformance'])->name('api.provider.reports.campaigns');
+    Route::get('/api/v1/provider/reports/demand-heatmap', [ReportController::class, 'getDemandHeatmap'])->name('api.provider.reports.demand-heatmap');
+    Route::get('/api/v1/provider/reports/stock-forecast', [ReportController::class, 'getSubscriptionStockForecast'])->name('api.provider.reports.stock-forecast');
+    Route::get('/api/v1/customer/reports/savings', [ReportController::class, 'getCustomerSavings'])->name('api.customer.reports.savings');
+    Route::get('/api/v1/customer/reports/subscriptions', [ReportController::class, 'getActiveSubscriptions'])->name('api.customer.reports.subscriptions');
+    Route::get('/api/v1/customer/reports/order-history', [ReportController::class, 'getOrderHistoryAndReorder'])->name('api.customer.reports.order-history');
+    Route::get('/api/v1/customer/reports/nutritional', [ReportController::class, 'getNutritionalSummary'])->name('api.customer.reports.nutritional');
+});

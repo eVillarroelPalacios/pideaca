@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             UnidadesMedidaPageSeeder::class,
             UnitOfMeasureSeeder::class,
             InventoryPagesSeeder::class,
+            ReportesPageSeeder::class,
         ]);
     }
 }

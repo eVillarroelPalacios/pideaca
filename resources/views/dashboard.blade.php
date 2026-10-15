@@ -542,6 +542,8 @@
             @include('partials.suscripciones-comercio')
                     @elseif($page->url === 'mis-suscripciones')
             @include('partials.mis-suscripciones')
+                    @elseif($page->url === 'reportes')
+            @include('dashboard.sections.reportes')
                     @elseif($page->url)
             @include('dashboard.sections.default')
                     @endif
@@ -5204,6 +5206,7 @@
             if (key === 'finanzas') loadFinances();
             if (key === 'retencion') loadRetention();
             if (key === 'suscripciones') loadSubRevenue();
+            if (key === 'reportes' && typeof fdRepOpen === 'function') fdRepOpen();
             if (key === 'mis-suscripciones') {
                 // Al entrar por el nav se cierra el modal de nueva suscripcion.
                 window.__fdSubReturnTo = null;
