@@ -408,8 +408,8 @@ class ClientPanelTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/<\/svg>\s*Todos los comercios/', $tabs);
 
         $header = substr($html, strpos($html, 'id="fd-shops-search"'), 600);
-        $this->assertStringContainsString('aria-label="Actualizar comercios"', $header);
-        $this->assertDoesNotMatchRegularExpression('/<\/svg>\s*Actualizar\s*<\/button>/', $header);
+        // El boton de actualizar se elimino: se refresca solo.
+        $this->assertStringNotContainsString('aria-label="Actualizar comercios"', $header);
     }
 
     public function test_providers_listing_only_returns_the_modules_category(): void
@@ -709,7 +709,10 @@ class ClientPanelTest extends TestCase
         // Cambiar de pestaña, filtro o rango vuelve a la primera página
         $this->assertStringContainsString('onchange="fdMyOrdersRangeChange()"', $html);
         $this->assertStringContainsString("fdMyOrdersActive = tab === 'history' ? 'history' : 'today';\n        fdMyOrdersHistoryPage = 1;", $html);
-        $this->assertStringContainsString('Página \' + page + \' de \' + totalPages', $html);
+        // Paginacion estilo landing: chevrons circulares y numeros clicables.
+        $this->assertStringContainsString("title=\"Página anterior\"", $html);
+        $this->assertStringContainsString("title=\"Página siguiente\"", $html);
+        $this->assertStringContainsString('onclick="fdMyOrdersGoPage(', $html);
     }
 
     public function test_dashboard_browser_back_stays_on_the_user_sections(): void

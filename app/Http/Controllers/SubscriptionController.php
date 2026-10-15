@@ -278,6 +278,7 @@ class SubscriptionController extends Controller
         }
 
         $subscriptions = CustomerSubscription::where('user_id', Auth::id())
+            ->where('status', '!=', CustomerSubscription::STATUS_CANCELLED)
             ->with([
                 'plan.items.product:id,name,price,image_path',
                 'items.product:id,name,price,image_path',

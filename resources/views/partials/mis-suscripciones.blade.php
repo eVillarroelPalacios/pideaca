@@ -161,7 +161,10 @@
                     return;
                 }
 
-                mySubState.subscriptions = res.data.subscriptions || [];
+                // Las canceladas no se muestran en la lista del cliente.
+                mySubState.subscriptions = (res.data.subscriptions || []).filter(function (sub) {
+                    return sub.status !== 'CANCELLED';
+                });
 
                 var box = document.getElementById('mysub-list');
                 if (!mySubState.subscriptions.length) {
@@ -389,6 +392,10 @@
     }
 
     function openSubNewForm(preselectProviderId, preselectProviderName) {
+        // Si se abre desde la sección (sin comercio fijado), no hay que
+        // volver a otra vista al cerrar el modal.
+        window.__fdSubReturnTo = preselectProviderId ? (window.__fdSubReturnTo || 'comercios') : null;
+
         var overlay = document.getElementById('mysub-form-overlay');
         if (overlay) overlay.style.display = 'flex';
 
@@ -469,6 +476,13 @@
         if (provider) {
             provider.disabled = false;
             provider.title = '';
+        }
+
+        // Venía de la tarjeta del comercio: volver a la ventana de comercios.
+        var backTo = window.__fdSubReturnTo;
+        window.__fdSubReturnTo = null;
+        if (backTo && typeof showDashSection === 'function') {
+            showDashSection(backTo);
         }
     }
 

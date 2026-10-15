@@ -3965,6 +3965,8 @@
         showDashSection('mis-suscripciones');
 
         if (typeof openSubNewForm === 'function') {
+            // Al cerrar o guardar el modal hay que volver a Comercios.
+            window.__fdSubReturnTo = 'comercios';
             openSubNewForm(Number(providerId), providerName || '');
         }
     }
@@ -5204,6 +5206,7 @@
             if (key === 'suscripciones') loadSubRevenue();
             if (key === 'mis-suscripciones') {
                 // Al entrar por el nav se cierra el modal de nueva suscripcion.
+                window.__fdSubReturnTo = null;
                 var subOverlay = document.getElementById('mysub-form-overlay');
                 if (subOverlay) subOverlay.style.display = 'none';
                 var subProvider = document.getElementById('mysub-provider');
