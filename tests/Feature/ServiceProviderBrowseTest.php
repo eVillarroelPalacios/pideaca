@@ -143,12 +143,14 @@ class ServiceProviderBrowseTest extends TestCase
         $this->getJson('/api/v1/service-providers?type=EMERGENCY')->assertStatus(401);
     }
 
-    public function test_browse_exige_un_tipo_de_servicio_valido(): void
+    public function test_browse_acepta_type_opcional_y_rechaza_tipo_invalido(): void
     {
+        // Sin type devuelve todos los prestadores del grupo hogar.
         $this->actingAs($this->customer)
             ->getJson('/api/v1/service-providers')
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['type']);
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(2, 'data.providers');
 
         $this->actingAs($this->customer)
             ->getJson('/api/v1/service-providers?type=NOPE')
@@ -189,6 +191,56 @@ class ServiceProviderBrowseTest extends TestCase
             ->getJson('/api/v1/service-providers?type=EMERGENCY&search=Gasista')
             ->assertStatus(200)
             ->assertJsonCount(1, 'data.providers');
+    }
+
+    public function test_browse_devuelve_contadores_de_favoritos_y_total(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/providers/'.$this->provider->id.'/favorite')
+            ->assertStatus(200)
+            ->assertJsonPath('is_favorite', true)
+            ->assertJsonPath('favorites_count', 1);
+
+        $this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers')
+            ->assertStatus(200)
+            ->assertJsonPath('data.favorites_count', 1)
+            ->assertJsonPath('data.total_count', 2);
+
+        $gasista = collect($this->actingAs($this->customer)->getJson('/api/v1/service-providers')->json('data.providers'))
+            ->firstWhere('id', $this->provider->id);
+        $this->assertTrue($gasista['is_favorite']);
+    }
+
+    public function test_tab_favoritos_solo_devuelve_los_guardados(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/providers/'.$this->provider->id.'/favorite')
+            ->assertStatus(200);
+
+        $this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers?favorite=1')
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.providers')
+            ->assertJsonPath('data.providers.0.id', $this->provider->id);
+    }
+
+    public function test_quitar_favorito_lo_saca_del_tab(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/providers/'.$this->provider->id.'/favorite')
+            ->assertStatus(200);
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/providers/'.$this->provider->id.'/favorite')
+            ->assertStatus(200)
+            ->assertJsonPath('is_favorite', false)
+            ->assertJsonPath('favorites_count', 0);
+
+        $this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers?favorite=1')
+            ->assertStatus(200)
+            ->assertJsonCount(0, 'data.providers');
     }
 
     public function test_urgencia_directa_asigna_al_prestador_elegido(): void

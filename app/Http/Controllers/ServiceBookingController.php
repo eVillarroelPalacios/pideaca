@@ -72,9 +72,8 @@ class ServiceBookingController extends Controller
      *
      * Browse de prestadores para Solicitar Servicio con el mismo esquema que
      * los comercios: el cliente busca y elige una tarjeta de prestador. Devuelve
-     * los profesionales activos que pertenecen al grupo "Servicios del Hogar &
-     * Bienestar" y ofrecen el tipo de servicio pedido (EMERGENCY/SCHEDULED/
-     * QUOTE), filtrables por texto (nombre, descripcion, zona).
+     * los profesionales activos del grupo "Servicios del Hogar & Bienestar",
+     * filtrables por texto, por tipo de servicio y por el tab de favoritos.
      */
     public function getServiceProviders(Request $request): JsonResponse
     {
@@ -85,22 +84,25 @@ class ServiceBookingController extends Controller
         }
 
         $data = $request->validate([
-            'type' => ['required', 'string', Rule::in([
+            'type' => ['nullable', 'string', Rule::in([
                 ServiceType::CODE_EMERGENCY,
                 ServiceType::CODE_SCHEDULED,
                 ServiceType::CODE_QUOTE,
             ])],
             'search' => ['nullable', 'string', 'max:100'],
+            'favorite' => ['sometimes', 'boolean'],
         ]);
 
         $search = trim((string) ($data['search'] ?? ''));
         $favoriteIds = Favorite::where('user_id', $customer->id)->pluck('provider_id');
 
         try {
-            $providers = Provider::query()
+            $base = Provider::query()
                 ->where('is_active', true)
                 ->whereHas('subgroups.group', fn ($q) => $q->where('description', self::SERVICE_GROUP_NAME))
-                ->whereHas('serviceTypes', fn ($q) => $q->where('code', $data['type']))
+                ->when(! empty($data['type']), function ($query) use ($data) {
+                    $query->whereHas('serviceTypes', fn ($q) => $q->where('code', $data['type']));
+                })
                 ->when($search !== '', function ($query) use ($search) {
                     $lower = mb_strtolower($search);
                     $query->where(function ($q) use ($lower) {
@@ -108,7 +110,13 @@ class ServiceBookingController extends Controller
                             ->orWhereRaw("LOWER(COALESCE(description, '')) LIKE ?", ['%'.$lower.'%'])
                             ->orWhereRaw("LOWER(COALESCE(zone, '')) LIKE ?", ['%'.$lower.'%']);
                     });
-                })
+                });
+
+            $total = (clone $base)->count();
+            $favoritesCount = (clone $base)->whereIn('id', $favoriteIds)->count();
+
+            $providers = $base
+                ->when($request->boolean('favorite'), fn ($query) => $query->whereIn('id', $favoriteIds))
                 ->with(['subgroups.group', 'serviceTypes', 'images'])
                 ->orderBy('business_name')
                 ->get()
@@ -127,7 +135,8 @@ class ServiceBookingController extends Controller
             'success' => true,
             'data' => [
                 'providers' => $providers,
-                'total_count' => $providers->count(),
+                'total_count' => $total,
+                'favorites_count' => $favoritesCount,
             ],
         ]);
     }
