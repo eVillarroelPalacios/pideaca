@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
+use App\Models\Group;
+use App\Models\Provider;
+use App\Models\ProviderImage;
+use App\Models\Region;
+use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Provider;
-use App\Models\ProviderImage;
-use App\Models\Group;
-use App\Models\SubGroup;
 
 class ProfileController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -26,7 +27,7 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -47,7 +48,7 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -58,7 +59,7 @@ class ProfileController extends Controller
 
         $user = Auth::user();
 
-        if ($request->filled('current_password') && !Hash::check($request->current_password, $user->password)) {
+        if ($request->filled('current_password') && ! Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'errors' => ['current_password' => ['La contraseña actual no es correcta.']],
@@ -75,13 +76,13 @@ class ProfileController extends Controller
 
     public function updateProvider(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $user = Auth::user();
 
-        if (!$user->typeUser || $user->typeUser->description !== 'Prestador') {
+        if (! $user->typeUser || $user->typeUser->description !== 'Prestador') {
             return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar perfil de proveedor.'], 403);
         }
 
@@ -97,7 +98,7 @@ class ProfileController extends Controller
 
         $provider = $user->provider;
 
-        if (!$provider) {
+        if (! $provider) {
             $provider = Provider::create([
                 'user_id' => $user->id,
                 'business_name' => $request->business_name,
@@ -132,20 +133,20 @@ class ProfileController extends Controller
 
     public function storeImage(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $user = Auth::user();
 
-        if (!$user->canAdvertise()) {
+        if (! $user->canAdvertise()) {
             return response()->json([
                 'success' => false,
                 'message' => 'La publicidad está disponible solo para usuarios Prestador con estado Activo o Prueba.',
             ], 403);
         }
 
-        if (!$user->provider) {
+        if (! $user->provider) {
             return response()->json(['success' => false, 'message' => 'Primero debés configurar tu perfil de proveedor.'], 400);
         }
 
@@ -155,14 +156,14 @@ class ProfileController extends Controller
 
         $file = $request->file('image');
         $ext = strtolower($file->getClientOriginalExtension());
-        $filename = 'provider_' . $user->provider->id . '.' . $ext;
+        $filename = 'provider_'.$user->provider->id.'.'.$ext;
         $destDir = public_path('images/publicidad');
-        if (!is_dir($destDir)) {
+        if (! is_dir($destDir)) {
             mkdir($destDir, 0755, true);
         }
         $file->move($destDir, $filename);
 
-        $fullPath = $destDir . '/' . $filename;
+        $fullPath = $destDir.'/'.$filename;
         $this->resizeImage($fullPath, $ext, 200);
 
         ProviderImage::where('provider_id', $user->provider->id)
@@ -186,17 +187,17 @@ class ProfileController extends Controller
 
     public function destroyImage(ProviderImage $image)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $user = Auth::user();
 
-        if (!$user->provider || $image->provider_id !== $user->provider->id) {
+        if (! $user->provider || $image->provider_id !== $user->provider->id) {
             return response()->json(['success' => false, 'message' => 'Imagen no encontrada.'], 404);
         }
 
-        $fullPath = public_path('images/publicidad/' . $image->image_path);
+        $fullPath = public_path('images/publicidad/'.$image->image_path);
         if (file_exists($fullPath)) {
             unlink($fullPath);
         }
@@ -211,7 +212,7 @@ class ProfileController extends Controller
 
     public function getProviderSubgroups()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -240,13 +241,13 @@ class ProfileController extends Controller
 
     public function toggleProviderSubgroup(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $user = Auth::user();
 
-        if (!$user->typeUser || strcasecmp((string) $user->typeUser->description, 'Prestador') !== 0) {
+        if (! $user->typeUser || strcasecmp((string) $user->typeUser->description, 'Prestador') !== 0) {
             return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar categorías.'], 403);
         }
 
@@ -258,7 +259,7 @@ class ProfileController extends Controller
 
         // El prestador todavía no guardó "Datos del Negocio": lo damos de alta
         // para poder vincularle categorías desde el primer ingreso.
-        if (!$provider) {
+        if (! $provider) {
             $provider = Provider::create([
                 'user_id' => $user->id,
                 'business_name' => trim((string) $user->name) !== '' ? trim((string) $user->name) : 'Mi negocio',
@@ -285,9 +286,79 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function getServiceTypes()
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $types = ServiceType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['id', 'code', 'name', 'description']);
+
+        $selected = [];
+
+        if (Auth::user()->provider) {
+            $selected = Auth::user()->provider->serviceTypes()->pluck('service_types.id')->all();
+        }
+
+        return response()->json([
+            'success' => true,
+            'service_types' => $types,
+            'selected' => $selected,
+        ]);
+    }
+
+    public function toggleServiceType(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+
+        if (! $user->typeUser || strcasecmp((string) $user->typeUser->description, 'Prestador') !== 0) {
+            return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar tipos de servicio.'], 403);
+        }
+
+        $request->validate([
+            'service_type_id' => 'required|exists:service_types,id',
+        ]);
+
+        $provider = $user->provider;
+
+        // El prestador todavía no guardó "Datos del Negocio": lo damos de alta
+        // para poder vincularle tipos de servicio desde el primer ingreso.
+        if (! $provider) {
+            $provider = Provider::create([
+                'user_id' => $user->id,
+                'business_name' => trim((string) $user->name) !== '' ? trim((string) $user->name) : 'Mi negocio',
+                'is_active' => true,
+            ]);
+        }
+
+        $serviceTypeId = $request->service_type_id;
+
+        $exists = $provider->serviceTypes()->where('service_type_id', $serviceTypeId)->exists();
+
+        if ($exists) {
+            $provider->serviceTypes()->detach($serviceTypeId);
+            $message = 'Tipo de servicio removido correctamente.';
+        } else {
+            $provider->serviceTypes()->attach($serviceTypeId);
+            $message = 'Tipo de servicio agregado correctamente.';
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'selected' => $provider->serviceTypes()->pluck('service_types.id')->all(),
+        ]);
+    }
+
     public function getAddress()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -300,7 +371,7 @@ class ProfileController extends Controller
 
     public function saveAddress(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -347,7 +418,7 @@ class ProfileController extends Controller
 
     public function getCountries()
     {
-        $countries = \App\Models\Country::where('is_active', true)->orderBy('name')->get(['id', 'iso_code', 'name']);
+        $countries = Country::where('is_active', true)->orderBy('name')->get(['id', 'iso_code', 'name']);
 
         return response()->json($countries);
     }
@@ -358,7 +429,7 @@ class ProfileController extends Controller
             'country_id' => 'required|exists:countries,id',
         ]);
 
-        $regions = \App\Models\Region::where('country_id', $request->country_id)
+        $regions = Region::where('country_id', $request->country_id)
             ->orderBy('name')
             ->get(['id', 'name', 'type']);
 
@@ -368,11 +439,15 @@ class ProfileController extends Controller
     private function resizeImage(string $path, string $ext, int $maxWidth)
     {
         $info = @getimagesize($path);
-        if (!$info) return;
+        if (! $info) {
+            return;
+        }
 
         $origW = $info[0];
         $origH = $info[1];
-        if ($origW <= $maxWidth) return;
+        if ($origW <= $maxWidth) {
+            return;
+        }
 
         $newW = $maxWidth;
         $newH = (int) round($origH * ($maxWidth / $origW));
@@ -383,7 +458,9 @@ class ProfileController extends Controller
             'webp' => imagecreatefromwebp($path),
             default => null,
         };
-        if (!$src) return;
+        if (! $src) {
+            return;
+        }
 
         $dst = imagecreatetruecolor($newW, $newH);
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);

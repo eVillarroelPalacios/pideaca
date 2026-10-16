@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CountriesAndRegionsSeeder::class,
             UsuariosPageSeeder::class,
+            ServiceTypeSeeder::class,
             FastDeliverySeeder::class,
             FastDeliveryPagesSeeder::class,
             EstadosDeLosGruposPageSeeder::class,

@@ -41,6 +41,8 @@
                         <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
                         @elseif($module->description === 'Comercio & Gastronomía')
                         <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+                        @elseif($module->description === 'Servicios del Hogar & Bienestar')
+                        <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
                         @endif
                         {{ $module->description }}
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
@@ -77,6 +79,8 @@
                             <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
                             @elseif($module->description === 'Comercio & Gastronomía')
                             <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+                            @elseif($module->description === 'Servicios del Hogar & Bienestar')
+                            <span style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
                             @endif
                             {{ $module->description }}
                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
@@ -379,6 +383,16 @@
                                             <span class="save-msg" id="categorias-msg"></span>
                                         </div>
                                     </div>
+
+                                    <div class="pcard" id="service-types-card" style="display:none;margin-top:16px;">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> Tipos de servicio</h3>
+                                        <p class="pcard-sub">Marcá los tipos de servicio que ofrecés: urgencias, citas programadas y/o presupuestos. Podés elegir uno o varios.</p>
+                                        <div id="service-types-loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">Cargando tipos de servicio...</div>
+                                        <div id="service-types-list" style="display:none;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;"></div>
+                                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:16px;">
+                                            <span class="save-msg" id="service-types-msg"></span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="profile-panel{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion">
@@ -528,6 +542,8 @@
             @include('dashboard.sections.mi-catalogo')
                     @elseif($page->url === 'pedidos')
             @include('dashboard.sections.pedidos')
+                    @elseif($page->url === 'gestionar-solicitudes')
+            @include('dashboard.sections.gestionar-solicitudes')
                     @elseif($page->url === 'inventario')
             @include('dashboard.sections.inventario')
                     @elseif($page->url === 'comercios')
@@ -544,6 +560,12 @@
             @include('partials.mis-suscripciones')
                     @elseif($page->url === 'reportes')
             @include('dashboard.sections.reportes')
+                    @elseif($page->url === 'solicitar-servicio')
+            @include('dashboard.sections.solicitar-servicio')
+                    @elseif($page->url === 'mis-servicios')
+            @include('dashboard.sections.mis-servicios')
+                    @elseif($page->url === 'ordenes-servicio')
+            @include('dashboard.sections.ordenes-servicio')
                     @elseif($page->url)
             @include('dashboard.sections.default')
                     @endif
@@ -9741,7 +9763,12 @@
         .then(function(data) {
             loading.style.display = 'none';
             list.style.display = 'block';
-            renderProviderSubgroups(list, data, { msgId: 'categorias-msg' });
+            fdHogarSubgroupIds = collectHogarSubgroupIds(data.groups);
+            renderProviderSubgroups(list, data, {
+                msgId: 'categorias-msg',
+                onSelectionChange: updateServiceTypesCardVisibility
+            });
+            updateServiceTypesCardVisibility(data.selected);
         })
         .catch(function() {
             loading.textContent = 'Error al cargar categorías.';
@@ -9827,6 +9854,125 @@
         .catch(function() {
             cb.checked = !cb.checked;
             showMsg(msgId, 'Error de conexión.', false);
+        });
+    }
+
+    // ---------- Tipos de servicio (Módulo B) ----------
+
+    var fdHogarSubgroupIds = [];
+    var fdServiceTypesLoaded = false;
+
+    // La seccion "Tipos de servicio" solo se muestra si el prestador tiene
+    // marcado al menos un subgrupo del grupo de Hogar & Bienestar.
+    function isHogarGroup(group) {
+        return String((group && group.description) || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase() === 'servicios del hogar & bienestar';
+    }
+
+    function collectHogarSubgroupIds(groups) {
+        var ids = [];
+        (groups || []).forEach(function(group) {
+            if (!isHogarGroup(group)) return;
+            (group.subgroups || []).forEach(function(s) { ids.push(s.id); });
+        });
+        return ids;
+    }
+
+    function updateServiceTypesCardVisibility(selected) {
+        var card = document.getElementById('service-types-card');
+        if (!card) return;
+        var sel = selected || [];
+        var visible = fdHogarSubgroupIds.some(function(id) { return sel.indexOf(id) >= 0; });
+        card.style.display = visible ? '' : 'none';
+        if (visible && !fdServiceTypesLoaded) {
+            fdServiceTypesLoaded = true;
+            loadServiceTypes();
+        }
+    }
+
+    function loadServiceTypes() {
+        var list = document.getElementById('service-types-list');
+        var loading = document.getElementById('service-types-loading');
+        if (!list || !loading) return;
+
+        fetch('{{ url("/profile/service-types") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            loading.style.display = 'none';
+            list.style.display = 'grid';
+            renderServiceTypes(list, data);
+        })
+        .catch(function() {
+            loading.textContent = 'Error al cargar los tipos de servicio.';
+        });
+    }
+
+    function renderServiceTypes(list, data) {
+        list.innerHTML = '';
+
+        var types = (data && data.service_types) || [];
+
+        if (!types.length) {
+            list.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:20px;grid-column:1/-1;">No hay tipos de servicio disponibles.</p>';
+            return;
+        }
+
+        types.forEach(function(type) {
+            var isSelected = (data.selected || []).indexOf(type.id) >= 0;
+            var label = document.createElement('label');
+            label.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid ' + (isSelected ? '#D24C19' : '#e2e8f0') + ';background:' + (isSelected ? '#fff7ed' : '#fff') + ';cursor:pointer;transition:all .15s;';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = isSelected;
+            cb.style.cssText = 'accent-color:#D24C19;width:15px;height:15px;cursor:pointer;margin-top:2px;';
+            cb.addEventListener('change', function() {
+                toggleServiceType(type.id, label, cb);
+            });
+            var info = document.createElement('span');
+            info.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
+            var name = document.createElement('span');
+            name.className = 'fd-st-name';
+            name.style.cssText = 'font-size:13px;font-weight:700;color:' + (isSelected ? '#D24C19' : '#0f172a') + ';';
+            name.textContent = type.name;
+            var desc = document.createElement('span');
+            desc.style.cssText = 'font-size:11px;color:#64748b;line-height:1.35;';
+            desc.textContent = type.description || '';
+            info.appendChild(name);
+            info.appendChild(desc);
+            label.appendChild(cb);
+            label.appendChild(info);
+            list.appendChild(label);
+        });
+    }
+
+    function toggleServiceType(serviceTypeId, labelEl, cb) {
+        fetch('{{ url("/profile/service-types/toggle") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            body: JSON.stringify({ service_type_id: serviceTypeId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                var isSelected = data.selected.indexOf(serviceTypeId) >= 0;
+                labelEl.style.borderColor = isSelected ? '#D24C19' : '#e2e8f0';
+                labelEl.style.background = isSelected ? '#fff7ed' : '#fff';
+                labelEl.querySelector('.fd-st-name').style.color = isSelected ? '#D24C19' : '#0f172a';
+                cb.checked = isSelected;
+                showMsg('service-types-msg', data.message, true);
+            } else {
+                cb.checked = !cb.checked;
+                showMsg('service-types-msg', data.message || 'Error al guardar.', false);
+            }
+        })
+        .catch(function() {
+            cb.checked = !cb.checked;
+            showMsg('service-types-msg', 'Error de conexión.', false);
         });
     }
 

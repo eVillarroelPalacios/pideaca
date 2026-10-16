@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Provider extends Model
@@ -18,6 +19,7 @@ class Provider extends Model
         'description',
         'banner_image',
         'rating',
+        'balance',
         'promo',
         'phone',
         'whatsapp',
@@ -30,6 +32,7 @@ class Provider extends Model
     protected $casts = [
         'hours' => 'array',
         'rating' => 'decimal:2',
+        'balance' => 'decimal:2',
         'is_active' => 'boolean',
         'has_inventory_control' => 'boolean',
     ];
@@ -64,6 +67,11 @@ class Provider extends Model
         return $this->belongsToMany(SubGroup::class, 'provider_subgroups', 'provider_id', 'subgroup_id');
     }
 
+    public function serviceTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(ServiceType::class, 'provider_service_types', 'provider_id', 'service_type_id');
+    }
+
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class)->orderBy('sort_order');
@@ -77,6 +85,11 @@ class Provider extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class)->latest();
+    }
+
+    public function serviceOrders(): HasMany
+    {
+        return $this->hasMany(ServiceOrder::class, 'merchant_id')->latest();
     }
 
     public function subscriptionPlans(): HasMany

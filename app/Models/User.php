@@ -150,6 +150,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class)->latest();
     }
 
+    public function serviceOrders()
+    {
+        return $this->hasMany(ServiceOrder::class, 'customer_id')->latest();
+    }
+
     public function marketingLogs()
     {
         return $this->hasMany(MarketingLog::class);

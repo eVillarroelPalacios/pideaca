@@ -19,12 +19,15 @@ class EnsurePageAccess
         $user = $request->user();
 
         if (! $user) {
-            return response()->json(['error' => 'No autenticado'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado',
+            ], 401);
         }
 
         if (! $user->hasPageUrl(...$pages)) {
             return response()->json([
-                'error' => 'No autorizado',
+                'success' => false,
                 'message' => 'Tu usuario no tiene la pagina requerida para esta operacion.',
             ], 403);
         }

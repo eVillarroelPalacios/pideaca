@@ -22,6 +22,8 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ServiceBookingController;
+use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\SubGroupController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TypeUserController;
@@ -142,6 +144,8 @@ Route::post('/profile/images', [ProfileController::class, 'storeImage'])->name('
 Route::delete('/profile/images/{image}', [ProfileController::class, 'destroyImage'])->name('profile.images.destroy');
 Route::get('/profile/subgroups', [ProfileController::class, 'getProviderSubgroups'])->name('profile.subgroups.index');
 Route::post('/profile/subgroups/toggle', [ProfileController::class, 'toggleProviderSubgroup'])->name('profile.subgroups.toggle');
+Route::get('/profile/service-types', [ProfileController::class, 'getServiceTypes'])->middleware('page:ordenes-servicio')->name('profile.service-types.index');
+Route::post('/profile/service-types/toggle', [ProfileController::class, 'toggleServiceType'])->middleware('page:ordenes-servicio')->name('profile.service-types.toggle');
 Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('profile.address.index');
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
 Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
@@ -226,4 +230,49 @@ Route::middleware('page:reportes')->group(function () {
     Route::get('/api/v1/customer/reports/subscriptions', [ReportController::class, 'getActiveSubscriptions'])->name('api.customer.reports.subscriptions');
     Route::get('/api/v1/customer/reports/order-history', [ReportController::class, 'getOrderHistoryAndReorder'])->name('api.customer.reports.order-history');
     Route::get('/api/v1/customer/reports/nutritional', [ReportController::class, 'getNutritionalSummary'])->name('api.customer.reports.nutritional');
+});
+
+// Modulo B - solicitud de servicios (pagina "solicitar-servicio" del Cliente).
+// El acceso a la API sigue la misma pagina que arma el menu del dashboard.
+Route::middleware('page:solicitar-servicio')->group(function () {
+    Route::get('/api/v1/service-subgroups', [ServiceBookingController::class, 'getServiceSubgroups'])->name('api.service-subgroups');
+    Route::get('/api/v1/service-providers', [ServiceBookingController::class, 'getServiceProviders'])->name('api.service-providers');
+    Route::post('/api/v1/customer/service-orders/emergency', [ServiceOrderController::class, 'requestEmergencyService'])->name('api.customer.service-orders.emergency');
+    Route::post('/api/v1/customer/service-orders/scheduled', [ServiceBookingController::class, 'bookScheduledService'])->name('api.customer.service-orders.scheduled');
+    Route::post('/api/v1/customer/service-orders/quote', [ServiceBookingController::class, 'requestQuote'])->name('api.customer.service-orders.quote');
+});
+
+// Modulo B - flujo de urgencias 24/7 (seguimiento y cierre del trabajo).
+// La autenticacion y el rol (cliente / prestador) se resuelven dentro del
+// controlador, igual que el resto de los endpoints /api/v1 de este proyecto.
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/accept', [ServiceOrderController::class, 'acceptEmergencyRequest'])->name('api.provider.service-orders.accept');
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/onsite-estimate', [ServiceOrderController::class, 'addOnsiteEstimate'])->name('api.provider.service-orders.onsite-estimate');
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/approve-onsite-estimate', [ServiceOrderController::class, 'approveOnsiteEstimate'])->name('api.customer.service-orders.approve-onsite-estimate');
+
+// Modulo B - citas programadas y presupuestos a medida.
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/quote-proposal', [ServiceBookingController::class, 'submitQuoteProposal'])->name('api.provider.service-orders.quote-proposal');
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/accept-quote', [ServiceBookingController::class, 'acceptQuoteProposal'])->name('api.customer.service-orders.accept-quote');
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/reject-quote', [ServiceBookingController::class, 'rejectQuote'])->name('api.customer.service-orders.reject-quote');
+
+// Modulo B - cancelacion de orden por parte del cliente.
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/cancel', [ServiceOrderController::class, 'cancelService'])->name('api.customer.service-orders.cancel');
+
+// Modulo B - cierre de trabajo, liberacion de escrow y calificaciones.
+// El rol (merchant / customer) se valida dentro del controlador, igual que
+// el resto de los endpoints /api/v1 del modulo.
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/complete', [ServiceOrderController::class, 'completeService'])->name('api.provider.service-orders.complete');
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/confirm-release', [ServiceOrderController::class, 'confirmAndReleasePayment'])->name('api.customer.service-orders.confirm-release');
+Route::post('/api/v1/customer/service-orders/{serviceOrder}/rate', [ServiceOrderController::class, 'rateService'])->name('api.customer.service-orders.rate');
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/rate', [ServiceOrderController::class, 'rateService'])->name('api.provider.service-orders.rate');
+
+// Modulo B - el prestador consulta sus ordenes de servicio (pagina
+// "Ordenes de Servicio"). El acceso sigue la pagina que arma el menu.
+Route::middleware('page:ordenes-servicio')->group(function () {
+    Route::get('/api/v1/provider/service-orders', [ServiceOrderController::class, 'indexForProvider'])->name('api.provider.service-orders.index');
+});
+
+// Modulo B - el cliente consulta sus propias ordenes de servicio (pagina
+// "Mis Servicios"). El acceso sigue la pagina que arma el menu.
+Route::middleware('page:mis-servicios')->group(function () {
+    Route::get('/api/v1/customer/service-orders', [ServiceOrderController::class, 'indexForCustomer'])->name('api.customer.service-orders.index');
 });
