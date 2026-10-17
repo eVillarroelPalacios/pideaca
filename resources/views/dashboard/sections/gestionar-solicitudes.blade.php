@@ -48,6 +48,8 @@
 
     var providerId = sec.getAttribute('data-provider-id');
     var currentFilter = 'pending';
+    var summaryEl = document.getElementById('fd-gs-summary');
+    var summaryName = summaryEl ? summaryEl.textContent.trim() : '';
     var STATUS_LABEL = {
         pending: 'Pendiente',
         confirmed: 'Confirmado',
@@ -56,6 +58,26 @@
         delivered: 'Entregado',
         cancelled: 'Cancelado'
     };
+    var SERVICE_TYPE_LABEL = { EMERGENCY: 'Urgencia', SCHEDULED: 'Cita', QUOTE: 'Presupuesto' };
+    var SERVICE_TYPE_COLOR = { EMERGENCY: '#b91c1c', SCHEDULED: '#1d4ed8', QUOTE: '#6d28d9' };
+    var SERVICE_GROUP = {
+        REQUESTED: 'pending',
+        QUOTED: 'pending',
+        ACCEPTED: 'confirmed',
+        PROVIDER_DISPATCHED: 'confirmed',
+        IN_PROGRESS: 'confirmed',
+        COMPLETED: 'confirmed',
+        CANCELLED: 'cancelled'
+    };
+    var COMMERCE_GROUP = {
+        pending: 'pending',
+        confirmed: 'confirmed',
+        in_preparation: 'confirmed',
+        on_the_way: 'confirmed',
+        delivered: 'confirmed',
+        cancelled: 'cancelled'
+    };
+    var GROUP_COLOR = { pending: '#b45309', confirmed: '#047857', cancelled: '#b91c1c' };
 
     function esc(value) {
         if (window.escapeHtml) return window.escapeHtml(value);
@@ -67,6 +89,11 @@
     function money(value) {
         var n = parseFloat(value || 0);
         return '$' + n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+    }
+
+    function fmtDate(iso) {
+        var d = new Date(iso);
+        return isNaN(d.getTime()) ? '' : d.toLocaleString('es-AR');
     }
 
     function show(id, on) {
@@ -85,9 +112,22 @@
         box.style.display = '';
     }
 
+    function groupBadge(group, label) {
+        var color = GROUP_COLOR[group] || '#6b7280';
+        return '<span style="display:inline-block;font-size:11px;font-weight:700;color:' + color + ';background:' + color + '1a;border-radius:9999px;padding:2px 9px;">' + esc(label) + '</span>';
+    }
+
     function statusBadge(status) {
-        var color = { pending: '#b45309', confirmed: '#047857', in_preparation: '#1d4ed8', on_the_way: '#6d28d9', delivered: '#047857', cancelled: '#b91c1c' }[status] || '#6b7280';
-        return '<span style="display:inline-block;font-size:11px;font-weight:700;color:' + color + ';background:' + color + '1a;border-radius:9999px;padding:2px 9px;">' + esc(STATUS_LABEL[status] || status) + '</span>';
+        return groupBadge(COMMERCE_GROUP[status] || '', STATUS_LABEL[status] || status);
+    }
+
+    function serviceBadge(order) {
+        return groupBadge(SERVICE_GROUP[order.status] || '', order.status_label || order.status);
+    }
+
+    function typeBadge(type) {
+        var color = SERVICE_TYPE_COLOR[type] || '#6b7280';
+        return '<span style="display:inline-block;font-size:11px;font-weight:700;color:' + color + ';background:' + color + '1a;border-radius:9999px;padding:2px 9px;">' + esc(SERVICE_TYPE_LABEL[type] || type) + '</span>';
     }
 
     function itemsSummary(items) {
@@ -106,7 +146,7 @@
         return text.trim();
     }
 
-    function card(order) {
+    function commerceCard(order) {
         var pending = order.status === 'pending';
         var actions = '';
         if (pending) {
@@ -126,13 +166,65 @@
                 '</div>' +
                 '<div style="text-align:right;">' +
                     '<p style="font-size:15px;font-weight:700;color:#0f172a;margin:0;">' + money(order.total) + '</p>' +
-                    '<p style="font-size:11px;color:#6b7280;margin:2px 0 0;">' + esc(new Date(order.created_at).toLocaleString('es-AR')) + '</p>' +
+                    '<p style="font-size:11px;color:#6b7280;margin:2px 0 0;">' + esc(fmtDate(order.created_at)) + '</p>' +
                 '</div>' +
             '</div>' +
             '<p style="font-size:12px;color:#374151;margin:10px 0 0;">' + esc(itemsSummary(order.items)) + '</p>' +
             (order.notes ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;font-style:italic;">Nota: ' + esc(order.notes) + '</p>' : '') +
             actions +
         '</div>';
+    }
+
+    function serviceCard(order) {
+        var total = parseFloat(order.total_amount || 0);
+        var quotePrice = order.quote ? parseFloat(order.quote.proposed_price || 0) : 0;
+        var amount = total > 0 ? total : (quotePrice > 0 ? quotePrice : 0);
+
+        var actions = '';
+        if (order.status === 'REQUESTED' && (order.order_type === 'EMERGENCY' || order.order_type === 'SCHEDULED')) {
+            var label = order.order_type === 'SCHEDULED' ? 'Aceptar cita' : 'Aceptar solicitud';
+            var acceptBtn = '<button type="button" onclick="window.fdGsAccept(' + order.id + ')" style="background:#047857;color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">' + esc(label) + '</button>';
+            actions = '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">' + acceptBtn + '</div>';
+        }
+
+        var note = '';
+        if (order.status === 'QUOTED') {
+            note = 'Esperando la confirmación del cliente.';
+        } else if (order.order_type === 'QUOTE' && order.status === 'REQUESTED') {
+            note = 'Esperando las propuestas de los profesionales.';
+        }
+
+        return '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:10px;">' +
+            '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">' +
+                '<div style="min-width:0;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+                        '<strong style="font-size:14px;color:#0f172a;">Servicio #' + esc(order.id) + '</strong>' +
+                        typeBadge(order.order_type) +
+                        serviceBadge(order) +
+                    '</div>' +
+                    '<p style="font-size:12px;color:#6b7280;margin:4px 0 0;">' + esc((order.customer && order.customer.name) || 'Cliente') + ' · ' + esc((order.sub_group && order.sub_group.description) || '') + '</p>' +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                    (amount > 0 ? '<p style="font-size:15px;font-weight:700;color:#0f172a;margin:0;">' + money(amount) + '</p>' : '') +
+                    '<p style="font-size:11px;color:#6b7280;margin:2px 0 0;">' + esc(fmtDate(order.created_at)) + '</p>' +
+                '</div>' +
+            '</div>' +
+            (order.description ? '<p style="font-size:12px;color:#374151;margin:10px 0 0;">' + esc(order.description) + '</p>' : '') +
+            (order.scheduled_at ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">Programado: ' + esc(fmtDate(order.scheduled_at)) + '</p>' : '') +
+            (note ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;font-style:italic;">' + esc(note) + '</p>' : '') +
+            actions +
+        '</div>';
+    }
+
+    function renderItem(item) {
+        return item.source === 'service' ? serviceCard(item.raw) : commerceCard(item.raw);
+    }
+
+    function getJson(url) {
+        return fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (res) { return res.json().catch(function () { return {}; }); })
+            .then(function (json) { return { ok: !!(json && json.success), json: json || {} }; })
+            .catch(function () { return { ok: false, json: {} }; });
     }
 
     window.fdGsFilter = function (filter) {
@@ -165,6 +257,25 @@
         });
     };
 
+    window.fdGsAccept = function (orderId) {
+        if (!window.confirm('¿Seguro que querés aceptar esta solicitud?')) return;
+
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        var opts = { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': meta ? meta.content : '' }, body: JSON.stringify({}) };
+        var url = '{{ url('/api/v1/provider/service-orders') }}/' + orderId + '/accept';
+
+        fetch(url, opts).then(function (res) { return res.json().catch(function () { return {}; }); }).then(function (json) {
+            if (json && json.success) {
+                message(json.message || 'Solicitud aceptada.', true);
+            } else {
+                message((json && json.message) || 'No se pudo aceptar la solicitud.', false);
+            }
+            window.fdGsLoad();
+        }).catch(function () {
+            message('No se pudo aceptar la solicitud. Intenta nuevamente.', false);
+        });
+    };
+
     window.fdGsLoad = function () {
         if (!providerId) {
             show('fd-gs-loading', false);
@@ -178,45 +289,67 @@
         show('fd-gs-empty', false);
         show('fd-gs-loading', true);
 
-        var params = 'per_page=50';
-        if (currentFilter !== 'all') params += '&status=' + encodeURIComponent(currentFilter);
-        fetch('{{ url('/api/providers') }}/' + providerId + '/orders?' + params, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-            .then(function (res) { return res.json().catch(function () { return {}; }); })
-            .then(function (json) {
-                show('fd-gs-loading', false);
+        var servicesUrl = '{{ url('/api/v1/provider/service-orders') }}?per_page=50';
+        var commerceUrl = '{{ url('/api/providers') }}/' + providerId + '/orders?per_page=50';
 
-                if (!json || !json.success) {
-                    show('fd-gs-list', false);
-                    show('fd-gs-empty', true);
-                    message((json && json.message) || 'No se pudieron cargar las solicitudes.', false);
-                    return;
-                }
+        Promise.all([getJson(servicesUrl), getJson(commerceUrl)]).then(function (results) {
+            show('fd-gs-loading', false);
 
-                var orders = json.orders || [];
-                var list = document.getElementById('fd-gs-list');
-                var badge = document.getElementById('fd-gs-count-pending');
+            var services = results[0];
+            var commerce = results[1];
 
-                var pendingCount = orders.filter(function (o) { return o.status === 'pending'; }).length;
-                if (currentFilter === 'pending' && badge) {
-                    badge.textContent = String(pendingCount);
-                    badge.style.display = pendingCount > 0 ? '' : 'none';
-                }
-
-                if (!orders.length) {
-                    list.style.display = 'none';
-                    show('fd-gs-empty', true);
-                    return;
-                }
-
-                list.innerHTML = orders.map(card).join('');
-                list.style.display = '';
-            })
-            .catch(function () {
-                show('fd-gs-loading', false);
+            if (!services.ok && !commerce.ok) {
                 show('fd-gs-list', false);
                 show('fd-gs-empty', true);
                 message('No se pudieron cargar las solicitudes. Intenta nuevamente.', false);
+                return;
+            }
+
+            var items = [];
+            var serviceOrders = (services.json.data && services.json.data.orders) || [];
+            var commerceOrders = commerce.json.orders || [];
+
+            serviceOrders.forEach(function (order) {
+                items.push({ source: 'service', group: SERVICE_GROUP[order.status] || '', created: order.created_at, raw: order });
             });
+            commerceOrders.forEach(function (order) {
+                items.push({ source: 'commerce', group: COMMERCE_GROUP[order.status] || '', created: order.created_at, raw: order });
+            });
+            items.sort(function (a, b) { return Date.parse(b.created || 0) - Date.parse(a.created || 0); });
+
+            var pendingCount = items.filter(function (item) { return item.group === 'pending'; }).length;
+            var badge = document.getElementById('fd-gs-count-pending');
+            if (badge) {
+                badge.textContent = String(pendingCount);
+                badge.style.display = pendingCount > 0 ? '' : 'none';
+            }
+            if (summaryEl) {
+                summaryEl.textContent = summaryName + ' · ' + pendingCount + ' pendiente' + (pendingCount === 1 ? '' : 's') + ' · ' + items.length + ' solicitud' + (items.length === 1 ? '' : 'es');
+            }
+
+            if (!services.ok || !commerce.ok) {
+                message('Algunas solicitudes no se pudieron cargar. Intenta nuevamente.', false);
+            }
+
+            var list = document.getElementById('fd-gs-list');
+            var visible = currentFilter === 'all'
+                ? items
+                : items.filter(function (item) { return item.group === currentFilter; });
+
+            if (!visible.length) {
+                list.style.display = 'none';
+                show('fd-gs-empty', true);
+                return;
+            }
+
+            list.innerHTML = visible.map(renderItem).join('');
+            list.style.display = '';
+        }).catch(function () {
+            show('fd-gs-loading', false);
+            show('fd-gs-list', false);
+            show('fd-gs-empty', true);
+            message('No se pudieron cargar las solicitudes. Intenta nuevamente.', false);
+        });
     };
 
     window.addEventListener('load', function () {

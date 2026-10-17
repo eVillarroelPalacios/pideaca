@@ -216,6 +216,27 @@ class ServiceOrderProviderListTest extends TestCase
         $this->assertStringContainsString('id="fd-os-pool"', $html);
     }
 
+    public function test_seccion_gestion_carga_las_solicitudes_de_servicio_del_prestador(): void
+    {
+        $pagina = Page::firstOrCreate(
+            ['url' => 'gestionar-solicitudes'],
+            ['description' => 'Gestion', 'module_id' => Module::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar'], ['icon' => null])->id]
+        );
+        $this->providerUser->pages()->attach($pagina->id);
+
+        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+
+        $this->assertStringContainsString('id="dash-gestionar-solicitudes"', $html);
+        $this->assertStringContainsString('id="fd-gs-list"', $html);
+        // La gestion (modulo Hogar) se alimenta del listado de solicitudes de servicio...
+        $this->assertStringContainsString('/api/v1/provider/service-orders', $html);
+        $this->assertStringContainsString('/service-orders/\' + orderId + \'/accept', $html);
+        // ...y sigue sumando las ordenes del comercio si las hubiera.
+        $this->assertStringContainsString('/orders?per_page=50', $html);
+        $this->assertStringContainsString('window.fdGsAccept', $html);
+        $this->assertStringContainsString('window.fdGsDecide', $html);
+    }
+
     private function crearOrden(array $overrides = []): ServiceOrder
     {
         return ServiceOrder::create(array_merge([
