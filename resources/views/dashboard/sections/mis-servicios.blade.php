@@ -274,7 +274,7 @@
         var orderId = panel.getAttribute('data-order-id');
         var btn = panel.querySelector('.fd-mis-send');
 
-        postJson('/api/v1/customer/service-orders/' + orderId + '/' + PATH.rate, { stars: stars, comment: comment }, btn, function (json) {
+        postJson('{{ url('/api/v1/customer/service-orders') }}/' + orderId + '/' + PATH.rate, { stars: stars, comment: comment }, btn, function (json) {
             if (json.success) {
                 panel.style.display = 'none';
                 message('Gracias por calificar al prestador.', true);
@@ -302,7 +302,7 @@
 
         if (CONFIRMA[act] && !window.confirm(CONFIRMA[act])) return;
 
-        postJson('/api/v1/customer/service-orders/' + orderId + '/' + PATH[act], {}, btn, function (json) {
+        postJson('{{ url('/api/v1/customer/service-orders') }}/' + orderId + '/' + PATH[act], {}, btn, function (json) {
             if (json.success) {
                 message(json.message || 'Acción realizada.', true);
                 window.fdMisLoad();
@@ -325,7 +325,7 @@
             + (status ? '&status=' + encodeURIComponent(status) : '')
             + (tipo ? '&order_type=' + encodeURIComponent(tipo) : '');
 
-        fetch('/api/v1/customer/service-orders?' + qs, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        fetch('{{ url('/api/v1/customer/service-orders') }}?' + qs, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json().catch(function () { return {}; }); })
             .then(function (json) {
                 show('fd-mis-loading', false);

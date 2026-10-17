@@ -149,7 +149,7 @@
         var label = status === 'confirmed' ? 'aceptar' : 'rechazar';
         if (!window.confirm('¿Seguro que querés ' + label + ' esta solicitud?')) return;
 
-        var url = '/api/orders/' + orderId + '/status';
+        var url = '{{ url('/api/orders') }}/' + orderId + '/status';
         var meta = document.querySelector('meta[name="csrf-token"]');
         var opts = { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': meta ? meta.content : '' }, body: JSON.stringify({ status: status }) };
 
@@ -180,7 +180,7 @@
 
         var params = 'per_page=50';
         if (currentFilter !== 'all') params += '&status=' + encodeURIComponent(currentFilter);
-        fetch('/api/providers/' + providerId + '/orders?' + params, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        fetch('{{ url('/api/providers') }}/' + providerId + '/orders?' + params, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
             .then(function (res) { return res.json().catch(function () { return {}; }); })
             .then(function (json) {
                 show('fd-gs-loading', false);

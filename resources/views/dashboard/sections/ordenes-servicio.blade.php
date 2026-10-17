@@ -273,7 +273,7 @@
 
     window.fdOsAccept = function (orderId) {
         if (!window.confirm('¿Aceptar este pedido para tu comercio?')) return;
-        postJson('/api/v1/provider/service-orders/' + orderId + '/accept', {}).then(function (json) {
+        postJson('{{ url('/api/v1/provider/service-orders') }}/' + orderId + '/accept', {}).then(function (json) {
             if (json && json.success) { message(json.message || 'Pedido aceptado.', true); }
             else { message((json && json.message) || 'No se pudo aceptar el pedido.', false); }
             window.fdOsLoad();
@@ -289,7 +289,7 @@
         if (act === 'estimate') {
             var cost = panel.querySelector('.fd-os-cost').value;
             if (!cost || parseFloat(cost) <= 0) { panelMsg(panel, 'Ingresá un precio válido.', false); return; }
-            postJson('/api/v1/provider/service-orders/' + id + '/onsite-estimate', {
+            postJson('{{ url('/api/v1/provider/service-orders') }}/' + id + '/onsite-estimate', {
                 additional_cost: parseFloat(cost),
                 details: panel.querySelector('.fd-os-details').value || null
             }).then(function (json) {
@@ -302,7 +302,7 @@
             var time = panel.querySelector('.fd-os-time').value;
             if (!price || parseFloat(price) <= 0) { panelMsg(panel, 'Ingresá un precio propuesto válido.', false); return; }
             if (!time) { panelMsg(panel, 'Ingresá el tiempo estimado.', false); return; }
-            postJson('/api/v1/provider/service-orders/' + id + '/quote-proposal', {
+            postJson('{{ url('/api/v1/provider/service-orders') }}/' + id + '/quote-proposal', {
                 proposed_price: parseFloat(price),
                 estimated_time: time,
                 details: panel.querySelector('.fd-os-qdetails').value || null
@@ -316,7 +316,7 @@
             if (!file) { panelMsg(panel, 'Adjuntá la foto comprobante.', false); return; }
             var fd = new FormData();
             fd.append('photo', file);
-            fetch('/api/v1/provider/service-orders/' + id + '/complete', {
+            fetch('{{ url('/api/v1/provider/service-orders') }}/' + id + '/complete', {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'X-CSRF-TOKEN': csrfToken() },
@@ -331,7 +331,7 @@
         } else if (act === 'rate') {
             var stars = parseInt(panel.getAttribute('data-stars'), 10) || 0;
             if (stars < 1) { panelMsg(panel, 'Elegí una puntuación de 1 a 5.', false); return; }
-            postJson('/api/v1/provider/service-orders/' + id + '/rate', {
+            postJson('{{ url('/api/v1/provider/service-orders') }}/' + id + '/rate', {
                 stars: stars,
                 comment: panel.querySelector('.fd-os-comment').value || null
             }).then(function (json) {
@@ -356,7 +356,7 @@
         var status = sel ? sel.value : '';
         var qs = 'per_page=20' + (status ? '&status=' + encodeURIComponent(status) : '');
 
-        fetch('/api/v1/provider/service-orders?' + qs, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        fetch('{{ url('/api/v1/provider/service-orders') }}?' + qs, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json().catch(function () { return {}; }); })
             .then(function (json) {
                 show('fd-os-loading', false);
