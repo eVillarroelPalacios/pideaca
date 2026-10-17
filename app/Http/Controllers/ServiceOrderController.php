@@ -138,6 +138,10 @@ class ServiceOrderController extends Controller
             return $customer;
         }
 
+        // La urgencia no pide ni usa ubicacion: la ventana de solicitud no
+        // muestra coordenadas ni las envia, y el backend no las resuelve desde
+        // la direccion del perfil (quedan en null salvo que quien llama las
+        // mande expresamente).
         $data = $request->validate([
             'sub_group_id' => [
                 'nullable',
@@ -146,8 +150,8 @@ class ServiceOrderController extends Controller
                 Rule::exists('sub_groups', 'id')->whereIn('id', $this->serviceSubgroupIds()),
             ],
             'provider_id' => ['nullable', 'integer', 'exists:providers,id'],
-            'latitude' => ['required', 'numeric', 'min:-90', 'max:90'],
-            'longitude' => ['required', 'numeric', 'min:-180', 'max:180'],
+            'latitude' => ['nullable', 'numeric', 'min:-90', 'max:90'],
+            'longitude' => ['nullable', 'numeric', 'min:-180', 'max:180'],
             'photo' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'audio' => ['nullable', 'file', 'mimes:mp3,m4a,ogg,oga,webm,wav,aac', 'max:8192'],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -183,8 +187,8 @@ class ServiceOrderController extends Controller
                     'merchant_id' => $merchantId,
                     'order_type' => ServiceOrder::TYPE_EMERGENCY,
                     'status' => ServiceOrder::STATUS_REQUESTED,
-                    'latitude' => $data['latitude'],
-                    'longitude' => $data['longitude'],
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                     'escrow_status' => ServiceOrder::ESCROW_HOLDING,
                     'description' => $data['description'] ?? null,
                 ]);

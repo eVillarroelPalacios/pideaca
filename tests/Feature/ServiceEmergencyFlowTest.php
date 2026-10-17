@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Country;
 use App\Models\Group;
 use App\Models\Module;
 use App\Models\Page;
@@ -232,14 +233,42 @@ class ServiceEmergencyFlowTest extends TestCase
         $this->assertFileExists(public_path('images/servicios/'.$orden->audio_path));
     }
 
-    public function test_rechaza_urgencia_sin_gps_o_foto(): void
+    public function test_crea_urgencia_sin_ubicacion_y_sin_usar_la_direccion_del_perfil(): void
+    {
+        $pais = Country::create(['name' => 'Argentina', 'iso_code' => 'AR']);
+
+        $this->customer->addresses()->create([
+            'country_id' => $pais->id,
+            'street' => 'Av. Maipú',
+            'number' => '1234',
+            'latitude' => -34.6787,
+            'longitude' => -58.4734,
+            'is_primary' => true,
+        ]);
+
+        // La ventana de urgencia no pide ni envia ubicacion: la orden se crea
+        // sin coordenadas, sin importar las de la direccion del perfil.
+        $this->actingAs($this->customer)
+            ->post('/api/v1/customer/service-orders/emergency', [
+                'sub_group_id' => $this->subgroup->id,
+                'photo' => UploadedFile::fake()->image('problema.jpg'),
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(201);
+
+        $orden = ServiceOrder::query()->latest('id')->first();
+
+        $this->assertNull($orden->latitude);
+        $this->assertNull($orden->longitude);
+    }
+
+    public function test_rechaza_urgencia_sin_foto(): void
     {
         $this->actingAs($this->customer)
             ->post('/api/v1/customer/service-orders/emergency', [
                 'sub_group_id' => $this->subgroup->id,
             ], ['Accept' => 'application/json'])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['latitude', 'longitude', 'photo']);
+            ->assertJsonValidationErrors(['photo']);
 
         $this->enviarUrgencia(['latitude' => 999])->assertStatus(422);
     }

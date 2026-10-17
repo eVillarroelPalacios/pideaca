@@ -67,17 +67,6 @@
                 <textarea id="fd-solic-emergency-desc" rows="2" maxlength="1000" placeholder="Ej: Pérdida de gas bajo la bacha de la cocina" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;outline:none;"></textarea>
             </div>
             <div>
-                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Ubicación</label>
-                <div style="display:flex;gap:6px;align-items:center;">
-                    <input type="text" id="fd-solic-lat" placeholder="Latitud" inputmode="decimal" style="width:50%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;">
-                    <input type="text" id="fd-solic-lng" placeholder="Longitud" inputmode="decimal" style="width:50%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;">
-                </div>
-                <button type="button" onclick="fdSolicLocate()" style="margin-top:6px;background:#fff;color:#0c2a4d;border:1px solid #d1d5db;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    Usar mi ubicación actual
-                </button>
-            </div>
-            <div>
                 <label for="fd-solic-emergency-photo" style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Foto del problema (obligatoria, máx 5 MB)</label>
                 <input type="file" id="fd-solic-emergency-photo" accept="image/jpeg,image/png,image/webp" style="width:100%;font-size:12px;">
             </div>
@@ -504,24 +493,6 @@
             : 'Se cobra la seña (50%) cuando el profesional confirma el precio.';
     };
 
-    // ---------------------------------------------------------- GPS
-
-    window.fdSolicLocate = function () {
-        if (!navigator.geolocation) {
-            msg('error', 'Tu navegador no permite obtener la ubicación. Ingresá latitud y longitud a mano.');
-            return;
-        }
-
-        msg('ok', 'Obteniendo ubicación...');
-        navigator.geolocation.getCurrentPosition(function (position) {
-            document.getElementById('fd-solic-lat').value = position.coords.latitude.toFixed(7);
-            document.getElementById('fd-solic-lng').value = position.coords.longitude.toFixed(7);
-            msgHide();
-        }, function () {
-            msg('error', 'No se pudo obtener tu ubicación. Ingresá latitud y longitud a mano.');
-        }, { enableHighAccuracy: true, timeout: 10000 });
-    };
-
     // ---------------------------------------------------------- envios
 
     function firstError(data, fallback) {
@@ -555,24 +526,15 @@
         event.preventDefault();
         if (!fdSolicSelected) return false;
 
-        var lat = parseFloat(document.getElementById('fd-solic-lat').value);
-        var lng = parseFloat(document.getElementById('fd-solic-lng').value);
-
-        if (isNaN(lat) || isNaN(lng)) {
-            msg('error', 'Marcá tu ubicación con el botón o ingresá latitud y longitud.');
-            return false;
-        }
-
         var photo = document.getElementById('fd-solic-emergency-photo').files[0];
         if (!photo) {
             msg('error', 'Adjuntá una foto del problema.');
             return false;
         }
 
+        // La urgencia no envia ubicacion: la ventana no pide coordenadas.
         var form = new FormData();
         form.append('provider_id', fdSolicSelected.id);
-        form.append('latitude', lat);
-        form.append('longitude', lng);
         form.append('photo', photo);
         form.append('description', document.getElementById('fd-solic-emergency-desc').value || '');
 

@@ -539,6 +539,31 @@ class ClientPanelTest extends TestCase
         $this->assertStringContainsString('Av. Santa Fe', $addresses[0]['formatted']);
     }
 
+    public function test_save_address_persists_coordinates(): void
+    {
+        $pais = Country::where('iso_code', 'AR')->firstOrFail();
+
+        $this->actingAs($this->client)
+            ->putJson('/profile/address', [
+                'country_id' => $pais->id,
+                'street' => 'Av. Santa Fe',
+                'number' => '1234',
+                'latitude' => -34.6787,
+                'longitude' => -58.4734,
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertSame('-34.6787000', (string) $this->client->refresh()->primaryAddress->latitude);
+        $this->assertSame('-58.4734000', (string) $this->client->refresh()->primaryAddress->longitude);
+
+        $this->actingAs($this->client)
+            ->getJson('/profile/address')
+            ->assertOk()
+            ->assertJsonPath('address.latitude', '-34.6787000')
+            ->assertJsonPath('address.longitude', '-58.4734000');
+    }
+
     // --- Circuito completo ---
 
     public function test_client_browses_catalog_places_an_order_and_sees_it_in_mine(): void
