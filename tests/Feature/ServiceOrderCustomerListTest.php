@@ -222,6 +222,31 @@ class ServiceOrderCustomerListTest extends TestCase
         $this->assertStringContainsString("showDashSection('mis-servicios')", $html);
         $this->assertStringContainsString('/api/v1/customer/service-orders', $html);
         $this->assertStringContainsString('id="fd-mis-list"', $html);
+
+        // Se aisl la seccion con su script para no pisarse con las demas.
+        $start = strpos($html, 'id="dash-mis-servicios"');
+        $this->assertNotFalse($start);
+        $end = strpos($html, '</script>', $start);
+        $seccion = substr($html, $start, $end === false ? 12000 : $end - $start + 8);
+
+        // El boton Actualizar se elimino: la lista se refresca sola.
+        $this->assertStringNotContainsString('Actualizar', $seccion);
+        $this->assertStringContainsString('setInterval(autoRefresh, 10000)', $seccion);
+
+        // Diseño de Mis Pedidos: pestañas de hoy/historial, rango de fechas y
+        // stepper de pasos con la marca "Ahora".
+        $this->assertStringContainsString('id="fd-mis-tab-today"', $seccion);
+        $this->assertStringContainsString('id="fd-mis-tab-history"', $seccion);
+        $this->assertStringContainsString('id="fd-mis-date-from"', $seccion);
+        $this->assertStringContainsString('id="fd-mis-date-to"', $seccion);
+        $this->assertStringContainsString("'Ahora'", $seccion);
+        $this->assertStringContainsString('Servicio #', $seccion);
+
+        // Cancelar solicitud lleva icono (circulo con equis) y sin texto.
+        $this->assertStringContainsString("act: 'cancel'", $seccion);
+        $this->assertStringContainsString("label: ''", $seccion);
+        $this->assertStringContainsString('<circle cx="12" cy="12" r="10"/>', $seccion);
+        $this->assertStringContainsString('title="\' + esc(title) + \'"', $seccion);
     }
 
     private function crearOrden(array $overrides = []): ServiceOrder
