@@ -53,7 +53,7 @@ class PublicHomeTest extends TestCase
     {
         $user = User::create([
             'name' => $businessName,
-            'email' => str()->slug($businessName) . '@example.com',
+            'email' => str()->slug($businessName).'@example.com',
             'type_user_id' => $this->prestadorType->id,
             'user_status_id' => $this->userStatus->id,
             'password' => 'password',
@@ -145,5 +145,34 @@ class PublicHomeTest extends TestCase
         $this->assertStringContainsString('data-footer="activo"', $footer);
         $this->assertStringNotContainsString('data-footer="cerrado"', $footer);
         $this->assertSame(1, substr_count($footer, 'class="footer-group-icon"'));
+    }
+
+    public function test_home_muestra_iniciales_en_circulo_cuando_no_hay_imagen_de_publicidad(): void
+    {
+        // Id alto para que no exista el archivo provider_<id>.<ext> y la tarjeta
+        // quede sin imagen de publicidad.
+        $user = User::create([
+            'name' => 'Pizzeria Don Pepe',
+            'email' => 'pizzeria.don.pepe@example.com',
+            'type_user_id' => $this->prestadorType->id,
+            'user_status_id' => $this->userStatus->id,
+            'password' => 'password',
+        ]);
+
+        Provider::query()->insert([
+            'id' => 9999,
+            'user_id' => $user->id,
+            'business_name' => 'Pizzería Don Pepe',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('>PD</div>', $html);
+        $this->assertStringContainsString('width:92px;height:92px;', $html);
+        $this->assertStringNotContainsString('images/publicidad/default.jpg', $html);
+        $this->assertStringNotContainsString('provider_9999.', $html);
     }
 }

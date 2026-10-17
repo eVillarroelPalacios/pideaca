@@ -178,6 +178,21 @@
                                 ])));
                                 $svcList = is_array($provider['services']) ? implode(' ', $provider['services']) : ($provider['services'] ?? '');
                                 $searchTerms .= ' ' . strtolower($svcList);
+
+                                // Sin imagen de publicidad: iniciales del negocio en un
+                                // circulo de color, para que no quede el alt roto.
+                                $sigWords = array_values(array_filter(
+                                    preg_split('/\s+/', trim((string) $provider['name'])),
+                                    fn ($w) => $w !== '' && !in_array(strtolower($w), ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'con'], true)
+                                ));
+                                if (empty($sigWords)) {
+                                    $sigWords = ['?'];
+                                }
+                                $initials = mb_strtoupper(isset($sigWords[1])
+                                    ? mb_substr($sigWords[0], 0, 1) . mb_substr($sigWords[1], 0, 1)
+                                    : mb_substr($sigWords[0], 0, 2));
+                                $initialsPalette = ['#D24C19', '#0c2a4d', '#047857', '#7c3aed', '#b45309', '#0e7490'];
+                                $initialsColor = $initialsPalette[((int) $provider['id']) % count($initialsPalette)];
                             @endphp
                             <div class="flip-card" data-idx="{{ $idx }}" data-category="{{ mb_strtoupper($provider['category']) }}" data-groups="{{ mb_strtoupper(implode(',', $provider['groups'])) }}" data-search="{{ $searchTerms }}"><div class="flip-inner"><div class="flip-face flip-front"><div class="ad-card" style="position:relative;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;background:white;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
                                 @if(isset($provider['status']) && strtolower($provider['status']) === 'prueba')
@@ -187,7 +202,13 @@
                                 </span>
                                 @endif
                                 <div class="ad-banner" style="position:relative;overflow:hidden;background:#f9fafb;height:150px;">
-                                    <img src="{{ $provider['banner_url'] ? asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) : asset('images/publicidad/default.jpg') }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
+                                    @if($provider['banner_url'])
+                                    <img src="{{ asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
+                                    @else
+                                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                                        <div style="width:92px;height:92px;flex:none;border-radius:50%;background:{{ $initialsColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;letter-spacing:1px;box-shadow:0 6px 16px rgba(0,0,0,.14);">{{ $initials }}</div>
+                                    </div>
+                                    @endif
                                 </div>
                                 <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
                                     <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ mb_strtoupper($provider['category']) }}</span>
