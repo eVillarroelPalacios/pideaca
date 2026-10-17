@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $fillable = ['description', 'icon', 'group_status_id'];
+    protected $fillable = ['description', 'icon', 'group_status_id', 'module_id'];
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class);
+    }
 
     public function subgroups()
     {

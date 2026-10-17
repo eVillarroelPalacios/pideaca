@@ -3800,6 +3800,7 @@
     var fdShopsTimer = null;
     var fdShopsTabActive = 'favorites';
     var fdShopsCounts = { favorites: 0, all: 0 };
+    var fdShopsInitialized = false;
 
     function fdSetShopsState(state, text, actionHtml) {
         var map = { loading: 'fd-shops-loading', message: 'fd-shops-message', content: 'fd-shops-grid' };
@@ -3876,7 +3877,11 @@
         var section = document.getElementById('dash-comercios');
         var moduleId = section ? parseInt(section.getAttribute('data-module-id'), 10) : NaN;
         var params = [];
-        var isFavorites = fdShopsTabActive === 'favorites';
+        var firstLoad = !fdShopsInitialized;
+        // En la primera carga pedimos todos (sin filtro) para conocer el
+        // conteo de favoritos y decidir el tab por defecto: favoritos si hay,
+        // si no, todos.
+        var isFavorites = !firstLoad && fdShopsTabActive === 'favorites';
 
         // Solo comercios de la categoria que corresponde al modulo abierto
         if (moduleId > 0) params.push('module_id=' + moduleId);
@@ -3899,11 +3904,23 @@
                     favorites: Number(res.data.favorites_count || 0),
                     all: Number(res.data.total_count || 0),
                 };
+
+                if (firstLoad) {
+                    fdShopsInitialized = true;
+                    fdShopsTabActive = fdShopsCounts.favorites > 0 ? 'favorites' : 'all';
+                    // Habia favoritos: este request era de "todos", volvemos a
+                    // cargar ya con el tab de favoritos activo.
+                    if (fdShopsTabActive === 'favorites') {
+                        loadComercios(silent);
+                        return;
+                    }
+                }
+
                 fdPaintShopsTabs();
 
                 var summary = document.getElementById('fd-shops-summary');
                 if (summary) {
-                    if (isFavorites) {
+                    if (fdShopsTabActive === 'favorites') {
                         summary.textContent = fdShopsCounts.favorites
                             ? fdShopsCounts.favorites + ' comercios favoritos'
                             : 'Tus comercios concurrentes';
@@ -3915,7 +3932,7 @@
                 }
 
                 if (!providers.length) {
-                    if (isFavorites) {
+                    if (fdShopsTabActive === 'favorites') {
                         fdSetShopsState('message', '', fdShopsFavoritesEmptyHtml());
                     } else {
                         fdSetShopsState('message', search
@@ -4006,11 +4023,9 @@
                 }
 
                 var isFav = !!(res.data && res.data.is_favorite);
-                fdShopsCounts.favorites = Number(res.data.favorites_count || 0);
-                fdPaintShopsTabs();
                 fdToast(isFav ? 'Comercio agregado a tus favoritos ★' : 'Comercio quitado de tus favoritos');
 
-                var card = btn && btn.closest ? btn.closest('[data-fd-provider]') : null;
+                // Feedback inmediato de la estrella.
                 if (btn) {
                     var label = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
                     btn.title = label;
@@ -4021,23 +4036,9 @@
                     btn.innerHTML = isFav ? FD_ICON_STAR_FILLED : FD_ICON_STAR;
                 }
 
-                if (card && !isFav && fdShopsTabActive === 'favorites' && card.parentNode) {
-                    card.parentNode.removeChild(card);
-                    var grid = document.getElementById('fd-shops-grid');
-                    var stillThere = grid && grid.querySelector ? grid.querySelector('[data-fd-provider]') : null;
-                    if (!stillThere) {
-                        fdSetShopsState('message', '', fdShopsFavoritesEmptyHtml());
-                    }
-                }
-
-                if (fdShopsTabActive === 'favorites') {
-                    var summary = document.getElementById('fd-shops-summary');
-                    if (summary) {
-                        summary.textContent = fdShopsCounts.favorites
-                            ? fdShopsCounts.favorites + ' comercios favoritos'
-                            : 'Tus comercios concurrentes';
-                    }
-                }
+                // Refresca contadores (según el módulo), la lista y el estado
+                // vacío desde el GET, que sí filtra por la categoría del módulo.
+                loadComercios(true);
             })
             .catch(function () {
                 fdToast('No se pudo conectar con el servidor.', true);

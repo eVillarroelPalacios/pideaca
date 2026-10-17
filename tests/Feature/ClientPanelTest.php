@@ -414,9 +414,12 @@ class ClientPanelTest extends TestCase
 
     public function test_providers_listing_only_returns_the_modules_category(): void
     {
-        $gastronomia = Group::firstOrCreate(['description' => 'Comercio & Gastronomía']);
-        $hogar = Group::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar']);
         $modulo = Module::firstOrCreate(['description' => 'Comercio & Gastronomía']);
+        $gastronomia = Group::firstOrCreate(
+            ['description' => 'Comercio & Gastronomía'],
+            ['module_id' => $modulo->id]
+        );
+        $hogar = Group::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar']);
 
         $this->provider->update(['category_id' => $gastronomia->id]);
 
@@ -710,8 +713,8 @@ class ClientPanelTest extends TestCase
         $this->assertStringContainsString('onchange="fdMyOrdersRangeChange()"', $html);
         $this->assertStringContainsString("fdMyOrdersActive = tab === 'history' ? 'history' : 'today';\n        fdMyOrdersHistoryPage = 1;", $html);
         // Paginacion estilo landing: chevrons circulares y numeros clicables.
-        $this->assertStringContainsString("title=\"Página anterior\"", $html);
-        $this->assertStringContainsString("title=\"Página siguiente\"", $html);
+        $this->assertStringContainsString('title="Página anterior"', $html);
+        $this->assertStringContainsString('title="Página siguiente"', $html);
         $this->assertStringContainsString('onclick="fdMyOrdersGoPage(', $html);
     }
 
@@ -743,7 +746,7 @@ class ClientPanelTest extends TestCase
 
         $response->assertOk()
             ->assertSee("showDashSection('perfil');", false)
-            ->assertSee("showDashSection = function(key)", false);
+            ->assertSee('showDashSection = function(key)', false);
     }
 
     public function test_dashboard_footer_shows_only_active_group_icons(): void

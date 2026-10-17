@@ -13,14 +13,12 @@
     </div>
 
     <div id="fd-solic-tabs" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button type="button" id="fd-solic-tab-favorites" onclick="fdSolicTab('favorites')" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;">
+        <button type="button" id="fd-solic-tab-favorites" onclick="fdSolicTab('favorites')" aria-label="Favoritos" title="Favoritos" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span>Favoritos</span>
             <span id="fd-solic-count-favorites" style="display:none;background:#D24C19;color:#fff;border-radius:9999px;font-size:11px;font-weight:700;padding:1px 7px;"></span>
         </button>
-        <button type="button" id="fd-solic-tab-all" onclick="fdSolicTab('all')" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;">
+        <button type="button" id="fd-solic-tab-all" onclick="fdSolicTab('all')" aria-label="Todos" title="Todos" style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-            <span>Todos</span>
             <span id="fd-solic-count-all" style="display:none;background:#6b7280;color:#fff;border-radius:9999px;font-size:11px;font-weight:700;padding:1px 7px;"></span>
         </button>
     </div>
@@ -88,9 +86,8 @@
                 <input type="file" id="fd-solic-emergency-audio" accept="audio/*" style="width:100%;font-size:12px;">
             </div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap;">
-            <p id="fd-solic-emergency-fee" style="font-size:12px;color:#6b7280;margin:0;">El prestador elegido define el precio al atender la urgencia.</p>
-            <button type="submit" id="fd-solic-emergency-submit" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;">Pedir urgencia</button>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap;">
+            <button type="submit" id="fd-solic-emergency-submit" title="Pedir urgencia" aria-label="Pedir urgencia" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1"/><path d="M12 2v1"/></svg></button>
         </div>
     </form>
 
@@ -133,9 +130,8 @@
             </div>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap;">
-            <p id="fd-solic-deposit" style="font-size:12px;color:#6b7280;margin:0;"></p>
-            <button type="submit" id="fd-solic-scheduled-submit" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;">Reservar cita</button>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap;">
+            <button type="submit" id="fd-solic-scheduled-submit" title="Reservar cita" aria-label="Reservar cita" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg></button>
         </div>
     </form>
 
@@ -156,7 +152,7 @@
             </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;">
-            <button type="submit" id="fd-solic-quote-submit" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;">Pedir presupuesto</button>
+            <button type="submit" id="fd-solic-quote-submit" title="Pedir presupuesto" aria-label="Pedir presupuesto" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg></button>
         </div>
     </form>
 </section>
@@ -176,6 +172,17 @@
     var FD_SOLIC_STAR = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
     var FD_SOLIC_STAR_FILLED = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
+    var FD_SOLIC_TYPE_ICONS = {
+        EMERGENCY: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1"/><path d="M12 2v1"/></svg>',
+        SCHEDULED: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
+        QUOTE: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>'
+    };
+
+    function serviceIcon(code) {
+        return FD_SOLIC_TYPE_ICONS[code] || '';
+    }
+
+
     var fdSolicTab = 'all';
     var fdSolicService = null;
     var fdSolicProviders = [];
@@ -183,6 +190,7 @@
     var fdSolicSearch = '';
     var fdSolicTimer = null;
     var fdSolicCounts = { favorites: 0, all: 0 };
+    var fdSolicInitialized = false;
 
     function esc(str) {
         return escapeHtml(str == null ? '' : String(str));
@@ -277,18 +285,25 @@
 
     // ---------------------------------------------------------- grilla
 
-    function loadProviders() {
-        pickState('loading');
+    function loadProviders(silent) {
+        if (!silent) pickState('loading');
+
+        // En la primera carga pedimos todos (sin filtro) para conocer el
+        // conteo de favoritos y decidir el tab por defecto: favoritos si hay,
+        // si no, todos.
+        var firstLoad = !fdSolicInitialized;
+        var isFavorites = !firstLoad && fdSolicTab === 'favorites';
 
         var url = FD_SOLIC_URLS.providers;
         var params = [];
-        if (fdSolicTab === 'favorites') params.push('favorite=1');
+        if (isFavorites) params.push('favorite=1');
         if (fdSolicSearch) params.push('search=' + encodeURIComponent(fdSolicSearch));
         if (params.length) url += '?' + params.join('&');
 
         fdFetchJson(url)
             .then(function (res) {
                 if (!res.ok || !res.data || res.data.success === false) {
+                    if (silent) return;
                     pickState(null);
                     msg('error', (res.data && res.data.message) || 'No se pudieron cargar los prestadores.');
                     return;
@@ -296,9 +311,22 @@
                 fdSolicProviders = (res.data.data && res.data.data.providers) || [];
                 fdSolicCounts.favorites = (res.data.data && res.data.data.favorites_count) || 0;
                 fdSolicCounts.all = (res.data.data && res.data.data.total_count) || 0;
+
+                if (firstLoad) {
+                    fdSolicInitialized = true;
+                    fdSolicTab = fdSolicCounts.favorites > 0 ? 'favorites' : 'all';
+                    // Habia favoritos: este request era de "todos", volvemos a
+                    // cargar ya con el tab de favoritos activo.
+                    if (fdSolicTab === 'favorites') {
+                        loadProviders(silent);
+                        return;
+                    }
+                }
+
                 renderProviders();
             })
             .catch(function () {
+                if (silent) return;
                 pickState(null);
                 msg('error', 'No se pudieron cargar los prestadores. Revisá tu conexión.');
             });
@@ -348,7 +376,6 @@
             + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + esc((p.business_name || '?').charAt(0).toUpperCase()) + '</div>'
             + '<div style="min-width:0;">'
             + '<div style="font-size:14px;font-weight:700;color:#0c2a4d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(p.business_name) + '</div>'
-            + '<div style="font-size:11px;color:#94a3b8;">' + esc(rubroOf(p)) + '</div>'
             + '</div>';
 
         if (p.rating && parseFloat(p.rating) > 0) {
@@ -363,7 +390,7 @@
 
         html += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
         (p.service_types || []).forEach(function (t) {
-            html += '<button type="button" onclick="fdSolicPick(' + p.id + ',\'' + esc(t.code) + '\')" style="background:#D24C19;color:#fff;border:none;border-radius:4px;cursor:pointer;padding:7px 12px;font-size:12px;font-weight:700;">' + esc(t.name) + '</button>';
+            html += '<button type="button" onclick="fdSolicPick(' + p.id + ',\'' + esc(t.code) + '\')" title="' + esc(t.name) + '" aria-label="' + esc(t.name) + '" style="background:#D24C19;color:#fff;border:none;border-radius:4px;cursor:pointer;padding:8px;display:inline-flex;align-items:center;justify-content:center;">' + serviceIcon(t.code) + '</button>';
         });
         html += '</div>';
 
@@ -402,6 +429,7 @@
                     return;
                 }
 
+                // Feedback inmediato de la estrella.
                 var isFav = !!res.data.is_favorite;
                 btn.title = isFav ? 'Quitar de favoritos' : 'Agregar a mis favoritos';
                 btn.setAttribute('aria-label', btn.title);
@@ -409,15 +437,10 @@
                 btn.style.borderColor = isFav ? '#D24C19' : '#d1d5db';
                 btn.innerHTML = isFav ? FD_SOLIC_STAR_FILLED : FD_SOLIC_STAR;
 
-                fdSolicCounts.favorites = res.data.favorites_count || 0;
-                paintTabs();
-                paintSummary();
-
-                if (!isFav && fdSolicTab === 'favorites') {
-                    var card = btn.closest('[data-fd-solic-provider]');
-                    if (card && card.parentNode) card.parentNode.removeChild(card);
-                    if (!document.querySelector('[data-fd-solic-provider]')) pickState('empty');
-                }
+                // Refrescamos la grilla y los contadores desde el GET (que si
+                // filtra por el grupo de servicios) para que queden consistentes
+                // con el tab activo y el estado vacio se pinte bien.
+                loadProviders(true);
             })
             .catch(function () {
                 btn.disabled = false;
@@ -444,6 +467,8 @@
 
         document.getElementById('fd-solic-pick').style.display = 'none';
         document.getElementById('fd-solic-chosen').style.display = 'block';
+        var fdSolicSearchInput = document.getElementById('fd-solic-search');
+        if (fdSolicSearchInput) fdSolicSearchInput.style.display = 'none';
         document.getElementById('fd-solic-chosen-avatar').textContent = (found.business_name || '?').charAt(0).toUpperCase();
         document.getElementById('fd-solic-chosen-name').textContent = found.business_name || '';
         document.getElementById('fd-solic-chosen-meta').textContent = rubroOf(found);
@@ -463,6 +488,8 @@
         fdSolicService = null;
         document.getElementById('fd-solic-chosen').style.display = 'none';
         document.getElementById('fd-solic-pick').style.display = 'block';
+        var fdSolicSearchInput = document.getElementById('fd-solic-search');
+        if (fdSolicSearchInput) fdSolicSearchInput.style.display = '';
         showForms();
     };
 
@@ -679,7 +706,8 @@
         var dateInput = document.getElementById('fd-solic-date');
         if (dateInput) dateInput.setAttribute('min', min);
 
-        window.fdSolicTab('all');
+        // La primera carga decide el tab por defecto (favoritos si hay, si no todos).
+        loadProviders();
     });
 })();
 </script>

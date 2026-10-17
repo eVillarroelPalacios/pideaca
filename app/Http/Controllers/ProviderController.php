@@ -19,8 +19,9 @@ class ProviderController extends Controller
      * pueda estimar el envio antes de confirmar.
      *
      * Con module_id el listado se recorta a los comercios cuya categoria
-     * (rubro) corresponde a ese modulo: dentro de "Comercio & Gastronomia"
-     * solo se ven los prestadores de esa categoria.
+     * (rubro) pertenece a ese modulo (via groups.module_id): el vinculo es
+     * por id estable, no por nombre, asi los modulos se pueden renombrar
+     * (p. ej. "Mercado") sin vaciar el listado.
      */
     public function index(Request $request)
     {
@@ -50,10 +51,8 @@ class ProviderController extends Controller
         $base = Provider::query()
             ->where('is_active', true)
             ->when($module, function ($query) use ($module) {
-                $name = mb_strtolower(trim($module->description));
-
                 $query->whereHas('category', fn ($category) => $category
-                    ->whereRaw('LOWER(description) = ?', [$name]));
+                    ->where('module_id', $module->id));
             })
             ->when($search !== '', function ($query) use ($search) {
                 $query->whereRaw('LOWER(business_name) LIKE ?', ['%'.mb_strtolower($search).'%']);
