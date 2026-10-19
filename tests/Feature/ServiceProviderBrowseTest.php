@@ -7,6 +7,7 @@ use App\Models\Module;
 use App\Models\Page;
 use App\Models\Provider;
 use App\Models\ServiceOrder;
+use App\Models\ServiceRating;
 use App\Models\ServiceType;
 use App\Models\SubGroup;
 use App\Models\TypeUser;
@@ -193,6 +194,238 @@ class ServiceProviderBrowseTest extends TestCase
             ->assertJsonCount(1, 'data.providers');
     }
 
+    public function test_browse_expone_los_datos_del_encabezado_del_prestador(): void
+    {
+        // Encabezado de la ventana de urgencias: verificado, tarifa base,
+        // calificaciones, urgencias tomadas, disponibilidad y ETA.
+        $allDays = collect(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
+            ->mapWithKeys(fn ($day) => [$day => ['open' => true, 'shifts' => [['from' => '00:00', 'to' => '23:59']]]])
+            ->all();
+        $closedDays = collect(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
+            ->mapWithKeys(fn ($day) => [$day => ['open' => false, 'shifts' => []]])
+            ->all();
+
+        $this->provider->update([
+            'is_verified' => true,
+            'base_visit_fee' => 3500.50,
+            'rating' => 4.90,
+            'hours' => $allDays,
+        ]);
+        $this->otherProvider->update(['hours' => $closedDays]);
+
+        // Urgencia despachada hace 20 minutos: define el ETA y el contador.
+        $order = ServiceOrder::create([
+            'customer_id' => $this->customer->id,
+            'sub_group_id' => $this->subgroup->id,
+            'merchant_id' => $this->provider->id,
+            'order_type' => ServiceOrder::TYPE_EMERGENCY,
+            'status' => ServiceOrder::STATUS_PROVIDER_DISPATCHED,
+        ]);
+        $order->forceFill([
+            'created_at' => now()->subMinutes(20),
+            'updated_at' => now(),
+        ])->save();
+
+        ServiceRating::create([
+            'service_order_id' => $order->id,
+            'reviewer_id' => $this->customer->id,
+            'ratee_id' => $this->providerUser->id,
+            'stars' => 5,
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers')
+            ->assertStatus(200);
+
+        $gasista = collect($response->json('data.providers'))->firstWhere('id', $this->provider->id);
+
+        $this->assertTrue($gasista['is_verified']);
+        $this->assertSame(3500.50, (float) $gasista['base_visit_fee']);
+        $this->assertSame(1, $gasista['ratings_count']);
+        $this->assertSame(1, $gasista['emergency_count']);
+        $this->assertTrue($gasista['is_available_now']);
+        $this->assertSame('Disponible Ahora', $gasista['availability_label']);
+        $this->assertSame(20, $gasista['eta_minutes']);
+
+        $electricista = collect($response->json('data.providers'))->firstWhere('id', $this->otherProvider->id);
+
+        $this->assertFalse($electricista['is_verified']);
+        $this->assertNull($electricista['base_visit_fee']);
+        $this->assertSame(0, $electricista['emergency_count']);
+        $this->assertFalse($electricista['is_available_now']);
+        $this->assertSame('Llega en ~30 min', $electricista['availability_label']);
+    }
+
+    public function test_browse_marca_disponible_sin_horarios_cargados(): void
+    {
+        // Sin horarios el prestador se considera disponible las 24 hs.
+        $this->provider->update(['hours' => null]);
+
+        $gasista = collect($this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers?type=EMERGENCY')
+            ->assertStatus(200)
+            ->json('data.providers'))
+            ->firstWhere('id', $this->provider->id);
+
+        $this->assertTrue($gasista['is_available_now']);
+        $this->assertSame('Disponible Ahora', $gasista['availability_label']);
+    }
+
+    public function test_dashboard_renderiza_el_encabezado_del_prestador_con_los_nuevos_badges(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->assertSee('id="fd-solic-chosen-verified"', false)
+            ->assertSee('Prestador Verificado', false)
+            ->assertSee('id="fd-solic-chosen-status"', false)
+            ->assertSee('id="fd-solic-chosen-rating"', false)
+            ->assertSee('id="fd-solic-chosen-fee"', false)
+            ->assertSee('Tarifa base por urgencia / visita', false)
+            ->assertSee('function paintChosenHeader', false)
+            ->assertSee('function fdSolicAvailability', false);
+    }
+
+    public function test_urgencia_guarda_la_direccion_y_las_coordenadas_del_cliente(): void
+    {
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/emergency', [
+                'provider_id' => $this->provider->id,
+                'latitude' => -34.61,
+                'longitude' => -58.43,
+                'address' => 'Av. Corrientes 1234, CABA',
+                'photo' => UploadedFile::fake()->image('problema.jpg'),
+            ])
+            ->assertStatus(201);
+
+        $this->assertSame('Av. Corrientes 1234, CABA', $response->json('data.order.address'));
+
+        $this->assertDatabaseHas('service_orders', [
+            'id' => $response->json('data.order.id'),
+            'address' => 'Av. Corrientes 1234, CABA',
+        ]);
+
+        $order = ServiceOrder::find($response->json('data.order.id'));
+
+        $this->assertEquals(-34.61, (float) $order->latitude);
+        $this->assertEquals(-58.43, (float) $order->longitude);
+    }
+
+    public function test_urgencia_rechaza_una_direccion_demasiado_larga(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/emergency', [
+                'provider_id' => $this->provider->id,
+                'address' => str_repeat('a', 501),
+                'photo' => UploadedFile::fake()->image('problema.jpg'),
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['address']);
+    }
+
+    public function test_dashboard_renderiza_el_formulario_de_urgencias_ultra_rapido(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Chips de problema rapidos.
+            ->assertSee('id="fd-solic-emergency-chips"', false)
+            ->assertSee('Pérdida de agua', false)
+            ->assertSee('Inundación', false)
+            ->assertSee('Sin luz', false)
+            ->assertSee('Pérdida de gas', false)
+            ->assertSee('window.fdSolicPickChip = function', false)
+            // Botones de foto y audio estilizados (sin el "Choose File" default).
+            ->assertSee('📷 Tomar / Subir Foto', false)
+            ->assertSee('🎙️ Grabar Audio', false)
+            ->assertSee('window.fdSolicPickFile = function', false)
+            ->assertSee('class="fd-media-btn"', false)
+            // Ubicacion actual -> direccion autocompletada.
+            ->assertSee('id="fd-solic-emergency-address"', false)
+            ->assertSee('Usar mi ubicación actual', false)
+            ->assertSee('window.fdSolicUseLocation = function', false)
+            ->assertSee('navigator.geolocation', false)
+            ->assertSee('nominatim.openstreetmap.org', false);
+    }
+
+    public function test_urgencia_guarda_el_medio_de_pago_de_la_tarifa_base(): void
+    {
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/emergency', [
+                'provider_id' => $this->provider->id,
+                'payment_method' => 'mercado_pago',
+                'description' => 'Pérdida de agua en el baño',
+                'photo' => UploadedFile::fake()->image('problema.jpg'),
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.payment_method', 'mercado_pago');
+
+        $this->assertDatabaseHas('service_orders', [
+            'id' => $response->json('data.order.id'),
+            'payment_method' => 'mercado_pago',
+        ]);
+    }
+
+    public function test_urgencia_rechaza_un_medio_de_pago_invalido(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/emergency', [
+                'provider_id' => $this->provider->id,
+                'payment_method' => 'bitcoin',
+                'description' => 'Pérdida de gas',
+                'photo' => UploadedFile::fake()->image('problema.jpg'),
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['payment_method']);
+    }
+
+    public function test_dashboard_renderiza_el_medio_de_pago_y_el_cta_de_urgencia(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->getContent();
+
+        // Selector de medio de pago de la tarifa base (3 opciones).
+        $this->assertStringContainsString('id="fd-solic-emergency-payment"', $html);
+        $this->assertSame(3, substr_count($html, 'class="fd-pay-face"'));
+        $this->assertStringContainsString('name="fd-solic-payment"', $html);
+        $this->assertStringContainsString('value="mercado_pago"', $html);
+
+        // CTA destacado con el subtitulo de respuesta estimada.
+        $this->assertStringContainsString('id="fd-solic-emergency-submit"', $html);
+        $this->assertStringContainsString('🚨 SOLICITAR URGENCIA AHORA', $html);
+        $this->assertStringContainsString('Respuesta estimada: &lt; 3 min', $html);
+
+        // Validacion previa al envio: chip (categoria) o descripcion.
+        $this->assertStringContainsString('function fdSolicEmergencyHasContent', $html);
+        $this->assertStringContainsString('function fdSolicPaymentValue', $html);
+        $this->assertStringContainsString("querySelector('.fd-chip.is-active')", $html);
+    }
+
+    public function test_los_tabs_del_catalogo_quedan_ocultos_al_llenar_urgencias(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->getContent();
+
+        // Los tabs Favoritos/Todos y su contenedor estan en la pagina.
+        $this->assertStringContainsString('id="fd-solic-tabs"', $html);
+        $this->assertStringContainsString('id="fd-solic-tab-favorites"', $html);
+        $this->assertStringContainsString('id="fd-solic-tab-all"', $html);
+
+        // Al elegir un prestador (urgencia, cita o presupuesto) se ocultan; al
+        // volver al catalogo vuelven a mostrarse (flex, el display original).
+        $this->assertStringContainsString(
+            "if (fdSolicTabsBar) fdSolicTabsBar.style.display = 'none';",
+            $html
+        );
+        $this->assertStringContainsString("fdSolicTabsBar.style.display = 'flex'", $html);
+        // Ya no se ocultan solo para urgencias.
+        $this->assertStringNotContainsString("fdSolicService === 'emergency' ? 'none' : 'flex'", $html);
+    }
+
     public function test_browse_devuelve_contadores_de_favoritos_y_total(): void
     {
         $this->actingAs($this->customer)
@@ -338,5 +571,346 @@ class ServiceProviderBrowseTest extends TestCase
         $this->actingAs($sinPagina)
             ->getJson('/api/v1/service-providers?type=EMERGENCY')
             ->assertStatus(403);
+    }
+
+    public function test_seguimiento_devuelve_la_orden_propia_con_los_datos_del_prestador(): void
+    {
+        $this->provider->update(['rating' => 4.80, 'is_verified' => true]);
+
+        $order = ServiceOrder::create([
+            'customer_id' => $this->customer->id,
+            'sub_group_id' => $this->subgroup->id,
+            'merchant_id' => $this->provider->id,
+            'order_type' => ServiceOrder::TYPE_EMERGENCY,
+            'status' => ServiceOrder::STATUS_REQUESTED,
+            'address' => 'Av. Rivadavia 100',
+            'payment_method' => 'efectivo',
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->getJson('/api/v1/customer/service-orders/'.$order->id)
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.order.id', $order->id)
+            ->assertJsonPath('data.order.status', ServiceOrder::STATUS_REQUESTED)
+            ->assertJsonPath('data.order.cancellable', true)
+            ->assertJsonPath('data.order.address', 'Av. Rivadavia 100')
+            ->assertJsonPath('data.order.merchant.business_name', 'Gasista Uno')
+            ->assertJsonPath('data.order.merchant.contact_name', $this->providerUser->name)
+            ->assertJsonPath('data.order.merchant.is_verified', true);
+
+        // El seguimiento pinta la foto del prestador aunque todavia no tenga
+        // banner cargado (la clave siempre viaja para el card de contacto).
+        $this->assertArrayHasKey('photo_url', $response->json('data.order.merchant'));
+        $this->assertArrayHasKey('statuses', $response->json('data'));
+    }
+
+    public function test_seguimiento_rechaza_la_orden_de_otro_cliente(): void
+    {
+        $otro = User::create([
+            'name' => 'Otro Cliente',
+            'email' => 'otro@example.com',
+            'type_user_id' => TypeUser::where('description', 'Cliente')->value('id'),
+            'password' => 'password',
+        ]);
+
+        $order = ServiceOrder::create([
+            'customer_id' => $otro->id,
+            'sub_group_id' => $this->subgroup->id,
+            'order_type' => ServiceOrder::TYPE_EMERGENCY,
+            'status' => ServiceOrder::STATUS_REQUESTED,
+        ]);
+
+        $this->actingAs($this->customer)
+            ->getJson('/api/v1/customer/service-orders/'.$order->id)
+            ->assertStatus(403)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_seguimiento_exige_estar_autenticado(): void
+    {
+        $order = ServiceOrder::create([
+            'customer_id' => $this->customer->id,
+            'sub_group_id' => $this->subgroup->id,
+            'order_type' => ServiceOrder::TYPE_EMERGENCY,
+            'status' => ServiceOrder::STATUS_REQUESTED,
+        ]);
+
+        $this->getJson('/api/v1/customer/service-orders/'.$order->id)->assertStatus(401);
+    }
+
+    public function test_dashboard_renderiza_la_pantalla_de_seguimiento(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->assertSee('id="fd-solic-track"', false)
+            ->assertSee('id="fd-solic-track-body"', false)
+            ->assertSee('window.fdSolicTrackStart = function', false)
+            ->assertSee('window.fdSolicTrackCancel = function', false)
+            ->assertSee('window.fdSolicTrackGoToServices = function', false)
+            ->assertSee('function fdSolicTrackStageOf', false)
+            ->assertSee('function fdSolicTrackPoll', false)
+            // Pasos, aviso de espera y efecto shimmer del temporizador.
+            ->assertSee("label: 'Solicitada'", false)
+            ->assertSee("label: 'Aceptada'", false)
+            ->assertSee("label: 'En camino'", false)
+            ->assertSee('Contactando al prestador', false)
+            ->assertSee('fdTrackShimmer', false)
+            // La pantalla arranca encadenada al alta exitosa de la urgencia.
+            ->assertSee('fdSolicTrackStart(order', false);
+    }
+
+    public function test_dashboard_renderiza_el_calendario_y_las_franjas_de_cita(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->assertSee('id="fd-solic-form-scheduled"', false)
+            ->assertSee('id="fd-solic-calendar"', false)
+            ->assertSee('id="fd-solic-slots"', false)
+            ->assertSee('id="fd-solic-day-nav"', false)
+            ->assertSee('id="fd-solic-day-prev"', false)
+            ->assertSee('id="fd-solic-day-next"', false)
+            ->assertSee('id="fd-solic-calendar-fallback"', false)
+            // Funciones del calendario / franjas.
+            ->assertSee('window.fdSolicPickDay = function', false)
+            ->assertSee('window.fdSolicPickSlot = function', false)
+            ->assertSee('window.fdSolicShiftDays = function', false)
+            ->assertSee('function fdSolicSchedBuildDays', false)
+            ->assertSee('function fdSolicSchedSlotsFor', false)
+            ->getContent();
+
+        // Los inputs nativos de fecha/hora ya no existen: ahora son hidden y los
+        // elige el calendario/franjas.
+        $this->assertStringNotContainsString('type="date"', $html);
+        $this->assertStringNotContainsString('type="time"', $html);
+        $this->assertStringContainsString('<input type="hidden" id="fd-solic-date"', $html);
+        $this->assertStringContainsString('<input type="hidden" id="fd-solic-time"', $html);
+
+        // Horizonte de 14 dias y fallback estandar 09:00-18:00.
+        $this->assertStringContainsString('FD_SOLIC_SCHED_DAYS = 14', $html);
+        $this->assertStringContainsString("FD_SOLIC_SCHED_FALLBACK = { from: '09:00', to: '18:00' }", $html);
+
+        // El fallback se normaliza a minutos antes de generar turnos: sin esto
+        // se concatenaban strings ('09:00'+60) y el bucle nunca terminaba.
+        $this->assertStringContainsString(
+            'shifts: [{ from: fdSolicMinutes(FD_SOLIC_SCHED_FALLBACK.from), to: fdSolicMinutes(FD_SOLIC_SCHED_FALLBACK.to) }]',
+            $html
+        );
+    }
+
+    public function test_reserva_cita_usa_la_fecha_y_hora_elegidas(): void
+    {
+        // El formulario manda scheduled_at armado con el dia del calendario y la
+        // franja elegida; el backend lo acepta y guarda.
+        $dia = now()->addDays(2)->format('Y-m-d');
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => $dia.' 11:30:00',
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.merchant_id', $this->otherProvider->id);
+
+        $this->assertDatabaseHas('service_orders', [
+            'id' => $response->json('data.order.id'),
+            'scheduled_at' => $dia.' 11:30:00',
+        ]);
+    }
+
+    public function test_dashboard_renderiza_la_tarjeta_de_sena_y_politicas(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Tarjeta explicativa de la sena.
+            ->assertSee('La seña del 50% garantiza el turno y se descuenta del saldo final', false)
+            ->assertSee('id="fd-solic-deposit"', false)
+            // Desglose del pago.
+            ->assertSee('Tarifa base de visita', false)
+            ->assertSee('id="fd-solic-fee-base"', false)
+            ->assertSee('Monto a abonar ahora (Seña 50%)', false)
+            ->assertSee('id="fd-solic-fee-now"', false)
+            ->assertSee('Restante a pagar en el domicilio', false)
+            ->assertSee('id="fd-solic-fee-rest"', false)
+            // Politica de cancelacion / reprogramacion.
+            ->assertSee('Cancelación/Reprogramación gratuita hasta 24 hs antes', false)
+            ->getContent();
+
+        // El desglose se recalcula con la tarifa base del prestador elegido.
+        $this->assertStringContainsString('fdSolicSelected.base_visit_fee', $html);
+        // La sena es el 50% de la tarifa base.
+        $this->assertStringContainsString('Math.round(fee * 50) / 100', $html);
+    }
+
+    public function test_el_desglose_de_la_sena_usa_la_tarifa_base_del_prestador(): void
+    {
+        // La tarifa base viaja en el browse para que el formulario calcule la
+        // sena sin pedirla de nuevo.
+        $this->otherProvider->update(['base_visit_fee' => 3500]);
+
+        $response = $this->actingAs($this->customer)
+            ->getJson('/api/v1/service-providers?type=SCHEDULED')
+            ->assertStatus(200);
+
+        $electricista = collect($response->json('data.providers'))->firstWhere('id', $this->otherProvider->id);
+
+        $this->assertNotNull($electricista);
+        $this->assertSame(3500.0, (float) $electricista['base_visit_fee']);
+    }
+
+    public function test_dashboard_renderiza_los_datos_de_acceso_y_el_recordatorio(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Direccion estructurada.
+            ->assertSee('id="fd-solic-address-street"', false)
+            ->assertSee('id="fd-solic-address-unit"', false)
+            ->assertSee('id="fd-solic-address-neighborhood"', false)
+            ->assertSee('Calle y número', false)
+            ->assertSee('Piso / Depto', false)
+            ->assertSee('Barrio / Zona', false)
+            // Canal de recordatorio.
+            ->assertSee('id="fd-solic-reminder-chips"', false)
+            ->assertSee('id="fd-solic-reminder"', false)
+            ->assertSee('data-channel="whatsapp"', false)
+            ->assertSee('data-channel="email"', false)
+            ->assertSee('window.fdSolicPickReminder = function', false)
+            // Notas / instrucciones de acceso.
+            ->assertSee('Notas e instrucciones de acceso', false)
+            ->assertSee('Instrucciones para el profesional', false)
+            ->getContent();
+
+        // El canal por defecto es WhatsApp.
+        $this->assertStringContainsString('<input type="hidden" id="fd-solic-reminder" value="whatsapp">', $html);
+    }
+
+    public function test_reserva_cita_guarda_datos_de_acceso_y_recordatorio(): void
+    {
+        $dia = now()->addDays(3)->format('Y-m-d');
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => $dia.' 09:30:00',
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+                'notes' => 'Tocar timbre del 4B, portón verde.',
+                'address_street' => 'Av. Rivadavia 1234',
+                'address_unit' => '4º B',
+                'address_neighborhood' => 'Caballito',
+                'reminder_channel' => 'email',
+            ])
+            ->assertStatus(201);
+
+        $orderId = $response->json('data.order.id');
+
+        $this->assertDatabaseHas('service_orders', [
+            'id' => $orderId,
+            'address_street' => 'Av. Rivadavia 1234',
+            'address_unit' => '4º B',
+            'address_neighborhood' => 'Caballito',
+            'reminder_channel' => 'email',
+            'address' => 'Av. Rivadavia 1234, 4º B, Caballito',
+        ]);
+
+        // El payload del seguimiento expone los campos nuevos.
+        $response->assertJsonPath('data.order.address_street', 'Av. Rivadavia 1234')
+            ->assertJsonPath('data.order.reminder_channel', 'email');
+    }
+
+    public function test_reserva_cita_rechaza_un_canal_de_recordatorio_invalido(): void
+    {
+        $dia = now()->addDays(3)->format('Y-m-d');
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => $dia.' 09:30:00',
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+                'reminder_channel' => 'telegram',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('reminder_channel');
+    }
+
+    public function test_reserva_cita_sin_datos_de_acceso_deja_la_direccion_nula(): void
+    {
+        $dia = now()->addDays(3)->format('Y-m-d');
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => $dia.' 09:30:00',
+                'fulfillment' => 'AT_MERCHANT_LOCATION',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'FULL',
+            ])
+            ->assertStatus(201);
+
+        $this->assertDatabaseHas('service_orders', [
+            'id' => $response->json('data.order.id'),
+            'address' => null,
+            'address_street' => null,
+            'reminder_channel' => null,
+        ]);
+    }
+
+    public function test_dashboard_renderiza_el_cta_de_reserva_y_la_confirmacion(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // CTA principal de envio.
+            ->assertSee('id="fd-solic-scheduled-submit"', false)
+            ->assertSee('Reservar cita y pagar seña', false)
+            // Vista de confirmacion posterior al envio.
+            ->assertSee('id="fd-solic-scheduled-confirm"', false)
+            ->assertSee('id="fd-solic-scheduled-confirm-body"', false)
+            ->assertSee('window.fdSolicSchedConfirmStart = function', false)
+            ->assertSee('window.fdSolicSchedConfirmServices = function', false)
+            ->assertSee('window.fdSolicSchedConfirmAgain = function', false)
+            // Google Calendar.
+            ->assertSee('function fdSolicSchedGcalUrl', false)
+            ->assertSee('https://calendar.google.com/calendar/render?action=TEMPLATE', false)
+            ->assertSee('Añadir a Google Calendar', false)
+            // Estado de la cita.
+            ->assertSee('Pendiente de confirmación por el prestador', false)
+            ->assertSee('Te notificamos por WhatsApp', false)
+            // Resumen del turno.
+            ->assertSee('class="fd-conf-lbl">Fecha', false)
+            ->assertSee('class="fd-conf-lbl">Hora', false)
+            ->assertSee('class="fd-conf-lbl">Dirección', false);
+    }
+
+    public function test_la_confirmacion_se_dispara_al_crear_la_cita(): void
+    {
+        $dia = now()->addDays(4)->format('Y-m-d');
+
+        // El endpoint devuelve la orden con los datos que la confirmacion
+        // necesita para el resumen y el link de Google Calendar.
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => $dia.' 14:00:00',
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+                'address_street' => 'Av. Rivadavia 1234',
+                'address_unit' => '4º B',
+                'address_neighborhood' => 'Caballito',
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.address', 'Av. Rivadavia 1234, 4º B, Caballito')
+            ->assertJsonStructure(['data' => ['order' => ['scheduled_at', 'address', 'merchant' => ['contact_name']]]]);
     }
 }

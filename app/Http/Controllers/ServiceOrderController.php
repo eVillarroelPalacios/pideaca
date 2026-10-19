@@ -123,6 +123,37 @@ class ServiceOrderController extends Controller
     }
 
     /**
+     * GET /api/v1/customer/service-orders/{serviceOrder}
+     *
+     * Estado de una orden propia: alimenta el seguimiento en vivo de la
+     * ventana de urgencias (el cliente la consulta mientras espera a que le
+     * acepten el pedido y despues durante el camino del prestador).
+     */
+    public function showForCustomer(ServiceOrder $serviceOrder): JsonResponse
+    {
+        $customer = $this->currentCustomer();
+
+        if ($customer instanceof JsonResponse) {
+            return $customer;
+        }
+
+        if ((int) $serviceOrder->customer_id !== (int) $customer->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés acceso a esta solicitud.',
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'order' => $this->orderPayload($serviceOrder),
+                'statuses' => ServiceOrder::STATUSES,
+            ],
+        ]);
+    }
+
+    /**
      * POST /api/v1/customer/service-orders/emergency
      *
      * Alta de urgencia 24/7: el cliente elige un prestador de las tarjetas
@@ -138,10 +169,10 @@ class ServiceOrderController extends Controller
             return $customer;
         }
 
-        // La urgencia no pide ni usa ubicacion: la ventana de solicitud no
-        // muestra coordenadas ni las envia, y el backend no las resuelve desde
-        // la direccion del perfil (quedan en null salvo que quien llama las
-        // mande expresamente).
+        // La urgencia no resuelve ubicacion por su cuenta: la ventana solo
+        // manda direccion y coordenadas si el cliente las informo (campo de
+        // direccion o boton "Usar mi ubicacion actual"); nada se deriva de la
+        // direccion del perfil.
         $data = $request->validate([
             'sub_group_id' => [
                 'nullable',
@@ -155,6 +186,13 @@ class ServiceOrderController extends Controller
             'photo' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'audio' => ['nullable', 'file', 'mimes:mp3,m4a,ogg,oga,webm,wav,aac', 'max:8192'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'payment_method' => [
+                'nullable',
+                'string',
+                'max:30',
+                Rule::in(['efectivo', 'transferencia', 'tarjeta', 'mercado_pago']),
+            ],
         ]);
 
         $merchantId = null;
@@ -191,6 +229,8 @@ class ServiceOrderController extends Controller
                     'longitude' => $data['longitude'] ?? null,
                     'escrow_status' => ServiceOrder::ESCROW_HOLDING,
                     'description' => $data['description'] ?? null,
+                    'address' => $data['address'] ?? null,
+                    'payment_method' => $data['payment_method'] ?? null,
                 ]);
 
                 $this->attachMedia($orden, $request);

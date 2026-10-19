@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Concerns;
 use App\Models\Provider;
 use App\Models\ServiceOrder;
 use App\Models\ServiceQuote;
+use App\Models\ServiceRating;
 use App\Models\ServiceType;
 use App\Models\SubGroup;
 use App\Models\User;
@@ -82,6 +83,8 @@ trait InteractsWithServiceOrders
     {
         $provider->loadMissing(['subgroups.group', 'serviceTypes']);
 
+        $availability = $this->providerAvailability($provider);
+
         return [
             'id' => $provider->id,
             'business_name' => $provider->business_name,
@@ -93,6 +96,15 @@ trait InteractsWithServiceOrders
             'whatsapp' => $provider->whatsapp,
             'banner_image' => $provider->banner_image,
             'publicidad_image' => $this->publicidadImageUrl($provider),
+            // Encabezado del prestador en la ventana de urgencias.
+            'is_verified' => (bool) $provider->is_verified,
+            'base_visit_fee' => $provider->base_visit_fee !== null ? (float) $provider->base_visit_fee : null,
+            'ratings_count' => $this->providerRatingsCount($provider),
+            'emergency_count' => $this->providerEmergencyCount($provider),
+            'hours' => $provider->hours,
+            'is_available_now' => $availability['open'],
+            'availability_label' => $availability['label'],
+            'eta_minutes' => $availability['eta_minutes'],
             'subgroups' => $provider->subgroups
                 ->filter(fn (SubGroup $subgroup) => ($subgroup->group?->description ?? null) === self::SERVICE_GROUP_NAME)
                 ->map(fn (SubGroup $subgroup) => [
@@ -110,6 +122,103 @@ trait InteractsWithServiceOrders
                 ->all(),
             'is_favorite' => $favoriteIds->contains($provider->id),
         ];
+    }
+
+    /**
+     * Estado "en vivo" del prestador para el encabezado de la ventana de
+     * urgencias: disponible ahora si esta dentro de sus horarios cargados
+     * (sin horarios = disponible siempre) y el ETA estimado de llegada.
+     *
+     * @return array{open: bool, eta_minutes: int, label: string}
+     */
+    private function providerAvailability(Provider $provider): array
+    {
+        $open = $this->providerIsOpenNow($provider);
+        $eta = $this->providerEtaMinutes($provider);
+
+        return [
+            'open' => $open,
+            'eta_minutes' => $eta,
+            'label' => $open ? 'Disponible Ahora' : 'Llega en ~'.$eta.' min',
+        ];
+    }
+
+    /**
+     * Horarios del prestador (json con claves mon..sun y shifts from/to).
+     * Sin horarios cargados se considera disponible las 24 hs.
+     */
+    private function providerIsOpenNow(Provider $provider): bool
+    {
+        $hours = $provider->hours;
+
+        if (! is_array($hours) || $hours === []) {
+            return true;
+        }
+
+        $day = $hours[strtolower(now()->format('D'))] ?? null;
+
+        if (! is_array($day) || empty($day['open'])) {
+            return false;
+        }
+
+        $now = now()->format('H:i');
+
+        foreach ((array) ($day['shifts'] ?? []) as $shift) {
+            $from = $shift['from'] ?? null;
+            $to = $shift['to'] ?? null;
+
+            if ($from && $to && $now >= $from && $now <= $to) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ETA del prestador en minutos: promedio entre la creacion de la urgencia
+     * y su despacho. Sin historial se estima en 30 minutos (redondeado a 5).
+     */
+    private function providerEtaMinutes(Provider $provider): int
+    {
+        $average = ServiceOrder::query()
+            ->where('merchant_id', $provider->id)
+            ->where('order_type', ServiceOrder::TYPE_EMERGENCY)
+            ->whereIn('status', [
+                ServiceOrder::STATUS_PROVIDER_DISPATCHED,
+                ServiceOrder::STATUS_IN_PROGRESS,
+                ServiceOrder::STATUS_COMPLETED,
+            ])
+            ->get(['created_at', 'updated_at'])
+            ->map(fn (ServiceOrder $order) => $order->created_at
+                ? (int) round($order->created_at->diffInMinutes($order->updated_at))
+                : null)
+            ->filter(fn ($minutes) => $minutes !== null && $minutes >= 0)
+            ->avg();
+
+        if (! $average) {
+            return 30;
+        }
+
+        return max(5, min(120, (int) (ceil($average / 5) * 5)));
+    }
+
+    /** Urgencias que tomo el prestador (las canceladas no cuentan). */
+    private function providerEmergencyCount(Provider $provider): int
+    {
+        return ServiceOrder::query()
+            ->where('merchant_id', $provider->id)
+            ->where('order_type', ServiceOrder::TYPE_EMERGENCY)
+            ->where('status', '!=', ServiceOrder::STATUS_CANCELLED)
+            ->count();
+    }
+
+    /** Calificaciones recibidas por el prestador (tabla service_ratings). */
+    private function providerRatingsCount(Provider $provider): int
+    {
+        return ServiceRating::query()
+            ->where('ratee_id', $provider->user_id)
+            ->count();
     }
 
     /**
@@ -191,7 +300,7 @@ trait InteractsWithServiceOrders
 
     private function orderPayload(ServiceOrder $order): array
     {
-        $order->loadMissing(['subGroup', 'merchant', 'customer', 'quotes.provider', 'ratings']);
+        $order->loadMissing(['subGroup', 'merchant.user', 'customer', 'quotes.provider', 'ratings']);
 
         $quote = $order->quotes->first();
 
@@ -248,6 +357,11 @@ trait InteractsWithServiceOrders
                 'phone' => $order->merchant->phone,
                 'whatsapp' => $order->merchant->whatsapp,
                 'zone' => $order->merchant->zone,
+                // Seguimiento de urgencias: foto, tecnico a cargo y verificacion.
+                'photo_url' => $this->publicidadImageUrl($order->merchant),
+                'contact_name' => $order->merchant->user?->name,
+                'rating' => $order->merchant->rating,
+                'is_verified' => (bool) $order->merchant->is_verified,
             ] : null,
             'customer' => [
                 'id' => $order->customer->id,
@@ -266,6 +380,11 @@ trait InteractsWithServiceOrders
             'total_amount' => $order->total_amount,
             'commission_amount' => $order->commission_amount,
             'description' => $order->description,
+            'address' => $order->address,
+            'address_street' => $order->address_street,
+            'address_unit' => $order->address_unit,
+            'address_neighborhood' => $order->address_neighborhood,
+            'reminder_channel' => $order->reminder_channel,
             'estimate_details' => $order->estimate_details,
             'photo_url' => $order->photo_path ? asset('images/servicios/'.$order->photo_path) : null,
             'audio_url' => $order->audio_path ? asset('images/servicios/'.$order->audio_path) : null,

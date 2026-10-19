@@ -170,6 +170,11 @@ class ServiceBookingController extends Controller
             'payment_method' => ['required', 'string', 'max:30'],
             'payment_mode' => ['required', 'string', 'in:DEPOSIT,FULL'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // Datos de acceso de la cita: direccion estructurada + recordatorio.
+            'address_street' => ['nullable', 'string', 'max:150'],
+            'address_unit' => ['nullable', 'string', 'max:50'],
+            'address_neighborhood' => ['nullable', 'string', 'max:100'],
+            'reminder_channel' => ['nullable', 'string', Rule::in(['whatsapp', 'email'])],
         ]);
 
         $merchantId = null;
@@ -212,6 +217,11 @@ class ServiceBookingController extends Controller
                     'total_amount' => 0,
                     'escrow_status' => ServiceOrder::ESCROW_HOLDING,
                     'description' => $data['notes'] ?? null,
+                    'address_street' => $data['address_street'] ?? null,
+                    'address_unit' => $data['address_unit'] ?? null,
+                    'address_neighborhood' => $data['address_neighborhood'] ?? null,
+                    'address' => $this->composeScheduledAddress($data),
+                    'reminder_channel' => $data['reminder_channel'] ?? null,
                 ]);
             });
         } catch (Throwable $e) {
@@ -631,6 +641,28 @@ class ServiceBookingController extends Controller
         Log::info('Cita #'.$order->id.': '.$order->payment_mode.' por $'
             .number_format((float) $order->deposit_amount, 2, ',', '.')
             .' via '.$order->payment_method.' (gateway manual).');
+    }
+
+    /**
+     * Arma la direccion legible de la cita a partir de los campos
+     * estructurados (calle y numero, piso/depto, barrio/zona) para que la
+     * columna `address` siga siendo un texto listo para mostrar.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function composeScheduledAddress(array $data): ?string
+    {
+        $street = trim((string) ($data['address_street'] ?? ''));
+        $unit = trim((string) ($data['address_unit'] ?? ''));
+        $neighborhood = trim((string) ($data['address_neighborhood'] ?? ''));
+
+        $parts = array_filter([
+            $street !== '' ? $street : null,
+            $unit !== '' ? $unit : null,
+            $neighborhood !== '' ? $neighborhood : null,
+        ]);
+
+        return $parts === [] ? null : implode(', ', $parts);
     }
 
     /**

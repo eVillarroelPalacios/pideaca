@@ -26,6 +26,8 @@ class Provider extends Model
         'zone',
         'hours',
         'is_active',
+        'is_verified',
+        'base_visit_fee',
         'has_inventory_control',
     ];
 
@@ -34,6 +36,8 @@ class Provider extends Model
         'rating' => 'decimal:2',
         'balance' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_verified' => 'boolean',
+        'base_visit_fee' => 'decimal:2',
         'has_inventory_control' => 'boolean',
     ];
 

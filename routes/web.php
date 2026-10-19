@@ -238,6 +238,8 @@ Route::middleware('page:solicitar-servicio')->group(function () {
     Route::get('/api/v1/service-subgroups', [ServiceBookingController::class, 'getServiceSubgroups'])->name('api.service-subgroups');
     Route::get('/api/v1/service-providers', [ServiceBookingController::class, 'getServiceProviders'])->name('api.service-providers');
     Route::post('/api/v1/customer/service-orders/emergency', [ServiceOrderController::class, 'requestEmergencyService'])->name('api.customer.service-orders.emergency');
+    // Seguimiento en vivo de la urgencia recien enviada (polling de estado).
+    Route::get('/api/v1/customer/service-orders/{serviceOrder}', [ServiceOrderController::class, 'showForCustomer'])->name('api.customer.service-orders.show');
     Route::post('/api/v1/customer/service-orders/scheduled', [ServiceBookingController::class, 'bookScheduledService'])->name('api.customer.service-orders.scheduled');
     Route::post('/api/v1/customer/service-orders/quote', [ServiceBookingController::class, 'requestQuote'])->name('api.customer.service-orders.quote');
 });
