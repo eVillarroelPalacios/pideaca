@@ -38,7 +38,7 @@ class ServiceOrderController extends Controller
         }
 
         $data = $request->validate([
-            'status' => ['nullable', 'string', 'in:'.implode(',', ServiceOrder::STATUSES)],
+            'status' => ['nullable', 'string', 'in:'.implode(',', array_merge(ServiceOrder::STATUSES, ServiceOrder::DISPLAY_STATUSES))],
             'order_type' => ['nullable', 'string', 'in:'.implode(',', ServiceOrder::ORDER_TYPES)],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -46,7 +46,7 @@ class ServiceOrderController extends Controller
         $orders = ServiceOrder::query()
             ->forProvider($provider)
             ->with(['subGroup', 'customer', 'quotes.provider', 'ratings'])
-            ->when($data['status'] ?? null, fn ($query, $status) => $query->withStatus($status))
+            ->when($data['status'] ?? null, fn ($query, $status) => $query->whereIn('status', ServiceOrder::legacyStatusesFor($status)))
             ->when($data['order_type'] ?? null, fn ($query, $type) => $query->ofType($type))
             ->latest()
             ->paginate((int) ($data['per_page'] ?? 20))
@@ -59,7 +59,7 @@ class ServiceOrderController extends Controller
                     'id' => $provider->id,
                     'business_name' => $provider->business_name,
                 ],
-                'statuses' => ServiceOrder::STATUSES,
+                'statuses' => ServiceOrder::displayStatuses(),
                 'order_types' => ServiceOrder::ORDER_TYPES,
                 'orders' => collect($orders->items())->map(fn (ServiceOrder $order) => $this->orderPayload($order)),
                 'pagination' => [
@@ -88,7 +88,7 @@ class ServiceOrderController extends Controller
         }
 
         $data = $request->validate([
-            'status' => ['nullable', 'string', 'in:'.implode(',', ServiceOrder::STATUSES)],
+            'status' => ['nullable', 'string', 'in:'.implode(',', array_merge(ServiceOrder::STATUSES, ServiceOrder::DISPLAY_STATUSES))],
             'order_type' => ['nullable', 'string', 'in:'.implode(',', ServiceOrder::ORDER_TYPES)],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -96,7 +96,7 @@ class ServiceOrderController extends Controller
         $orders = ServiceOrder::query()
             ->where('customer_id', $customer->id)
             ->with(['subGroup', 'merchant', 'quotes.provider', 'ratings'])
-            ->when($data['status'] ?? null, fn ($query, $status) => $query->withStatus($status))
+            ->when($data['status'] ?? null, fn ($query, $status) => $query->whereIn('status', ServiceOrder::legacyStatusesFor($status)))
             ->when($data['order_type'] ?? null, fn ($query, $type) => $query->ofType($type))
             ->latest()
             ->paginate((int) ($data['per_page'] ?? 20))
@@ -109,7 +109,7 @@ class ServiceOrderController extends Controller
                     'id' => $customer->id,
                     'name' => $customer->name,
                 ],
-                'statuses' => ServiceOrder::STATUSES,
+                'statuses' => ServiceOrder::displayStatuses(),
                 'order_types' => ServiceOrder::ORDER_TYPES,
                 'orders' => collect($orders->items())->map(fn (ServiceOrder $order) => $this->orderPayload($order)),
                 'pagination' => [
@@ -148,7 +148,7 @@ class ServiceOrderController extends Controller
             'success' => true,
             'data' => [
                 'order' => $this->orderPayload($serviceOrder),
-                'statuses' => ServiceOrder::STATUSES,
+                'statuses' => ServiceOrder::displayStatuses(),
             ],
         ]);
     }

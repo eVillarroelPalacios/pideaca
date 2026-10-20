@@ -526,6 +526,203 @@ class ServiceProviderBrowseTest extends TestCase
             ->assertJsonPath('data.order.status', ServiceOrder::STATUS_REQUESTED);
     }
 
+    public function test_presupuesto_guarda_el_contexto_dinamico(): void
+    {
+        $context = json_encode([
+            'rubric' => 'plomeria',
+            'tags' => ['Pérdida / filtración de agua', 'Termotanque o calefón'],
+            'answers' => [
+                'property_type' => ['value' => 'departamento', 'label' => 'Departamento'],
+                'materials' => ['value' => 'profesional', 'label' => 'Los provee el profesional'],
+            ],
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => $context,
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.quote_context.rubric', 'plomeria')
+            ->assertJsonPath('data.order.quote_context.tags.0', 'Pérdida / filtración de agua')
+            ->assertJsonPath('data.order.quote_context.answers.property_type.value', 'departamento');
+
+        $order = ServiceOrder::find($response->json('data.order.id'));
+        $this->assertSame('plomeria', $order->quote_context['rubric']);
+        $this->assertSame('Departamento', $order->quote_context['answers']['property_type']['label']);
+    }
+
+    public function test_presupuesto_sin_contexto_deja_la_columna_nula(): void
+    {
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+            ])
+            ->assertStatus(201);
+
+        $order = ServiceOrder::find($response->json('data.order.id'));
+        $this->assertNull($order->quote_context);
+    }
+
+    public function test_presupuesto_rechaza_contexto_no_json(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => 'esto no es json',
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonValidationErrors('quote_context');
+    }
+
+    public function test_presupuesto_rechaza_contexto_con_forma_invalida(): void
+    {
+        // tags debe ser un array de textos.
+        $context = json_encode(['rubric' => 'plomeria', 'tags' => 'no-array', 'answers' => []]);
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => $context,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonValidationErrors('quote_context');
+    }
+
+    public function test_presupuesto_guarda_disponibilidad_y_nivel_de_detalle(): void
+    {
+        $context = json_encode([
+            'rubric' => 'electricidad',
+            'tags' => ['Cortocircuito'],
+            'answers' => [],
+            'availability' => ['mode' => 'ventana', 'label' => 'Franja horaria: tarde', 'window' => ['from' => '12:00', 'to' => '18:00']],
+            'quality' => ['level' => 'alto', 'score' => 85],
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Revisar tablero electrico',
+                'photos' => [UploadedFile::fake()->image('tablero.jpg')],
+                'quote_context' => $context,
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.quote_context.availability.mode', 'ventana')
+            ->assertJsonPath('data.order.quote_context.availability.window.to', '18:00')
+            ->assertJsonPath('data.order.quote_context.quality.level', 'alto')
+            ->assertJsonPath('data.order.quote_context.quality.score', 85);
+
+        $order = ServiceOrder::find($response->json('data.order.id'));
+        $this->assertSame('ventana', $order->quote_context['availability']['mode']);
+        $this->assertSame('alto', $order->quote_context['quality']['level']);
+    }
+
+    public function test_presupuesto_rechaza_disponibilidad_invalida(): void
+    {
+        $context = json_encode([
+            'rubric' => 'plomeria',
+            'tags' => [],
+            'answers' => [],
+            'availability' => ['mode' => 'cuando-sea'],
+        ]);
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => $context,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonValidationErrors('quote_context');
+    }
+
+    public function test_presupuesto_normaliza_el_puntaje_del_nivel_de_detalle(): void
+    {
+        // score fuera de rango se recorta a 0..100; nivel invalido se rechaza.
+        $context = json_encode([
+            'rubric' => 'plomeria',
+            'tags' => [],
+            'answers' => [],
+            'quality' => ['level' => 'medio', 'score' => 250],
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => $context,
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.quote_context.quality.score', 100);
+
+        $badContext = json_encode([
+            'rubric' => 'plomeria',
+            'tags' => [],
+            'answers' => [],
+            'quality' => ['level' => 'altisimo', 'score' => 50],
+        ]);
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/quote', [
+                'provider_id' => $this->provider->id,
+                'details' => 'Arreglar una perdida de gas',
+                'photos' => [UploadedFile::fake()->image('trabajo.jpg')],
+                'quote_context' => $badContext,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('quote_context');
+    }
+
+    public function test_dashboard_renderiza_el_selector_de_disponibilidad_y_el_nivel_de_detalle(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Selector de disponibilidad + franja horaria.
+            ->assertSee('id="fd-solic-quote-availability"', false)
+            ->assertSee('name="fd-quote-avail" value="asap"', false)
+            ->assertSee('name="fd-quote-avail" value="manana"', false)
+            ->assertSee('name="fd-quote-avail" value="ventana"', false)
+            ->assertSee('onchange="fdSolicQuotePickAvailability(this)"', false)
+            ->assertSee('id="fd-solic-quote-window"', false)
+            // Indicador de calidad.
+            ->assertSee('id="fd-solic-quote-quality"', false)
+            ->assertSee('id="fd-solic-quote-quality-badge"', false)
+            ->assertSee('id="fd-solic-quote-quality-fill"', false)
+            // Handlers JS.
+            ->assertSee('window.fdSolicQuotePickAvailability = function', false)
+            ->assertSee('function fdSolicQuoteRenderQuality()', false)
+            ->assertSee('function fdSolicQuoteCurrentAvailability()', false)
+            // Boton principal con el nuevo label.
+            ->assertSee('Enviar Solicitud de Presupuesto', false);
+    }
+
+    public function test_el_submit_incluye_disponibilidad_y_nivel_de_detalle(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->assertSee('fdSolicQuoteSyncState', false)
+            ->assertSee('fdSolicQuoteValidate', false)
+            ->assertSee('fdSolicQuoteBuildForm', false)
+            ->assertSee('fdSolicQuoteResetState', false)
+            ->assertSee('fdSolicQuoteState', false)
+            ->assertSee('quote_context', false);
+    }
+
     public function test_no_se_puede_elegir_un_prestador_que_no_ofrece_el_tipo(): void
     {
         // Electricista no ofrece EMERGENCY.
@@ -602,7 +799,11 @@ class ServiceProviderBrowseTest extends TestCase
         // El seguimiento pinta la foto del prestador aunque todavia no tenga
         // banner cargado (la clave siempre viaja para el card de contacto).
         $this->assertArrayHasKey('photo_url', $response->json('data.order.merchant'));
-        $this->assertArrayHasKey('statuses', $response->json('data'));
+        // El listado solo ofrece los estados simplificados para filtrar.
+        $this->assertSame(
+            ['PENDIENTE', 'PRESUPUESTADO', 'EN_PROCESO', 'COMPLETADO', 'CANCELADO'],
+            $response->json('data.statuses')
+        );
     }
 
     public function test_seguimiento_rechaza_la_orden_de_otro_cliente(): void
@@ -652,9 +853,9 @@ class ServiceProviderBrowseTest extends TestCase
             ->assertSee('function fdSolicTrackStageOf', false)
             ->assertSee('function fdSolicTrackPoll', false)
             // Pasos, aviso de espera y efecto shimmer del temporizador.
-            ->assertSee("label: 'Solicitada'", false)
-            ->assertSee("label: 'Aceptada'", false)
-            ->assertSee("label: 'En camino'", false)
+            ->assertSee("label: 'Pendiente'", false)
+            ->assertSee("label: 'Presupuestado'", false)
+            ->assertSee("label: 'En proceso'", false)
             ->assertSee('Contactando al prestador', false)
             ->assertSee('fdTrackShimmer', false)
             // La pantalla arranca encadenada al alta exitosa de la urgencia.
@@ -912,5 +1113,99 @@ class ServiceProviderBrowseTest extends TestCase
             ->assertStatus(201)
             ->assertJsonPath('data.order.address', 'Av. Rivadavia 1234, 4º B, Caballito')
             ->assertJsonStructure(['data' => ['order' => ['scheduled_at', 'address', 'merchant' => ['contact_name']]]]);
+    }
+
+    public function test_dashboard_carga_la_configuracion_dinamica_de_presupuestos(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Configuracion por rubro + fallback + resolver.
+            ->assertSee('var FD_QUOTE_CONFIGS = {', false)
+            ->assertSee('var FD_QUOTE_FALLBACK = {', false)
+            ->assertSee('function fdQuoteSlugOf(provider)', false)
+            ->assertSee('function fdQuoteConfigFor(provider)', false)
+            // Rubros base presentes.
+            ->assertSee("slug: 'plomeria'", false)
+            ->assertSee("slug: 'electricidad'", false)
+            ->assertSee("slug: 'pintura'", false)
+            ->assertSee("slug: 'generic'", false)
+            // Estructura esperada de cada rubro.
+            ->assertSee('quickTags:', false)
+            ->assertSee('questions:', false)
+            ->assertSee('placeholders:', false)
+            // Keywords para resolver el rubro por descripcion del subgrupo.
+            ->assertSee("keywords: ['plom'", false);
+    }
+
+    public function test_dashboard_renderiza_los_contenedores_del_presupuesto_contextual(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Contenedores dinamicos dentro del form de presupuesto.
+            ->assertSee('id="fd-solic-quote-context"', false)
+            ->assertSee('id="fd-solic-quote-cat-label"', false)
+            ->assertSee('id="fd-solic-quote-tags"', false)
+            ->assertSee('id="fd-solic-quote-questions"', false)
+            ->assertSee('id="fd-solic-quote-summary"', false)
+            // Renderer y handlers de chips/preguntas.
+            ->assertSee('window.fdSolicRenderQuote = function', false)
+            ->assertSee('function fdSolicRenderQuoteTags', false)
+            ->assertSee('function fdSolicRenderQuoteQuestions', false)
+            ->assertSee('window.fdSolicToggleQuoteTag = function', false)
+            ->assertSee('window.fdSolicPickQuoteAnswer = function', false)
+            ->assertSee('function fdSolicQuoteSummary', false);
+    }
+
+    public function test_el_presupuesto_envia_el_contexto_dinamico(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // El submit construye quote_context desde el estado unificado.
+            ->assertSee("form.append('quote_context', JSON.stringify(", false)
+            ->assertSee('rubric: s.rubric', false)
+            ->assertSee('tags: s.tags || []', false)
+            ->assertSee('answers: s.answers || {}', false)
+            ->assertSee('availability: s.availability', false)
+            ->assertSee('quality: s.quality', false);
+    }
+
+    public function test_dashboard_renderiza_la_zona_de_arrastrar_y_soltar(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Dropzone + inputs ocultos + contenedores de preview.
+            ->assertSee('id="fd-solic-quote-dropzone"', false)
+            ->assertSee('onclick="return fdSolicQuoteOpenPicker()"', false)
+            ->assertSee('ondrop="return fdSolicQuoteDrop(event)"', false)
+            ->assertSee('id="fd-solic-quote-photo-grid"', false)
+            ->assertSee('id="fd-solic-quote-video-preview"', false)
+            // El input file generico ya no es visible.
+            ->assertSee('id="fd-solic-quote-photos" accept="image/jpeg,image/png,image/webp" multiple style="display:none;"', false)
+            ->assertSee('id="fd-solic-quote-video" accept="video/mp4,video/webm,video/quicktime" style="display:none;"', false)
+            // Handlers del componente.
+            ->assertSee('window.fdSolicQuoteDrop = function', false)
+            ->assertSee('window.fdSolicQuoteAddPhotos = function', false)
+            ->assertSee('window.fdSolicQuoteRemovePhoto = function', false)
+            ->assertSee('window.fdSolicQuoteSetVideo = function', false)
+            ->assertSee('window.fdSolicQuoteRemoveVideo = function', false)
+            // Limites declarados (5 fotos x 5 MB, video 20 MB).
+            ->assertSee('FD_SOLIC_QUOTE_MAX_PHOTOS = 5', false)
+            ->assertSee('FD_SOLIC_QUOTE_MAX_PHOTO_BYTES = 5 * 1024 * 1024', false)
+            ->assertSee('FD_SOLIC_QUOTE_MAX_VIDEO_BYTES = 20 * 1024 * 1024', false);
+    }
+
+    public function test_el_submit_del_presupuesto_arma_el_formdata_desde_los_archivos(): void
+    {
+        $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            // Fotos y video salen del estado unificado (buildForm).
+            ->assertSee('fdSolicQuoteBuildForm', false)
+            ->assertSee("form.append('photos[]', file, file.name)", false)
+            ->assertSee("form.append('video', s.video, s.video.name)", false);
     }
 }

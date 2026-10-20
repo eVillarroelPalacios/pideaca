@@ -387,23 +387,135 @@
     </form>
 
     <form id="fd-solic-form-quote" onsubmit="return fdSolicSubmitQuote(event)" style="display:none;background:#fff;border:1px solid #e5e7eb;padding:16px;">
-        <p style="font-size:11px;font-weight:700;color:#94a3b8;margin:0 0 10px;text-transform:uppercase;letter-spacing:.5px;">Detallá el trabajo</p>
+        <style>
+            #fd-solic-quote-context { display:flex;align-items:center;gap:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 13px;margin-bottom:14px; }
+            #fd-solic-quote-context .fd-quote-cat-ico { display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;border-radius:50%;background:#fff;border:1px solid #fed7aa;font-size:17px; }
+            #fd-solic-form-quote .fd-quote-chip { display:inline-flex;align-items:center;gap:6px;background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:9999px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s; }
+            #fd-solic-form-quote .fd-quote-chip:hover { border-color:#D24C19;color:#D24C19;background:#fff7ed; }
+            #fd-solic-form-quote .fd-quote-chip.is-active { background:#fff1eb;border-color:#D24C19;color:#D24C19;box-shadow:0 0 0 2px rgba(210,76,25,.12); }
+            #fd-solic-form-quote .fd-quote-radio { position:relative;display:inline-flex; }
+            #fd-solic-form-quote .fd-quote-radio input { position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer; }
+            #fd-solic-form-quote .fd-quote-radio-face { display:inline-flex;align-items:center;gap:8px;background:#fff;color:#374151;border:1.5px solid #d1d5db;border-radius:6px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s; }
+            #fd-solic-form-quote .fd-quote-radio-face:hover { border-color:#D24C19;color:#D24C19;background:#fff7ed; }
+            #fd-solic-form-quote .fd-quote-radio input:checked + .fd-quote-radio-face { background:#fff1eb;border-color:#D24C19;color:#D24C19;box-shadow:0 0 0 2px rgba(210,76,25,.14); }
+            #fd-solic-form-quote .fd-quote-radio input:focus-visible + .fd-quote-radio-face { outline:2px solid #0c2a4d;outline-offset:2px; }
+            #fd-solic-quote-summary { display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 13px;margin-top:2px; }
+            /* Dropzone de archivos (drag & drop) del presupuesto. */
+            #fd-solic-quote-dropzone { width:100%;background:#f9fafb;border:1.5px dashed #cbd5e1;border-radius:8px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .12s; }
+            #fd-solic-quote-dropzone:hover { border-color:#D24C19;background:#fff7ed; }
+            #fd-solic-quote-dropzone.is-drag { border-color:#D24C19;background:#fff1eb;box-shadow:0 0 0 3px rgba(210,76,25,.12); }
+            #fd-solic-quote-dropzone .fd-dz-ico { display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:#fff;border:1px solid #fed7aa;color:#D24C19;margin-bottom:8px; }
+            #fd-solic-quote-dropzone .fd-dz-title { font-size:13.5px;font-weight:700;color:#0c2a4d;margin:0; }
+            #fd-solic-quote-dropzone .fd-dz-sub { font-size:11.5px;color:#6b7280;margin:4px 0 0; }
+            #fd-solic-quote-photo-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:12px; }
+            #fd-solic-quote-photo-grid .fd-photo-thumb { position:relative;aspect-ratio:1;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff; }
+            #fd-solic-quote-photo-grid .fd-photo-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
+            #fd-solic-quote-photo-grid .fd-photo-remove { position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(15,23,42,.72);color:#fff;border:none;cursor:pointer;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0; }
+            #fd-solic-quote-photo-grid .fd-photo-remove:hover { background:#b91c1c; }
+            #fd-solic-quote-video-preview { display:none;align-items:center;gap:12px;margin-top:12px;border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#fff; }
+            #fd-solic-quote-video-preview .fd-video-box { width:64px;height:64px;flex:none;border-radius:6px;overflow:hidden;background:#0c2a4d;display:flex;align-items:center;justify-content:center;color:#fff; }
+            #fd-solic-quote-video-preview video { width:100%;height:100%;object-fit:cover; }
+            #fd-solic-quote-video-preview .fd-video-remove { margin-left:auto;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer; }
+            #fd-solic-quote-video-preview .fd-video-remove:hover { background:#fee2e2; }
+            /* Selector de disponibilidad. */
+            #fd-solic-quote-availability { display:flex;flex-wrap:wrap;gap:8px; }
+            #fd-solic-form-quote .fd-quote-avail { position:relative;display:inline-flex; }
+            #fd-solic-form-quote .fd-quote-avail input { position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer; }
+            #fd-solic-form-quote .fd-quote-avail-face { display:inline-flex;align-items:center;gap:7px;background:#fff;color:#374151;border:1.5px solid #d1d5db;border-radius:9999px;padding:9px 15px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s; }
+            #fd-solic-form-quote .fd-quote-avail-face:hover { border-color:#D24C19;color:#D24C19;background:#fff7ed; }
+            #fd-solic-form-quote .fd-quote-avail input:checked + .fd-quote-avail-face { background:#fff1eb;border-color:#D24C19;color:#D24C19;box-shadow:0 0 0 2px rgba(210,76,25,.14); }
+            #fd-solic-form-quote .fd-quote-avail input:focus-visible + .fd-quote-avail-face { outline:2px solid #0c2a4d;outline-offset:2px; }
+            #fd-solic-quote-window { display:none;margin-top:10px;max-width:280px;width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;background:#fff;outline:none; }
+            /* Indicador de calidad de la solicitud. */
+            #fd-solic-quote-quality { background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:11px 13px;margin-bottom:14px; }
+            #fd-solic-quote-quality .fd-qual-track { height:7px;border-radius:9999px;background:#e5e7eb;overflow:hidden;margin-top:7px; }
+            #fd-solic-quote-quality .fd-qual-fill { height:100%;width:0;border-radius:9999px;background:#b45309;transition:width .25s,background .25s; }
+            #fd-solic-form-quote #fd-solic-quote-submit { width:100%;background:#D24C19;color:#fff;border:none;padding:16px 20px;border-radius:8px;font-size:15px;font-weight:800;letter-spacing:.4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 14px rgba(210,76,25,.28);transition:background .12s; }
+            #fd-solic-form-quote #fd-solic-quote-submit:hover { background:#bd4115; }
+            #fd-solic-form-quote #fd-solic-quote-submit:active { transform:translateY(1px); }
+        </style>
+        {{-- Contexto del rubro: se completa al detectar la categoria del prestador. --}}
+        <div id="fd-solic-quote-context">
+            <span class="fd-quote-cat-ico">🏠</span>
+            <div style="min-width:0;">
+                <p style="font-size:11px;font-weight:700;color:#9a3412;margin:0;text-transform:uppercase;letter-spacing:.4px;">Rubro detectado</p>
+                <p id="fd-solic-quote-cat-label" style="font-size:13.5px;font-weight:700;color:#0f172a;margin:1px 0 0;">Servicios del hogar</p>
+            </div>
+        </div>
+
+        {{-- Atajos contextuales del rubro (multi-selección). --}}
+        <div style="grid-column:1/-1;margin-bottom:14px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">Atajos rápidos <span style="font-weight:400;color:#94a3b8;">(tocá los que apliquen)</span></label>
+            <div id="fd-solic-quote-tags" role="group" aria-label="Problemas frecuentes" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+
+        {{-- Preguntas contextuales del rubro (radios/selects). --}}
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px;">
+            <div id="fd-solic-quote-questions" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;"></div>
+        </div>
+
+        {{-- Disponibilidad horaria / urgencia. --}}
+        <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:8px;">¿Cuándo necesitás el trabajo?</label>
+            <div id="fd-solic-quote-availability" role="radiogroup" aria-label="Disponibilidad del trabajo">
+                <label class="fd-quote-avail"><input type="radio" name="fd-quote-avail" value="asap" onchange="fdSolicQuotePickAvailability(this)"><span class="fd-quote-avail-face">⚡ Lo antes posible</span></label>
+                <label class="fd-quote-avail"><input type="radio" name="fd-quote-avail" value="manana" onchange="fdSolicQuotePickAvailability(this)"><span class="fd-quote-avail-face">🗓️ Mañana</span></label>
+                <label class="fd-quote-avail"><input type="radio" name="fd-quote-avail" value="ventana" onchange="fdSolicQuotePickAvailability(this)"><span class="fd-quote-avail-face">🕒 Franja horaria</span></label>
+            </div>
+            <select id="fd-solic-quote-window" onchange="fdSolicQuoteSummary()" aria-label="Franja horaria">
+                <option value="manana|08:00|12:00">🌅 Mañana (08:00 a 12:00)</option>
+                <option value="tarde|12:00|18:00">☀️ Tarde (12:00 a 18:00)</option>
+                <option value="noche|18:00|21:00">🌙 Noche (18:00 a 21:00)</option>
+            </select>
+        </div>
+
+        {{-- Indicador de calidad de la solicitud (nivel de detalle). --}}
+        <div id="fd-solic-quote-quality" aria-live="polite">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                <span style="font-size:11.5px;font-weight:700;color:#0c2a4d;">Nivel de detalle de tu solicitud</span>
+                <span id="fd-solic-quote-quality-badge" style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:9999px;background:#fffbeb;color:#b45309;border:1px solid #fed7aa;">Bajo</span>
+            </div>
+            <div class="fd-qual-track"><div class="fd-qual-fill" id="fd-solic-quote-quality-fill"></div></div>
+            <p id="fd-solic-quote-quality-hint" style="font-size:11.5px;color:#6b7280;margin:7px 0 0;">Agregá detalles, fotos y atajos para recibir mejores presupuestos.</p>
+        </div>
+
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
             <div style="grid-column:1/-1;">
                 <label for="fd-solic-quote-details" style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Detalles del trabajo (obligatorio, máx 2000)</label>
                 <textarea id="fd-solic-quote-details" rows="3" maxlength="2000" placeholder="Ej: Quiero renovar la instalación eléctrica de un departamento de 3 ambientes" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;outline:none;"></textarea>
+                {{-- Resumen de lo elegido en chips/preguntas, para confirmar antes de enviar. --}}
+                <div id="fd-solic-quote-summary" aria-live="polite"></div>
             </div>
-            <div>
-                <label for="fd-solic-quote-photos" style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Fotos (1 a 5, máx 5 MB c/u)</label>
-                <input type="file" id="fd-solic-quote-photos" accept="image/jpeg,image/png,image/webp" multiple style="width:100%;font-size:12px;">
-            </div>
-            <div>
-                <label for="fd-solic-quote-video" style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px;">Video (opcional, máx 20 MB)</label>
-                <input type="file" id="fd-solic-quote-video" accept="video/mp4,video/webm,video/quicktime" style="width:100%;font-size:12px;">
+            <div style="grid-column:1/-1;">
+                <label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">Fotos y video</label>
+                {{-- Zona de arrastrar y soltar: reemplaza el input file generico. --}}
+                <div id="fd-solic-quote-dropzone" role="button" tabindex="0" aria-label="Arrastrá o elegí fotos y video"
+                     onclick="return fdSolicQuoteOpenPicker()" ondragover="return fdSolicQuoteDragOver(event)"
+                     ondragleave="return fdSolicQuoteDragLeave(event)" ondrop="return fdSolicQuoteDrop(event)"
+                     onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fdSolicQuoteOpenPicker(); }">
+                    <span class="fd-dz-ico">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                    </span>
+                    <p class="fd-dz-title">Arrastrá tus fotos y video acá</p>
+                    <p class="fd-dz-sub">o tocá para elegir · Fotos: 1 a 5 (máx 5 MB c/u) · Video: 1 (máx 20 MB)</p>
+                </div>
+                <input type="file" id="fd-solic-quote-photos" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="fdSolicQuoteAddPhotos(this.files); this.value='';">
+                <input type="file" id="fd-solic-quote-video" accept="video/mp4,video/webm,video/quicktime" style="display:none;" onchange="fdSolicQuoteSetVideo(this.files[0]); this.value='';">
+                {{-- Grid de miniaturas de fotos. --}}
+                <div id="fd-solic-quote-photo-grid" aria-live="polite"></div>
+                {{-- Preview del video elegido. --}}
+                <div id="fd-solic-quote-video-preview">
+                    <div class="fd-video-box" id="fd-solic-quote-video-box"></div>
+                    <div style="min-width:0;">
+                        <p id="fd-solic-quote-video-name" style="font-size:12.5px;font-weight:700;color:#0f172a;margin:0;overflow-wrap:anywhere;"></p>
+                        <p id="fd-solic-quote-video-size" style="font-size:11.5px;color:#6b7280;margin:2px 0 0;"></p>
+                    </div>
+                    <button type="button" class="fd-video-remove" onclick="return fdSolicQuoteRemoveVideo()">Quitar</button>
+                </div>
             </div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;">
-            <button type="submit" id="fd-solic-quote-submit" title="Pedir presupuesto" aria-label="Pedir presupuesto" style="background:#D24C19;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg></button>
+        <div style="margin-top:16px;">
+            <button type="submit" id="fd-solic-quote-submit" title="Enviar solicitud de presupuesto" aria-label="Enviar solicitud de presupuesto"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg><span>Enviar Solicitud de Presupuesto</span></button>
         </div>
     </form>
 </section>
@@ -421,6 +533,8 @@
         myAddresses: '{{ url("/api/me/addresses") }}',
         tracking: '{{ url("/api/v1/customer/service-orders") }}'
     };
+
+    @include('dashboard.sections.partials.quote-config')
 
     var FD_SOLIC_STAR = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
     var FD_SOLIC_STAR_FILLED = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
@@ -874,6 +988,10 @@
             fdSolicPrefillAddress();
         }
 
+        if (fdSolicService === 'quote') {
+            fdSolicRenderQuote(found);
+        }
+
         showForms();
     };
 
@@ -935,6 +1053,603 @@
         if (restEl) restEl.textContent = fdSolicMoney(rest);
         if (nowLabel) nowLabel.textContent = mode === 'FULL' ? 'Monto a abonar ahora (Pago total)' : 'Monto a abonar ahora (Seña 50%)';
     };
+
+    // ----------------------------------------------- presupuesto contextual
+
+    // Estado del formulario de presupuesto para el prestador elegido.
+    var fdSolicQuoteConfig = null;
+    var fdSolicQuoteTags = [];
+    var fdSolicQuoteAnswers = {};
+    // Texto que el usuario escribio a mano (para no pisarlo al togglear chips).
+    var fdSolicQuoteManualText = '';
+
+    // Archivos adjuntos (drag & drop): fotos y video, con sus object URLs.
+    var FD_SOLIC_QUOTE_MAX_PHOTOS = 5;
+    var FD_SOLIC_QUOTE_MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+    var FD_SOLIC_QUOTE_MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+    var fdSolicQuotePhotoFiles = [];
+    var fdSolicQuotePhotoUrls = [];
+    var fdSolicQuoteVideoFile = null;
+    var fdSolicQuoteVideoUrl = null;
+
+    var FD_SOLIC_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    var FD_SOLIC_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+    // Disponibilidad horaria elegida: null | {mode, label, window}.
+    var fdSolicQuoteAvailability = null;
+    var FD_SOLIC_AVAIL_LABELS = {
+        asap: 'Lo antes posible',
+        manana: 'Mañana',
+        ventana: 'Franja horaria',
+    };
+
+    // Estado unificado del formulario de presupuesto (fuente única para armar el envío).
+    var fdSolicQuoteState = {
+        provider_id: null,
+        rubric: 'generic',
+        tags: [],
+        answers: {},
+        availability: null,
+        quality: null,
+        details: '',
+        photos: [],
+        video: null,
+        quote_context: {
+            rubric: 'generic',
+            tags: [],
+            answers: {},
+            availability: null,
+            quality: null
+        }
+    };
+
+    // Pinta el encabezado de rubro, los chips de atajos y las preguntas.
+    window.fdSolicRenderQuote = function (provider) {
+        var config = fdQuoteConfigFor(provider || fdSolicSelected);
+        fdSolicQuoteConfig = config;
+        fdSolicQuoteTags = [];
+        fdSolicQuoteAnswers = {};
+        fdSolicQuoteManualText = '';
+        // Reinicia la disponibilidad elegida para el prestador anterior.
+        fdSolicQuoteResetState();
+
+        var label = document.getElementById('fd-solic-quote-cat-label');
+        if (label) label.textContent = config.label || FD_QUOTE_FALLBACK.label;
+
+        var context = document.getElementById('fd-solic-quote-context');
+        if (context) {
+            var ico = context.querySelector('.fd-quote-cat-ico');
+            if (ico) ico.textContent = config.icon || FD_QUOTE_FALLBACK.icon;
+        }
+
+        fdSolicRenderQuoteTags(config);
+        fdSolicRenderQuoteQuestions(config);
+
+        var details = document.getElementById('fd-solic-quote-details');
+        if (details) {
+            details.placeholder = (config.placeholders && config.placeholders.details) || FD_QUOTE_FALLBACK.placeholders.details;
+            details.value = '';
+        }
+        var photos = document.getElementById('fd-solic-quote-photos');
+        if (photos) photos.value = '';
+        var video = document.getElementById('fd-solic-quote-video');
+        if (video) video.value = '';
+
+        // Resetea los adjuntos arrastrados y libera las miniaturas.
+        fdSolicQuoteClearFiles();
+
+        fdSolicQuoteSummary();
+    };
+
+    function fdSolicRenderQuoteTags(config) {
+        var box = document.getElementById('fd-solic-quote-tags');
+        if (!box) return;
+
+        var tags = (config && config.quickTags) || [];
+        var html = '';
+        tags.forEach(function (tag, index) {
+            html += '<button type="button" class="fd-quote-chip" data-index="' + index + '" aria-pressed="false" '
+                + 'onclick="return fdSolicToggleQuoteTag(this)" title="' + esc(tag.value) + '">'
+                + esc(tag.value) + '</button>';
+        });
+        box.innerHTML = html;
+    }
+
+    function fdSolicRenderQuoteQuestions(config) {
+        var box = document.getElementById('fd-solic-quote-questions');
+        if (!box) return;
+
+        var questions = (config && config.questions) || [];
+        var html = '';
+        questions.forEach(function (q) {
+            html += '<div style="grid-column:1/-1;">'
+                + '<label style="display:block;font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px;">' + esc(q.label) + '</label>'
+                + '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+            (q.options || []).forEach(function (opt) {
+                var checked = opt.value === q.default ? ' checked' : '';
+                html += '<label class="fd-quote-radio">'
+                    + '<input type="radio" name="fd-quote-q-' + esc(q.id) + '" value="' + esc(opt.value) + '"'
+                    + ' data-question="' + esc(q.id) + '" data-label="' + esc(opt.label) + '"'
+                    + checked + ' onchange="fdSolicPickQuoteAnswer(this)">'
+                    + '<span class="fd-quote-radio-face">' + esc(opt.label) + '</span>'
+                    + '</label>';
+            });
+            html += '</div></div>';
+        });
+        box.innerHTML = html;
+
+        // Sembrar las respuestas por defecto en el estado.
+        questions.forEach(function (q) {
+            if (q.default !== undefined) fdSolicQuoteAnswers[q.id] = { value: q.default, label: fdSolicQuoteOptionLabel(q, q.default) };
+        });
+    }
+
+    function fdSolicQuoteOptionLabel(question, value) {
+        var found = '';
+        (question.options || []).forEach(function (opt) {
+            if (opt.value === value) found = opt.label;
+        });
+        return found || value;
+    }
+
+    // Toggle de un chip de atajo: agrega/quita su frase del detalle.
+    window.fdSolicToggleQuoteTag = function (btn) {
+        if (!btn || !fdSolicQuoteConfig) return false;
+        var index = parseInt(btn.getAttribute('data-index'), 10);
+        var tag = (fdSolicQuoteConfig.quickTags || [])[index];
+        if (!tag) return false;
+
+        var on = !btn.classList.contains('is-active');
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+
+        if (on) {
+            if (fdSolicQuoteTags.indexOf(tag.value) === -1) fdSolicQuoteTags.push(tag.value);
+        } else {
+            fdSolicQuoteTags = fdSolicQuoteTags.filter(function (v) { return v !== tag.value; });
+        }
+
+        fdSolicQuoteAutofill();
+        fdSolicQuoteSummary();
+        return false;
+    };
+
+    window.fdSolicPickQuoteAnswer = function (input) {
+        if (!input) return false;
+        fdSolicQuoteAnswers[input.getAttribute('data-question')] = {
+            value: input.value,
+            label: input.getAttribute('data-label') || input.value
+        };
+        fdSolicQuoteSummary();
+        return false;
+    };
+
+    // Vuelca los atajos elegidos al textarea respetando lo que escribio el user.
+    function fdSolicQuoteAutofill() {
+        var details = document.getElementById('fd-solic-quote-details');
+        if (!details) return;
+
+        var manual = fdSolicQuoteManualText;
+        var lines = fdSolicQuoteTags.slice();
+        details.value = lines.length ? lines.join('\n') + (manual ? '\n' + manual : '') : manual;
+    }
+
+    // Resumen visible de lo elegido (chips + preguntas).
+    function fdSolicQuoteSummary() {
+        var box = document.getElementById('fd-solic-quote-summary');
+        if (!box) return;
+
+        var rows = [];
+
+        if (fdSolicQuoteTags.length) {
+            rows.push(esc(fdSolicQuoteTags.join(' · ')));
+        }
+
+        Object.keys(fdSolicQuoteAnswers).forEach(function (id) {
+            var answer = fdSolicQuoteAnswers[id];
+            if (answer && answer.label) rows.push(esc(answer.label));
+        });
+
+        if (!rows.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+        } else {
+            box.style.display = 'block';
+            box.innerHTML = '<p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin:0 0 4px;">Resumen de tu pedido</p>'
+                + rows.map(function (r) {
+                    return '<p style="font-size:12.5px;color:#374151;margin:1px 0;">• ' + r + '</p>';
+                }).join('');
+        }
+
+        // Recalcula el nivel de detalle cada vez que cambia algo visible.
+        fdSolicQuoteRenderQuality();
+    }
+
+    // -------------------------------------- disponibilidad horaria
+
+    // Sincroniza el estado unificado con los valores actuales del formulario.
+    function fdSolicQuoteSyncState() {
+        fdSolicQuoteState.provider_id = fdSolicSelected ? fdSolicSelected.id : null;
+        fdSolicQuoteState.rubric = (fdSolicQuoteConfig && fdSolicQuoteConfig.slug) || 'generic';
+        fdSolicQuoteState.tags = fdSolicQuoteTags.slice();
+        fdSolicQuoteState.answers = fdSolicQuoteAnswers;
+        fdSolicQuoteState.details = (document.getElementById('fd-solic-quote-details') || {}).value ? document.getElementById('fd-solic-quote-details').value.trim() : '';
+        fdSolicQuoteState.photos = fdSolicQuotePhotoFiles.slice();
+        fdSolicQuoteState.video = fdSolicQuoteVideoFile;
+        fdSolicQuoteState.availability = fdSolicQuoteCurrentAvailability ? fdSolicQuoteCurrentAvailability() : null;
+        fdSolicQuoteState.quality = fdSolicQuoteRenderQuality ? fdSolicQuoteRenderQuality() : null;
+
+        fdSolicQuoteState.quote_context = {
+            rubric: fdSolicQuoteState.rubric,
+            tags: fdSolicQuoteState.tags,
+            answers: fdSolicQuoteState.answers,
+            availability: fdSolicQuoteState.availability,
+            quality: fdSolicQuoteState.quality
+        };
+
+        return fdSolicQuoteState;
+    }
+
+    // Resetea el estado unificado al limpiar/recargar el formulario.
+    function fdSolicQuoteResetState() {
+        fdSolicQuoteState = {
+            provider_id: fdSolicSelected ? fdSolicSelected.id : null,
+            rubric: (fdSolicQuoteConfig && fdSolicQuoteConfig.slug) || 'generic',
+            tags: [],
+            answers: {},
+            availability: null,
+            quality: null,
+            details: '',
+            photos: [],
+            video: null,
+            quote_context: {
+                rubric: (fdSolicQuoteConfig && fdSolicQuoteConfig.slug) || 'generic',
+                tags: [],
+                answers: {},
+                availability: null,
+                quality: null
+            }
+        };
+        fdSolicQuoteAvailability = null;
+        var inputs = document.querySelectorAll('#fd-solic-quote-availability input');
+        Array.prototype.forEach.call(inputs, function (i) { i.checked = false; });
+        var win = document.getElementById('fd-solic-quote-window');
+        if (win) {
+            win.style.display = 'none';
+            win.selectedIndex = 0;
+        }
+        if (document.getElementById('fd-solic-quote-details')) document.getElementById('fd-solic-quote-details').value = '';
+        fdSolicQuoteClearFiles();
+        fdSolicQuoteSummary();
+    }
+
+    // Validación centralizada antes de armar el envío.
+    function fdSolicQuoteValidate(state) {
+        var errors = [];
+
+        if (!fdSolicSelected) errors.push('Seleccioná un prestador.');
+        else if (state && !state.provider_id) errors.push('Seleccioná un prestador.');
+
+        var details = state ? state.details : (document.getElementById('fd-solic-quote-details') || {}).value ? (document.getElementById('fd-solic-quote-details').value).trim() : '';
+        if (!details) errors.push('Contanos qué trabajo necesitás cotizar.');
+
+        var photos = state ? (state.photos || []) : fdSolicQuotePhotoFiles;
+        if (!photos || !photos.length) errors.push('Adjuntá al menos una foto del trabajo.');
+        else if (photos.length > FD_SOLIC_QUOTE_MAX_PHOTOS) errors.push('Podés adjuntar hasta ' + FD_SOLIC_QUOTE_MAX_PHOTOS + ' fotos.');
+
+        return { ok: errors.length === 0, errors: errors, details: details, photos: photos };
+    }
+
+    // Construye el FormData desde el estado unificado (fuente única).
+    function fdSolicQuoteBuildForm(state) {
+        var s = state || fdSolicQuoteSyncState();
+        var form = new FormData();
+
+        form.append('provider_id', s.provider_id || (fdSolicSelected ? fdSolicSelected.id : ''));
+        form.append('details', s.details || '');
+
+        (s.photos || []).forEach(function (file) { form.append('photos[]', file, file.name); });
+        if (s.video) form.append('video', s.video, s.video.name);
+
+        form.append('quote_context', JSON.stringify(s.quote_context || {
+            rubric: s.rubric,
+            tags: s.tags || [],
+            answers: s.answers || {},
+            availability: s.availability,
+            quality: s.quality
+        }));
+
+        return { form: form, state: s };
+    }
+
+    // Guarda la disponibilidad elegida y muestra/oculta la franja horaria.
+    window.fdSolicQuotePickAvailability = function (input) {
+        if (!input) return false;
+
+        var mode = input.value;
+        fdSolicQuoteAvailability = { mode: mode, label: FD_SOLIC_AVAIL_LABELS[mode] || null, window: null };
+
+        var win = document.getElementById('fd-solic-quote-window');
+        if (win) win.style.display = mode === 'ventana' ? 'block' : 'none';
+
+        fdSolicQuoteSummary();
+        return false;
+    };
+
+    // Devuelve la disponibilidad actual (con la franja resuelta si aplica).
+    function fdSolicQuoteCurrentAvailability() {
+        if (!fdSolicQuoteAvailability) return null;
+
+        var avail = {
+            mode: fdSolicQuoteAvailability.mode,
+            label: fdSolicQuoteAvailability.label,
+            window: null,
+        };
+
+        if (avail.mode === 'ventana') {
+            var win = document.getElementById('fd-solic-quote-window');
+            if (win && win.value) {
+                var parts = win.value.split('|');
+                avail.label = 'Franja horaria: ' + (parts[0] || '');
+                avail.window = { from: parts[1] || '', to: parts[2] || '' };
+            }
+        }
+
+        return avail;
+    }
+
+    // -------------------------------------- nivel de detalle (calidad)
+
+    // Calcula Bajo/Medio/Alto segun el detalle aportado y lo pinta.
+    function fdSolicQuoteRenderQuality() {
+        var badge = document.getElementById('fd-solic-quote-quality-badge');
+        var fill = document.getElementById('fd-solic-quote-quality-fill');
+        var hint = document.getElementById('fd-solic-quote-quality-hint');
+        if (!badge || !fill || !hint) return;
+
+        var details = document.getElementById('fd-solic-quote-details');
+        var length = details ? details.value.trim().length : 0;
+
+        var score = 0;
+        if (length >= 30) score += 20;
+        if (length >= 120) score += 15;
+        if (fdSolicQuoteTags.length) score += 15;
+        if (Object.keys(fdSolicQuoteAnswers).length) score += 15;
+        if (fdSolicQuotePhotoFiles.length >= 1) score += 15;
+        if (fdSolicQuotePhotoFiles.length >= 3) score += 10;
+        if (fdSolicQuoteVideoFile) score += 5;
+        if (fdSolicQuoteAvailability) score += 5;
+
+        var level = 'bajo';
+        var label = 'Bajo';
+        var colors = { bg: '#fffbeb', fg: '#b45309', border: '#fed7aa', fill: '#b45309' };
+
+        if (score >= 70) { level = 'alto'; label = 'Alto'; colors = { bg: '#ecfdf5', fg: '#047857', border: '#a7f3d0', fill: '#047857' }; }
+        else if (score >= 40) { level = 'medio'; label = 'Medio'; colors = { bg: '#eff6ff', fg: '#1d4ed8', border: '#bfdbfe', fill: '#1d4ed8' }; }
+
+        badge.textContent = label;
+        badge.style.background = colors.bg;
+        badge.style.color = colors.fg;
+        badge.style.borderColor = colors.border;
+        fill.style.width = Math.min(100, score) + '%';
+        fill.style.background = colors.fill;
+
+        var hints = {
+            bajo: 'Sumá detalles, fotos y atajos para recibir presupuestos más precisos.',
+            medio: 'Buen comienzo. Una foto más o describir mejor el trabajo ayuda al prestador.',
+            alto: 'Excelente. Tu solicitud tiene el detalle que necesitan los prestadores.',
+        };
+        hint.textContent = hints[level];
+
+        return { level: level, score: Math.min(100, score) };
+    }
+
+    // -------------------------------------- adjuntos del presupuesto (drop)
+
+    // Abre el selector de archivos (click o teclado sobre la dropzone).
+    window.fdSolicQuoteOpenPicker = function () {
+        var photos = document.getElementById('fd-solic-quote-photos');
+        if (photos) photos.click();
+        return false;
+    };
+
+    window.fdSolicQuoteDragOver = function (event) {
+        event.preventDefault();
+        var dz = document.getElementById('fd-solic-quote-dropzone');
+        if (dz) dz.classList.add('is-drag');
+        return false;
+    };
+
+    window.fdSolicQuoteDragLeave = function (event) {
+        event.preventDefault();
+        var dz = document.getElementById('fd-solic-quote-dropzone');
+        if (dz) dz.classList.remove('is-drag');
+        return false;
+    };
+
+    // Suelta archivos sobre la zona: los reparte entre fotos y video.
+    window.fdSolicQuoteDrop = function (event) {
+        event.preventDefault();
+        var dz = document.getElementById('fd-solic-quote-dropzone');
+        if (dz) dz.classList.remove('is-drag');
+
+        var files = event.dataTransfer ? event.dataTransfer.files : null;
+        if (!files || !files.length) return false;
+
+        var photos = [];
+        var video = null;
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            if (FD_SOLIC_PHOTO_TYPES.indexOf(f.type) !== -1) photos.push(f);
+            else if (FD_SOLIC_VIDEO_TYPES.indexOf(f.type) !== -1 && !video) video = f;
+        }
+
+        if (photos.length) fdSolicQuoteAddPhotos(photos);
+        if (video) fdSolicQuoteSetVideo(video);
+
+        if (!photos.length && !video) {
+            msg('error', 'Formato no soportado. Aceptamos JPG/PNG/WEBP y video MP4/WEBM/MOV.');
+        }
+        return false;
+    };
+
+    // Agrega fotos validando tipo, peso y tope de cantidad.
+    window.fdSolicQuoteAddPhotos = function (fileList) {
+        var incoming = Array.prototype.slice.call(fileList || []);
+        if (!incoming.length) return false;
+
+        var rejectedType = 0;
+        var rejectedSize = 0;
+        var rejectedMax = 0;
+
+        incoming.forEach(function (file) {
+            if (FD_SOLIC_PHOTO_TYPES.indexOf(file.type) === -1) { rejectedType++; return; }
+            if (file.size > FD_SOLIC_QUOTE_MAX_PHOTO_BYTES) { rejectedSize++; return; }
+            if (fdSolicQuotePhotoFiles.length >= FD_SOLIC_QUOTE_MAX_PHOTOS) { rejectedMax++; return; }
+            fdSolicQuotePhotoFiles.push(file);
+        });
+
+        if (rejectedType) msg('error', 'Algunas fotos no tienen un formato válido (usá JPG, PNG o WEBP).');
+        else if (rejectedSize) msg('error', 'Alguna foto supera los 5 MB. Elegí una más liviana.');
+        else if (rejectedMax) msg('error', 'Podés adjuntar hasta ' + FD_SOLIC_QUOTE_MAX_PHOTOS + ' fotos.');
+
+        fdSolicQuoteRenderPhotos();
+        return false;
+    };
+
+    // Quita una foto por indice y libera su object URL.
+    window.fdSolicQuoteRemovePhoto = function (index) {
+        if (index < 0 || index >= fdSolicQuotePhotoFiles.length) return false;
+        fdSolicQuotePhotoFiles.splice(index, 1);
+        fdSolicQuoteRenderPhotos();
+        return false;
+    };
+
+    // Define el video (reemplaza el anterior) validando tipo y peso.
+    window.fdSolicQuoteSetVideo = function (file) {
+        if (!file) return false;
+
+        if (FD_SOLIC_VIDEO_TYPES.indexOf(file.type) === -1) {
+            msg('error', 'El video debe ser MP4, WEBM o MOV.');
+            return false;
+        }
+        if (file.size > FD_SOLIC_QUOTE_MAX_VIDEO_BYTES) {
+            msg('error', 'El video supera los 20 MB. Elegí uno más liviano.');
+            return false;
+        }
+
+        fdSolicQuoteVideoFile = file;
+        fdSolicQuoteRenderVideo();
+        return false;
+    };
+
+    window.fdSolicQuoteRemoveVideo = function () {
+        if (fdSolicQuoteVideoUrl) {
+            URL.revokeObjectURL(fdSolicQuoteVideoUrl);
+            fdSolicQuoteVideoUrl = null;
+        }
+        fdSolicQuoteVideoFile = null;
+        fdSolicQuoteRenderVideo();
+        return false;
+    };
+
+    // Vuelca los arrays al DOM: grilla de thumbs + preview de video.
+    function fdSolicQuoteRenderPhotos() {
+        var grid = document.getElementById('fd-solic-quote-photo-grid');
+        if (!grid) return;
+
+        // Libera los object URLs previos antes de recrearlos.
+        fdSolicQuotePhotoUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+        fdSolicQuotePhotoUrls = [];
+
+        grid.innerHTML = fdSolicQuotePhotoFiles.map(function (file, index) {
+            var url = URL.createObjectURL(file);
+            fdSolicQuotePhotoUrls.push(url);
+            return '<div class="fd-photo-thumb">'
+                + '<img src="' + url + '" alt="' + esc(file.name) + '">'
+                + '<button type="button" class="fd-photo-remove" title="Quitar foto" aria-label="Quitar foto" onclick="return fdSolicQuoteRemovePhoto(' + index + ')">&times;</button>'
+                + '</div>';
+        }).join('');
+
+        fdSolicQuoteUpdateDzHint();
+        fdSolicQuoteSummary();
+    }
+
+    function fdSolicQuoteRenderVideo() {
+        var box = document.getElementById('fd-solic-quote-video-box');
+        var preview = document.getElementById('fd-solic-quote-video-preview');
+        var name = document.getElementById('fd-solic-quote-video-name');
+        var size = document.getElementById('fd-solic-quote-video-size');
+
+        if (fdSolicQuoteVideoUrl) {
+            URL.revokeObjectURL(fdSolicQuoteVideoUrl);
+            fdSolicQuoteVideoUrl = null;
+        }
+
+        if (!fdSolicQuoteVideoFile) {
+            if (preview) preview.style.display = 'none';
+            if (box) box.innerHTML = '';
+            fdSolicQuoteUpdateDzHint();
+            fdSolicQuoteSummary();
+            return;
+        }
+
+        fdSolicQuoteVideoUrl = URL.createObjectURL(fdSolicQuoteVideoFile);
+        if (box) box.innerHTML = '<video src="' + fdSolicQuoteVideoUrl + '" muted playsinline></video>';
+        if (name) name.textContent = fdSolicQuoteVideoFile.name;
+        if (size) size.textContent = fdSolicQuoteBytes(fdSolicQuoteVideoFile.size) + ' · Video';
+        if (preview) preview.style.display = 'flex';
+
+        fdSolicQuoteUpdateDzHint();
+        fdSolicQuoteSummary();
+    }
+
+    function fdSolicQuoteUpdateDzHint() {
+        var sub = document.querySelector('#fd-solic-quote-dropzone .fd-dz-sub');
+        if (!sub) return;
+        sub.textContent = 'Fotos ' + fdSolicQuotePhotoFiles.length + '/' + FD_SOLIC_QUOTE_MAX_PHOTOS
+            + ' · Video ' + (fdSolicQuoteVideoFile ? '1/1' : '0/1')
+            + ' · tocá para agregar más';
+    }
+
+    function fdSolicQuoteBytes(bytes) {
+        if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB';
+        return bytes + ' B';
+    }
+
+    // Limpia adjuntos y libera object URLs (al resetear el formulario).
+    function fdSolicQuoteClearFiles() {
+        fdSolicQuotePhotoUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+        fdSolicQuotePhotoUrls = [];
+        fdSolicQuotePhotoFiles = [];
+
+        if (fdSolicQuoteVideoUrl) {
+            URL.revokeObjectURL(fdSolicQuoteVideoUrl);
+            fdSolicQuoteVideoUrl = null;
+        }
+        fdSolicQuoteVideoFile = null;
+
+        fdSolicQuoteRenderPhotos();
+        fdSolicQuoteRenderVideo();
+    }
+
+    // Detecta cuando el usuario escribe a mano para no pisarle el texto.
+    document.addEventListener('input', function (event) {
+        var el = event.target;
+        if (el && el.id === 'fd-solic-quote-details') {
+            // Guardamos solo la parte que no proviene de los chips.
+            var chips = fdSolicQuoteTags.join('\n');
+            var value = el.value;
+            if (chips && value.indexOf(chips) === 0) {
+                fdSolicQuoteManualText = value.slice(chips.length).replace(/^\n/, '');
+            } else {
+                fdSolicQuoteManualText = value;
+            }
+            // El largo del texto afecta al nivel de detalle.
+            fdSolicQuoteRenderQuality();
+        }
+    });
 
     // --------------------------------------- calendario de citas (dias/horas)
 
@@ -1259,9 +1974,10 @@
     // ------------------------------------------------ seguimiento de urgencias
 
     var FD_SOLIC_TRACK_STEPS = [
-        { key: 'requested', label: 'Solicitada' },
-        { key: 'accepted', label: 'Aceptada' },
-        { key: 'on_the_way', label: 'En camino' }
+        { key: 'pendiente', label: 'Pendiente' },
+        { key: 'presupuestado', label: 'Presupuestado' },
+        { key: 'en_proceso', label: 'En proceso' },
+        { key: 'completado', label: 'Completado' }
     ];
 
     var FD_SOLIC_TRACK_PAYMENTS = {
@@ -1298,7 +2014,9 @@
     function fdSolicTrackStepIndex(stage) {
         if (stage === 'waiting') return 0;
         if (stage === 'accepted') return 1;
-        return 2; // on_the_way, in_progress y done cierran el paso En camino
+        if (stage === 'on_the_way' || stage === 'in_progress') return 2;
+        if (stage === 'done') return 3;
+        return 2; // cancelled queda en el ultimo paso visto
     }
 
     function fdSolicTrackElapsed() {
@@ -1334,12 +2052,12 @@
             cancelled: 'Solicitud cancelada'
         };
         var pills = {
-            waiting: ['En espera', '#fffbeb', '#b45309', '#fde68a'],
-            accepted: ['Aceptada', '#ecfdf5', '#047857', '#a7f3d0'],
-            on_the_way: ['En camino', '#eff6ff', '#1d4ed8', '#bfdbfe'],
-            in_progress: ['En curso', '#eff6ff', '#1d4ed8', '#bfdbfe'],
-            done: ['Completada', '#ecfdf5', '#047857', '#a7f3d0'],
-            cancelled: ['Cancelada', '#fef2f2', '#b91c1c', '#fecaca']
+            waiting: ['Pendiente', '#fffbeb', '#b45309', '#fde68a'],
+            accepted: ['Presupuestado', '#ecfdf5', '#047857', '#a7f3d0'],
+            on_the_way: ['En proceso', '#eff6ff', '#1d4ed8', '#bfdbfe'],
+            in_progress: ['En proceso', '#eff6ff', '#1d4ed8', '#bfdbfe'],
+            done: ['Completado', '#ecfdf5', '#047857', '#a7f3d0'],
+            cancelled: ['Cancelado', '#fef2f2', '#b91c1c', '#fecaca']
         };
         var pill = pills[stage] || pills.waiting;
 
@@ -2061,29 +2779,16 @@
         event.preventDefault();
         if (!fdSolicSelected) return false;
 
-        var details = document.getElementById('fd-solic-quote-details').value.trim();
-        if (!details) {
-            msg('error', 'Contanos qué trabajo necesitás cotizar.');
+        var state = fdSolicQuoteSyncState();
+        var validation = fdSolicQuoteValidate(state);
+
+        if (!validation.ok) {
+            msg('error', validation.errors[0]);
             return false;
         }
 
-        var photos = document.getElementById('fd-solic-quote-photos').files;
-        if (!photos.length) {
-            msg('error', 'Adjuntá al menos una foto del trabajo.');
-            return false;
-        }
-        if (photos.length > 5) {
-            msg('error', 'Podés adjuntar hasta 5 fotos.');
-            return false;
-        }
-
-        var form = new FormData();
-        form.append('provider_id', fdSolicSelected.id);
-        form.append('details', details);
-        for (var i = 0; i < photos.length; i++) form.append('photos[]', photos[i]);
-
-        var video = document.getElementById('fd-solic-quote-video').files[0];
-        if (video) form.append('video', video);
+        var built = fdSolicQuoteBuildForm(state);
+        var form = built.form;
 
         msgHide();
         busy('fd-solic-quote-submit', true);
@@ -2096,9 +2801,7 @@
                     return;
                 }
                 msg('ok', res.data.message + '\nSeguí la propuesta en "Mis Servicios".');
-                document.getElementById('fd-solic-quote-details').value = '';
-                document.getElementById('fd-solic-quote-photos').value = '';
-                document.getElementById('fd-solic-quote-video').value = '';
+                fdSolicRenderQuote(fdSolicSelected);
             })
             .catch(function () {
                 busy('fd-solic-quote-submit', false);

@@ -157,6 +157,42 @@ class ServiceOrderCustomerListTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_filtra_por_estado_simplificado(): void
+    {
+        $cotizada = $this->crearOrden([
+            'order_type' => ServiceOrder::TYPE_QUOTE,
+            'status' => ServiceOrder::STATUS_QUOTED,
+        ]);
+        $aceptada = $this->crearOrden([
+            'order_type' => ServiceOrder::TYPE_SCHEDULED,
+            'status' => ServiceOrder::STATUS_ACCEPTED,
+        ]);
+        $pendiente = $this->crearOrden([
+            'order_type' => ServiceOrder::TYPE_EMERGENCY,
+            'status' => ServiceOrder::STATUS_REQUESTED,
+        ]);
+
+        // PRESUPUESTADO agrupa QUOTED + ACCEPTED y deja afuera la pendiente.
+        $presupuestado = $this->actingAs($this->customer)
+            ->getJson('/api/v1/customer/service-orders?status=PRESUPUESTADO')
+            ->assertStatus(200);
+
+        $this->assertEqualsCanonicalizing(
+            [$cotizada->id, $aceptada->id],
+            collect($presupuestado->json('data.orders'))->pluck('id')->all()
+        );
+
+        // PENDIENTE son las REQUESTED (incluye la orden del setUp).
+        $espera = $this->actingAs($this->customer)
+            ->getJson('/api/v1/customer/service-orders?status=PENDIENTE')
+            ->assertStatus(200);
+
+        $this->assertEqualsCanonicalizing(
+            [$this->order->id, $pendiente->id],
+            collect($espera->json('data.orders'))->pluck('id')->all()
+        );
+    }
+
     public function test_el_payload_trae_la_propuesta_pendiente_y_marca_cancellable(): void
     {
         $presupuesto = $this->crearOrden([

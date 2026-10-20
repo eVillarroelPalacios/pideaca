@@ -59,22 +59,18 @@
     if (!sec) return;
 
     var STATUS_LABEL = {
-        REQUESTED: 'Solicitado',
-        QUOTED: 'Presupuestado',
-        ACCEPTED: 'Aceptado',
-        PROVIDER_DISPATCHED: 'En camino',
-        IN_PROGRESS: 'En curso',
-        COMPLETED: 'Completado',
-        CANCELLED: 'Cancelado'
+        PENDIENTE: 'Pendiente',
+        PRESUPUESTADO: 'Presupuestado',
+        EN_PROCESO: 'En proceso',
+        COMPLETADO: 'Completado',
+        CANCELADO: 'Cancelado'
     };
     var STATUS_COLOR = {
-        REQUESTED: '#b45309',
-        QUOTED: '#6d28d9',
-        ACCEPTED: '#1d4ed8',
-        PROVIDER_DISPATCHED: '#0369a1',
-        IN_PROGRESS: '#c2410c',
-        COMPLETED: '#047857',
-        CANCELLED: '#b91c1c'
+        PENDIENTE: '#b45309',
+        PRESUPUESTADO: '#6d28d9',
+        EN_PROCESO: '#0369a1',
+        COMPLETADO: '#047857',
+        CANCELADO: '#b91c1c'
     };
     var TYPE_LABEL = { EMERGENCY: 'Urgencia 24/7', SCHEDULED: 'Cita programada', QUOTE: 'Presupuesto' };
     var TYPE_COLOR = { EMERGENCY: '#dc2626', SCHEDULED: '#1d4ed8', QUOTE: '#6d28d9' };
@@ -276,52 +272,51 @@
         return list;
     }
 
-    var MIS_ICONS = [
-        // Solicitado: cliente
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/><path d="M4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>',
+    var MIS_ICONS = {
+        // Pendiente: cliente esperando
+        pendiente: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/><path d="M4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>',
         // Presupuestado: documento
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-        // Aceptado: tilde
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-        // En camino: camión
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
-        // En curso: herramienta
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+        presupuestado: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        // En proceso: camión en camino / trabajo en curso
+        en_proceso: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
         // Completado: casa
-        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>'
-    ];
+        completado: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>'
+    };
 
     var MIS_STEPS = [
-        ['REQUESTED', 'Solicitado', MIS_ICONS[0]],
-        ['QUOTED', 'Presupuestado', MIS_ICONS[1]],
-        ['ACCEPTED', 'Aceptado', MIS_ICONS[2]],
-        ['PROVIDER_DISPATCHED', 'En camino', MIS_ICONS[3]],
-        ['IN_PROGRESS', 'En curso', MIS_ICONS[4]],
-        ['COMPLETED', 'Completado', MIS_ICONS[5]]
+        ['PENDIENTE', 'Pendiente', MIS_ICONS.pendiente],
+        ['PRESUPUESTADO', 'Presupuestado', MIS_ICONS.presupuestado],
+        ['EN_PROCESO', 'En proceso', MIS_ICONS.en_proceso],
+        ['COMPLETADO', 'Completado', MIS_ICONS.completado]
     ];
 
     function stepsFor(o) {
         var steps = MIS_STEPS.slice();
+        // Aceptado tambien cuenta como presupuesto cerrado (urgencias/citas
+        // aceptadas sin propuesta formal).
         var cotizada = o.status === 'QUOTED'
+            || o.status === 'ACCEPTED'
             || !!o.quote
             || (o.proposals || []).length > 0
             || parseFloat(o.additional_cost || 0) > 0;
 
         // Sin cotizacion en la historia del servicio, ese paso no se muestra.
         if (!cotizada) {
-            steps = steps.filter(function (s) { return s[0] !== 'QUOTED'; });
+            steps = steps.filter(function (s) { return s[0] !== 'PRESUPUESTADO'; });
         }
         return steps;
     }
 
     function trackHtml(o) {
-        if (o.status === 'CANCELLED') {
+        var display = o.display_status || o.status;
+
+        if (o.status === 'CANCELLED' || display === 'CANCELADO') {
             return '<div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:12px 16px;font-size:13px;color:#b91c1c;font-weight:700;">Servicio cancelado</div>';
         }
 
         var steps = stepsFor(o);
         var current = -1;
-        steps.forEach(function (step, i) { if (step[0] === o.status) current = i; });
+        steps.forEach(function (step, i) { if (step[0] === display) current = i; });
         if (current < 0) return '';
 
         var html = '<div style="display:flex;align-items:flex-start;padding:16px 16px 8px;overflow-x:auto;">';
@@ -384,7 +379,7 @@
             + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
             + '<span style="font-size:13px;font-weight:700;color:#0c2a4d;font-family:ui-monospace,monospace;">Servicio #' + esc(o.id) + '</span>'
             + badge(TYPE_LABEL[o.order_type] || o.order_type, TYPE_COLOR[o.order_type] || '#6b7280')
-            + badge(o.status_label || STATUS_LABEL[o.status] || o.status, STATUS_COLOR[o.status] || '#6b7280')
+                + badge(o.status_label || STATUS_LABEL[o.display_status] || o.status, STATUS_COLOR[o.display_status] || '#6b7280')
             + badge(ESCROW_LABEL[o.escrow_status] || o.escrow_status || '', ESCROW_COLOR[o.escrow_status] || '#6b7280')
             + '</div>'
             + '<span style="font-size:11px;color:#94a3b8;">' + esc(dateText(o.created_at)) + '</span>'

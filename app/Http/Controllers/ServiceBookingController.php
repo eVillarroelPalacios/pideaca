@@ -282,7 +282,16 @@ class ServiceBookingController extends Controller
             'photos' => ['required', 'array', 'min:1', 'max:'.(int) config('bookings.max_quote_photos', 5)],
             'photos.*' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'video' => ['nullable', 'file', 'mimes:mp4,m4v,webm,mov,qt', 'max:20480'],
+            'quote_context' => ['nullable', 'string', 'max:5000'],
         ]);
+
+        // El contexto dinamico llega como string JSON; lo decodificamos y
+        // validamos la forma interna (rubro, atajos y respuestas por pregunta).
+        $quoteContext = $this->decodeQuoteContext($request->input('quote_context'));
+
+        if ($quoteContext instanceof JsonResponse) {
+            return $quoteContext;
+        }
 
         $merchantId = null;
 
@@ -307,7 +316,7 @@ class ServiceBookingController extends Controller
         }
 
         try {
-            $order = DB::transaction(function () use ($data, $customer, $merchantId) {
+            $order = DB::transaction(function () use ($data, $customer, $merchantId, $quoteContext) {
                 return ServiceOrder::create([
                     'customer_id' => $customer->id,
                     'sub_group_id' => $data['sub_group_id'],
@@ -319,6 +328,7 @@ class ServiceBookingController extends Controller
                     'total_amount' => 0,
                     'escrow_status' => ServiceOrder::ESCROW_HOLDING,
                     'description' => $data['details'],
+                    'quote_context' => $quoteContext,
                 ]);
             });
 
@@ -641,6 +651,163 @@ class ServiceBookingController extends Controller
         Log::info('Cita #'.$order->id.': '.$order->payment_mode.' por $'
             .number_format((float) $order->deposit_amount, 2, ',', '.')
             .' via '.$order->payment_method.' (gateway manual).');
+    }
+
+    /**
+     * Decodifica y valida el contexto dinamico del presupuesto (rubro, atajos
+     * y respuestas). Devuelve array listo para persistir, null si no vino, o
+     * un JsonResponse 422 si la forma es invalida.
+     *
+     * @return array<string, mixed>|null|JsonResponse
+     */
+    private function decodeQuoteContext(?string $raw): array|null|JsonResponse
+    {
+        $raw = trim((string) $raw);
+
+        if ($raw === '') {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
+            return $this->invalidQuoteContext('El contexto del presupuesto no es un JSON válido.');
+        }
+
+        $rubric = $decoded['rubric'] ?? null;
+        $tags = $decoded['tags'] ?? [];
+        $answers = $decoded['answers'] ?? [];
+        $availability = $decoded['availability'] ?? null;
+        $quality = $decoded['quality'] ?? null;
+
+        if ($rubric !== null && (! is_string($rubric) || mb_strlen($rubric) > 40)) {
+            return $this->invalidQuoteContext('El rubro del contexto es inválido.');
+        }
+
+        if (! is_array($tags) || count($tags) > 10) {
+            return $this->invalidQuoteContext('Los atajos del contexto son inválidos.');
+        }
+
+        foreach ($tags as $tag) {
+            if (! is_string($tag) || mb_strlen($tag) > 200) {
+                return $this->invalidQuoteContext('Cada atajo debe ser un texto de hasta 200 caracteres.');
+            }
+        }
+
+        if (! is_array($answers)) {
+            return $this->invalidQuoteContext('Las respuestas del contexto son inválidas.');
+        }
+
+        foreach ($answers as $key => $answer) {
+            if (! is_string($key) || mb_strlen($key) > 60) {
+                return $this->invalidQuoteContext('La clave de una respuesta es inválida.');
+            }
+            if (! is_array($answer) || ! isset($answer['value']) || ! is_string($answer['value']) || mb_strlen($answer['value']) > 120) {
+                return $this->invalidQuoteContext('El valor de una respuesta es inválido.');
+            }
+        }
+
+        $availability = $this->normalizeQuoteAvailability($availability);
+
+        if ($availability instanceof JsonResponse) {
+            return $availability;
+        }
+
+        $quality = $this->normalizeQuoteQuality($quality);
+
+        if ($quality instanceof JsonResponse) {
+            return $quality;
+        }
+
+        return [
+            'rubric' => $rubric,
+            'tags' => array_values($tags),
+            'answers' => $answers,
+            'availability' => $availability,
+            'quality' => $quality,
+        ];
+    }
+
+    /**
+     * Valida la disponibilidad horaria elegida por el cliente: "asap",
+     * "manana" o una franja ("ventana") con from/to predefinidos.
+     *
+     * @param  mixed  $availability
+     * @return array<string, mixed>|null|JsonResponse
+     */
+    private function normalizeQuoteAvailability($availability): array|null|JsonResponse
+    {
+        if ($availability === null) {
+            return null;
+        }
+
+        if (! is_array($availability)) {
+            return $this->invalidQuoteContext('La disponibilidad del presupuesto es inválida.');
+        }
+
+        $mode = $availability['mode'] ?? null;
+
+        if (! is_string($mode) || ! in_array($mode, ['asap', 'manana', 'ventana'], true)) {
+            return $this->invalidQuoteContext('La disponibilidad elegida no es válida.');
+        }
+
+        $result = ['mode' => $mode, 'label' => null, 'window' => null];
+
+        if ($mode === 'ventana') {
+            $window = $availability['window'] ?? null;
+
+            if (! is_array($window) || ! isset($window['from'], $window['to']) || ! is_string($window['from']) || ! is_string($window['to'])) {
+                return $this->invalidQuoteContext('La franja horaria elegida es inválida.');
+            }
+
+            $result['window'] = ['from' => $window['from'], 'to' => $window['to']];
+        }
+
+        if (isset($availability['label']) && is_string($availability['label'])) {
+            $result['label'] = mb_substr($availability['label'], 0, 60);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Valida el nivel de detalle de la solicitud (Bajo/Medio/Alto + score).
+     *
+     * @param  mixed  $quality
+     * @return array<string, mixed>|null|JsonResponse
+     */
+    private function normalizeQuoteQuality($quality): array|null|JsonResponse
+    {
+        if ($quality === null) {
+            return null;
+        }
+
+        if (! is_array($quality)) {
+            return $this->invalidQuoteContext('El nivel de detalle de la solicitud es inválido.');
+        }
+
+        $level = $quality['level'] ?? null;
+
+        if (! is_string($level) || ! in_array($level, ['bajo', 'medio', 'alto'], true)) {
+            return $this->invalidQuoteContext('El nivel de detalle elegido no es válido.');
+        }
+
+        $score = $quality['score'] ?? 0;
+
+        if (! is_numeric($score)) {
+            return $this->invalidQuoteContext('El puntaje del nivel de detalle es inválido.');
+        }
+
+        return ['level' => $level, 'score' => max(0, min(100, (int) $score))];
+    }
+
+    private function invalidQuoteContext(string $message): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => ['quote_context' => [$message]],
+        ], 422);
     }
 
     /**

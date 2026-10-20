@@ -47,14 +47,12 @@
 
     var providerId = parseInt(sec.getAttribute('data-provider-id'), 10) || 0;
     var STATUS_LABEL = {
-        REQUESTED: 'Solicitado', QUOTED: 'Presupuestado', ACCEPTED: 'Aceptado',
-        PROVIDER_DISPATCHED: 'En camino', IN_PROGRESS: 'En curso',
-        COMPLETED: 'Completado', CANCELLED: 'Cancelado'
+        PENDIENTE: 'Pendiente', PRESUPUESTADO: 'Presupuestado', EN_PROCESO: 'En proceso',
+        COMPLETADO: 'Completado', CANCELADO: 'Cancelado'
     };
     var STATUS_COLOR = {
-        REQUESTED: '#b45309', QUOTED: '#6d28d9', ACCEPTED: '#1d4ed8',
-        PROVIDER_DISPATCHED: '#0369a1', IN_PROGRESS: '#047857',
-        COMPLETED: '#047857', CANCELLED: '#b91c1c'
+        PENDIENTE: '#b45309', PRESUPUESTADO: '#6d28d9', EN_PROCESO: '#0369a1',
+        COMPLETADO: '#047857', CANCELADO: '#b91c1c'
     };
     var TYPE_LABEL = { EMERGENCY: 'Urgencia', SCHEDULED: 'Cita', QUOTE: 'Presupuesto' };
     var TYPE_COLOR = { EMERGENCY: '#b91c1c', SCHEDULED: '#1d4ed8', QUOTE: '#6d28d9' };
@@ -179,7 +177,7 @@
 
     function card(o) {
         var typeColor = TYPE_COLOR[o.order_type] || '#6b7280';
-        var statusColor = STATUS_COLOR[o.status] || '#6b7280';
+        var statusColor = STATUS_COLOR[o.display_status] || '#6b7280';
         var when = o.scheduled_at ? new Date(o.scheduled_at).toLocaleString('es-AR') : new Date(o.created_at).toLocaleString('es-AR');
         var whenLabel = o.scheduled_at ? 'Agendado' : 'Creado';
         var rubro = (o.sub_group && o.sub_group.description) || 'Servicio';
@@ -206,7 +204,7 @@
             '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">' +
                 '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
                     badge(TYPE_LABEL[o.order_type] || o.order_type, typeColor) +
-                    badge(STATUS_LABEL[o.status] || o.status, statusColor) +
+                    badge(o.status_label || STATUS_LABEL[o.display_status] || o.status, statusColor) +
                     (isPool(o) ? badge('Disponible', '#D24C19') : '') +
                     '<span style="font-size:11px;color:#9ca3af;">#' + o.id + '</span>' +
                 '</div>' +

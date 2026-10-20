@@ -63,14 +63,50 @@ class ServiceOrder extends Model
         self::STATUS_CANCELLED => [],
     ];
 
-    public const STATUS_LABELS = [
-        self::STATUS_REQUESTED => 'Solicitado',
-        self::STATUS_QUOTED => 'Presupuestado',
-        self::STATUS_ACCEPTED => 'Aceptado',
-        self::STATUS_PROVIDER_DISPATCHED => 'En camino',
-        self::STATUS_IN_PROGRESS => 'En curso',
-        self::STATUS_COMPLETED => 'Completado',
-        self::STATUS_CANCELLED => 'Cancelado',
+    /**
+     * Estados simplificados: solo se muestran/filtran estos cinco. El backend
+     * sigue guardando los valores legacy en la BD (TRANSITIONS de arriba) y
+     * STATUS_DISPLAY_MAP los agrupa para la vista.
+     */
+    public const STATUS_PENDING = 'PENDIENTE';
+
+    public const STATUS_PRESUPUESTADO = 'PRESUPUESTADO';
+
+    public const STATUS_EN_PROCESO = 'EN_PROCESO';
+
+    public const STATUS_COMPLETADO = 'COMPLETADO';
+
+    public const STATUS_CANCELADO = 'CANCELADO';
+
+    public const DISPLAY_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PRESUPUESTADO,
+        self::STATUS_EN_PROCESO,
+        self::STATUS_COMPLETADO,
+        self::STATUS_CANCELADO,
+    ];
+
+    public const STATUS_DISPLAY_MAP = [
+        self::STATUS_REQUESTED => self::STATUS_PENDING,
+        self::STATUS_QUOTED => self::STATUS_PRESUPUESTADO,
+        self::STATUS_ACCEPTED => self::STATUS_PRESUPUESTADO,
+        self::STATUS_PROVIDER_DISPATCHED => self::STATUS_EN_PROCESO,
+        self::STATUS_IN_PROGRESS => self::STATUS_EN_PROCESO,
+        self::STATUS_COMPLETED => self::STATUS_COMPLETADO,
+        self::STATUS_CANCELLED => self::STATUS_CANCELADO,
+        self::STATUS_PENDING => self::STATUS_PENDING,
+        self::STATUS_PRESUPUESTADO => self::STATUS_PRESUPUESTADO,
+        self::STATUS_EN_PROCESO => self::STATUS_EN_PROCESO,
+        self::STATUS_COMPLETADO => self::STATUS_COMPLETADO,
+        self::STATUS_CANCELADO => self::STATUS_CANCELADO,
+    ];
+
+    public const DISPLAY_STATUS_LABELS = [
+        self::STATUS_PENDING => 'Pendiente',
+        self::STATUS_PRESUPUESTADO => 'Presupuestado',
+        self::STATUS_EN_PROCESO => 'En proceso',
+        self::STATUS_COMPLETADO => 'Completado',
+        self::STATUS_CANCELADO => 'Cancelado',
     ];
 
     public const ESCROW_HOLDING = 'HOLDING';
@@ -107,6 +143,7 @@ class ServiceOrder extends Model
         'commission_amount',
         'description',
         'address',
+        'quote_context',
         'address_street',
         'address_unit',
         'address_neighborhood',
@@ -129,6 +166,7 @@ class ServiceOrder extends Model
         'deposit_amount' => 'decimal:2',
         'commission_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'quote_context' => 'array',
     ];
 
     public function customer(): BelongsTo
@@ -215,6 +253,50 @@ class ServiceOrder extends Model
 
     public function statusLabel(): string
     {
-        return self::STATUS_LABELS[$this->status] ?? $this->status;
+        return $this->displayStatusLabel();
+    }
+
+    public function getDisplayStatusAttribute(): string
+    {
+        return $this->displayStatus();
+    }
+
+    /**
+     * Estado simplificado para vista y filtros (PENDIENTE/PRESUPUESTADO/...).
+     */
+    public function displayStatus(): string
+    {
+        return self::toDisplayStatus($this->status);
+    }
+
+    public function displayStatusLabel(): string
+    {
+        return self::DISPLAY_STATUS_LABELS[$this->displayStatus()] ?? $this->status;
+    }
+
+    public static function toDisplayStatus(string $status): string
+    {
+        return self::STATUS_DISPLAY_MAP[$status] ?? $status;
+    }
+
+    public static function displayStatuses(): array
+    {
+        return self::DISPLAY_STATUSES;
+    }
+
+    /**
+     * Traduce un estado simplificado del filtro a los valores legacy que lo
+     * componen en la BD; si llega un valor legacy se devuelve tal cual.
+     */
+    public static function legacyStatusesFor(string $status): array
+    {
+        return match ($status) {
+            self::STATUS_PENDING => [self::STATUS_REQUESTED],
+            self::STATUS_PRESUPUESTADO => [self::STATUS_QUOTED, self::STATUS_ACCEPTED],
+            self::STATUS_EN_PROCESO => [self::STATUS_PROVIDER_DISPATCHED, self::STATUS_IN_PROGRESS],
+            self::STATUS_COMPLETADO => [self::STATUS_COMPLETED],
+            self::STATUS_CANCELADO => [self::STATUS_CANCELLED],
+            default => [$status],
+        };
     }
 }
