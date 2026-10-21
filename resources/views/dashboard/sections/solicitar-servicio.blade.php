@@ -1348,6 +1348,9 @@
         form.append('provider_id', s.provider_id || (fdSolicSelected ? fdSolicSelected.id : ''));
         form.append('details', s.details || '');
 
+        var subGroupId = fdSolicSelectedSubgroupId();
+        if (subGroupId) form.append('sub_group_id', subGroupId);
+
         (s.photos || []).forEach(function (file) { form.append('photos[]', file, file.name); });
         if (s.video) form.append('video', s.video, s.video.name);
 
@@ -1961,14 +1964,37 @@
     }
 
     function fdSolicPost(url, options) {
-        return fetch(url, Object.assign({
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        }, options)).then(function (r) {
+        options = options || {};
+
+        var headers = {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        };
+
+        // Los headers propios no pisan los de la app.
+        Object.keys(options.headers || {}).forEach(function (key) {
+            headers[key] = options.headers[key];
+        });
+
+        // Un cuerpo JSON necesita la cabecera Content-Type: sin ella Laravel
+        // no lo parsea, la peticion llega vacia y se pierde el prestador
+        // elegido. Con FormData hay que dejar que el navegador arme el
+        // multipart (no se manda Content-Type a mano).
+        if (typeof options.body === 'string' && !headers['Content-Type']) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        return fetch(url, Object.assign({}, options, { headers: headers })).then(function (r) {
             return r.json().then(function (data) { return { ok: r.ok, data: data }; });
         });
+    }
+
+    // Subgrupo del prestador elegido: el backend lo recalcula desde el perfil
+    // del prestador, pero mandarlo evita que la peticion quede incompleta.
+    function fdSolicSelectedSubgroupId() {
+        if (!fdSolicSelected || !fdSolicSelected.subgroups || !fdSolicSelected.subgroups.length) return null;
+        var id = fdSolicSelected.subgroups[0].id;
+        return id ? id : null;
     }
 
     // ------------------------------------------------ seguimiento de urgencias
@@ -2662,6 +2688,8 @@
         // mandan si el cliente toco "Usar mi ubicacion actual".
         var form = new FormData();
         form.append('provider_id', fdSolicSelected.id);
+        var subGroupId = fdSolicSelectedSubgroupId();
+        if (subGroupId) form.append('sub_group_id', subGroupId);
         form.append('photo', photo);
         form.append('description', document.getElementById('fd-solic-emergency-desc').value || '');
 
@@ -2740,6 +2768,9 @@
             address_neighborhood: document.getElementById('fd-solic-address-neighborhood').value.trim(),
             reminder_channel: document.getElementById('fd-solic-reminder').value || 'whatsapp'
         };
+
+        var subGroupId = fdSolicSelectedSubgroupId();
+        if (subGroupId) payload.sub_group_id = subGroupId;
 
         msgHide();
         busy('fd-solic-scheduled-submit', true);

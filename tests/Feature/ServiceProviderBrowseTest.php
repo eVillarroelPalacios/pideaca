@@ -513,6 +513,72 @@ class ServiceProviderBrowseTest extends TestCase
             ->assertJsonPath('data.order.status', ServiceOrder::STATUS_REQUESTED);
     }
 
+    public function test_cita_acepta_el_prestador_aunque_el_json_llegue_sin_content_type(): void
+    {
+        // El formulario mandaba el cuerpo JSON sin la cabecera Content-Type:
+        // Laravel no lo parseaba, la peticion llegaba vacia, se perdia el
+        // prestador elegido y la validacion pedia el subgrupo.
+        $response = $this->actingAs($this->customer)->call(
+            'POST',
+            '/api/v1/customer/service-orders/scheduled',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'text/plain', 'HTTP_ACCEPT' => 'application/json'],
+            json_encode([
+                'provider_id' => $this->otherProvider->id,
+                'scheduled_at' => now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s'),
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+            ])
+        );
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.order.merchant_id', $this->otherProvider->id)
+            ->assertJsonPath('data.order.sub_group.id', $this->otherProvider->subgroups()->first()->id);
+    }
+
+    public function test_cita_acepta_el_alias_prestador_id(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'prestador_id' => $this->otherProvider->id,
+                'scheduled_at' => now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s'),
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.order.merchant_id', $this->otherProvider->id);
+    }
+
+    public function test_cita_sin_prestador_ni_subgrupo_pide_uno_de_los_dos(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/v1/customer/service-orders/scheduled', [
+                'scheduled_at' => now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s'),
+                'fulfillment' => 'AT_HOME',
+                'payment_method' => 'efectivo',
+                'payment_mode' => 'DEPOSIT',
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.sub_group_id.0', 'Elegi un prestador o el tipo de servicio que necesitas.');
+    }
+
+    public function test_dashboard_manda_el_content_type_json_en_las_citas(): void
+    {
+        $html = $this->actingAs($this->customer)
+            ->get('/dashboard')
+            ->assertStatus(200)
+            ->getContent();
+
+        // Sin la cabecera Content-Type el cuerpo JSON no lo parsea Laravel y
+        // la peticion llega vacia (se pierde el prestador elegido).
+        $this->assertStringContainsString("headers['Content-Type'] = 'application/json';", $html);
+        $this->assertStringContainsString("typeof options.body === 'string'", $html);
+    }
+
     public function test_presupuesto_directo_asigna_al_prestador_elegido(): void
     {
         $this->actingAs($this->customer)

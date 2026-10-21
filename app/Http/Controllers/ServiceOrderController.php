@@ -173,7 +173,7 @@ class ServiceOrderController extends Controller
         // manda direccion y coordenadas si el cliente las informo (campo de
         // direccion o boton "Usar mi ubicacion actual"); nada se deriva de la
         // direccion del perfil.
-        $data = $request->validate([
+        $data = $this->serviceOrderData($request, [
             'sub_group_id' => [
                 'nullable',
                 'required_without:provider_id',
@@ -195,27 +195,14 @@ class ServiceOrderController extends Controller
             ],
         ]);
 
-        $merchantId = null;
+        $target = $this->resolveServiceOrderTarget($data, ServiceType::CODE_EMERGENCY);
 
-        if (! empty($data['provider_id'])) {
-            $provider = $this->resolveDirectProvider((int) $data['provider_id'], ServiceType::CODE_EMERGENCY);
-
-            if ($provider instanceof JsonResponse) {
-                return $provider;
-            }
-
-            $subgroups = $this->providerHogarSubgroups($provider);
-
-            if ($subgroups->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El prestador elegido ya no ofrece este tipo de servicio.',
-                ], 404);
-            }
-
-            $data['sub_group_id'] = $subgroups->first()->id;
-            $merchantId = $provider->id;
+        if ($target instanceof JsonResponse) {
+            return $target;
         }
+
+        $merchantId = $target['provider_id'];
+        $data['sub_group_id'] = $target['sub_group_id'];
 
         try {
             $order = DB::transaction(function () use ($data, $customer, $request, $merchantId) {

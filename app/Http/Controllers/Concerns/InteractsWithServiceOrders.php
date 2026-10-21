@@ -10,8 +10,10 @@ use App\Models\ServiceType;
 use App\Models\SubGroup;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Guardas de rol y payloads compartidos de las ordenes de servicio del
@@ -21,6 +23,11 @@ trait InteractsWithServiceOrders
 {
     /** Grupo del catalogo que habilita los servicios del Modulo B. */
     private const SERVICE_GROUP_NAME = 'Servicios del Hogar & Bienestar';
+
+    /** Mensajes propios de los flujos de solicitud de servicio. */
+    private const SERVICE_ORDER_MESSAGES = [
+        'sub_group_id.required_without' => 'Elegi un prestador o el tipo de servicio que necesitas.',
+    ];
 
     /**
      * Ids de los SubGrupos que pertenecen al grupo "Servicios del Hogar &
@@ -73,6 +80,106 @@ trait InteractsWithServiceOrders
         }
 
         return $provider;
+    }
+
+    /**
+     * Cuerpo de una solicitud de servicio ya normalizado.
+     *
+     * El formulario historicamente mando el cuerpo JSON sin la cabecera
+     * "Content-Type: application/json": Laravel no lo parseaba, el body
+     * llegaba vacio y el prestador elegido se perdia (la validacion pedia el
+     * subgrupo porque no encontraba el prestador). Para que el flujo no
+     * dependa de esa cabecera se decodifica el cuerpo crudo cuando hace
+     * falta y se aceptan los alias de nombre que usan algunos clientes.
+     *
+     * @return array<string, mixed>
+     */
+    private function serviceOrderPayload(Request $request): array
+    {
+        $payload = $request->all();
+
+        if (! $request->isJson()) {
+            $raw = trim((string) $request->getContent());
+
+            if ($raw !== '' && ($raw[0] === '{' || $raw[0] === '[')) {
+                $decoded = json_decode($raw, true);
+
+                if (is_array($decoded)) {
+                    $payload = array_replace($payload, $decoded);
+                }
+            }
+        }
+
+        // Alias admitidos para el prestador y el subgrupo.
+        if (blank($payload['provider_id'] ?? null) && filled($payload['prestador_id'] ?? null)) {
+            $payload['provider_id'] = $payload['prestador_id'];
+        }
+
+        if (blank($payload['sub_group_id'] ?? null)) {
+            foreach (['subgrupo_id', 'subgroup_id'] as $alias) {
+                if (filled($payload[$alias] ?? null)) {
+                    $payload['sub_group_id'] = $payload[$alias];
+                    break;
+                }
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Datos validados de una solicitud de servicio (urgencia, cita o
+     * presupuesto) usando el cuerpo normalizado.
+     *
+     * @param  array<string, mixed>  $rules
+     * @param  array<string, string>  $messages
+     * @return array<string, mixed>
+     */
+    private function serviceOrderData(Request $request, array $rules, array $messages = []): array
+    {
+        return Validator::make(
+            $this->serviceOrderPayload($request),
+            $rules,
+            array_merge(self::SERVICE_ORDER_MESSAGES, $messages)
+        )->validate();
+    }
+
+    /**
+     * Prestador y subgrupo de la orden: cuando el cliente elige un prestador
+     * concreto, el subgrupo se deriva de los subgrupos del hogar que ofrece
+     * el prestador (no del que envie el cliente).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{provider_id: int|null, sub_group_id: int|null}|JsonResponse
+     */
+    private function resolveServiceOrderTarget(array $data, string $serviceTypeCode)
+    {
+        if (empty($data['provider_id'])) {
+            return [
+                'provider_id' => null,
+                'sub_group_id' => $data['sub_group_id'] ?? null,
+            ];
+        }
+
+        $provider = $this->resolveDirectProvider((int) $data['provider_id'], $serviceTypeCode);
+
+        if ($provider instanceof JsonResponse) {
+            return $provider;
+        }
+
+        $subgroups = $this->providerHogarSubgroups($provider);
+
+        if ($subgroups->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El prestador elegido ya no ofrece este tipo de servicio.',
+            ], 404);
+        }
+
+        return [
+            'provider_id' => $provider->id,
+            'sub_group_id' => $subgroups->first()->id,
+        ];
     }
 
     /**

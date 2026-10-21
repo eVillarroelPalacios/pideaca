@@ -157,7 +157,7 @@ class ServiceBookingController extends Controller
             return $customer;
         }
 
-        $data = $request->validate([
+        $data = $this->serviceOrderData($request, [
             'sub_group_id' => [
                 'nullable',
                 'required_without:provider_id',
@@ -177,27 +177,14 @@ class ServiceBookingController extends Controller
             'reminder_channel' => ['nullable', 'string', Rule::in(['whatsapp', 'email'])],
         ]);
 
-        $merchantId = null;
+        $target = $this->resolveServiceOrderTarget($data, ServiceType::CODE_SCHEDULED);
 
-        if (! empty($data['provider_id'])) {
-            $provider = $this->resolveDirectProvider((int) $data['provider_id'], ServiceType::CODE_SCHEDULED);
-
-            if ($provider instanceof JsonResponse) {
-                return $provider;
-            }
-
-            $subgroups = $this->providerHogarSubgroups($provider);
-
-            if ($subgroups->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El prestador elegido ya no ofrece este tipo de servicio.',
-                ], 404);
-            }
-
-            $data['sub_group_id'] = $subgroups->first()->id;
-            $merchantId = $provider->id;
+        if ($target instanceof JsonResponse) {
+            return $target;
         }
+
+        $merchantId = $target['provider_id'];
+        $data['sub_group_id'] = $target['sub_group_id'];
 
         try {
             $order = DB::transaction(function () use ($data, $customer, $merchantId) {
@@ -270,7 +257,7 @@ class ServiceBookingController extends Controller
             return $customer;
         }
 
-        $data = $request->validate([
+        $data = $this->serviceOrderData($request, [
             'sub_group_id' => [
                 'nullable',
                 'required_without:provider_id',
@@ -287,33 +274,20 @@ class ServiceBookingController extends Controller
 
         // El contexto dinamico llega como string JSON; lo decodificamos y
         // validamos la forma interna (rubro, atajos y respuestas por pregunta).
-        $quoteContext = $this->decodeQuoteContext($request->input('quote_context'));
+        $quoteContext = $this->decodeQuoteContext($data['quote_context'] ?? null);
 
         if ($quoteContext instanceof JsonResponse) {
             return $quoteContext;
         }
 
-        $merchantId = null;
+        $target = $this->resolveServiceOrderTarget($data, ServiceType::CODE_QUOTE);
 
-        if (! empty($data['provider_id'])) {
-            $provider = $this->resolveDirectProvider((int) $data['provider_id'], ServiceType::CODE_QUOTE);
-
-            if ($provider instanceof JsonResponse) {
-                return $provider;
-            }
-
-            $subgroups = $this->providerHogarSubgroups($provider);
-
-            if ($subgroups->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El prestador elegido ya no ofrece este tipo de servicio.',
-                ], 404);
-            }
-
-            $data['sub_group_id'] = $subgroups->first()->id;
-            $merchantId = $provider->id;
+        if ($target instanceof JsonResponse) {
+            return $target;
         }
+
+        $merchantId = $target['provider_id'];
+        $data['sub_group_id'] = $target['sub_group_id'];
 
         try {
             $order = DB::transaction(function () use ($data, $customer, $merchantId, $quoteContext) {
