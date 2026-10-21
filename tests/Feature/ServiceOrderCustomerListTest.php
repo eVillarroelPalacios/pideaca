@@ -152,9 +152,12 @@ class ServiceOrderCustomerListTest extends TestCase
 
     public function test_estado_desconocido_es_rechazado(): void
     {
-        $this->actingAs($this->customer)
+        $response = $this->actingAs($this->customer)
             ->getJson('/api/v1/customer/service-orders?status=NO_EXISTE')
             ->assertStatus(422);
+
+        // Los mensajes de validacion se emiten siempre en español.
+        $this->assertStringContainsString('El campo', $response->json('message'));
     }
 
     public function test_filtra_por_estado_simplificado(): void
