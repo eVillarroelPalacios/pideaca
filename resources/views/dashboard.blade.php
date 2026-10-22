@@ -519,6 +519,11 @@
                 </div>
             </section>
 
+            {{-- Vista operativa compartida de las ordenes de servicio del prestador. --}}
+            {{-- Se incluye una sola vez (antes de las secciones) para que las paginas --}}
+            {{-- "Ordenes de Servicio" y "Gestionar Solicitudes" usen la misma UI. --}}
+            @include('dashboard.partials.servicio-operativo')
+
             @foreach($modules as $module)
                 @foreach($module->pages as $page)
                     @if($page->url === 'modulos')

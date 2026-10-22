@@ -73,6 +73,49 @@ class ServiceOrderController extends Controller
     }
 
     /**
+     * GET /api/v1/provider/service-orders/{serviceOrder}
+     *
+     * Detalle operativo de una orden para el prestador: datos de contacto y
+     * ubicacion, adjuntos del cliente, desglose del presupuesto y linea de
+     * tiempo. Se puede ver la orden asignada al comercio o la que sigue en
+     * el pool de sus subgrupos.
+     */
+    public function showForProvider(ServiceOrder $serviceOrder): JsonResponse
+    {
+        $provider = $this->currentProvider();
+
+        if ($provider instanceof JsonResponse) {
+            return $provider;
+        }
+
+        $isMine = (int) $serviceOrder->merchant_id === (int) $provider->id;
+        $isPool = $serviceOrder->merchant_id === null;
+
+        if (! $isMine && ! $isPool) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La orden no pertenece a tu comercio.',
+            ], 404);
+        }
+
+        if ($isPool && ! $provider->subgroups()->where('sub_groups.id', $serviceOrder->sub_group_id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tu comercio no ofrece este servicio.',
+            ], 403);
+        }
+
+        $serviceOrder->loadMissing(['subGroup', 'customer', 'merchant.user', 'quotes.provider', 'ratings']);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'order' => $this->orderPayload($serviceOrder),
+            ],
+        ]);
+    }
+
+    /**
      * GET /api/v1/customer/service-orders
      *
      * Listado de las ordenes de servicio del cliente logueado: alimenta la
@@ -313,6 +356,11 @@ class ServiceOrderController extends Controller
 
                 $actual->merchant_id = $provider->id;
                 $actual->status = $estadoAceptado;
+                $actual->accepted_at = now();
+                // La urgencia se despacha en el acto: ya esta "en camino".
+                $actual->started_at = $estadoAceptado === ServiceOrder::STATUS_PROVIDER_DISPATCHED
+                    ? now()
+                    : $actual->started_at;
                 $actual->save();
             });
         } catch (RuntimeException $e) {
@@ -343,11 +391,87 @@ class ServiceOrderController extends Controller
     }
 
     /**
+     * POST /api/v1/provider/service-orders/{serviceOrder}/dispatch
+     *
+     * El prestador marca que salio a atender el trabajo (en camino). Aplica a
+     * las citas ya aceptadas y a los presupuestos que el cliente confirmo: la
+     * orden pasa a PROVIDER_DISPATCHED y queda registrada la hora de inicio.
+     */
+    public function dispatchService(ServiceOrder $serviceOrder): JsonResponse
+    {
+        $provider = $this->currentProvider();
+
+        if ($provider instanceof JsonResponse) {
+            return $provider;
+        }
+
+        if ($serviceOrder->merchant_id !== $provider->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La orden no pertenece a tu comercio.',
+            ], 404);
+        }
+
+        if (! in_array($serviceOrder->order_type, [ServiceOrder::TYPE_SCHEDULED, ServiceOrder::TYPE_QUOTE], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo las citas y los presupuestos confirmados se pueden marcar como en camino.',
+            ], 409);
+        }
+
+        if ($serviceOrder->status !== ServiceOrder::STATUS_ACCEPTED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La cita no esta lista para iniciar el trabajo.',
+                'status' => $serviceOrder->status,
+            ], 409);
+        }
+
+        try {
+            DB::transaction(function () use ($serviceOrder) {
+                $actual = ServiceOrder::whereKey($serviceOrder->id)->lockForUpdate()->first();
+
+                if (! $actual || $actual->status !== ServiceOrder::STATUS_ACCEPTED
+                    || ! $actual->canTransitionTo(ServiceOrder::STATUS_PROVIDER_DISPATCHED)) {
+                    throw new RuntimeException('La orden ya no esta disponible.');
+                }
+
+                $actual->status = ServiceOrder::STATUS_PROVIDER_DISPATCHED;
+                $actual->started_at = now();
+                $actual->save();
+            });
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La cita ya no se puede iniciar desde su estado actual.',
+                'status' => $serviceOrder->fresh()->status,
+            ], 409);
+        } catch (Throwable $e) {
+            Log::error('Cita: no se pudo iniciar el trabajo de la orden #'.$serviceOrder->id.': '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo iniciar el trabajo. Intenta nuevamente.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Trabajo iniciado. El cliente ya puede verte en camino.',
+            'data' => [
+                'order' => $this->orderPayload($serviceOrder->fresh()),
+            ],
+        ]);
+    }
+
+    /**
      * POST /api/v1/provider/service-orders/{serviceOrder}/onsite-estimate
      *
      * El tecnico en el lugar (o el profesional que confirmo la cita) carga
      * el precio cerrado del trabajo. La orden pasa a QUOTED: los fondos
      * siguen en HOLDING y el cliente debe aprobarlo antes de continuar.
+     * Si el presupuesto ya fue enviado y esta esperando la aceptacion del
+     * cliente, el mismo endpoint lo actualiza.
      */
     public function addOnsiteEstimate(Request $request, ServiceOrder $serviceOrder): JsonResponse
     {
@@ -374,6 +498,7 @@ class ServiceOrderController extends Controller
         if (! in_array($serviceOrder->status, [
             ServiceOrder::STATUS_PROVIDER_DISPATCHED,
             ServiceOrder::STATUS_ACCEPTED,
+            ServiceOrder::STATUS_QUOTED,
         ], true)) {
             return response()->json([
                 'success' => false,
@@ -388,7 +513,10 @@ class ServiceOrderController extends Controller
         ]);
 
         try {
-            if (! $serviceOrder->canTransitionTo(ServiceOrder::STATUS_QUOTED)) {
+            // QUOTED -> QUOTED no es una transicion valida: en ese caso el
+            // presupuesto ya fue enviado y lo que se hace es actualizarlo.
+            if ($serviceOrder->status !== ServiceOrder::STATUS_QUOTED
+                && ! $serviceOrder->canTransitionTo(ServiceOrder::STATUS_QUOTED)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'La orden no puede pasar a presupuesto desde su estado actual.',

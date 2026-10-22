@@ -248,7 +248,12 @@ Route::middleware('page:solicitar-servicio')->group(function () {
 // La autenticacion y el rol (cliente / prestador) se resuelven dentro del
 // controlador, igual que el resto de los endpoints /api/v1 de este proyecto.
 Route::post('/api/v1/provider/service-orders/{serviceOrder}/accept', [ServiceOrderController::class, 'acceptEmergencyRequest'])->name('api.provider.service-orders.accept');
+Route::post('/api/v1/provider/service-orders/{serviceOrder}/dispatch', [ServiceOrderController::class, 'dispatchService'])->name('api.provider.service-orders.dispatch');
 Route::post('/api/v1/provider/service-orders/{serviceOrder}/onsite-estimate', [ServiceOrderController::class, 'addOnsiteEstimate'])->name('api.provider.service-orders.onsite-estimate');
+// Detalle operativo de una orden (contacto, ubicacion, adjuntos, timeline).
+// Se deja fuera del grupo con middleware de pagina porque lo usan tanto
+// "Ordenes de Servicio" como "Gestionar Solicitudes".
+Route::get('/api/v1/provider/service-orders/{serviceOrder}', [ServiceOrderController::class, 'showForProvider'])->name('api.provider.service-orders.show');
 Route::post('/api/v1/customer/service-orders/{serviceOrder}/approve-onsite-estimate', [ServiceOrderController::class, 'approveOnsiteEstimate'])->name('api.customer.service-orders.approve-onsite-estimate');
 
 // Modulo B - citas programadas y presupuestos a medida.

@@ -183,6 +183,31 @@ trait InteractsWithServiceOrders
     }
 
     /**
+     * Adjuntos que subio el cliente (fotos y video del trabajo a cotizar).
+     * Viven en la fila de service_quotes sin proveedor que abre la
+     * solicitud de presupuesto.
+     *
+     * @return array<int, array{type: string, url: string}>
+     */
+    private function orderAttachments(ServiceOrder $order): array
+    {
+        $container = $order->quotes->first(fn ($quote) => $quote->provider_id === null);
+
+        if (! $container) {
+            return [];
+        }
+
+        return collect($container->attachments())
+            ->filter(fn ($adjunto) => ! empty($adjunto['path']))
+            ->map(fn ($adjunto) => [
+                'type' => $adjunto['type'] ?? 'photo',
+                'url' => asset('images/servicios/'.$adjunto['path']),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * Payload de tarjeta de prestador para el browse de Solicitar Servicio
      * (mismo esquema visual que los comercios).
      */
@@ -409,7 +434,14 @@ trait InteractsWithServiceOrders
     {
         $order->loadMissing(['subGroup', 'merchant.user', 'customer', 'quotes.provider', 'ratings']);
 
-        $quote = $order->quotes->first();
+        // Las cotizaciones se ordenan de la mas nueva a la mas vieja para
+        // que el resultado no dependa del orden de insercion.
+        $quotes = $order->quotes->sortByDesc('id')->values();
+
+        // La cotizacion de la orden es la propuesta del profesional (la mas
+        // reciente); el contenedor del cliente (provider_id null) guarda los
+        // adjuntos y no tiene precio.
+        $quote = $quotes->firstWhere('provider_id') ?: $quotes->first();
 
         return [
             'id' => $order->id,
@@ -426,6 +458,7 @@ trait InteractsWithServiceOrders
             ),
             'quote' => $quote ? [
                 'id' => $quote->id,
+                'provider_id' => $quote->provider_id,
                 'status' => $quote->status,
                 'proposed_price' => $quote->proposed_price,
                 'estimated_time' => $quote->estimated_time,
@@ -436,8 +469,27 @@ trait InteractsWithServiceOrders
                 ] : null,
                 'created_at' => $quote->created_at?->toIso8601String(),
             ] : null,
+            // Todas las filas de service_quotes: el contenedor del cliente
+            // (provider_id null, con los adjuntos) y las propuestas de cada
+            // profesional del rubro.
+            'quotes' => $quotes
+                ->map(fn (ServiceQuote $item) => [
+                    'id' => $item->id,
+                    'provider_id' => $item->provider_id,
+                    'status' => $item->status,
+                    'proposed_price' => $item->proposed_price,
+                    'estimated_time' => $item->estimated_time,
+                    'details' => $item->details,
+                    'provider' => $item->provider ? [
+                        'id' => $item->provider->id,
+                        'business_name' => $item->provider->business_name,
+                    ] : null,
+                    'created_at' => $item->created_at?->toIso8601String(),
+                ])
+                ->values()
+                ->all(),
             // Propuestas pendientes de todos los profesionales del rubro.
-            'proposals' => $order->quotes
+            'proposals' => $quotes
                 ->filter(fn ($propuesta) => $propuesta->status === ServiceQuote::STATUS_PENDING
                     && $propuesta->provider_id
                     && (float) $propuesta->proposed_price > 0)
@@ -475,10 +527,13 @@ trait InteractsWithServiceOrders
                 'id' => $order->customer->id,
                 'name' => $order->customer->name,
                 'phone' => $order->customer->phone,
+                'email' => $order->customer->email,
             ],
             'latitude' => $order->latitude,
             'longitude' => $order->longitude,
             'scheduled_at' => $order->scheduled_at?->toIso8601String(),
+            'accepted_at' => $order->accepted_at?->toIso8601String(),
+            'started_at' => $order->started_at?->toIso8601String(),
             'fulfillment' => $order->fulfillment,
             'payment_method' => $order->payment_method,
             'payment_mode' => $order->payment_mode,
@@ -498,6 +553,8 @@ trait InteractsWithServiceOrders
             'photo_url' => $order->photo_path ? asset('images/servicios/'.$order->photo_path) : null,
             'audio_url' => $order->audio_path ? asset('images/servicios/'.$order->audio_path) : null,
             'completion_photo_url' => $order->completion_photo_path ? asset('images/servicios/'.$order->completion_photo_path) : null,
+            // Fotos y video que subio el cliente al pedir el presupuesto.
+            'attachments' => $this->orderAttachments($order),
             'completed_at' => $order->completed_at?->toIso8601String(),
             'created_at' => $order->created_at?->toIso8601String(),
             'updated_at' => $order->updated_at?->toIso8601String(),

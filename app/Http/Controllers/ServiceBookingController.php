@@ -514,6 +514,7 @@ class ServiceBookingController extends Controller
                 $serviceOrder->merchant_id = $quote->provider_id;
                 $serviceOrder->total_amount = $quote->proposed_price;
                 $serviceOrder->deposit_amount = $deposit;
+                $serviceOrder->accepted_at = now();
                 $serviceOrder->save();
             });
 

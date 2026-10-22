@@ -58,8 +58,6 @@
         delivered: 'Entregado',
         cancelled: 'Cancelado'
     };
-    var SERVICE_TYPE_LABEL = { EMERGENCY: 'Urgencia', SCHEDULED: 'Cita', QUOTE: 'Presupuesto' };
-    var SERVICE_TYPE_COLOR = { EMERGENCY: '#b91c1c', SCHEDULED: '#1d4ed8', QUOTE: '#6d28d9' };
     var SERVICE_GROUP = {
         REQUESTED: 'pending',
         QUOTED: 'pending',
@@ -121,15 +119,6 @@
         return groupBadge(COMMERCE_GROUP[status] || '', STATUS_LABEL[status] || status);
     }
 
-    function serviceBadge(order) {
-        return groupBadge(SERVICE_GROUP[order.status] || '', order.status_label || order.status);
-    }
-
-    function typeBadge(type) {
-        var color = SERVICE_TYPE_COLOR[type] || '#6b7280';
-        return '<span style="display:inline-block;font-size:11px;font-weight:700;color:' + color + ';background:' + color + '1a;border-radius:9999px;padding:2px 9px;">' + esc(SERVICE_TYPE_LABEL[type] || type) + '</span>';
-    }
-
     function itemsSummary(items) {
         if (!items || !items.length) return '';
         return items.map(function (i) {
@@ -175,45 +164,15 @@
         '</div>';
     }
 
+    // Las solicitudes de servicio usan la tarjeta operativa compartida con
+    // "Ordenes de Servicio" (ubicacion, contacto, adjuntos, presupuesto,
+    // linea de tiempo y acciones del prestador).
     function serviceCard(order) {
-        var total = parseFloat(order.total_amount || 0);
-        var quotePrice = order.quote ? parseFloat(order.quote.proposed_price || 0) : 0;
-        var amount = total > 0 ? total : (quotePrice > 0 ? quotePrice : 0);
-
-        var actions = '';
-        if (order.status === 'REQUESTED' && (order.order_type === 'EMERGENCY' || order.order_type === 'SCHEDULED')) {
-            var label = order.order_type === 'SCHEDULED' ? 'Aceptar cita' : 'Aceptar solicitud';
-            var acceptBtn = '<button type="button" onclick="window.fdGsAccept(' + order.id + ')" style="background:#047857;color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">' + esc(label) + '</button>';
-            actions = '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">' + acceptBtn + '</div>';
-        }
-
-        var note = '';
-        if (order.status === 'QUOTED') {
-            note = 'Esperando la confirmación del cliente.';
-        } else if (order.order_type === 'QUOTE' && order.status === 'REQUESTED') {
-            note = 'Esperando las propuestas de los profesionales.';
-        }
-
-        return '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:10px;">' +
-            '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;">' +
-                '<div style="min-width:0;">' +
-                    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-                        '<strong style="font-size:14px;color:#0f172a;">Servicio #' + esc(order.id) + '</strong>' +
-                        typeBadge(order.order_type) +
-                        serviceBadge(order) +
-                    '</div>' +
-                    '<p style="font-size:12px;color:#6b7280;margin:4px 0 0;">' + esc((order.customer && order.customer.name) || 'Cliente') + ' · ' + esc((order.sub_group && order.sub_group.description) || '') + '</p>' +
-                '</div>' +
-                '<div style="text-align:right;">' +
-                    (amount > 0 ? '<p style="font-size:15px;font-weight:700;color:#0f172a;margin:0;">' + money(amount) + '</p>' : '') +
-                    '<p style="font-size:11px;color:#6b7280;margin:2px 0 0;">' + esc(fmtDate(order.created_at)) + '</p>' +
-                '</div>' +
-            '</div>' +
-            (order.description ? '<p style="font-size:12px;color:#374151;margin:10px 0 0;">' + esc(order.description) + '</p>' : '') +
-            (order.scheduled_at ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;">Programado: ' + esc(fmtDate(order.scheduled_at)) + '</p>' : '') +
-            (note ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;font-style:italic;">' + esc(note) + '</p>' : '') +
-            actions +
-        '</div>';
+        if (!window.FdServicioUI) return '';
+        return window.FdServicioUI.serviceCard(order, {
+            pool: !order.merchant_id,
+            mine: !!order.merchant_id
+        });
     }
 
     function renderItem(item) {
@@ -351,6 +310,13 @@
             message('No se pudieron cargar las solicitudes. Intenta nuevamente.', false);
         });
     };
+
+    // La vista compartida avisa cuando algo cambia (por ejemplo, tras
+    // completar el trabajo) y usa el mensaje de aceptacion de esta pagina.
+    if (window.FdServicioUI) {
+        window.FdServicioUI.onChanged = function () { window.fdGsLoad(); };
+        window.FdServicioUI.onAccept = function (orderId) { window.fdGsAccept(orderId); };
+    }
 
     window.addEventListener('load', function () {
         window.fdGsFilter('pending');
