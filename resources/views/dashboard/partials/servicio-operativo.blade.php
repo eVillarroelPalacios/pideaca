@@ -439,6 +439,33 @@
 
     // ------------------------------------------------------------ acciones
 
+    /**
+     * Calificacion que el prestador ya dejo al cliente: se muestra en lugar
+     * del formulario para que no se pueda volver a calificar.
+     */
+    function myRatingHtml(o) {
+        var r = o.provider_rating;
+        if (!o.provider_rated || !r) return '';
+
+        var stars = '';
+        for (var i = 1; i <= 5; i++) {
+            stars += '<span style="color:' + (i <= r.stars ? '#f59e0b' : '#d1d5db') + ';">&#9733;</span>';
+        }
+
+        var html = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:12px;">'
+            + '<div style="font-size:12px;font-weight:700;color:#0c2a4d;margin-bottom:8px;">Tu calificación al cliente</div>'
+            + '<div style="font-size:22px;line-height:1;margin-bottom:6px;">' + stars + '</div>';
+
+        if (r.comment) {
+            html += '<div style="font-size:12px;color:#374151;">' + esc(r.comment) + '</div>';
+        }
+        if (r.created_at) {
+            html += '<div style="font-size:11px;color:#94a3b8;margin-top:6px;">' + esc(fmtDateTime(r.created_at)) + '</div>';
+        }
+
+        return html + '</div>';
+    }
+
     function actionsFor(o, opts) {
         var mine = !!(opts && opts.mine);
         var pool = !!(opts && opts.pool);
@@ -460,7 +487,7 @@
         if (mine && ['ACCEPTED', 'PROVIDER_DISPATCHED', 'IN_PROGRESS'].indexOf(o.status) >= 0) {
             acts.push('complete');
         }
-        if (mine && o.status === 'COMPLETED') {
+        if (mine && o.status === 'COMPLETED' && !o.provider_rated) {
             acts.push('rate');
         }
 
@@ -543,6 +570,7 @@
 
         html += '<div style="margin-top:10px;">' + budgetHtml(o) + '</div>';
         html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;">' + timelineMini(o) + '</div>';
+        html += myRatingHtml(o);
         html += actionButtons(o, opts);
         html += '</div>';
 
@@ -595,6 +623,8 @@
         html += '<div style="font-size:11px;font-weight:700;color:#94a3b8;margin:0 0 8px;text-transform:uppercase;letter-spacing:.5px;">Avance</div>';
         html += timelineHtml(o);
 
+        html += myRatingHtml(o);
+
         return html;
     }
 
@@ -641,6 +671,9 @@
         }
 
         if (action === 'rate') {
+            // Ya califico: en lugar del formulario se muestra la calificacion.
+            if (o.provider_rated) return myRatingHtml(o);
+
             return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:12px;">'
                 + '<div style="font-size:12px;font-weight:700;color:#0c2a4d;margin-bottom:8px;">Calificar al cliente</div>'
                 + '<div id="fd-so-input-stars" style="display:flex;gap:4px;font-size:22px;line-height:1;margin-bottom:10px;">'
@@ -687,7 +720,14 @@
 
         if (head) head.innerHTML = typeBadge(o) + statusBadge(o) + '<span style="font-size:11px;color:#9ca3af;">#' + esc(o.id) + '</span>';
         if (title) title.textContent = 'Solicitud #' + o.id + ' · ' + ((o.sub_group && o.sub_group.description) || 'Servicio');
-        if (body) body.innerHTML = detailHtml(o) + (extra && extra.html ? extra.html : '') + formHtml(o, action);
+        var formHtmlStr = formHtml(o, action);
+
+        if (body) {
+            body.innerHTML = detailHtml(o) + (extra && extra.html ? extra.html : '') + formHtmlStr;
+            // El formulario (presupuesto, finalizar, calificar) se pinta al
+            // final del detalle: al abrirlo el scroll baja hasta ahi.
+            if (formHtmlStr) body.scrollTop = body.scrollHeight;
+        }
         if (actions) {
             var acts = actionsFor(o, optsFor(o));
             acts = acts.filter(function (a) { return a !== 'detail' && a !== 'chat'; });
@@ -897,7 +937,9 @@
             if (json && json.success) {
                 currentStars = 0;
                 refresh(json.data && json.data.order);
-                close();
+                // Se repinta el detalle: la calificacion quedo registrada y ya
+                // no vuelve a aparecer el formulario.
+                renderModal(registry[orderId], null);
             } else {
                 formMsg((json && json.message) || 'No se pudo registrar la calificación.', false);
             }

@@ -894,6 +894,7 @@ class ServiceOrderController extends Controller
                 ? 'Gracias por calificar al prestador.'
                 : 'Gracias por calificar al cliente.',
             'data' => [
+                'order' => $this->orderPayload($serviceOrder->fresh()),
                 'rating' => [
                     'id' => $rating->id,
                     'service_order_id' => $rating->service_order_id,

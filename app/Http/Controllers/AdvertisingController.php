@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Provider;
 use App\Models\Group;
-use Illuminate\Http\Request;
+use App\Models\Module;
+use App\Models\Provider;
 
 class AdvertisingController extends Controller
 {
@@ -16,80 +16,96 @@ class AdvertisingController extends Controller
 
         $activeGroupIds = $allGroups->pluck('id');
 
+        // Modulos con sus grupos activos y subgrupos (servicios), para la
+        // seccion "Estructura de Servicios" y el footer. Se excluyen los
+        // modulos sin grupos activos (por ejemplo, "Administrar").
+        $modules = Module::with(['groups' => function ($query) {
+            $query->active()->orderBy('id')->with('subgroups');
+        }])
+            ->get()
+            ->filter(fn ($module) => $module->groups->isNotEmpty())
+            ->values();
+
+        // Grupos activos sin modulo asignado.
+        $orphanGroups = $allGroups->filter(fn ($grp) => ! $grp->module_id)->values();
+        $allGroups->load('subgroups');
+
         $providers = Provider::with([
             'category',
             'services',
             'subgroups.group',
             'user.status',
         ])
-        ->where('is_active', true)
-        ->whereHas('user', function ($query) {
-            $query->advertisable();
-        })
-        ->get()
-        ->filter(function ($provider) use ($activeGroupIds) {
-            // Los comercios que solo pertenecen a grupos desactivados no se
-            // muestran; sin grupos asignados siguen visibles ("General").
-            $linked = $provider->subgroups->pluck('group_id')->filter()
-                ->push($provider->category_id)
-                ->filter();
+            ->where('is_active', true)
+            ->whereHas('user', function ($query) {
+                $query->advertisable();
+            })
+            ->get()
+            ->filter(function ($provider) use ($activeGroupIds) {
+                // Los comercios que solo pertenecen a grupos desactivados no se
+                // muestran; sin grupos asignados siguen visibles ("General").
+                $linked = $provider->subgroups->pluck('group_id')->filter()
+                    ->push($provider->category_id)
+                    ->filter();
 
-            if ($linked->isEmpty()) {
-                return true;
-            }
+                if ($linked->isEmpty()) {
+                    return true;
+                }
 
-            return $linked->intersect($activeGroupIds)->isNotEmpty();
-        })
-        ->map(function ($provider) use ($activeGroupIds) {
-            $bannerUrl = $this->findProviderBanner($provider->id);
+                return $linked->intersect($activeGroupIds)->isNotEmpty();
+            })
+            ->map(function ($provider) use ($activeGroupIds) {
+                $bannerUrl = $this->findProviderBanner($provider->id);
 
-            if ($bannerUrl) {
-                $this->ensureResized(public_path('images/publicidad/' . $bannerUrl));
-            }
+                if ($bannerUrl) {
+                    $this->ensureResized(public_path('images/publicidad/'.$bannerUrl));
+                }
 
-            $servicesList = $provider->services->pluck('name')->toArray();
-            $hoursText = $this->formatHours($provider->hours);
+                $servicesList = $provider->services->pluck('name')->toArray();
+                $hoursText = $this->formatHours($provider->hours);
 
-            // La etiqueta del comercio solo puede nombrar grupos activos.
-            $groupNames = $provider->subgroups
-                ->filter(function ($subgroup) use ($activeGroupIds) {
-                    return $subgroup->group_id && $activeGroupIds->contains($subgroup->group_id);
-                })
-                ->pluck('group.description')->filter()->unique()->values()->toArray();
+                // La etiqueta del comercio solo puede nombrar grupos activos.
+                $groupNames = $provider->subgroups
+                    ->filter(function ($subgroup) use ($activeGroupIds) {
+                        return $subgroup->group_id && $activeGroupIds->contains($subgroup->group_id);
+                    })
+                    ->pluck('group.description')->filter()->unique()->values()->toArray();
 
-            if (empty($groupNames)) {
-                $category = $provider->category;
-                $groupNames = ($category && $activeGroupIds->contains($category->id))
-                    ? [$category->description]
-                    : ['General'];
-            }
+                if (empty($groupNames)) {
+                    $category = $provider->category;
+                    $groupNames = ($category && $activeGroupIds->contains($category->id))
+                        ? [$category->description]
+                        : ['General'];
+                }
 
-            $primaryGroup = $groupNames[0];
+                $primaryGroup = $groupNames[0];
 
-            return [
-                'id' => $provider->id,
-                'name' => $provider->business_name,
-                'description' => $provider->description,
-                'category' => $primaryGroup,
-                'groups' => $groupNames,
-                'rating' => $provider->rating,
-                'promo' => $provider->promo,
-                'status' => $provider->user->status->status ?? null,
-                'phone' => $provider->phone,
-                'whatsapp' => $provider->whatsapp,
-                'zone' => $provider->zone,
-                'hours' => $hoursText,
-                'banner_url' => $bannerUrl,
-                'services' => $servicesList,
-            ];
-        });
+                return [
+                    'id' => $provider->id,
+                    'name' => $provider->business_name,
+                    'description' => $provider->description,
+                    'category' => $primaryGroup,
+                    'groups' => $groupNames,
+                    'rating' => $provider->rating,
+                    'promo' => $provider->promo,
+                    'status' => $provider->user->status->status ?? null,
+                    'phone' => $provider->phone,
+                    'whatsapp' => $provider->whatsapp,
+                    'zone' => $provider->zone,
+                    'hours' => $hoursText,
+                    'banner_url' => $bannerUrl,
+                    'services' => $servicesList,
+                ];
+            });
 
         return response()->view('welcome', [
             'providers' => $providers,
             'allGroups' => $allGroups,
-            'footerGroups' => $allGroups,
+            'modules' => $modules,
+            'orphanGroups' => $orphanGroups,
+            'footerModules' => $modules,
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-          ->header('Pragma', 'no-cache');
+            ->header('Pragma', 'no-cache');
     }
 
     private function findProviderBanner($providerId)
@@ -98,8 +114,8 @@ class AdvertisingController extends Controller
         $extensions = ['jpg', 'jpeg', 'png', 'webp'];
 
         foreach ($extensions as $ext) {
-            $file = 'provider_' . $providerId . '.' . $ext;
-            if (file_exists($dir . '/' . $file)) {
+            $file = 'provider_'.$providerId.'.'.$ext;
+            if (file_exists($dir.'/'.$file)) {
                 return $file;
             }
         }
@@ -109,7 +125,9 @@ class AdvertisingController extends Controller
 
     private function formatHours($hours)
     {
-        if (!is_array($hours)) return 'Consultar horarios';
+        if (! is_array($hours)) {
+            return 'Consultar horarios';
+        }
 
         $dayNames = [
             'mon' => 'Lun', 'tue' => 'Mar', 'wed' => 'Mie', 'thu' => 'Jue',
@@ -118,15 +136,19 @@ class AdvertisingController extends Controller
 
         $parts = [];
         foreach ($hours as $day => $data) {
-            if (!isset($data['open']) || !$data['open']) continue;
+            if (! isset($data['open']) || ! $data['open']) {
+                continue;
+            }
             $shifts = $data['shifts'] ?? [];
-            if (empty($shifts)) continue;
+            if (empty($shifts)) {
+                continue;
+            }
 
             $timeRanges = array_map(function ($shift) {
-                return ($shift['from'] ?? '') . '-' . ($shift['to'] ?? '');
+                return ($shift['from'] ?? '').'-'.($shift['to'] ?? '');
             }, $shifts);
 
-            $parts[] = ($dayNames[$day] ?? $day) . ' ' . implode('·', $timeRanges);
+            $parts[] = ($dayNames[$day] ?? $day).' '.implode('·', $timeRanges);
         }
 
         return empty($parts) ? 'Consultar horarios' : implode(' · ', $parts);
@@ -135,8 +157,12 @@ class AdvertisingController extends Controller
     private function ensureResized(string $path, int $maxWidth = 200)
     {
         $info = @getimagesize($path);
-        if (!$info) return;
-        if ($info[0] <= $maxWidth) return;
+        if (! $info) {
+            return;
+        }
+        if ($info[0] <= $maxWidth) {
+            return;
+        }
 
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $origW = $info[0];
@@ -149,7 +175,9 @@ class AdvertisingController extends Controller
             'png' => @imagecreatefrompng($path),
             default => null,
         };
-        if (!$src) return;
+        if (! $src) {
+            return;
+        }
 
         $dst = imagecreatetruecolor($newW, $newH);
         imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);

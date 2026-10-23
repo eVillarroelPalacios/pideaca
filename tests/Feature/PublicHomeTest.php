@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Group;
 use App\Models\GroupStatus;
+use App\Models\Module;
 use App\Models\Provider;
 use App\Models\SubGroup;
 use App\Models\TypeUser;
@@ -132,17 +133,20 @@ class PublicHomeTest extends TestCase
             ->assertSee('Grupo Sin Estado');
     }
 
-    public function test_home_footer_shows_only_active_group_icons(): void
+    public function test_home_footer_shows_only_active_module_icons(): void
     {
-        $this->activeGroup->update(['icon' => '<svg data-footer="activo"></svg>']);
-        $this->inactiveGroup->update(['icon' => '<svg data-footer="cerrado"></svg>']);
+        $module = Module::create(['description' => 'Mercado Demo', 'icon' => '<svg data-footer="mercado"></svg>']);
+        $this->activeGroup->update(['module_id' => $module->id]);
+
+        $inactiveModule = Module::create(['description' => 'Cerrado Demo', 'icon' => '<svg data-footer="cerrado"></svg>']);
+        $this->inactiveGroup->update(['module_id' => $inactiveModule->id]);
 
         $html = $this->get('/')->assertOk()->getContent();
         $pos = strpos($html, '<footer');
         $this->assertNotFalse($pos);
         $footer = substr($html, $pos);
 
-        $this->assertStringContainsString('data-footer="activo"', $footer);
+        $this->assertStringContainsString('data-footer="mercado"', $footer);
         $this->assertStringNotContainsString('data-footer="cerrado"', $footer);
         $this->assertSame(1, substr_count($footer, 'class="footer-group-icon"'));
     }

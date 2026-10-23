@@ -443,6 +443,17 @@ trait InteractsWithServiceOrders
         // adjuntos y no tiene precio.
         $quote = $quotes->firstWhere('provider_id') ?: $quotes->first();
 
+        // Calificacion bilateral ya registrada: la del cliente y la que puso
+        // el prestador (reviewer = usuario del comercio).
+        $customerRating = $order->ratings->first(
+            fn ($rating) => (int) $rating->reviewer_id === (int) $order->customer_id
+        );
+        $providerRating = $order->merchant
+            ? $order->ratings->first(
+                fn ($rating) => (int) $rating->reviewer_id === (int) $order->merchant->user_id
+            )
+            : null;
+
         return [
             'id' => $order->id,
             'order_type' => $order->order_type,
@@ -453,9 +464,18 @@ trait InteractsWithServiceOrders
             'customer_id' => $order->customer_id,
             'merchant_id' => $order->merchant_id,
             'cancellable' => $order->isCancellable(),
-            'customer_rated' => $order->ratings->contains(
-                fn ($rating) => (int) $rating->reviewer_id === (int) $order->customer_id
-            ),
+            'customer_rated' => (bool) $customerRating,
+            'customer_rating' => $customerRating ? [
+                'stars' => (int) $customerRating->stars,
+                'comment' => $customerRating->comment,
+                'created_at' => $customerRating->created_at?->toIso8601String(),
+            ] : null,
+            'provider_rated' => (bool) $providerRating,
+            'provider_rating' => $providerRating ? [
+                'stars' => (int) $providerRating->stars,
+                'comment' => $providerRating->comment,
+                'created_at' => $providerRating->created_at?->toIso8601String(),
+            ] : null,
             'quote' => $quote ? [
                 'id' => $quote->id,
                 'provider_id' => $quote->provider_id,

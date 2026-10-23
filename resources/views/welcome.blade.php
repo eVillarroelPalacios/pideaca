@@ -137,9 +137,10 @@
                             </span>
                             @php
                                 $groupIcons = [
+                                    'Comercio' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+                                    'Hogar' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>',
                                     'Comercio & Gastronomía' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
-                                    'Servicios del Hogar & Bienestar' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>',
-                                    'Servicios del Hogar & Cuidado Personal' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10z"/></svg>',
+                                    'Servicios del Hogar & Bienestar' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>',
                                     'Auxilio Vial & Mecánica' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.2 1 13v3c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>',
                                     'Abastos Recurrentes' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
                                 ];
@@ -293,26 +294,34 @@
                                     <div class="qs-section-block">
                                         <h3>Estructura de Servicios</h3>
                                         <div class="qs-modules-grid">
-                                            @php
-                                                $groupBlurbs = [
-                                                    'Comercio & Gastronomía' => 'Pizzerías, rotiserías y tiendas con carrito interactivo.',
-                                                    'Servicios del Hogar & Bienestar' => 'Plomeros, electricistas, técnicos 24/7 y belleza a domicilio.',
-                                                    'Servicios del Hogar & Cuidado Personal' => 'Plomeros, electricistas, técnicos 24/7 y belleza a domicilio.',
-                                                    'Auxilio Vial & Mecánica' => 'Grúas y auxilio inmediato por GPS en tiempo real.',
-                                                    'Abastos Recurrentes' => 'Suscripción de agua, garrafas de gas y hielo.',
-                                                ];
-                                            @endphp
-                                            @foreach($allGroups as $grp)
+                                            @foreach($modules as $mod)
                                             <div class="module-item">
-                                                <span class="mod-icon">{!! ($grp->icon ?: ($groupIcons[$grp->description] ?? '')) !!}</span>
+                                                <span class="mod-icon">{!! ($mod->icon ?: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>') !!}</span>
                                                 <div>
-                                                    <strong>{{ $grp->description }}</strong>
-                                                    @if(isset($groupBlurbs[$grp->description]))
-                                                        <p>{{ $groupBlurbs[$grp->description] }}</p>
+                                                    <strong>{{ $mod->description }}</strong>
+                                                    @if($mod->groups->isNotEmpty())
+                                                        <p>{{ $mod->groups->pluck('description')->implode(' · ') }}</p>
+                                                    @endif
+                                                    @php $svcNames = $mod->groups->flatMap->subgroups->pluck('description')->unique()->values(); @endphp
+                                                    @if($svcNames->isNotEmpty())
+                                                        <p style="margin-top:4px;font-size:0.75rem;color:#6b7280;">{{ $svcNames->implode(' · ') }}</p>
                                                     @endif
                                                 </div>
                                             </div>
                                             @endforeach
+                                            @if($orphanGroups->isNotEmpty())
+                                            <div class="module-item">
+                                                <span class="mod-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                                                <div>
+                                                    <strong>Otros servicios</strong>
+                                                    <p>{{ $orphanGroups->pluck('description')->implode(' · ') }}</p>
+                                                    @php $orphanSvc = $orphanGroups->flatMap->subgroups->pluck('description')->unique()->values(); @endphp
+                                                    @if($orphanSvc->isNotEmpty())
+                                                        <p style="margin-top:4px;font-size:0.75rem;color:#6b7280;">{{ $orphanSvc->implode(' · ') }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -331,21 +340,18 @@
                     <div id="section-servicios" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
                         <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Nuestros Servicios</h2>
                         <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 12px;">Descubrí las grandes familias de servicios que ofrecemos:</p>
-                        @php
-                            $groupServices = [
-                                'Comercio & Gastronomía' => ['color' => '#D24C19', 'label' => 'Comercio', 'text' => 'Pizzerías, rotiserías, kioscos y tiendas de conveniencia.'],
-                                'Servicios del Hogar & Bienestar' => ['color' => '#2563eb', 'label' => 'Hogar', 'text' => 'Plomeros, electricistas, técnicos y estética a domicilio.'],
-                                'Servicios del Hogar & Cuidado Personal' => ['color' => '#2563eb', 'label' => 'Hogar', 'text' => 'Plomeros, electricistas, técnicos y estética a domicilio.'],
-                                'Auxilio Vial & Mecánica' => ['color' => '#0d9488', 'label' => 'Auxilio Vial', 'text' => 'Grúas, mecánica ligera y gomería móvil con ubicación GPS.'],
-                                'Abastos Recurrentes' => ['color' => '#d97706', 'label' => 'Abastos', 'text' => 'Agua, gas, hielo y soda en pedidos programados.'],
-                            ];
-                        @endphp
-                        @foreach($allGroups as $grp)
-                            @php
-                                $svc = $groupServices[$grp->description] ?? ['color' => '#0c2a4d', 'label' => $grp->description, 'text' => ''];
-                            @endphp
-                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;"><span style="font-weight:700;color:{{ $svc['color'] }};">{{ $svc['label'] }}:</span>{{ $svc['text'] !== '' ? ' '.$svc['text'] : '' }}</p>
+                        @foreach($modules as $mod)
+                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;">
+                                <span style="font-weight:700;color:#0c2a4d;">{{ $mod->description }}:</span>
+                                {{ $mod->groups->pluck('description')->implode(', ') }}
+                            </p>
                         @endforeach
+                        @if($orphanGroups->isNotEmpty())
+                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;">
+                                <span style="font-weight:700;color:#0c2a4d;">Otros servicios:</span>
+                                {{ $orphanGroups->pluck('description')->implode(', ') }}
+                            </p>
+                        @endif
                     </div>
                     <div id="section-contactos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
                         <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Contactos</h2>

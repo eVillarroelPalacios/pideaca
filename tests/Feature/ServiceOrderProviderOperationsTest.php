@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Provider;
 use App\Models\ServiceOrder;
 use App\Models\ServiceQuote;
+use App\Models\ServiceRating;
 use App\Models\SubGroup;
 use App\Models\TypeUser;
 use App\Models\User;
@@ -165,6 +166,40 @@ class ServiceOrderProviderOperationsTest extends TestCase
 
         $this->getJson('/api/v1/provider/service-orders/'.$orden->id)
             ->assertStatus(401);
+    }
+
+    // ------------------------------------------------------- calificaciones
+
+    public function test_el_detalle_marca_cuando_el_prestador_ya_califico(): void
+    {
+        $orden = $this->crearOrden([
+            'status' => ServiceOrder::STATUS_COMPLETED,
+            'completed_at' => now(),
+        ]);
+
+        $sinCalificar = $this->actingAs($this->providerUser)
+            ->getJson('/api/v1/provider/service-orders/'.$orden->id)
+            ->assertStatus(200)
+            ->assertJsonPath('data.order.provider_rated', false)
+            ->assertJsonPath('data.order.provider_rating', null);
+
+        $this->assertNotNull($sinCalificar);
+
+        ServiceRating::create([
+            'service_order_id' => $orden->id,
+            'reviewer_id' => $this->providerUser->id,
+            'ratee_id' => $this->customer->id,
+            'stars' => 4,
+            'comment' => 'Cliente puntual.',
+        ]);
+
+        $this->actingAs($this->providerUser)
+            ->getJson('/api/v1/provider/service-orders/'.$orden->id)
+            ->assertStatus(200)
+            ->assertJsonPath('data.order.provider_rated', true)
+            ->assertJsonPath('data.order.provider_rating.stars', 4)
+            ->assertJsonPath('data.order.provider_rating.comment', 'Cliente puntual.')
+            ->assertJsonPath('data.order.customer_rated', false);
     }
 
     // ------------------------------------------------------ aceptacion y horarios

@@ -12,4 +12,9 @@ class Module extends Model
     {
         return $this->hasMany(Page::class, 'module_id');
     }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'module_id');
+    }
 }

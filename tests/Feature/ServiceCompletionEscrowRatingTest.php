@@ -377,7 +377,11 @@ class ServiceCompletionEscrowRatingTest extends TestCase
             ->assertJsonPath('data.rating.stars', 4)
             ->assertJsonPath('data.rating.reviewer_id', $this->providerUser->id)
             ->assertJsonPath('data.rating.ratee_id', $this->customer->id)
-            ->assertJsonPath('data.provider_rating', null);
+            ->assertJsonPath('data.provider_rating', null)
+            // La orden devuelta marca la calificacion para que la UI no
+            // vuelva a ofrecer el boton de calificar.
+            ->assertJsonPath('data.order.provider_rated', true)
+            ->assertJsonPath('data.order.provider_rating.stars', 4);
 
         $this->assertDatabaseHas('service_ratings', [
             'service_order_id' => $orden->id,
