@@ -8,6 +8,7 @@ use App\Models\Provider;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ProviderController extends Controller
 {
@@ -27,11 +28,19 @@ class ProviderController extends Controller
     {
         $search = trim((string) $request->query('search'));
 
-        $request->validate([
-            'module_id' => ['sometimes', 'integer', 'exists:modules,id'],
-            'only_with_plans' => ['sometimes', 'boolean'],
-            'favorite' => ['sometimes', 'boolean'],
-        ]);
+        try {
+            $request->validate([
+                'module_id' => ['sometimes', 'integer', 'exists:modules,id'],
+                'only_with_plans' => ['sometimes', 'boolean'],
+                'favorite' => ['sometimes', 'boolean'],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parámetros de búsqueda inválidos.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $onlyWithPlans = $request->boolean('only_with_plans');
         $favoriteOnly = $request->boolean('favorite');

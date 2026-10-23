@@ -109,6 +109,11 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(OrderRating::class, 'order_id');
+    }
+
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);

@@ -14,29 +14,15 @@
                 <option value="SCHEDULED">Cita programada</option>
                 <option value="QUOTE">Presupuesto</option>
             </select>
-        </div>
-    </div>
-
-    <div id="fd-mis-tabs" style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:14px;flex-wrap:wrap;">
-        <button type="button" id="fd-mis-tab-today" onclick="window.fdMisTab('today')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-            <span class="tab-label">Servicios de hoy</span>
-            <span id="fd-mis-count-today" style="background:#D24C19;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
-        </button>
-        <button type="button" id="fd-mis-tab-history" onclick="window.fdMisTab('history')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span class="tab-label">Historial</span>
-            <span id="fd-mis-count-history" style="background:#6b7280;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
-        </button>
-
-        <div id="fd-mis-range" style="display:none;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto;padding-bottom:6px;">
-            <label for="fd-mis-date-from" style="font-size:11px;color:#6b7280;">Desde</label>
-            <input type="date" id="fd-mis-date-from" onchange="window.fdMisRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
-            <label for="fd-mis-date-to" style="font-size:11px;color:#6b7280;">Hasta</label>
-            <input type="date" id="fd-mis-date-to" onchange="window.fdMisRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
-            <button type="button" onclick="window.fdMisClearRange()" title="Limpiar rango de fechas" aria-label="Limpiar rango de fechas" style="background:#fff;color:#6b7280;border:1px solid #d1d5db;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-            </button>
+            <div id="fd-mis-range" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                <label for="fd-mis-date-from" style="font-size:11px;color:#6b7280;">Desde</label>
+                <input type="date" id="fd-mis-date-from" onchange="window.fdMisRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                <label for="fd-mis-date-to" style="font-size:11px;color:#6b7280;">Hasta</label>
+                <input type="date" id="fd-mis-date-to" onchange="window.fdMisRangeChange()" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;color:#374151;">
+                <button type="button" onclick="window.fdMisClearRange()" title="Limpiar rango de fechas" aria-label="Limpiar rango de fechas" style="background:#fff;color:#6b7280;border:1px solid #d1d5db;padding:6px 8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -86,7 +72,6 @@
     };
 
     var MIS_PER_PAGE = 5;
-    var MIS_ACTIVE = 'today';
     var MIS_PAGE = 1;
     var MIS_ALL = [];
     var MIS_LAST_HTML = null;
@@ -152,48 +137,7 @@
             + '<span>' + esc(label) + '</span><span>' + value + '</span></div>';
     }
 
-    function isToday(o) {
-        var d = new Date(String((o && o.created_at) || '').replace(' ', 'T'));
-        if (isNaN(d.getTime())) return false;
-
-        var now = new Date();
-        return d.getFullYear() === now.getFullYear()
-            && d.getMonth() === now.getMonth()
-            && d.getDate() === now.getDate();
-    }
-
-    function splitGroups() {
-        var groups = { today: [], history: [] };
-        MIS_ALL.forEach(function (o) {
-            groups[isToday(o) ? 'today' : 'history'].push(o);
-        });
-        return groups;
-    }
-
-    function paintTabs(groups) {
-        ['today', 'history'].forEach(function (key) {
-            var count = groups[key].length;
-
-            var badgeEl = document.getElementById('fd-mis-count-' + key);
-            if (badgeEl) {
-                badgeEl.textContent = count;
-                badgeEl.style.display = count ? 'inline-flex' : 'none';
-            }
-
-            var btn = document.getElementById('fd-mis-tab-' + key);
-            if (btn) {
-                var on = MIS_ACTIVE === key;
-                btn.style.color = on ? '#D24C19' : '#64748b';
-                btn.style.borderBottomColor = on ? '#D24C19' : 'transparent';
-                btn.style.background = on ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'none';
-            }
-        });
-
-        var range = document.getElementById('fd-mis-range');
-        if (range) range.style.display = MIS_ACTIVE === 'history' ? 'flex' : 'none';
-    }
-
-    function paintSummary(groups) {
+    function paintSummary() {
         var summary = document.getElementById('fd-mis-summary');
         if (!summary) return;
 
@@ -202,8 +146,8 @@
         }).length;
 
         summary.textContent = (MIS_ALL.length
-            ? groups.today.length + ' de hoy · ' + groups.history.length + ' en historial'
-                + (pendientes ? ' · ' + pendientes + ' pendientes' : '')
+            ? MIS_ALL.length + (MIS_ALL.length === 1 ? ' servicio' : ' servicios')
+                + (pendientes ? ' · ' + pendientes + (pendientes === 1 ? ' pendiente' : ' pendientes') : '')
             : 'Tus solicitudes, citas y presupuestos')
             + ' · actualizado ' + clock();
     }
@@ -212,7 +156,7 @@
         var pag = document.getElementById('fd-mis-pagination');
         if (!pag) return;
 
-        if (MIS_ACTIVE !== 'history' || totalPages <= 1) {
+        if (totalPages <= 1) {
             pag.style.display = 'none';
             pag.innerHTML = '';
             return;
@@ -541,27 +485,23 @@
     };
 
     function render() {
-        var groups = splitGroups();
-        paintTabs(groups);
-        paintSummary(groups);
+        paintSummary();
 
-        var list = MIS_ACTIVE === 'today' ? groups.today : groups.history;
+        var list = MIS_ALL.slice();
         var rangeActive = false;
 
-        if (MIS_ACTIVE === 'history') {
-            var fromEl = document.getElementById('fd-mis-date-from');
-            var toEl = document.getElementById('fd-mis-date-to');
-            var from = fromEl ? fromEl.value : '';
-            var to = toEl ? toEl.value : '';
+        var fromEl = document.getElementById('fd-mis-date-from');
+        var toEl = document.getElementById('fd-mis-date-to');
+        var from = fromEl ? fromEl.value : '';
+        var to = toEl ? toEl.value : '';
 
-            if (from || to) {
-                rangeActive = true;
-                list = list.filter(function (o) {
-                    var day = String((o && o.created_at) || '').slice(0, 10);
-                    if (!day) return false;
-                    return (!from || day >= from) && (!to || day <= to);
-                });
-            }
+        if (from || to) {
+            rangeActive = true;
+            list = list.filter(function (o) {
+                var day = String((o && o.created_at) || '').slice(0, 10);
+                if (!day) return false;
+                return (!from || day >= from) && (!to || day <= to);
+            });
         }
 
         if (!list.length) {
@@ -574,28 +514,19 @@
             if (rangeActive) {
                 text = 'No hay servicios en ese rango de fechas.';
             } else if ((filterEl && filterEl.value) || (tipoEl && tipoEl.value)) {
-                text = 'No hay servicios con ese filtro en esta sección.';
-            } else if (!MIS_ALL.length) {
-                text = 'Todavía no tenés servicios solicitados.\nPedí uno desde la sección "Solicitar Servicio" y acá vas a poder seguirlo.';
-            } else if (MIS_ACTIVE === 'today') {
-                text = 'No tenés servicios hoy.\nPasá por la pestaña de historial para ver los anteriores.';
+                text = 'No hay servicios con ese filtro.';
             } else {
-                text = 'Todavía no hay servicios en el historial.';
+                text = 'Todavía no tenés servicios solicitados.\nPedí uno desde la sección "Solicitar Servicio" y acá vas a poder seguirlo.';
             }
 
             state('message', text);
             return;
         }
 
-        var totalPages = 1;
-        var pageList = list;
-
-        if (MIS_ACTIVE === 'history') {
-            totalPages = Math.max(1, Math.ceil(list.length / MIS_PER_PAGE));
-            if (MIS_PAGE > totalPages) MIS_PAGE = totalPages;
-            if (MIS_PAGE < 1) MIS_PAGE = 1;
-            pageList = list.slice((MIS_PAGE - 1) * MIS_PER_PAGE, MIS_PAGE * MIS_PER_PAGE);
-        }
+        var totalPages = Math.max(1, Math.ceil(list.length / MIS_PER_PAGE));
+        if (MIS_PAGE > totalPages) MIS_PAGE = totalPages;
+        if (MIS_PAGE < 1) MIS_PAGE = 1;
+        var pageList = list.slice((MIS_PAGE - 1) * MIS_PER_PAGE, MIS_PAGE * MIS_PER_PAGE);
 
         var html = pageList.map(card).join('');
         var listEl = document.getElementById('fd-mis-list');
@@ -663,13 +594,6 @@
                 if (silent) return;
                 state('message', 'No se pudieron cargar tus servicios. Intenta nuevamente.');
             });
-    };
-
-    window.fdMisTab = function (tab) {
-        MIS_ACTIVE = tab === 'history' ? 'history' : 'today';
-        MIS_PAGE = 1;
-        MIS_LAST_HTML = '';
-        render();
     };
 
     window.fdMisRangeChange = function () {

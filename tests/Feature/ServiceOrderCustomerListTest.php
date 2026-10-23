@@ -273,10 +273,11 @@ class ServiceOrderCustomerListTest extends TestCase
         $this->assertStringNotContainsString('Actualizar', $seccion);
         $this->assertStringContainsString('setInterval(autoRefresh, 10000)', $seccion);
 
-        // Diseño de Mis Pedidos: pestañas de hoy/historial, rango de fechas y
+        // Sin pestañas de hoy/historial: lista única con rango de fechas y
         // stepper de pasos con la marca "Ahora".
-        $this->assertStringContainsString('id="fd-mis-tab-today"', $seccion);
-        $this->assertStringContainsString('id="fd-mis-tab-history"', $seccion);
+        $this->assertStringNotContainsString('id="fd-mis-tab-today"', $seccion);
+        $this->assertStringNotContainsString('id="fd-mis-tab-history"', $seccion);
+        $this->assertStringNotContainsString('window.fdMisTab', $seccion);
         $this->assertStringContainsString('id="fd-mis-date-from"', $seccion);
         $this->assertStringContainsString('id="fd-mis-date-to"', $seccion);
         $this->assertStringContainsString("'Ahora'", $seccion);

@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemOption;
+use App\Models\OrderRating;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
@@ -16,6 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
@@ -121,16 +123,44 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $orders = Auth::user()->orders()
-            ->with([
-                'provider:id,business_name,is_active',
-                'items.options',
-                'address:id,street,number,floor_apartment,postal_code,notes',
-                'payments:id,order_id,provider,status,amount,created_at',
-            ])
-            ->when($status, fn ($query) => $query->withStatus($status))
-            ->take(100)
-            ->get();
+        try {
+            $orders = Auth::user()->orders()
+                ->with([
+                    'provider:id,business_name,is_active,user_id',
+                    'items.options',
+                    'address:id,street,number,floor_apartment,postal_code,notes',
+                    'payments:id,order_id,provider,status,amount,created_at',
+                    'ratings',
+                ])
+                ->when($status, fn ($query) => $query->withStatus($status))
+                ->take(100)
+                ->get()
+                ->map(function ($order) {
+                    $customerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->user_id);
+                    $providerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->provider?->user_id);
+
+                    $arr = $order->toArray();
+                    $arr['customer_rated'] = (bool) $customerRating;
+                    $arr['customer_rating'] = $customerRating ? [
+                        'stars' => $customerRating->stars,
+                        'comment' => $customerRating->comment,
+                    ] : null;
+                    $arr['provider_rated'] = (bool) $providerRating;
+                    $arr['provider_rating'] = $providerRating ? [
+                        'stars' => $providerRating->stars,
+                        'comment' => $providerRating->comment,
+                    ] : null;
+
+                    return $arr;
+                });
+        } catch (\Exception $e) {
+            Log::error('Error en mine orders: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar los pedidos: '.$e->getMessage(),
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
@@ -315,6 +345,109 @@ class OrderController extends Controller
             'message' => 'Pedido registrado correctamente.',
             'order' => $order->load('items.options'),
         ], 201);
+    }
+
+    /**
+     * Califica un pedido entregado. Tanto el cliente como el comercio (prestador)
+     * pueden calificarse mutuamente. Una sola calificacion por autor y pedido.
+     */
+    public function rateOrder(Request $request, Order $order)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $userId = Auth::id();
+        $order->loadMissing(['provider', 'ratings']);
+
+        $isCustomer = (int) $order->user_id === (int) $userId;
+        $isMerchant = (int) $order->provider->user_id === (int) $userId;
+
+        if (! $isCustomer && ! $isMerchant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés permisos para calificar este pedido.',
+            ], 403);
+        }
+
+        if ($order->status !== Order::STATUS_DELIVERED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo se pueden calificar pedidos entregados.',
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'stars' => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $rateeId = $isCustomer ? $order->provider->user_id : $order->user_id;
+
+        $existing = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $userId);
+        if ($existing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya calificaste este pedido.',
+            ], 422);
+        }
+
+        try {
+            $rating = DB::transaction(function () use ($order, $userId, $rateeId, $data) {
+                $rating = OrderRating::create([
+                    'order_id' => $order->id,
+                    'reviewer_id' => $userId,
+                    'ratee_id' => $rateeId,
+                    'stars' => $data['stars'],
+                    'comment' => $data['comment'] ?? null,
+                ]);
+
+                // Si el comercio fue calificado por el cliente, actualizamos el rating publico del provider
+                if ((int) $rateeId === (int) $order->provider->user_id) {
+                    $promedio = OrderRating::where('ratee_id', $order->provider->user_id)->avg('stars');
+                    $order->provider->rating = round((float) $promedio, 2);
+                    $order->provider->save();
+                }
+
+                return $rating;
+            });
+        } catch (\Exception $e) {
+            Log::error('Calificacion pedido: no se pudo registrar en la orden #'.$order->id.': '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo registrar la calificacion. Intenta nuevamente.',
+            ], 500);
+        }
+
+        $order->load('ratings');
+        $customerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->user_id);
+        $providerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->provider->user_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => $isCustomer ? 'Gracias por calificar al comercio.' : 'Gracias por calificar al cliente.',
+            'rating' => [
+                'id' => $rating->id,
+                'order_id' => $rating->order_id,
+                'reviewer_id' => $rating->reviewer_id,
+                'ratee_id' => $rating->ratee_id,
+                'stars' => $rating->stars,
+                'comment' => $rating->comment,
+                'created_at' => $rating->created_at?->toIso8601String(),
+            ],
+            'customer_rated' => (bool) $customerRating,
+            'customer_rating' => $customerRating ? [
+                'stars' => $customerRating->stars,
+                'comment' => $customerRating->comment,
+            ] : null,
+            'provider_rated' => (bool) $providerRating,
+            'provider_rating' => $providerRating ? [
+                'stars' => $providerRating->stars,
+                'comment' => $providerRating->comment,
+            ] : null,
+            'provider_global_rating' => $order->provider->fresh()->rating,
+        ]);
     }
 
     /**

@@ -1768,17 +1768,38 @@
         }
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function fdFetchJson(url, options) {
         options = options || {};
+        var meta = document.querySelector('meta[name="csrf-token"]');
         var headers = {
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': meta ? meta.content : ''
         };
         Object.keys(options.headers || {}).forEach(function (k) { headers[k] = options.headers[k]; });
         if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
 
         return fetch(url, Object.assign({}, options, { headers: headers })).then(function (r) {
-            return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+            return r.text().then(function (text) {
+                var data = {};
+                try {
+                    data = text ? JSON.parse(text) : {};
+                } catch (e) {
+                    data = { message: text || 'Respuesta inválida del servidor.' };
+                }
+                return { ok: r.ok, data: data };
+            });
+        }).catch(function (err) {
+            return { ok: false, data: { message: 'No se pudo conectar con el servidor.' } };
         });
     }
 
@@ -4869,9 +4890,10 @@
 
                 fdMyOrdersRender(silent);
             })
-            .catch(function () {
+            .catch(function (err) {
+                console.error('Error cargando mis pedidos:', err);
                 if (silent) return;
-                fdSetMyOrdersState('message', 'No se pudo conectar con el servidor.');
+                fdSetMyOrdersState('message', 'Error de conexión: ' + (err && err.message ? err.message : String(err)));
             });
     }
 
@@ -5156,6 +5178,26 @@
             html += '<div style="margin-top:4px;font-size:12px;color:#9a3412;">Nota: ' + escapeHtml(o.notes) + '</div>';
         }
 
+        if (o.status === 'delivered') {
+            if (o.customer_rated && o.customer_rating) {
+                var r = o.customer_rating;
+                var stars = '';
+                for (var i = 1; i <= 5; i++) {
+                    stars += '<span style="color:' + (i <= r.stars ? '#f59e0b' : '#d1d5db') + ';">&#9733;</span>';
+                }
+                html += '<div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">'
+                    + '<div style="font-size:12px;font-weight:700;color:#0c2a4d;margin-bottom:2px;">Tu calificación al comercio:</div>'
+                    + '<div style="font-size:18px;line-height:1;margin-bottom:4px;">' + stars + '</div>'
+                    + (r.comment ? '<div style="font-size:12px;color:#475569;font-style:italic;">"' + escapeHtml(r.comment) + '"</div>' : '')
+                    + '</div>';
+            } else {
+                html += '<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">'
+                    + '<button type="button" onclick="fdMyOrderOpenRate(' + o.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Calificar comercio</button>'
+                    + '</div>'
+                    + fdMyOrderRatePanel(o);
+            }
+        }
+
         html += '<div style="border-top:1px solid #f1f5f9;margin-top:10px;padding-top:10px;">'
             + (o.items || []).map(fdRenderOrderItem).join('')
             + '</div>'
@@ -5172,11 +5214,78 @@
         return html;
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        var div = document.createElement('div');
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
+    function fdMyOrderRatePanel(o) {
+        var send = 'fdMyOrderSendRate(this.closest(\'.fd-myorders-panel\'))';
+        var hide = 'this.closest(\'.fd-myorders-panel\').style.display=\'none\'';
+        var stars = '';
+        for (var i = 1; i <= 5; i++) {
+            stars += '<button type="button" onclick="fdMyOrderStar(this,' + i + ')" style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:0;font-size:22px;line-height:1;">★</button>';
+        }
+        return '<div class="fd-myorders-panel" data-order-id="' + o.id + '" data-stars="0" style="display:none;border-top:1px solid #e5e7eb;margin-top:12px;padding-top:12px;">' +
+            '<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Puntuación al comercio</label>' +
+            '<div class="fd-myorders-stars" style="display:flex;gap:4px;">' + stars + '</div>' +
+            '<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin:10px 0 4px;">Comentario (opcional)</label>' +
+            '<textarea class="fd-myorders-comment" rows="2" placeholder="Excelente atención y entrega puntual..." style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+                '<button type="button" class="fd-myorders-send" onclick="' + send + '" style="background:#D24C19;color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Enviar calificación</button>' +
+                '<button type="button" onclick="' + hide + '" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cerrar</button>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function fdMyOrderStar(btn, stars) {
+        var panel = btn.closest('.fd-myorders-panel');
+        if (!panel) return;
+        panel.setAttribute('data-stars', String(stars));
+        Array.prototype.forEach.call(panel.querySelectorAll('.fd-myorders-stars button'), function (b, idx) {
+            b.style.color = idx < stars ? '#D24C19' : '#d1d5db';
+        });
+    }
+
+    function fdMyOrderSendRate(panel) {
+        if (!panel) return;
+        var orderId = panel.getAttribute('data-order-id');
+        var stars = parseInt(panel.getAttribute('data-stars') || '0', 10);
+        if (stars < 1) { fdToast('Elegí una puntuación de 1 a 5 estrellas.', true); return; }
+        var comment = (panel.querySelector('.fd-myorders-comment') || {}).value || '';
+        var btn = panel.querySelector('.fd-myorders-send');
+
+        var originalHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = 'Enviando...'; }
+
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        fetch('{{ url('/api/orders') }}/' + orderId + '/rate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': meta ? meta.content : ''
+            },
+            body: JSON.stringify({ stars: stars, comment: comment })
+        })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (json) {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+            if (!json || !json.success) {
+                fdToast(json.message || 'No se pudo registrar la calificación.', true);
+                return;
+            }
+            fdToast('¡Gracias por calificar al comercio!', false);
+            panel.style.display = 'none';
+            loadMyOrders(true);
+        })
+        .catch(function () {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+            fdToast('Error de conexión al calificar.', true);
+        });
+    }
+
+    function fdMyOrderOpenRate(orderId) {
+        var cardEl = document.querySelector('.fd-myorders-card[data-order-id="' + orderId + '"]');
+        if (!cardEl) return;
+        var panel = cardEl.querySelector('.fd-myorders-panel');
+        if (!panel) return;
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
     }
 
     // ============ SEGUIMIENTO EN VIVO ============

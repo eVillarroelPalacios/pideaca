@@ -166,6 +166,7 @@ Route::get('/api/providers/{provider}/orders', [OrderController::class, 'index']
 Route::get('/api/orders/mine', [OrderController::class, 'mine'])->name('api.orders.mine');
 Route::post('/api/orders', [OrderController::class, 'store'])->name('api.orders.store');
 Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('api.orders.status');
+Route::post('/api/orders/{order}/rate', [OrderController::class, 'rateOrder'])->name('api.orders.rate');
 Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.me.addresses');
 
 // Modulo de inventario por comercio
