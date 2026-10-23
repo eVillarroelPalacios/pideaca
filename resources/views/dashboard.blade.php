@@ -521,7 +521,8 @@
 
             {{-- Vista operativa compartida de las ordenes de servicio del prestador. --}}
             {{-- Se incluye una sola vez (antes de las secciones) para que las paginas --}}
-            {{-- "Ordenes de Servicio" y "Gestionar Solicitudes" usen la misma UI. --}}
+            {{-- "Ordenes de Servicio", "Gestionar Solicitudes" y "Ordenes y Gestion" --}}
+            {{-- usen la misma UI. --}}
             @include('dashboard.partials.servicio-operativo')
 
             @foreach($modules as $module)
@@ -571,6 +572,8 @@
             @include('dashboard.sections.mis-servicios')
                     @elseif($page->url === 'ordenes-servicio')
             @include('dashboard.sections.ordenes-servicio')
+                    @elseif($page->url === 'ordenes-gestion')
+            @include('dashboard.sections.ordenes-gestion')
                     @elseif($page->url)
             @include('dashboard.sections.default')
                     @endif
@@ -635,6 +638,7 @@
         text-shadow: 0 2px 8px rgba(255,255,255,0.4);
     }
     .nav-dropdown:hover .nav-dropdown-menu { /* handled by JS */ }
+    .nav-link > span svg { width: 14px; height: 14px; }
     .dropdown-item {
         text-decoration: none;
     }
@@ -5182,7 +5186,8 @@
     var FD_POLL_SECTIONS = {
         'mis-pedidos': function () { loadMyOrders(true); },
         'pedidos': function () { loadProviderOrders(true); },
-        'comercios': function () { loadComercios(true); }
+        'comercios': function () { loadComercios(true); },
+        'ordenes-gestion': function () { if (window.fdOgLoad) window.fdOgLoad(true); }
     };
     var FD_POLL_MS = 8000;
     var fdPollTimer = null;
@@ -5259,7 +5264,14 @@
 
         // Al entrar al dashboard se muestra una seccion por defecto: sin esto
         // todas las secciones quedan ocultas y la pantalla aparecia en blanco.
-        showDashSection('perfil');
+        // El enlace directo de la pagina unificada llega con ?section=... y
+        // deja esa seccion abierta (si el usuario realmente la tiene).
+        var requestedSection = new URLSearchParams(window.location.search).get('section');
+        if (requestedSection && document.getElementById('dash-' + requestedSection)) {
+            showDashSection(requestedSection);
+        } else {
+            showDashSection('perfil');
+        }
 
         @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0)
             // Prestador que todavía no eligió categorías: no deja avanzar hasta configurarlas.

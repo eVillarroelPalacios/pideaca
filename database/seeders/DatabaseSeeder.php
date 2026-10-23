@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             UnitOfMeasureSeeder::class,
             InventoryPagesSeeder::class,
             ReportesPageSeeder::class,
+            OrdenesGestionPageSeeder::class,
         ]);
     }
 }

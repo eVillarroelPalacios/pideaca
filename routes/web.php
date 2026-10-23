@@ -14,6 +14,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\OptionController;
+use App\Http\Controllers\OrdenesGestionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
@@ -47,6 +48,12 @@ Route::get('/registro/tipos', [RegisterController::class, 'types'])->name('regis
 Route::post('/registro', [RegisterController::class, 'store'])->name('registro.store');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// Camino directo a la pagina unificada del prestador: entra al dashboard
+// con la seccion "Ordenes y Gestion" abierta (la permision de la pagina
+// se valida dentro del controlador con redirect, porque el middleware
+// page: esta pensado para respuestas JSON).
+Route::get('/dashboard/ordenes-gestion', [OrdenesGestionController::class, 'index'])->name('dashboard.ordenes-gestion');
 
 // Cada bloque de administracion pide la pagina que lo maneja en el menu, para
 // que el permiso de la API y el del menu sean el mismo.
@@ -277,6 +284,12 @@ Route::post('/api/v1/provider/service-orders/{serviceOrder}/rate', [ServiceOrder
 Route::middleware('page:ordenes-servicio')->group(function () {
     Route::get('/api/v1/provider/service-orders', [ServiceOrderController::class, 'indexForProvider'])->name('api.provider.service-orders.index');
 });
+
+// Feed unificado del panel "Ordenes y Gestion": servicios + pedidos del
+// comercio en una sola respuesta (tabs, busqueda y filtros rapidos).
+Route::get('/api/v1/provider/ordenes-gestion', [OrdenesGestionController::class, 'data'])
+    ->middleware('page:ordenes-gestion')
+    ->name('api.provider.ordenes-gestion');
 
 // Modulo B - el cliente consulta sus propias ordenes de servicio (pagina
 // "Mis Servicios"). El acceso sigue la pagina que arma el menu.
