@@ -13,14 +13,9 @@ use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
-    /**
-     * Tipos de cliente que se pueden elegir al registrarse.
-     */
-    private const REGISTRABLE_TYPES = ['Cliente', 'Prestador'];
-
     public function types()
     {
-        $types = TypeUser::whereIn('description', self::REGISTRABLE_TYPES)
+        $types = TypeUser::whereIn('id', config('catalog.registrable_type_ids'))
             ->orderBy('description')
             ->get(['id', 'description']);
 
@@ -29,7 +24,7 @@ class RegisterController extends Controller
 
     public function store(Request $request)
     {
-        $availableTypes = TypeUser::whereIn('description', self::REGISTRABLE_TYPES)
+        $availableTypes = TypeUser::whereIn('id', config('catalog.registrable_type_ids'))
             ->orderBy('description')
             ->get();
 
@@ -70,7 +65,7 @@ class RegisterController extends Controller
 
         $name = trim((string) $request->input('name'));
 
-        $user = new User();
+        $user = new User;
         $user->name = $name;
         $user->email = $email;
         $user->type_user_id = $type->id;

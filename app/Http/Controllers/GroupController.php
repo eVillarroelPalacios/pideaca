@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Group;
-use App\Models\GroupStatus;
 
 class GroupController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -22,7 +21,7 @@ class GroupController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
@@ -37,7 +36,7 @@ class GroupController extends Controller
             'icon' => $request->icon,
             // Todo grupo nuevo nace activo salvo que se pida lo contrario.
             'group_status_id' => $request->input('group_status_id')
-                ?: GroupStatus::where('description', GroupStatus::STATUS_ACTIVE)->value('id'),
+                ?: config('catalog.group_status_active_id'),
         ]);
 
         return response()->json([
@@ -49,12 +48,12 @@ class GroupController extends Controller
 
     public function update(Request $request, Group $group)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
         $request->validate([
-            'description' => 'required|string|max:255|unique:groups,description,' . $group->id,
+            'description' => 'required|string|max:255|unique:groups,description,'.$group->id,
             'icon' => 'nullable|string',
             'group_status_id' => 'nullable|integer|exists:group_statuses,id',
         ]);
@@ -80,7 +79,7 @@ class GroupController extends Controller
 
     public function destroy(Group $group)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
 

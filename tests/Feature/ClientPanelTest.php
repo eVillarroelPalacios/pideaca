@@ -420,6 +420,7 @@ class ClientPanelTest extends TestCase
             ['module_id' => $modulo->id]
         );
         $hogar = Group::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar']);
+        config(['catalog.service_group_id' => $hogar->id]);
 
         $this->provider->update(['category_id' => $gastronomia->id]);
 

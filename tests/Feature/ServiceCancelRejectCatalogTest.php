@@ -87,6 +87,7 @@ class ServiceCancelRejectCatalogTest extends TestCase
         ]);
 
         $group = Group::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar']);
+        config(['catalog.service_group_id' => $group->id]);
 
         $this->subgroup = SubGroup::firstOrCreate(
             ['description' => 'Plomeros', 'group_id' => $group->id]

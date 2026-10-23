@@ -25,12 +25,16 @@ class Group extends Model
 
     /**
      * Grupos visibles en el sitio publico y en los listados: se excluyen los
-     * desactivados (los grupos sin estado siguen visibles).
+     * desactivados (los grupos sin estado siguen visibles). El estado se
+     * compara por id (config/catalog.php), nunca por descripcion.
      */
     public function scopeActive($query)
     {
-        return $query->whereDoesntHave('groupStatus', function ($q) {
-            $q->where('description', GroupStatus::STATUS_INACTIVE);
+        $inactiveId = (int) config('catalog.group_status_inactive_id');
+
+        return $query->where(function ($q) use ($inactiveId) {
+            $q->whereNull('group_status_id')
+                ->orWhere('group_status_id', '!=', $inactiveId);
         });
     }
 }

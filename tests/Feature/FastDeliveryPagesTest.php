@@ -6,7 +6,6 @@ use App\Models\Module;
 use App\Models\Page;
 use App\Models\TypeUser;
 use App\Models\User;
-use App\Models\UserStatus;
 use Database\Seeders\FastDeliveryPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,6 +30,9 @@ class FastDeliveryPagesTest extends TestCase
 
         $this->cliente = TypeUser::create(['description' => 'Cliente']);
         $this->prestador = TypeUser::create(['description' => 'Prestador']);
+
+        // El registro busca los tipos por id (config/catalog.php).
+        config(['catalog.registrable_type_ids' => [$this->cliente->id, $this->prestador->id]]);
 
         // Página que ya estaba asignada a ambos tipos antes de este módulo.
         $perfil = Page::create([

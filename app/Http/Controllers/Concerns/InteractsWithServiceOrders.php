@@ -21,24 +21,31 @@ use Illuminate\Support\Facades\Validator;
  */
 trait InteractsWithServiceOrders
 {
-    /** Grupo del catalogo que habilita los servicios del Modulo B. */
-    private const SERVICE_GROUP_NAME = 'Servicios del Hogar & Bienestar';
-
     /** Mensajes propios de los flujos de solicitud de servicio. */
     private const SERVICE_ORDER_MESSAGES = [
         'sub_group_id.required_without' => 'Elegi un prestador o el tipo de servicio que necesitas.',
     ];
 
     /**
-     * Ids de los SubGrupos que pertenecen al grupo "Servicios del Hogar &
-     * Bienestar": el universo valido de servicios que un cliente puede pedir.
+     * Id del grupo de servicios del hogar (config/catalog.php). Los
+     * controladores buscan por id y nunca por descripcion: renombrar el
+     * grupo desde el panel no rompe los flujos del Modulo B.
+     */
+    private function serviceGroupId(): int
+    {
+        return (int) config('catalog.service_group_id');
+    }
+
+    /**
+     * Ids de los SubGrupos del grupo de servicios del hogar: el universo
+     * valido de servicios que un cliente puede pedir.
      *
      * @return array<int, int>
      */
     private function serviceSubgroupIds(): array
     {
         return SubGroup::query()
-            ->whereHas('group', fn ($q) => $q->where('description', self::SERVICE_GROUP_NAME))
+            ->where('group_id', $this->serviceGroupId())
             ->pluck('id')
             ->all();
     }
@@ -51,7 +58,7 @@ trait InteractsWithServiceOrders
     private function providerHogarSubgroups(Provider $provider)
     {
         return $provider->subgroups()
-            ->whereHas('group', fn ($q) => $q->where('description', self::SERVICE_GROUP_NAME))
+            ->where('group_id', $this->serviceGroupId())
             ->orderBy('description')
             ->get();
     }
@@ -69,7 +76,7 @@ trait InteractsWithServiceOrders
         $provider = Provider::query()
             ->where('is_active', true)
             ->whereHas('serviceTypes', fn ($q) => $q->where('code', $serviceTypeCode))
-            ->whereHas('subgroups.group', fn ($q) => $q->where('description', self::SERVICE_GROUP_NAME))
+            ->whereHas('subgroups', fn ($q) => $q->where('group_id', $this->serviceGroupId()))
             ->find($providerId);
 
         if (! $provider) {
@@ -238,7 +245,7 @@ trait InteractsWithServiceOrders
             'availability_label' => $availability['label'],
             'eta_minutes' => $availability['eta_minutes'],
             'subgroups' => $provider->subgroups
-                ->filter(fn (SubGroup $subgroup) => ($subgroup->group?->description ?? null) === self::SERVICE_GROUP_NAME)
+                ->filter(fn (SubGroup $subgroup) => (int) $subgroup->group_id === $this->serviceGroupId())
                 ->map(fn (SubGroup $subgroup) => [
                     'id' => $subgroup->id,
                     'description' => $subgroup->description,

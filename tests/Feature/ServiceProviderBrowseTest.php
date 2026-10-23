@@ -92,6 +92,7 @@ class ServiceProviderBrowseTest extends TestCase
         $this->customer->pages()->attach($this->paginaSolicitar->id);
 
         $group = Group::firstOrCreate(['description' => 'Servicios del Hogar & Bienestar']);
+        config(['catalog.service_group_id' => $group->id]);
         $this->subgroup = SubGroup::firstOrCreate(
             ['description' => 'Gasistas', 'group_id' => $group->id]
         );

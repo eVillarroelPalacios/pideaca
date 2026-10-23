@@ -26,7 +26,7 @@ class ServiceBookingController extends Controller
      * GET /api/v1/service-subgroups
      *
      * Catalogo del Modulo B para armar el formulario de solicitud: los
-     * SubGrupos del grupo "Servicios del Hogar & Bienestar" con cuantos
+     * SubGrupos del grupo de servicios del hogar con cuantos
      * profesionales los ofrecen (vienen del pool de provider_subgroups).
      */
     public function getServiceSubgroups(): JsonResponse
@@ -72,8 +72,9 @@ class ServiceBookingController extends Controller
      *
      * Browse de prestadores para Solicitar Servicio con el mismo esquema que
      * los comercios: el cliente busca y elige una tarjeta de prestador. Devuelve
-     * los profesionales activos del grupo "Servicios del Hogar & Bienestar",
-     * filtrables por texto, por tipo de servicio y por el tab de favoritos.
+     * los profesionales activos del grupo de servicios del hogar (id en
+     * config/catalog.php), filtrables por texto, por tipo de servicio y por
+     * el tab de favoritos.
      */
     public function getServiceProviders(Request $request): JsonResponse
     {
@@ -99,7 +100,7 @@ class ServiceBookingController extends Controller
         try {
             $base = Provider::query()
                 ->where('is_active', true)
-                ->whereHas('subgroups.group', fn ($q) => $q->where('description', self::SERVICE_GROUP_NAME))
+                ->whereHas('subgroups', fn ($q) => $q->where('group_id', $this->serviceGroupId()))
                 ->when(! empty($data['type']), function ($query) use ($data) {
                     $query->whereHas('serviceTypes', fn ($q) => $q->where('code', $data['type']));
                 })
