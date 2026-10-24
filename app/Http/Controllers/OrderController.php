@@ -422,12 +422,15 @@ class OrderController extends Controller
                     'comment' => $data['comment'] ?? null,
                 ]);
 
-                // Si el comercio fue calificado por el cliente, actualizamos el rating publico del provider
-                if ((int) $rateeId === (int) $order->provider->user_id) {
-                    $promedio = OrderRating::where('ratee_id', $order->provider->user_id)->avg('stars');
-                    $order->provider->rating = round((float) $promedio, 2);
-                    $order->provider->save();
-                }
+                // Actualizar rating consolidado y conteo del provider
+                $providerUserId = $order->provider->user_id;
+                $allRatings = OrderRating::where('ratee_id', $providerUserId);
+                $promedio = $allRatings->avg('stars');
+                $count = $allRatings->count();
+
+                $order->provider->rating = round((float) $promedio, 2);
+                $order->provider->rating_count = (int) $count;
+                $order->provider->save();
 
                 return $rating;
             });
