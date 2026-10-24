@@ -22,7 +22,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
-use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReporteHogarController;
+
+// Rutas de Reportes Hogar (Servicios)
+Route::get('/reportes-hogar', [ReporteHogarController::class, 'index'])->name('reportes.hogar');
+Route::get('/reportes-hogar/pdf', [ReporteHogarController::class, 'pdf'])->name('reportes.hogar.pdf');
 use App\Http\Controllers\ServiceBookingController;
 use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\SubGroupController;
