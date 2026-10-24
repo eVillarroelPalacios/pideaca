@@ -37,6 +37,11 @@ class AdvertisingController extends Controller
             'user.status',
         ])
             ->where('is_active', true)
+            ->where(function ($query) {
+                // Politica de visibilidad: umbral minimo de reputacion >= 4.0 o sin calificaciones aun (rating null o 0)
+                $query->whereNull('rating')
+                    ->orWhere('rating', '>=', 4.0);
+            })
             ->whereHas('user', function ($query) {
                 $query->advertisable();
             })
@@ -54,6 +59,13 @@ class AdvertisingController extends Controller
 
                 return $linked->intersect($activeGroupIds)->isNotEmpty();
             })
+            ->sortByDesc(function ($provider) {
+                return [
+                    $provider->rating ?? 0,
+                    $provider->rating_count ?? 0,
+                ];
+            })
+            ->values()
             ->map(function ($provider) use ($activeGroupIds) {
                 $bannerUrl = $this->findProviderBanner($provider->id);
 
@@ -87,6 +99,7 @@ class AdvertisingController extends Controller
                     'category' => $primaryGroup,
                     'groups' => $groupNames,
                     'rating' => $provider->rating,
+                    'rating_count' => $provider->rating_count ?? 0,
                     'promo' => $provider->promo,
                     'status' => $provider->user->status->status ?? null,
                     'phone' => $provider->phone,

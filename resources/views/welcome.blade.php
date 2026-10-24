@@ -217,14 +217,21 @@
                                         
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">{{ $provider['name'] }}</h4>
-                                            @php
-                                                $rating = $provider['rating'] ?? 4.5;
-                                                $fullStars = (int) floor($rating);
-                                                $halfStar = ($rating - $fullStars) >= 0.5;
-                                                $emptyStar = 5 - $fullStars - ($halfStar ? 1 : 0);
-                                                $starsHtml = str_repeat('&#9733;', $fullStars) . ($halfStar ? '&#9734;' : '') . str_repeat('&#9734;', $emptyStar);
-                                            @endphp
-                                            <span class="ad-rating" style="font-size:11px;color:#f59e0b;">{!! $starsHtml !!}</span> <span style="font-size:11px;color:#6b7280;">{{ number_format($rating, 1) }}</span>
+                                             @php
+                                                 $rating = $provider['rating'] ?? null;
+                                                 $ratingCount = $provider['rating_count'] ?? 0;
+                                             @endphp
+                                             @if($rating !== null && $rating > 0)
+                                                 @php
+                                                     $fullStars = (int) floor($rating);
+                                                     $halfStar = ($rating - $fullStars) >= 0.5;
+                                                     $emptyStar = 5 - $fullStars - ($halfStar ? 1 : 0);
+                                                     $starsHtml = str_repeat('&#9733;', $fullStars) . ($halfStar ? '&#9734;' : '') . str_repeat('&#9734;', $emptyStar);
+                                                 @endphp
+                                                 <span class="ad-rating" style="font-size:11px;color:#f59e0b;">{!! $starsHtml !!}</span> <span style="font-size:11px;color:#6b7280;">{{ number_format($rating, 1) }} ({{ $ratingCount }})</span>
+                                             @else
+                                                 <span style="font-size:11px;color:#94a3b8;font-style:italic;">★ Sin calificaciones</span>
+                                             @endif
                                         </div>
                                     </div>
                                     <p class="ad-desc" style="font-size:12px;color:#6b7280;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $provider['description'] }}</p>
