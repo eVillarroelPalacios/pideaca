@@ -66,6 +66,7 @@ class OrderController extends Controller
                 'items.options',
                 'address:id,street,number,floor_apartment,postal_code,notes',
                 'payments:id,order_id,provider,status,amount,created_at',
+                'ratings',
             ])
             ->when($status, fn ($query) => $query->withStatus($status))
             ->when($dateFrom, fn ($query) => $query->where('created_at', '>=', $dateFrom))
@@ -83,6 +84,25 @@ class OrderController extends Controller
             ->paginate((int) ($data['per_page'] ?? 20))
             ->withQueryString();
 
+        $mappedOrders = collect($orders->items())->map(function ($order) {
+            $customerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->user_id);
+            $providerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->provider->user_id);
+
+            $arr = $order->toArray();
+            $arr['customer_rated'] = (bool) $customerRating;
+            $arr['customer_rating'] = $customerRating ? [
+                'stars' => $customerRating->stars,
+                'comment' => $customerRating->comment,
+            ] : null;
+            $arr['provider_rated'] = (bool) $providerRating;
+            $arr['provider_rating'] = $providerRating ? [
+                'stars' => $providerRating->stars,
+                'comment' => $providerRating->comment,
+            ] : null;
+
+            return $arr;
+        });
+
         return response()->json([
             'success' => true,
             'provider' => [
@@ -91,7 +111,7 @@ class OrderController extends Controller
                 'is_active' => (bool) $provider->is_active,
             ],
             'statuses' => Order::STATUSES,
-            'orders' => $orders->items(),
+            'orders' => $mappedOrders,
             'pagination' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),

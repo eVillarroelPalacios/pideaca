@@ -3747,7 +3747,7 @@
     function fdRenderOrder(o) {
         var client = o.user || {};
         var address = o.address;
-        var html = '<div data-order-id="' + Number(o.id) + '" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:14px;overflow:hidden;">'
+        var html = '<div class="fd-orders-card" data-order-id="' + Number(o.id) + '" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:14px;overflow:hidden;">'
             + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">'
             + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
             + '<span style="font-size:13px;font-weight:700;color:#0c2a4d;font-family:ui-monospace,monospace;">' + escapeHtml(o.order_number) + '</span>'
@@ -3779,6 +3779,26 @@
 
         if (o.notes) {
             html += '<div style="margin-top:4px;font-size:12px;color:#9a3412;">Nota: ' + escapeHtml(o.notes) + '</div>';
+        }
+
+        if (o.status === 'delivered') {
+            if (o.provider_rated && o.provider_rating) {
+                var r = o.provider_rating;
+                var stars = '';
+                for (var i = 1; i <= 5; i++) {
+                    stars += '<span style="color:' + (i <= r.stars ? '#f59e0b' : '#d1d5db') + ';">&#9733;</span>';
+                }
+                html += '<div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">'
+                    + '<div style="font-size:12px;font-weight:700;color:#0c2a4d;margin-bottom:2px;">Tu calificación al cliente:</div>'
+                    + '<div style="font-size:18px;line-height:1;margin-bottom:4px;">' + stars + '</div>'
+                    + (r.comment ? '<div style="font-size:12px;color:#475569;font-style:italic;">"' + escapeHtml(r.comment) + '"</div>' : '')
+                    + '</div>';
+            } else {
+                html += '<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">'
+                    + '<button type="button" onclick="fdOrderOpenRate(' + o.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Calificar cliente</button>'
+                    + '</div>'
+                    + fdOrderRatePanel(o);
+            }
         }
 
         html += '</div>'
@@ -5286,10 +5306,76 @@
         });
     }
 
-    function fdMyOrderOpenRate(orderId) {
-        var cardEl = document.querySelector('.fd-myorders-card[data-order-id="' + orderId + '"]');
+    function fdOrderRatePanel(o) {
+        var send = 'fdOrderSendRate(this.closest(\'.fd-orders-panel\'))';
+        var hide = 'this.closest(\'.fd-orders-panel\').style.display=\'none\'';
+        var stars = '';
+        for (var i = 1; i <= 5; i++) {
+            stars += '<button type="button" onclick="fdOrderStar(this,' + i + ')" style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:0;font-size:22px;line-height:1;">★</button>';
+        }
+        return '<div class="fd-orders-panel" data-order-id="' + o.id + '" data-stars="0" style="display:none;border-top:1px solid #e5e7eb;margin-top:12px;padding-top:12px;">' +
+            '<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Puntuación al cliente</label>' +
+            '<div class="fd-orders-stars" style="display:flex;gap:4px;">' + stars + '</div>' +
+            '<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin:10px 0 4px;">Comentario (opcional)</label>' +
+            '<textarea class="fd-orders-comment" rows="2" placeholder="Cliente puntual y amable..." style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+                '<button type="button" class="fd-orders-send" onclick="' + send + '" style="background:#D24C19;color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Enviar calificación</button>' +
+                '<button type="button" onclick="' + hide + '" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:9px 16px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Cerrar</button>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function fdOrderStar(btn, stars) {
+        var panel = btn.closest('.fd-orders-panel');
+        if (!panel) return;
+        panel.setAttribute('data-stars', String(stars));
+        Array.prototype.forEach.call(panel.querySelectorAll('.fd-orders-stars button'), function (b, idx) {
+            b.style.color = idx < stars ? '#D24C19' : '#d1d5db';
+        });
+    }
+
+    function fdOrderSendRate(panel) {
+        if (!panel) return;
+        var orderId = panel.getAttribute('data-order-id');
+        var stars = parseInt(panel.getAttribute('data-stars') || '0', 10);
+        if (stars < 1) { fdToast('Elegí una puntuación de 1 a 5 estrellas.', true); return; }
+        var comment = (panel.querySelector('.fd-orders-comment') || {}).value || '';
+        var btn = panel.querySelector('.fd-orders-send');
+
+        var originalHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = 'Enviando...'; }
+
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        fetch('{{ url('/api/orders') }}/' + orderId + '/rate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': meta ? meta.content : ''
+            },
+            body: JSON.stringify({ stars: stars, comment: comment })
+        })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (json) {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+            if (!json || !json.success) {
+                fdToast(json.message || 'No se pudo registrar la calificación.', true);
+                return;
+            }
+            fdToast('¡Gracias por calificar al cliente!', false);
+            panel.style.display = 'none';
+            loadProviderOrders(true);
+        })
+        .catch(function () {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+            fdToast('Error de conexión al calificar.', true);
+        });
+    }
+
+    function fdOrderOpenRate(orderId) {
+        var cardEl = document.querySelector('.fd-orders-card[data-order-id="' + orderId + '"]');
         if (!cardEl) return;
-        var panel = cardEl.querySelector('.fd-myorders-panel');
+        var panel = cardEl.querySelector('.fd-orders-panel');
         if (!panel) return;
         panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
     }
