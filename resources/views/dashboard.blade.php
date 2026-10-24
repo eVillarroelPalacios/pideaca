@@ -108,8 +108,14 @@
 
             {{-- DASHBOARD SECTIONS --}}
             <section id="dash-perfil" class="dash-section" style="display:none;width:100%;margin:0;padding:0;">
-                <style>
-                    .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#64748b;font-size:13px;font-weight:500;text-decoration:none;transition:all .15s;border-left:3px solid transparent;cursor:pointer;}
+        <style>
+            .nav-link svg, .mobile-menu svg {
+                width: 14px !important;
+                height: 14px !important;
+                font-size: 14px !important;
+                vertical-align: middle;
+            }
+            .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#64748b;font-size:13px;font-weight:500;text-decoration:none;transition:all .15s;border-left:3px solid transparent;cursor:pointer;}
                     .sidebar-link:hover{background:#f1f5f9;color:#0f172a;}
                     .sidebar-link.active{background:#fff7ed;color:#D24C19;border-left-color:#D24C19;font-weight:600;}
                     .sidebar-link svg{flex-shrink:0;}
