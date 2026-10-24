@@ -572,6 +572,8 @@
             @include('partials.mis-suscripciones')
                     @elseif($page->url === 'reportes')
             @include('dashboard.sections.reportes')
+                    @elseif($page->url === 'reportes-hogar')
+            @include('reports.hogar')
                     @elseif($page->url === 'solicitar-servicio')
             @include('dashboard.sections.solicitar-servicio')
                     @elseif($page->url === 'mis-servicios')
