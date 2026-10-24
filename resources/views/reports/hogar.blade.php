@@ -11,11 +11,10 @@
         <!-- ENCABEZADO -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
             <div>
-                <h1 style="font-size:22px;font-weight:700;color:#0c2a4d;margin:0;">Reportes Hogar ({{ $isPrestador ? 'Prestador: ' . ($user->provider->business_name ?? $user->name) : 'Cliente: ' . $user->name }})</h1>
+                <h1 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">Reportes Hogar ({{ ($isPrestador ?? false) ? 'Prestador: ' . (($user->provider->business_name ?? null) ?: $user->name) : 'Cliente: ' . $user->name }})</h1>
                 <p style="font-size:13px;color:#64748b;margin:4px 0 0;">Consolidado de servicios, métricas financieras y estados del Módulo Hogar</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
-                <a href="{{ url('/dashboard') }}" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">← Volver al Panel</a>
                 <a href="{{ route('reportes.hogar.pdf', request()->all()) }}" target="_blank" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Exportar a PDF
@@ -38,21 +37,21 @@
                     <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;text-transform:uppercase;">Estado</label>
                     <select name="estado" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;">
                         <option value="">Todos los estados</option>
-                        <option value="REQUESTED" {{ ($filters['estado'] ?? '') === 'REQUESTED' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="QUOTED" {{ ($filters['estado'] ?? '') === 'QUOTED' ? 'selected' : '' }}>Presupuestado</option>
-                        <option value="ACCEPTED" {{ ($filters['estado'] ?? '') === 'ACCEPTED' ? 'selected' : '' }}>Confirmado / Cita</option>
-                        <option value="IN_PROGRESS" {{ ($filters['estado'] ?? '') === 'IN_PROGRESS' ? 'selected' : '' }}>En camino / Proceso</option>
-                        <option value="COMPLETED" {{ ($filters['estado'] ?? '') === 'COMPLETED' ? 'selected' : '' }}>Completado</option>
-                        <option value="CANCELLED" {{ ($filters['estado'] ?? '') === 'CANCELLED' ? 'selected' : '' }}>Cancelado</option>
+                        <option value="REQUESTED" {{ (($filters['estado'] ?? '') === 'REQUESTED') ? 'selected' : '' }}>Pendiente</option>
+                        <option value="QUOTED" {{ (($filters['estado'] ?? '') === 'QUOTED') ? 'selected' : '' }}>Presupuestado</option>
+                        <option value="ACCEPTED" {{ (($filters['estado'] ?? '') === 'ACCEPTED') ? 'selected' : '' }}>Confirmado / Cita</option>
+                        <option value="IN_PROGRESS" {{ (($filters['estado'] ?? '') === 'IN_PROGRESS') ? 'selected' : '' }}>En camino / Proceso</option>
+                        <option value="COMPLETED" {{ (($filters['estado'] ?? '') === 'COMPLETED') ? 'selected' : '' }}>Completado</option>
+                        <option value="CANCELLED" {{ (($filters['estado'] ?? '') === 'CANCELLED') ? 'selected' : '' }}>Cancelado</option>
                     </select>
                 </div>
                 <div>
                     <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;text-transform:uppercase;">Modalidad</label>
                     <select name="tipo" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;">
                         <option value="">Todas las modalidades</option>
-                        <option value="EMERGENCY" {{ ($filters['tipo'] ?? '') === 'EMERGENCY' ? 'selected' : '' }}>Urgencia 24/7</option>
-                        <option value="SCHEDULED" {{ ($filters['tipo'] ?? '') === 'SCHEDULED' ? 'selected' : '' }}>Cita programada</option>
-                        <option value="QUOTE" {{ ($filters['tipo'] ?? '') === 'QUOTE' ? 'selected' : '' }}>Presupuesto a cotizar</option>
+                        <option value="EMERGENCY" {{ (($filters['tipo'] ?? '') === 'EMERGENCY') ? 'selected' : '' }}>Urgencia 24/7</option>
+                        <option value="SCHEDULED" {{ (($filters['tipo'] ?? '') === 'SCHEDULED') ? 'selected' : '' }}>Cita programada</option>
+                        <option value="QUOTE" {{ (($filters['tipo'] ?? '') === 'QUOTE') ? 'selected' : '' }}>Presupuesto a cotizar</option>
                     </select>
                 </div>
                 <div style="display:flex;gap:8px;">
@@ -65,7 +64,7 @@
         <!-- KPIS / RESUMEN -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #D24C19;">
-                <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">{{ $isPrestador ? 'Total Facturado' : 'Total Gastado' }}</span>
+                <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">{{ ($isPrestador ?? false) ? 'Total Facturado' : 'Total Gastado' }}</span>
                 <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">$ {{ number_format($kpis['total_economico'] ?? 0, 2, ',', '.') }}</div>
             </div>
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #f59e0b;">
@@ -76,7 +75,7 @@
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Servicios Finalizados</span>
                 <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">{{ $kpis['completados'] ?? 0 }}</div>
             </div>
-            @if($isPrestador)
+            @if($isPrestador ?? false)
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #3b82f6;">
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Efectividad Cotizaciones</span>
                 <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">{{ $kpis['efectividad_cotizaciones'] ?? 0 }}%</div>
@@ -107,7 +106,7 @@
                         <tr style="background:#f1f5f9;color:#475569;border-bottom:1px solid #e2e8f0;">
                             <th style="padding:12px 16px;">N° Orden</th>
                             <th style="padding:12px 16px;">Fecha / Hora</th>
-                            <th style="padding:12px 16px;">{{ $isPrestador ? 'Cliente' : 'Prestador' }}</th>
+                            <th style="padding:12px 16px;">{{ ($isPrestador ?? false) ? 'Cliente' : 'Prestador' }}</th>
                             <th style="padding:12px 16px;">Tipo / Rubro</th>
                             <th style="padding:12px 16px;">Problema / Detalle</th>
                             <th style="padding:12px 16px;">Monto Total</th>
@@ -116,12 +115,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($orders as $order)
+                        @forelse($orders ?? [] as $order)
                         <tr style="border-bottom:1px solid #f1f5f9;">
                             <td style="padding:12px 16px;font-weight:700;color:#0c2a4d;font-family:monospace;">#{{ $order->id }}</td>
                             <td style="padding:12px 16px;color:#64748b;white-space:nowrap;">{{ $order->created_at?->format('d/m/Y H:i') }}</td>
                             <td style="padding:12px 16px;">
-                                @if($isPrestador)
+                                @if($isPrestador ?? false)
                                     <strong>{{ $order->customer->name ?? 'Cliente' }}</strong>
                                     <div style="font-size:11px;color:#64748b;">{{ $order->customer->phone ?? $order->customer->email ?? '' }}</div>
                                 @else

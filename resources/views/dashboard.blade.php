@@ -573,7 +573,9 @@
                     @elseif($page->url === 'reportes')
             @include('dashboard.sections.reportes')
                     @elseif($page->url === 'reportes-hogar')
-            @include('reports.hogar')
+            <div id="dash-reportes-hogar" class="dash-section" style="display:none;width:100%;">
+                @include('reports.hogar')
+            </div>
                     @elseif($page->url === 'solicitar-servicio')
             @include('dashboard.sections.solicitar-servicio')
                     @elseif($page->url === 'mis-servicios')
