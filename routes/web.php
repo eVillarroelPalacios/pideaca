@@ -24,9 +24,20 @@ use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ReporteHogarController;
 
+use App\Http\Controllers\DeliveryOrderController;
+
 // Rutas de Reportes Hogar (Servicios)
 Route::get('/reportes-hogar', [ReporteHogarController::class, 'index'])->name('reportes.hogar');
 Route::get('/reportes-hogar/pdf', [ReporteHogarController::class, 'pdf'])->name('reportes.hogar.pdf');
+
+// Módulo C - Delivery & Billetera del Repartidor
+Route::get('/delivery', function () {
+    return view('delivery.panel', ['user' => Auth::user()]);
+})->middleware('auth')->name('delivery.panel');
+
+Route::get('/api/v1/delivery/orders', [DeliveryOrderController::class, 'availableOrders'])->name('api.delivery.orders');
+Route::post('/api/v1/delivery/orders/{order}/take', [DeliveryOrderController::class, 'takeOrder'])->name('api.delivery.orders.take');
+Route::post('/api/v1/delivery/orders/{order}/confirm', [DeliveryOrderController::class, 'confirmDelivery'])->name('api.delivery.orders.confirm');
 use App\Http\Controllers\ServiceBookingController;
 use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\SubGroupController;
