@@ -14,7 +14,7 @@ class ModuleController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        $modules = Module::withCount('pages')->orderBy('description')->get();
+        $modules = Module::orderBy('description')->get();
 
         return response()->json($modules);
     }
