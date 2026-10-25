@@ -79,6 +79,14 @@ class RegisterController extends Controller
         DB::transaction(function () use ($user, $type) {
             $user->save();
             $user->pages()->sync($type->assignedPages()->pluck('pages.id')->all());
+
+            // Si el usuario registrado es Repartidor, crear wallet inicial
+            if (strcasecmp($type->description, 'Repartidor') === 0) {
+                \App\Models\DriverWallet::firstOrCreate(
+                    ['user_id' => $user->id],
+                    ['balance' => 0.00, 'pending_balance' => 0.00]
+                );
+            }
         });
 
         return response()->json([
