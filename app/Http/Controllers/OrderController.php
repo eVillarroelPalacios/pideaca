@@ -67,6 +67,7 @@ class OrderController extends Controller
                 'address:id,street,number,floor_apartment,postal_code,notes',
                 'payments:id,order_id,provider,status,amount,created_at',
                 'ratings',
+                'driver:id,name,phone',
             ])
             ->when($status, fn ($query) => $query->withStatus($status))
             ->when($dateFrom, fn ($query) => $query->where('created_at', '>=', $dateFrom))
@@ -204,6 +205,8 @@ class OrderController extends Controller
 
         $data = $request->validate([
             'status' => ['required', 'string', 'in:'.implode(',', Order::STATUSES)],
+            'delivery_type' => ['nullable', 'string', 'in:merchant,platform,takeaway'],
+            'driver_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
         $userId = (int) Auth::id();
@@ -232,7 +235,18 @@ class OrderController extends Controller
                 $this->inventory->restoreCancelledOrder($order);
             }
 
-            $order->update(['status' => $data['status']]);
+            $updateData = ['status' => $data['status']];
+            if (isset($data['delivery_type'])) {
+                $updateData['delivery_type'] = $data['delivery_type'];
+            }
+            if (array_key_exists('driver_id', $data)) {
+                $updateData['driver_id'] = $data['driver_id'];
+                if ($data['driver_id']) {
+                    $updateData['delivery_status'] = 'assigned';
+                }
+            }
+
+            $order->update($updateData);
         });
 
         return response()->json([
@@ -245,6 +259,7 @@ class OrderController extends Controller
                 'items.options',
                 'address:id,street,number,floor_apartment,postal_code,notes',
                 'payments:id,order_id,provider,status,amount,created_at',
+                'driver:id,name,phone',
             ]),
         ]);
     }
