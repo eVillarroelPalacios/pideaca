@@ -114,6 +114,11 @@ class Order extends Model
         return $this->hasMany(OrderRating::class, 'order_id');
     }
 
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);

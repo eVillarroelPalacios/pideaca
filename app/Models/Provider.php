@@ -111,6 +111,11 @@ class Provider extends Model
         return $this->hasMany(Favorite::class);
     }
 
+    public function providerDrivers(): HasMany
+    {
+        return $this->hasMany(ProviderDriver::class);
+    }
+
     public function bannerImages(): HasMany
     {
         return $this->hasMany(ProviderImage::class)
