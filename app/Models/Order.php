@@ -125,6 +125,11 @@ class Order extends Model
         return $this->belongsTo(User::class, 'driver_id');
     }
 
+    public function deliveryUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);

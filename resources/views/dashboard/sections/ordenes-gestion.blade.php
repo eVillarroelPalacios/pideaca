@@ -188,6 +188,51 @@
         return html + '</div>';
     }
 
+    // Repartidor asignado al pedido de comercio.
+    function commerceDriver(order) {
+        var driver = order.driver || order.deliveryUser || null;
+        if (order.driver_id && !driver) {
+            driver = order.deliveryUser || null;
+        }
+        if (!driver && !order.driver_id) {
+            return '<div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px;display:flex;align-items:center;gap:8px;">'
+                + '<span style="width:8px;height:8px;border-radius:50%;background:#94a3b8;"></span>'
+                + '<span style="font-size:12px;color:#64748b;font-weight:600;">Buscando repartidor...</span>'
+                + '</div>';
+        }
+        if (!driver && order.driver_id) {
+            return '<div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;display:flex;align-items:center;gap:8px;">'
+                + '<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></span>'
+                + '<span style="font-size:12px;color:#166534;font-weight:700;">Repartidor asignado</span>'
+                + '</div>';
+        }
+
+        var status = order.delivery_status || '';
+        var statusLabel = status === 'picked_up' || status === 'on_the_way' ? 'En camino a entregar' : (status === 'assigned' ? 'Asignado / En camino a retirar' : 'Repartidor asignado');
+        var html = '<div style="margin-top:10px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+            +   '<div style="display:flex;align-items:center;gap:8px;">'
+            +     '<span style="width:9px;height:9px;border-radius:50%;background:#16a34a;"></span>'
+            +     '<span style="font-size:12px;font-weight:800;color:#166534;">Repartidor asignado</span>'
+            +   '</div>'
+            +   '<span style="font-size:11px;font-weight:700;color:#166534;background:#dcfce7;padding:3px 8px;border-radius:9999px;">' + esc(statusLabel) + '</span>'
+            + '</div>'
+            + '<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px;">'
+            +   '<span style="font-size:13px;font-weight:700;color:#0f172a;">' + esc(driver.name || 'Repartidor') + '</span>';
+        if (driver.phone) {
+            var d = String(driver.phone).replace(/[^0-9]/g, '');
+            html += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
+                +   '<span style="font-size:12px;color:#475569;">Tel: ' + esc(driver.phone) + '</span>'
+                +   '<a href="https://wa.me/' + esc(d) + '" target="_blank" rel="noopener" style="background:#fff;color:#047857;border:1px solid #a7f3d0;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;">WhatsApp repartidor</a>'
+                + '</div>';
+        }
+        if (driver.email) {
+            html += '<span style="font-size:12px;color:#475569;">Correo: ' + esc(driver.email) + '</span>';
+        }
+        html += '</div></div>';
+        return html;
+    }
+
     // Stepper de seguimiento del pedido del comercio al pie de la tarjeta.
     function commerceSteps(order) {
         var flow = [
@@ -278,6 +323,7 @@
             (order.notes ? '<p style="font-size:12px;color:#6b7280;margin:6px 0 0;font-style:italic;">Nota: ' + esc(order.notes) + '</p>' : '') +
             commerceFinance(order) +
             '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e2e8f0;">' + commerceSteps(order) + '</div>' +
+            commerceDriver(order) +
             actions +
         '</div>';
     }
