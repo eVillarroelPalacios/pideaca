@@ -52,12 +52,13 @@
                     var addr = o.address || {};
                     html += '<div style="border:1px solid #e2e8f0;border-radius:6px;padding:14px;margin-bottom:12px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">'
                         + '<div style="min-width:0;flex:1;">'
-                        + '<div style="font-size:13px;font-weight:700;color:#0c2a4d;">Pedido #' + o.order_number + ' — ' + (shop.business_name || 'Comercio') + '</div>'
+                        + '<div style="font-size:13px;font-weight:700;color:#0c2a4d;">Pedido #' + (o.order_number || o.id) + ' — ' + (shop.business_name || 'Comercio') + '</div>'
                         + '<div style="font-size:12px;color:#475569;margin-top:4px;"><strong>Entrega en:</strong> ' + (addr.street || '') + ' ' + (addr.number || '') + '</div>'
                         + '<div style="font-size:12px;color:#d97706;font-weight:600;margin-top:2px;">Tarifa de envío: $ ' + Number(o.delivery_fee || 500).toFixed(2) + '</div>'
+                        + '<div style="font-size:11px;color:#64748b;margin-top:2px;">Estado: ' + (o.status || '') + ' | delivery_status: ' + (o.delivery_status || '-') + ' | driver_id: ' + (o.driver_id || '-') + '</div>'
                         + '</div>'
                         + '<div style="display:flex;gap:8px;align-items:center;">'
-                        + '<button type="button" onclick="takeOrder(' + o.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Tomar Pedido</button>'
+                        + '<button type="button" onclick="takeOrder(' + o.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Asignarme este pedido</button>'
                         + '</div>'
                         + '</div>';
                 });

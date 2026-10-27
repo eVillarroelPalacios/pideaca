@@ -59,6 +59,12 @@ class Order extends Model
         'total',
         'payment_method',
         'notes',
+        // Campos del módulo de reparto (Módulo C). Sin ellos en esta lista,
+        // update() los descartaba en silencio y "Tomar pedido" no asignaba nada.
+        'delivery_type',
+        'driver_id',
+        'delivery_status',
+        'delivery_pin',
     ];
 
     protected $casts = [

@@ -12,8 +12,171 @@ use Illuminate\Support\Facades\DB;
 class DeliveryOrderController extends Controller
 {
     /**
-     * Lista los pedidos disponibles para la plataforma de delivery:
-     * delivery_type = 'platform' y delivery_status = 'pending'.
+     * Estadísticas del panel del repartidor. Compartida entre el acceso
+     * directo (/dashboard/repartidor) y la vista incluida dentro del
+     * dashboard, que arma las secciones sin pasar variables extra.
+     */
+    public static function driverStats($user): array
+    {
+        // Ganancias del día: créditos acreditados en la billetera hoy.
+        // Se desglosan en tarifa base y propinas para el KPI del panel.
+        $todayCredits = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'credit')
+            ->where('status', 'completed')
+            ->whereDate('created_at', now()->toDateString())
+            ->get();
+
+        $earningsToday = (float) $todayCredits->sum('amount');
+        $tipsToday = (float) $todayCredits
+            ->filter(fn ($t) => preg_match('/propina|tip/i', (string) $t->description))
+            ->sum('amount');
+        $baseToday = $earningsToday - $tipsToday;
+
+        // Entregas completadas por este repartidor.
+        $completed = (int) Order::where('driver_id', $user->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->count();
+
+        // Entregas realizadas durante la jornada de hoy (meta del día).
+        $deliveredToday = (int) Order::where('driver_id', $user->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->whereDate('updated_at', now()->toDateString())
+            ->count();
+
+        // Aceptación: pedidos asignados que terminaron entregados.
+        $assigned = (int) Order::where('driver_id', $user->id)->count();
+        $acceptance = $assigned > 0 ? round(($completed / $assigned) * 100) : null;
+
+        // Calificación promedio recibida como repartidor.
+        $ratingRow = DB::table('order_ratings')
+            ->where('ratee_id', $user->id)
+            ->selectRaw('AVG(stars) as avg_stars, COUNT(*) as total')
+            ->first();
+        $rating = $ratingRow && $ratingRow->total > 0 ? round((float) $ratingRow->avg_stars, 1) : null;
+
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+
+        return [
+            'earningsToday' => $earningsToday,
+            'baseToday' => $baseToday,
+            'tipsToday' => $tipsToday,
+            'completed' => $completed,
+            'deliveredToday' => $deliveredToday,
+            'acceptance' => $acceptance,
+            'rating' => $rating,
+            'ratingCount' => $ratingRow->total ?? 0,
+            'walletBalance' => (float) ($wallet->balance ?? 0),
+        ];
+    }
+
+    /**
+     * Vista principal para la sección de repartidores dentro del dashboard.
+     * Prepara las estadísticas del panel (ganancias, entregas, aceptación y
+     * calificación) junto al usuario logueado.
+     *
+     * La sección vive dentro del dashboard unificado (mismo patrón que
+     * "Ordenes y Gestion"), así que la URL directa deja ese dashboard abierto
+     * en la sección del repartidor en vez de servir la plantilla a medias.
+     */
+    public function index()
+    {
+        if (! Auth::check()) {
+            // La ruta ya va con middleware "auth"; si igual llega un invitado,
+            // se manda al home (no existe GET /login en esta app).
+            return redirect('/');
+        }
+
+        if (! Auth::user()->hasPageUrl('repartidor')) {
+            return redirect()->route('dashboard');
+        }
+
+        return redirect()->route('dashboard', ['section' => 'repartidor']);
+    }
+
+    /**
+     * Pedidos ya asignados al repartidor logueado (pestana "En curso").
+     * Trae comercio, direccion de retiro, cliente y su contacto para poder
+     * armar la tarjeta con el itinerario completo.
+     */
+    public function myOrders(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $orders = Order::with([
+            // user_id hace falta en el select: sin él provider.user (y por lo
+            // tanto la direccion de retiro del comercio) llega siempre null.
+            'provider:id,user_id,business_name,phone,zone',
+            'provider.user:id,name,phone',
+            'provider.user.primaryAddress',
+            'provider.user.primaryAddress.region',
+            'provider.user.primaryAddress.province',
+            'address',
+            'address.region',
+            'address.province',
+            'address.department',
+            'address.country',
+            'user:id,name,phone',
+        ])
+            ->where('driver_id', Auth::id())
+            ->whereIn('delivery_status', ['assigned', 'picked_up', 'on_the_way'])
+            ->latest()
+            ->get();
+
+        // El PIN solo sirve para que el repartidor lo verifique con el cliente:
+        // no viaja en la respuesta, solo un flag para mostrar/ocultar el campo.
+        $orders->each(function (Order $order) {
+            $order->setAttribute('has_delivery_pin', (bool) $order->delivery_pin);
+            $order->makeHidden(['delivery_pin']);
+        });
+
+        return response()->json([
+            'success' => true,
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Marca el pedido como retirado en el comercio: paso 1 -> paso 2 del
+     * indicador "En retiro / En entrega / Entregado".
+     */
+    public function markPickedUp(Request $request, Order $order)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+
+        if ((int) $order->driver_id !== (int) $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés asignado este pedido.',
+            ], 403);
+        }
+
+        if ($order->delivery_status !== 'assigned') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este pedido ya fue retirado.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($order) {
+            $order->update(['delivery_status' => 'picked_up']);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pedido retirado. Ahora entregalo al cliente.',
+            'order' => $order->fresh(),
+        ]);
+    }
+
+    /**
+     * Lista los pedidos disponibles para el repartidor.
+     * Debe mostrar pedidos con envío por repartidor que aún no tengan conductor asignado.
      */
     public function availableOrders(Request $request)
     {
@@ -25,9 +188,33 @@ class DeliveryOrderController extends Controller
             'provider:id,business_name,phone,zone',
             'address:id,street,number,floor_apartment,postal_code,notes',
         ])
-            ->where('delivery_type', 'platform')
-            ->where('delivery_status', 'pending')
-            ->where('status', 'on_the_way') // O listos para entregar
+            ->where(function ($q) {
+                $q->where('delivery_type', 'platform')
+                    ->orWhere('delivery_type', 'delivery')
+                    ->orWhereNull('delivery_type');
+            })
+            ->where(function ($q) {
+                $q->whereNull('driver_id')
+                    ->orWhere('driver_id', 0);
+            })
+            ->where(function ($q) {
+                $q->whereNull('delivery_status')
+                    ->orWhereIn('delivery_status', ['pending', 'assigned']);
+            })
+            ->where(function ($q) {
+                $q->whereIn('status', [
+                    'in_preparation',
+                    'preparing',
+                    'preparation',
+                    'on_the_way',
+                    'ready',
+                    'ready_for_delivery',
+                    'pending',
+                    'confirmed',
+                ])
+                    ->orWhereRaw('LOWER(status) LIKE ?', ['%prepar%'])
+                    ->orWhereRaw('LOWER(status) LIKE ?', ['%ready%']);
+            })
             ->latest()
             ->get();
 
@@ -48,7 +235,14 @@ class DeliveryOrderController extends Controller
 
         $user = Auth::user();
 
-        if ($order->delivery_type !== 'platform' || $order->delivery_status !== 'pending') {
+        $hasDriver = ! empty($order->driver_id);
+        $deliveryType = $order->delivery_type;
+        $deliveryOk = $deliveryType === 'platform' || $deliveryType === 'delivery' || $deliveryType === null;
+        $statusOk = true;
+        if (! is_null($order->delivery_status)) {
+            $statusOk = in_array($order->delivery_status, ['pending', 'assigned'], true);
+        }
+        if (! $deliveryOk || $hasDriver || ! $statusOk) {
             return response()->json([
                 'success' => false,
                 'message' => 'Este pedido ya no está disponible para tomar.',

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'page' => EnsurePageAccess::class,
         ]);
+
+        // La app no tiene pagina /login: el formulario vive en el home.
+        // Sin esto, un invitado en cualquier ruta "auth" revienta con
+        // "Route [login] not defined" en vez de volver al inicio.
+        $middleware->redirectGuestsTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

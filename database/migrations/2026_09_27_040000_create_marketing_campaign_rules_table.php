@@ -36,9 +36,12 @@ return new class extends Migration
         });
 
         // Laravel 12 no expone Blueprint::check(), asi que los rangos validos
-        // se agregan como CHECK de Postgres.
-        DB::statement('ALTER TABLE marketing_campaign_rules ADD CONSTRAINT marketing_campaign_rules_day_of_week_check CHECK (day_of_week IS NULL OR (day_of_week BETWEEN 1 AND 7))');
-        DB::statement('ALTER TABLE marketing_campaign_rules ADD CONSTRAINT marketing_campaign_rules_days_inactive_check CHECK (days_inactive IS NULL OR days_inactive >= 0)');
+        // se agregan como CHECK de Postgres. En sqlite (tests) esa sintaxis
+        // ALTER TABLE ... ADD CONSTRAINT no existe, asi que se saltean.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE marketing_campaign_rules ADD CONSTRAINT marketing_campaign_rules_day_of_week_check CHECK (day_of_week IS NULL OR (day_of_week BETWEEN 1 AND 7))');
+            DB::statement('ALTER TABLE marketing_campaign_rules ADD CONSTRAINT marketing_campaign_rules_days_inactive_check CHECK (days_inactive IS NULL OR days_inactive >= 0)');
+        }
     }
 
     public function down(): void

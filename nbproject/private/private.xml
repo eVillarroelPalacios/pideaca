@@ -6,6 +6,8 @@
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/welcome.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/mi-catalogo.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/app/Models/Address.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/delivery/panel.blade.php</file>
         </group>
     </open-files>
 </project-private>

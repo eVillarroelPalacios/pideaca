@@ -23,6 +23,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ReporteHogarController;
+use App\Http\Controllers\ReportController;
 
 use App\Http\Controllers\DeliveryOrderController;
 
@@ -31,12 +32,18 @@ Route::get('/reportes-hogar', [ReporteHogarController::class, 'index'])->name('r
 Route::get('/reportes-hogar/pdf', [ReporteHogarController::class, 'pdf'])->name('reportes.hogar.pdf');
 
 // Módulo C - Delivery & Billetera del Repartidor
-Route::get('/delivery', function () {
-    return view('delivery.panel', ['user' => Auth::user()]);
-})->middleware('auth')->name('delivery.panel');
+Route::middleware('auth')->group(function () {
+    Route::get('/delivery', function () {
+        return view('delivery.panel', ['user' => Auth::user()]);
+    })->name('delivery.panel');
+    Route::get('/dashboard/repartidor', [DeliveryOrderController::class, 'index'])->name('dashboard.repartidor');
+    Route::get('/repartidor', [DeliveryOrderController::class, 'index'])->name('repartidor.index');
+});
 
 Route::get('/api/v1/delivery/orders', [DeliveryOrderController::class, 'availableOrders'])->name('api.delivery.orders');
+Route::get('/api/v1/delivery/orders/mine', [DeliveryOrderController::class, 'myOrders'])->name('api.delivery.orders.mine');
 Route::post('/api/v1/delivery/orders/{order}/take', [DeliveryOrderController::class, 'takeOrder'])->name('api.delivery.orders.take');
+Route::post('/api/v1/delivery/orders/{order}/pickup', [DeliveryOrderController::class, 'markPickedUp'])->name('api.delivery.orders.pickup');
 Route::post('/api/v1/delivery/orders/{order}/confirm', [DeliveryOrderController::class, 'confirmDelivery'])->name('api.delivery.orders.confirm');
 use App\Http\Controllers\ServiceBookingController;
 use App\Http\Controllers\ServiceOrderController;

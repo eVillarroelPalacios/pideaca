@@ -20,12 +20,17 @@ return new class extends Migration
             $table->time('preferred_delivery_time')->nullable()->after('preferred_delivery_day');
         });
 
-        DB::statement('ALTER TABLE customer_subscriptions ADD CONSTRAINT customer_subscriptions_preferred_delivery_day_check CHECK (preferred_delivery_day IS NULL OR preferred_delivery_day BETWEEN 1 AND 7)');
+        // CHECK solo soportado en Postgres; en sqlite (tests) se saltea.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE customer_subscriptions ADD CONSTRAINT customer_subscriptions_preferred_delivery_day_check CHECK (preferred_delivery_day IS NULL OR preferred_delivery_day BETWEEN 1 AND 7)');
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE customer_subscriptions DROP CONSTRAINT IF EXISTS customer_subscriptions_preferred_delivery_day_check');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE customer_subscriptions DROP CONSTRAINT IF EXISTS customer_subscriptions_preferred_delivery_day_check');
+        }
 
         Schema::table('customer_subscriptions', function (Blueprint $table) {
             $table->dropColumn(['preferred_delivery_day', 'preferred_delivery_time']);

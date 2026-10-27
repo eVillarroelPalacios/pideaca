@@ -22,7 +22,10 @@ return new class extends Migration
             $table->index('supply_id');
         });
 
-        DB::statement('ALTER TABLE product_recipes ADD CONSTRAINT product_recipes_quantity_required_check CHECK (quantity_required > 0)');
+        // CHECK solo soportado en Postgres; en sqlite (tests) se saltea.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE product_recipes ADD CONSTRAINT product_recipes_quantity_required_check CHECK (quantity_required > 0)');
+        }
     }
 
     public function down(): void
