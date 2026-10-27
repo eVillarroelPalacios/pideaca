@@ -115,13 +115,7 @@ class OrdenesGestionController extends Controller
         $serviceOnly = in_array($quick, ['emergency', 'quote'], true);
 
         $serviceBase = $this->serviceQuery($provider, $search, $quick, $group);
-        $commerceBase = null;
-        if (! $serviceOnly) {
-            $commerceBase = $this->commerceQuery($provider, $search, $quick, $group);
-            if ($commerceBase) {
-                $commerceBase->with(['driver:id,name,phone,email', 'deliveryUser:id,name,phone,email']);
-            }
-        }
+        $commerceBase = $serviceOnly ? null : $this->commerceQuery($provider, $search, $quick, $group);
 
         // Los contadores se calculan sin el filtro de pestania para que
         // cada pestania muestre su total con la busqueda actual.
@@ -237,6 +231,8 @@ class OrdenesGestionController extends Controller
                 'items.options',
                 'address:id,street,number,floor_apartment,postal_code,notes',
                 'payments:id,order_id,provider,status,amount,created_at',
+                'driver:id,name,phone,email',
+                'deliveryUser:id,name,phone,email',
             ]);
     }
 

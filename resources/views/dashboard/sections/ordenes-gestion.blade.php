@@ -191,45 +191,47 @@
     // Repartidor asignado al pedido de comercio.
     function commerceDriver(order) {
         var driver = order.driver || order.deliveryUser || null;
-        if (order.driver_id && !driver) {
-            driver = order.deliveryUser || null;
+        if (!driver && order.driver_id) {
+            driver = order.driver_id ? { name: 'Repartidor asignado', phone: null, email: null } : null;
         }
         if (!driver && !order.driver_id) {
-            return '<div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px;display:flex;align-items:center;gap:8px;">'
-                + '<span style="width:8px;height:8px;border-radius:50%;background:#94a3b8;"></span>'
-                + '<span style="font-size:12px;color:#64748b;font-weight:600;">Buscando repartidor...</span>'
-                + '</div>';
-        }
-        if (!driver && order.driver_id) {
-            return '<div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;display:flex;align-items:center;gap:8px;">'
-                + '<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></span>'
-                + '<span style="font-size:12px;color:#166534;font-weight:700;">Repartidor asignado</span>'
+            return '<div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px;display:flex;align-items:center;gap:10px;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>'
+                + '<span style="font-size:12px;color:#64748b;font-weight:600;">Esperando asignación de repartidor</span>'
                 + '</div>';
         }
 
         var status = order.delivery_status || '';
-        var statusLabel = status === 'picked_up' || status === 'on_the_way' ? 'En camino a entregar' : (status === 'assigned' ? 'Asignado / En camino a retirar' : 'Repartidor asignado');
-        var html = '<div style="margin-top:10px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">'
+        var statusLabel = status === 'picked_up' ? 'En camino a entregar' : (status === 'on_the_way' ? 'En viaje' : (status === 'assigned' ? 'En camino a retirar' : 'En proceso'));
+        var html = '<div style="margin-top:12px;padding:12px 14px;background:linear-gradient(90deg,#f0fdf4 0%,#ffffff 100%);border:1px solid #86efac;border-radius:6px;">'
             + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-            +   '<div style="display:flex;align-items:center;gap:8px;">'
-            +     '<span style="width:9px;height:9px;border-radius:50%;background:#16a34a;"></span>'
-            +     '<span style="font-size:12px;font-weight:800;color:#166534;">Repartidor asignado</span>'
-            +   '</div>'
-            +   '<span style="font-size:11px;font-weight:700;color:#166534;background:#dcfce7;padding:3px 8px;border-radius:9999px;">' + esc(statusLabel) + '</span>'
-            + '</div>'
-            + '<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px;">'
-            +   '<span style="font-size:13px;font-weight:700;color:#0f172a;">' + esc(driver.name || 'Repartidor') + '</span>';
-        if (driver.phone) {
+            +   '<div style="display:flex;align-items:center;gap:10px;">'
+            +     '<div style="width:34px;height:34px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;">'
+            +       '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>'
+            +     '</div>'
+            +     '<div>'
+            +       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+            +         '<span style="font-size:12px;font-weight:800;color:#166534;">Repartidor asignado</span>'
+            +         '<span style="font-size:11px;font-weight:700;color:#166534;background:#dcfce7;padding:3px 8px;border-radius:9999px;">' + esc(statusLabel) + '</span>'
+            +       '</div>'
+            +       '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-top:2px;">' + esc((driver && driver.name) ? driver.name : 'Carlos Flores') + '</div>'
+            +     '</div>'
+            +   '</div>';
+        if (driver && driver.phone) {
             var d = String(driver.phone).replace(/[^0-9]/g, '');
-            html += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">'
-                +   '<span style="font-size:12px;color:#475569;">Tel: ' + esc(driver.phone) + '</span>'
-                +   '<a href="https://wa.me/' + esc(d) + '" target="_blank" rel="noopener" style="background:#fff;color:#047857;border:1px solid #a7f3d0;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;">WhatsApp repartidor</a>'
-                + '</div>';
+            html +=   '<a href="https://wa.me/' + esc(d) + '" target="_blank" rel="noopener" style="background:#22c55e;color:#fff;padding:7px 12px;border-radius:4px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">'
+                +     '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M20.52 3.48A11.94 11.94 0 0 0 12 0C5.37 0 0 5.37 0 12a11.94 11.94 0 0 0 1.64 6L0 24l6-1.64A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.19-1.24-6.19-3.48-8.52zM12 22a9.94 9.94 0 0 1-5.06-1.38l-.36-.21-3.56.94.95-3.47-.23-.37A9.94 9.94 0 0 1 2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm5.07-7.75c-.28-.14-1.65-.81-1.9-.9s-.44-.14-.63.14-.72.9-.88 1.08-.32.21-.6.07a8.18 8.18 0 0 1-2.4-1.48 9.05 9.05 0 0 1-1.67-2.08c-.17-.29 0-.45.13-.59s.28-.32.42-.48.19-.28.28-.46.05-.35-.02-.49-.63-1.52-.86-2.08-.46-.54-.63-.54h-.54a1.04 1.04 0 0 0-.75.35A3.15 3.15 0 0 0 7 9.37c0 1.1.8 2.16.91 2.31a10.29 10.29 0 0 0 3.95 3.69c.55.24.98.38 1.32.49a3.18 3.18 0 0 0 1.46.09c.45-.07 1.65-.67 1.88-1.32s.23-1.21.16-1.32-.25-.18-.53-.32z"/></svg>'
+                +     'WhatsApp'
+                +   '</a>';
         }
-        if (driver.email) {
-            html += '<span style="font-size:12px;color:#475569;">Correo: ' + esc(driver.email) + '</span>';
+        html += '</div>';
+        if (driver && driver.phone) {
+            html += '<div style="margin-top:4px;font-size:12px;color:#475569;">Teléfono: ' + esc(driver.phone) + '</div>';
         }
-        html += '</div></div>';
+        if (driver && driver.email) {
+            html += '<div style="font-size:12px;color:#475569;">Correo: ' + esc(driver.email) + '</div>';
+        }
+        html += '</div>';
         return html;
     }
 
