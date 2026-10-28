@@ -164,6 +164,10 @@ class OrderController extends Controller
             $orders = Auth::user()->orders()
                 ->with([
                     'provider:id,business_name,is_active,user_id',
+                    // provider.user.phone alimenta el botón "Ayuda / Contacto".
+                    'provider.user:id,name,phone',
+                    // driver alimenta el circuito: el cliente ve quién lo lleva.
+                    'driver:id,name,phone',
                     'items.options',
                     'address:id,street,number,floor_apartment,postal_code,notes',
                     'payments:id,order_id,provider,status,amount,created_at',
