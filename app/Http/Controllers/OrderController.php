@@ -51,10 +51,12 @@ class OrderController extends Controller
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'tab' => ['nullable', 'string', 'in:today,history'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'search' => ['nullable', 'string', 'max:100'],
         ]);
 
         $status = $data['status'] ?? null;
         $tab = $data['tab'] ?? null;
+        $search = trim((string) ($data['search'] ?? ''));
 
         // La sección "del día" no usa rango de fechas: solo el historial filtra por fecha.
         $dateFrom = $tab !== 'today' && ! empty($data['date_from']) ? Carbon::parse($data['date_from'])->startOfDay() : null;
@@ -62,21 +64,35 @@ class OrderController extends Controller
 
         $base = $provider->orders()
             ->with([
-                'user:id,name,email',
+                // phone alimenta el botón de WhatsApp del rediseño.
+                'user:id,name,email,phone',
                 'items.options',
                 'address:id,street,number,floor_apartment,postal_code,notes',
                 'payments:id,order_id,provider,status,amount,created_at',
                 'ratings',
-                'driver:id,name,phone',
+                'driver:id,name,email,phone',
             ])
             ->when($status, fn ($query) => $query->withStatus($status))
             ->when($dateFrom, fn ($query) => $query->where('created_at', '>=', $dateFrom))
-            ->when($dateTo, fn ($query) => $query->where('created_at', '<=', $dateTo));
+            ->when($dateTo, fn ($query) => $query->where('created_at', '<=', $dateTo))
+            // Búsqueda libre: número de pedido o datos del cliente.
+            ->when($search !== '', function ($query) use ($search) {
+                $like = '%'.$search.'%';
+                $query->where(function ($q) use ($like) {
+                    $q->where('order_number', 'like', $like)
+                        ->orWhereHas('user', fn ($user) => $user->where('name', 'like', $like)
+                            ->orWhere('email', 'like', $like));
+                });
+            });
 
         // Contadores de las dos pestañas (hoy / historial) con los mismos filtros.
+        // pending / in_preparation son los indicadores del panel: sin filtros,
+        // para que el comercio siempre vea su carga real de trabajo.
         $counts = [
             'today' => (clone $base)->whereDate('created_at', today())->count(),
             'history' => (clone $base)->whereDate('created_at', '<', today())->count(),
+            'pending' => (clone $provider->orders())->where('status', Order::STATUS_PENDING)->count(),
+            'in_preparation' => (clone $provider->orders())->where('status', Order::STATUS_IN_PREPARATION)->count(),
         ];
 
         $orders = (clone $base)

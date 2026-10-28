@@ -1709,24 +1709,175 @@
         'cancelled': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
     };
 
+    // Acciones de la cabecera del pedido: siguiente paso del flujo, cancelar,
+    // imprimir y contraer/expandir. El texto va en el botón (no solo icono).
     function fdOrderActions(o) {
-        var iconBtn = 'display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;cursor:pointer;';
-        var html = '<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">';
+        var html = '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">';
         var flow = FD_ORDER_FLOW[o.status];
 
         if (flow) {
-            html += '<button type="button" data-order-action title="' + escapeHtml(flow[1]) + '" aria-label="' + escapeHtml(flow[1]) + '" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)" '
-                + 'style="background:#D24C19;color:#fff;border:none;' + iconBtn + '">'
-                + FD_ORDER_ACTION_ICONS[flow[0]] + '</button>';
+            html += '<button type="button" data-order-action class="fd-btn fd-btn-primary" title="' + escapeHtml(flow[1]) + '" aria-label="' + escapeHtml(flow[1]) + '" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)">'
+                + FD_ORDER_ACTION_ICONS[flow[0]]
+                + '<span>' + escapeHtml(flow[1]) + '</span></button>';
         }
 
         if (FD_ORDER_CANCELLABLE.indexOf(o.status) !== -1) {
-            html += '<button type="button" data-order-action title="Cancelar" aria-label="Cancelar" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)" '
-                + 'style="background:#fff;color:#b91c1c;border:1px solid #fecaca;' + iconBtn + '">'
-                + FD_ORDER_ACTION_ICONS['cancelled'] + '</button>';
+            html += '<button type="button" data-order-action class="fd-btn fd-btn-danger" title="Cancelar pedido" aria-label="Cancelar pedido" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)">'
+                + FD_ORDER_ACTION_ICONS['cancelled']
+                + '<span>Cancelar</span></button>';
         }
 
+        html += '<button type="button" class="fd-icon-btn" onclick="fdPrintOrder(' + Number(o.id) + ')" title="Imprimir pedido" aria-label="Imprimir pedido">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>'
+            + '</button>';
+
+        var isCollapsed = !!fdOrdersCollapsed[o.id];
+        html += '<button type="button" class="fd-icon-btn" data-order-toggle onclick="fdOrdersToggle(' + Number(o.id) + ')" '
+            + 'title="' + (isCollapsed ? 'Expandir pedido' : 'Contraer pedido') + '" aria-label="' + (isCollapsed ? 'Expandir pedido' : 'Contraer pedido') + '" '
+            + 'style="' + (isCollapsed ? 'transform:rotate(180deg);' : '') + '">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
+            + '</button>';
+
         return html + '</div>';
+    }
+
+    // Contrae o expande el detalle de un pedido y recuerda la preferencia
+    // para que el sondeo de 8 s no la pierda al repintar la lista.
+    function fdOrdersToggle(orderId) {
+        var collapsed = !fdOrdersCollapsed[orderId];
+        fdOrdersCollapsed[orderId] = collapsed;
+
+        var card = document.querySelector('.fd-orders-card[data-order-id="' + Number(orderId) + '"]');
+        if (!card) return;
+
+        var body = card.querySelector('[data-order-body]');
+        if (body) body.style.display = collapsed ? 'none' : 'block';
+
+        var btn = card.querySelector('[data-order-toggle]');
+        if (btn) {
+            btn.style.transform = collapsed ? 'rotate(180deg)' : '';
+            var label = collapsed ? 'Expandir pedido' : 'Contraer pedido';
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+        }
+    }
+
+    function fdCopyOrderNumber(orderId) {
+        var order = fdOrderByIndex(orderId);
+        if (!order) return;
+
+        var done = function () { fdToast('Número de pedido copiado.', false); };
+        var text = order.order_number || '';
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () { fdCopyFallback(text, done); });
+        } else {
+            fdCopyFallback(text, done);
+        }
+    }
+
+    function fdCopyFallback(text, done) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', 'readonly');
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            done();
+        } catch (e) {
+            fdToast('No se pudo copiar el número.', true);
+        }
+        document.body.removeChild(ta);
+    }
+
+    // Imprime el pedido en un iframe oculto (evita el bloqueo de ventanas
+    // emergentes) con una hoja simple tipo ticket.
+    function fdPrintOrder(orderId) {
+        var order = fdOrderByIndex(orderId);
+        if (!order) return;
+
+        var frame = document.createElement('iframe');
+        frame.setAttribute('title', 'Impresión de pedido');
+        frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+        document.body.appendChild(frame);
+
+        var doc = frame.contentWindow.document;
+        doc.open();
+        doc.write(fdPrintOrderHtml(order));
+        doc.close();
+
+        var cleaned = false;
+        var cleanup = function () {
+            if (cleaned) return;
+            cleaned = true;
+            if (frame.parentNode) frame.parentNode.removeChild(frame);
+        };
+
+        frame.contentWindow.onafterprint = cleanup;
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+        // Red de seguridad por navegadores que no disparan onafterprint.
+        setTimeout(cleanup, 600000);
+    }
+
+    function fdPrintOrderHtml(o) {
+        var client = o.user || {};
+        var address = o.address;
+        var driver = o.driver || null;
+        var biz = '';
+        var bizEl = document.getElementById('fd-orders-bizname');
+        if (bizEl) biz = bizEl.textContent || '';
+
+        var rows = (o.items || []).map(function (it) {
+            return '<tr><td class="qty">' + Number(it.quantity) + '&times;</td>'
+                + '<td>' + escapeHtml(it.product_name)
+                + (it.variant_name ? ' <span class="muted">(' + escapeHtml(it.variant_name) + ')</span>' : '')
+                + '</td><td class="num">' + fdMoney(it.total_price) + '</td></tr>';
+        }).join('');
+
+        return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
+            + '<title>Pedido ' + escapeHtml(o.order_number) + '</title>'
+            + '<style>'
+            + 'body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:24px;font-size:13px;}'
+            + 'h1{font-size:16px;margin:0 0 2px;}'
+            + '.muted{color:#666;font-size:12px;}'
+            + '.head{border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:12px;}'
+            + 'table{width:100%;border-collapse:collapse;margin-top:10px;}'
+            + 'td{padding:5px 0;border-bottom:1px dotted #ddd;vertical-align:top;}'
+            + 'td.qty{width:36px;font-weight:bold;}'
+            + 'td.num{text-align:right;white-space:nowrap;}'
+            + '.totals{margin-top:12px;}'
+            + '.totals div{display:flex;justify-content:space-between;padding:2px 0;}'
+            + '.total{font-weight:bold;font-size:15px;border-top:1px solid #333;margin-top:6px;padding-top:6px;}'
+            + '.sec{margin-top:14px;}'
+            + '.sec b{display:block;margin-bottom:3px;}'
+            + '</style></head><body>'
+            + '<div class="head"><h1>' + escapeHtml(biz || 'PideAca') + '</h1>'
+            + '<div class="muted">Pedido ' + escapeHtml(o.order_number) + ' &middot; ' + fdDateTime(o.created_at) + '</div>'
+            + '<div class="muted">Estado: ' + escapeHtml((FD_ORDER_STATUS[o.status] || [o.status || '-'])[0]) + '</div></div>'
+            + '<div class="sec"><b>Cliente</b>' + escapeHtml(client.name || 'Cliente')
+            + (client.email ? '<div class="muted">' + escapeHtml(client.email) + '</div>' : '')
+            + (client.phone ? '<div class="muted">' + escapeHtml(client.phone) + '</div>' : '')
+            + '</div>'
+            + (address
+                ? '<div class="sec"><b>Entrega</b>' + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
+                    + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
+                    + (address.postal_code ? ' &middot; CP ' + escapeHtml(address.postal_code) : '')
+                    + (address.notes ? '<div class="muted">' + escapeHtml(address.notes) + '</div>' : '')
+                    + '</div>'
+                : '')
+            + (driver ? '<div class="sec"><b>Repartidor</b>' + escapeHtml(driver.name || '') + '</div>' : '')
+            + '<table>' + rows + '</table>'
+            + '<div class="totals">'
+            + '<div><span>Subtotal</span><span>' + fdMoney(o.subtotal) + '</span></div>'
+            + '<div><span>Envío</span><span>' + fdMoney(o.delivery_fee) + '</span></div>'
+            + '<div><span>Descuento</span><span>-' + fdMoney(o.discount) + '</span></div>'
+            + '<div class="total"><span>Total</span><span>' + fdMoney(o.total) + '</span></div>'
+            + '</div>'
+            + (o.notes ? '<div class="sec"><b>Nota</b>' + escapeHtml(o.notes) + '</div>' : '')
+            + '</body></html>';
     }
 
     function fdUpdateOrderStatus(orderId, status, btn) {
@@ -1750,11 +1901,22 @@
 
             var card = document.querySelector('[data-order-id="' + orderId + '"]');
             if (card && res.data.order) {
-                card.outerHTML = fdRenderOrder(res.data.order);
+                // Se repinta solo esa tarjeta en su posición y se actualiza el
+                // listado en memoria (el repintado siguiente usa estos datos).
+                var pos = 0;
+                for (var i = 0; i < fdOrdersAll.length; i++) {
+                    if (Number(fdOrdersAll[i].id) === Number(orderId)) {
+                        pos = i + 1;
+                        fdOrdersAll[i] = res.data.order;
+                        break;
+                    }
+                }
+                card.outerHTML = fdRenderOrder(res.data.order, pos);
                 fdOrdersLastHtml = '';
-            } else {
-                loadProviderOrders(true);
             }
+
+            // Refresca contadores (KPI/chips) y listado en silencio, sin spinner.
+            loadProviderOrders(true);
 
             fdToast('Pedido actualizado: ' + (FD_ORDER_STATUS[res.data.status] || [res.data.status])[0] + '.', false);
         })
@@ -1780,7 +1942,7 @@
         }
     }
 
-    function fdSetOrdersState(state, text) {
+    function fdSetOrdersState(state, text, title, actionHtml) {
         var map = { loading: 'fd-orders-loading', message: 'fd-orders-message', content: 'fd-orders-list' };
         Object.keys(map).forEach(function (k) {
             var el = document.getElementById(map[k]);
@@ -1789,7 +1951,12 @@
         if (state === 'message' && typeof text !== 'undefined') {
             var msg = document.getElementById('fd-orders-message-text');
             if (msg) msg.textContent = text;
+            var head = document.getElementById('fd-orders-message-title');
+            if (head) head.textContent = typeof title === 'string' && title ? title : 'No se encontraron pedidos';
         }
+        // El bloque de accion (p. ej. "Restablecer Filtros") solo vive en el estado vacio.
+        var action = document.getElementById('fd-orders-message-action');
+        if (action) action.innerHTML = (state === 'message' && actionHtml) ? actionHtml : '';
     }
 
     function escapeHtml(str) {
@@ -3539,20 +3706,26 @@
     // fechas. Los contadores de las pestañas vienen del servidor.
     var fdOrdersActive = 'today';
     var fdOrdersAll = [];
-    var fdOrdersCounts = { today: 0, history: 0 };
+    var fdOrdersCounts = { today: 0, history: 0, pending: 0, in_preparation: 0 };
     var fdOrdersPage = 1;
     var fdOrdersPagination = null;
     var FD_ORDERS_PER_PAGE = 10;
+    // Pedidos contraídos manualmente: se respetan en cada repintado (el
+    // sondeo de 8 s vuelve a renderizar la lista entera).
+    var fdOrdersCollapsed = {};
+    var fdOrdersSearchTimer = null;
 
     function loadProviderOrders(silent) {
         var providerId = fdProviderId('dash-pedidos');
         if (!providerId) {
-            if (!silent) fdSetOrdersState('message', 'Todavía no tenés un comercio configurado.\nCreá tu comercio desde Tu Perfil para recibir pedidos.');
+            if (!silent) fdSetOrdersState('message', 'Todavía no tenés un comercio configurado.\nCreá tu comercio desde Tu Perfil para recibir pedidos.', 'Aún no hay un comercio activo', '');
             return;
         }
 
         var filterEl = document.getElementById('fd-orders-filter');
         var savedFilter = filterEl ? filterEl.value : '';
+        var searchEl = document.getElementById('fd-orders-search');
+        var savedSearch = searchEl ? searchEl.value.trim() : '';
 
         if (!silent) {
             fdOrdersPage = 1;
@@ -3565,6 +3738,7 @@
 
         var params = ['tab=' + encodeURIComponent(fdOrdersActive)];
         if (savedFilter) params.push('status=' + encodeURIComponent(savedFilter));
+        if (savedSearch) params.push('search=' + encodeURIComponent(savedSearch));
         if (fdOrdersActive === 'history' && fdOrdersRangeActive()) {
             params.push('date_from=' + encodeURIComponent(fdOrdersDateFrom()));
             params.push('date_to=' + encodeURIComponent(fdOrdersDateTo()));
@@ -3578,7 +3752,7 @@
             .then(function (res) {
                 if (!res.ok) {
                     if (silent) return;
-                    fdSetOrdersState('message', (res.data && res.data.message) || 'No se pudieron cargar los pedidos.');
+                    fdSetOrdersState('message', (res.data && res.data.message) || 'No se pudieron cargar los pedidos.', 'No pudimos cargar los pedidos', '');
                     return;
                 }
 
@@ -3595,25 +3769,22 @@
 
                 var orders = res.data.orders || [];
                 var provider = res.data.provider || {};
-                var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
 
                 fdOrdersAll = orders;
-                fdOrdersCounts = res.data.counts || { today: 0, history: 0 };
+                fdOrdersCounts = Object.assign({ today: 0, history: 0, pending: 0, in_preparation: 0 }, res.data.counts || {});
                 fdOrdersPagination = res.data.pagination || null;
 
-                var summary = document.getElementById('fd-orders-summary');
-                if (summary) {
-                    summary.textContent = (provider.business_name || 'Tu comercio') +
-                        ' · ' + (fdOrdersCounts.today || 0) + ' de hoy · ' + (fdOrdersCounts.history || 0) + ' en historial' +
-                        (pending ? ' · ' + pending + ' pendientes' : '') +
-                        ' · actualizado ' + fdClock();
-                }
+                // Encabezado en vivo: comercio, hora de sincronización, chips y KPI.
+                fdOrdersPaintTabs();
+                var biz = document.getElementById('fd-orders-bizname');
+                if (biz && provider.business_name) biz.textContent = provider.business_name;
+                var sync = document.getElementById('fd-orders-summary');
+                if (sync) sync.textContent = 'Sincronizado a las ' + fdClock();
 
                 if (!orders.length) {
                     fdOrdersLastHtml = '';
-                    fdOrdersPaintTabs();
                     fdOrdersPaintPagination();
-                    fdSetOrdersState('message', fdOrdersEmptyText());
+                    fdSetOrdersState('message', fdOrdersEmptyText(), fdOrdersEmptyTitle(), fdOrdersResetAction());
                     return;
                 }
 
@@ -3621,7 +3792,7 @@
             })
             .catch(function () {
                 if (silent) return;
-                fdSetOrdersState('message', 'No se pudo conectar con el servidor.');
+                fdSetOrdersState('message', 'No se pudo conectar con el servidor.\nRevisá tu conexión y volvé a intentar.', 'Sin conexión', '');
             });
     }
 
@@ -3654,10 +3825,20 @@
         loadProviderOrders();
     }
 
+    // Hay filtros puestos (estado, texto o rango): habilita el boton de reseteo.
+    function fdOrdersFiltersActive() {
+        var filterEl = document.getElementById('fd-orders-filter');
+        var searchEl = document.getElementById('fd-orders-search');
+        return !!((filterEl && filterEl.value) || (searchEl && searchEl.value.trim()) || fdOrdersRangeActive());
+    }
+
     function fdOrdersEmptyText() {
         var filterEl = document.getElementById('fd-orders-filter');
+        var searchEl = document.getElementById('fd-orders-search');
+        var search = searchEl ? searchEl.value.trim() : '';
 
-        if (fdOrdersActive === 'history' && fdOrdersRangeActive()) return 'No hay pedidos en ese rango de fechas.';
+        if (fdOrdersActive === 'history' && fdOrdersRangeActive()) return 'No hay pedidos en ese rango de fechas.\nProbá con otro rango o restablecé los filtros.';
+        if (search) return 'No hay pedidos que coincidan con "' + search + '".\nRevisá el número de pedido o el nombre del cliente.';
         if (filterEl && filterEl.value) return 'No hay pedidos con ese estado en esta sección.';
         if (!Number(fdOrdersCounts.today) && !Number(fdOrdersCounts.history)) {
             return 'Todavía no recibiste pedidos.\nCuando un cliente coloque su pedido va a aparecer acá.';
@@ -3666,6 +3847,69 @@
             return 'No tenés pedidos hoy.\nPasá por la pestaña de historial para ver los anteriores.';
         }
         return 'Todavía no hay pedidos en el historial.';
+    }
+
+    function fdOrdersEmptyTitle() {
+        if (fdOrdersFiltersActive()) return 'No se encontraron pedidos';
+        if (!Number(fdOrdersCounts.today) && !Number(fdOrdersCounts.history)) return 'Todavía no recibiste pedidos';
+        return fdOrdersActive === 'today' ? 'Sin pedidos para hoy' : 'El historial está vacío';
+    }
+
+    // Botón del estado vacío: solo aparece si hay algo que limpiar.
+    function fdOrdersResetAction() {
+        if (!fdOrdersFiltersActive()) return '';
+        return '<button type="button" class="fd-btn fd-btn-primary" onclick="fdOrdersResetFilters()">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
+            + 'Restablecer Filtros</button>';
+    }
+
+    function fdOrdersResetFilters() {
+        var filterEl = document.getElementById('fd-orders-filter');
+        if (filterEl) filterEl.value = '';
+        var searchEl = document.getElementById('fd-orders-search');
+        if (searchEl) searchEl.value = '';
+        var fromEl = document.getElementById('fd-orders-date-from');
+        if (fromEl) fromEl.value = '';
+        var toEl = document.getElementById('fd-orders-date-to');
+        if (toEl) toEl.value = '';
+
+        fdOrdersPage = 1;
+        fdOrdersLastHtml = '';
+        loadProviderOrders();
+    }
+
+    // Búsqueda con espera: cada tecla no dispara un request al servidor.
+    function fdOrdersSearchDebounce() {
+        if (fdOrdersSearchTimer) clearTimeout(fdOrdersSearchTimer);
+        fdOrdersSearchTimer = setTimeout(function () {
+            fdOrdersPage = 1;
+            fdOrdersLastHtml = '';
+            loadProviderOrders();
+        }, 350);
+    }
+
+    // KPI (Hoy / Historial / Pendientes) y chips de carga del centro de despacho.
+    function fdOrdersPaintIndicators() {
+        var counts = fdOrdersCounts || {};
+        var kpis = { today: 'fd-orders-kpi-today', history: 'fd-orders-kpi-history', pending: 'fd-orders-kpi-pending' };
+        Object.keys(kpis).forEach(function (key) {
+            var el = document.getElementById(kpis[key]);
+            if (el) el.textContent = Number(counts[key] || 0);
+        });
+
+        var chipPending = document.getElementById('fd-orders-chip-pending');
+        if (chipPending) chipPending.textContent = Number(counts.pending || 0) + ' pendientes';
+        var chipKitchen = document.getElementById('fd-orders-chip-kitchen');
+        if (chipKitchen) chipKitchen.textContent = Number(counts.in_preparation || 0) + ' en cocina';
+    }
+
+    // El punto del selector de estados toma el color del estado elegido.
+    function fdOrdersPaintStatusDot() {
+        var dot = document.getElementById('fd-orders-status-dot');
+        var sel = document.getElementById('fd-orders-filter');
+        if (!dot || !sel) return;
+        var s = FD_ORDER_STATUS[sel.value];
+        dot.style.background = s ? s[1] : '#94a3b8';
     }
 
     function fdOrdersPaintTabs() {
@@ -3679,13 +3923,11 @@
             }
 
             var btn = document.getElementById('fd-orders-tab-' + key);
-            if (btn) {
-                var on = fdOrdersActive === key;
-                btn.style.color = on ? '#D24C19' : '#64748b';
-                btn.style.borderBottomColor = on ? '#D24C19' : 'transparent';
-                btn.style.background = on ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'none';
-            }
+            if (btn) btn.classList.toggle('active', fdOrdersActive === key);
         });
+
+        fdOrdersPaintIndicators();
+        fdOrdersPaintStatusDot();
     }
 
     // El rango de fechas vive solo en el historial: "del día" siempre es hoy.
@@ -3747,11 +3989,11 @@
         if (!list.length) {
             fdOrdersLastHtml = '';
             fdOrdersPaintPagination();
-            fdSetOrdersState('message', fdOrdersEmptyText());
+            fdSetOrdersState('message', fdOrdersEmptyText(), fdOrdersEmptyTitle(), fdOrdersResetAction());
             return;
         }
 
-        var html = list.map(fdRenderOrder).join('');
+        var html = list.map(function (o, i) { return fdRenderOrder(o, i + 1); }).join('');
         var listEl = document.getElementById('fd-orders-list');
 
         if (silent && html === fdOrdersLastHtml && listEl.style.display === 'block') return;
@@ -3762,43 +4004,241 @@
         fdOrdersPaintPagination();
     }
 
-    function fdRenderOrder(o) {
+    // ============ RENDER DE CADA PEDIDO (TARJETA) ============
+
+    var FD_MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    function fdParseDate(value) {
+        if (!value) return null;
+        var d = new Date(String(value).replace(' ', 'T'));
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    // "27 Oct 2026, 21:40 hs"
+    function fdDateTime(value) {
+        var d = fdParseDate(value);
+        if (!d) return '';
+        var hh = ('0' + d.getHours()).slice(-2);
+        var mm = ('0' + d.getMinutes()).slice(-2);
+        return d.getDate() + ' ' + FD_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ', ' + hh + ':' + mm + ' hs';
+    }
+
+    // "hace 18 min" / "hace 3 h" / "hace 2 días": se recalcula en cada repintado.
+    function fdTimeAgo(value) {
+        var d = fdParseDate(value);
+        if (!d) return '';
+        var diff = Date.now() - d.getTime();
+        if (diff < 0) return 'recién';
+        var mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'recién';
+        if (mins < 60) return 'hace ' + mins + ' min';
+        var hours = Math.floor(mins / 60);
+        if (hours < 24) return 'hace ' + hours + ' h';
+        var days = Math.floor(hours / 24);
+        return 'hace ' + days + (days === 1 ? ' día' : ' días');
+    }
+
+    function fdInitials(name) {
+        var parts = String(name || '').trim().split(/\s+/);
+        var ini = (parts[0] || '').charAt(0) + (parts[1] || '').charAt(0);
+        return (ini || '?').toUpperCase();
+    }
+
+    // Posición del pedido dentro de la página actual: "#01", "#02"...
+    function fdNumberBadge(index) {
+        var n = Number(index) || 0;
+        return n > 0 ? (n < 10 ? '0' + n : String(n)) : '--';
+    }
+
+    function fdOrderByIndex(orderId) {
+        for (var i = 0; i < fdOrdersAll.length; i++) {
+            if (Number(fdOrdersAll[i].id) === Number(orderId)) return fdOrdersAll[i];
+        }
+        return null;
+    }
+
+    function fdOrderPosition(orderId) {
+        for (var i = 0; i < fdOrdersAll.length; i++) {
+            if (Number(fdOrdersAll[i].id) === Number(orderId)) return i + 1;
+        }
+        return 0;
+    }
+
+    // Link de WhatsApp normalizado (54 + dígitos, sin espacios ni símbolos).
+    function fdWaLink(phone, text) {
+        var digits = String(phone || '').replace(/\D/g, '');
+        if (!digits) return '';
+        if (digits.length <= 10) digits = '54' + digits.replace(/^0+/, '');
+        return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text || '');
+    }
+
+    var FD_DELIVERY_STATUS = {
+        'pending': ['Esperando reparto', '#b45309', '#fef3c7'],
+        'assigned': ['Repartidor asignado', '#1d4ed8', '#dbeafe'],
+        'picked_up': ['Retiró el pedido', '#0369a1', '#e0f2fe'],
+        'delivered': ['Entregado', '#047857', '#d1fae5']
+    };
+
+    // Avance del pedido para la barra de tres pasos de la tarjeta.
+    function fdOrderStep(status) {
+        if (status === 'delivered') return 3;
+        if (status === 'on_the_way') return 2;
+        if (status === 'confirmed' || status === 'in_preparation') return 1;
+        return 0;
+    }
+
+    function fdOrderStepperHtml(o) {
+        if (o.status === 'cancelled') {
+            return '<div style="margin-top:12px;font-size:12px;font-weight:600;color:#b91c1c;">Pedido cancelado: el reparto no continúa.</div>';
+        }
+
+        var labels = ['Confirmado', 'En camino a local', 'A entrega'];
+        var step = fdOrderStep(o.status);
+        var html = '<div class="fd-stepbar">';
+
+        labels.forEach(function (label, i) {
+            var cls = i < step ? 'done' : (i === step ? 'now' : '');
+            var fill = i < step ? '100%' : '0%';
+            html += '<div>'
+                + '<div class="fd-step-label ' + cls + '">' + (i + 1) + '. ' + escapeHtml(label) + '</div>'
+                + '<div class="fd-step-track"><div class="fd-step-fill" style="width:' + fill + '"></div></div>'
+                + '</div>';
+        });
+
+        return html + '</div>';
+    }
+
+    function fdPaymentMethodLabel(method) {
+        if (!method) return '';
+        if (FD_PAYMENT_METHOD_LABELS[method]) return FD_PAYMENT_METHOD_LABELS[method];
+        return String(method).replace(/[_-]+/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+
+    // Texto del medio de pago de la tarjeta. El estado (pagado / pendiente)
+    // vive en el badge al lado, así que acá solo va la forma de pago.
+    function fdPaymentLine(o) {
+        var p = (o.payments && o.payments[0]) || null;
+        var method = (p && p.provider) || o.payment_method || '';
+        var label = fdPaymentMethodLabel(method);
+
+        if (p && p.status === 'paid') return label ? 'Pagado online mediante ' + label : 'Pago confirmado';
+        if (label) return label;
+        return 'Sin datos de pago';
+    }
+
+    function fdRenderOrder(o, index) {
         var client = o.user || {};
         var address = o.address;
-        var html = '<div class="fd-orders-card" data-order-id="' + Number(o.id) + '" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:14px;overflow:hidden;">'
-            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">'
-            + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
-            + '<span style="font-size:13px;font-weight:700;color:#0c2a4d;font-family:ui-monospace,monospace;">' + escapeHtml(o.order_number) + '</span>'
+        var driver = o.driver || null;
+        var collapsed = !!fdOrdersCollapsed[o.id];
+        var idx = Number(index) || fdOrderPosition(o.id);
+
+        var html = '<div class="fd-orders-card fd-order" data-order-id="' + Number(o.id) + '">';
+
+        // Cabecera: índice, número copiable, estado, acciones y fecha.
+        html += '<div class="fd-order-head">'
+            + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;">'
+            + '<span class="fd-idx">#' + fdNumberBadge(idx) + '</span>'
+            + '<button type="button" class="fd-icon-btn" onclick="fdCopyOrderNumber(' + Number(o.id) + ')" title="Copiar número de pedido" aria-label="Copiar número de pedido" style="width:26px;height:26px;border:none;background:transparent;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>'
+            + '</button>'
+            + '<span class="fd-onum">' + escapeHtml(o.order_number) + '</span>'
             + fdStatusBadge(o.status)
-            + fdPaymentBadge(o.payments)
             + '</div>'
-            + '<span style="font-size:11px;color:#94a3b8;">' + fdDate(o.created_at) + '</span>'
+            + '<div style="flex:1;"></div>'
+            + fdOrderActions(o)
+            + '<div style="flex-basis:100%;display:flex;align-items:center;gap:6px;font-size:11.5px;color:#94a3b8;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+            + '<span>' + fdDateTime(o.created_at) + '</span>'
+            + '<span style="color:#cbd5e1;">&middot;</span>'
+            + '<span>' + fdTimeAgo(o.created_at) + '</span>'
+            + '</div>'
             + '</div>';
 
-        html += '<div style="padding:14px 16px;">'
-            + '<div style="font-size:13px;color:#334155;">'
-            + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
-            + '<b>' + escapeHtml(client.name || 'Cliente') + '</b>'
-            + '<span style="color:#94a3b8;font-size:12px;">' + escapeHtml(client.email || '') + '</span>'
+        html += '<div class="fd-body" data-order-body' + (collapsed ? ' style="display:none;"' : '') + '>';
+
+        // ---------- Cliente ----------
+        html += '<div class="fd-block">'
+            + '<div class="fd-block-title"><span>Datos del cliente</span></div>'
+            + '<div style="display:flex;gap:12px;align-items:flex-start;">'
+            + '<div class="fd-avatar">' + escapeHtml(fdInitials(client.name)) + '</div>'
+            + '<div style="min-width:0;">'
+            + '<div class="fd-info-name">' + escapeHtml(client.name || 'Cliente') + '</div>'
+            + (client.email ? '<div class="fd-info-meta">' + escapeHtml(client.email) + '</div>' : '')
+            + (client.phone
+                ? '<div style="margin-top:5px;"><a class="fd-info-link" href="tel:' + escapeHtml(String(client.phone).replace(/[^\d+]/g, '')) + '">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'
+                    + ' ' + escapeHtml(client.phone) + '</a></div>'
+                : '')
+            + '</div>'
             + '</div>';
+
+        // Dirección de entrega + referencia del timbre.
+        html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;gap:9px;align-items:flex-start;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+            + '<div style="min-width:0;">';
 
         if (address) {
-            html += '<div style="color:#64748b;margin-top:4px;font-size:12px;">'
-                + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
-                + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
-                + (address.postal_code ? ' · CP ' + escapeHtml(address.postal_code) : '')
+            html += '<div style="font-size:13px;color:#334155;">'
+                + '<b>' + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '') + '</b>'
+                + (address.floor_apartment ? ' &middot; ' + escapeHtml(address.floor_apartment) : '')
+                + (address.postal_code ? ' &middot; CP ' + escapeHtml(address.postal_code) : '')
                 + '</div>';
             if (address.notes) {
-                html += '<div style="color:#94a3b8;font-size:11px;margin-top:2px;">' + escapeHtml(address.notes) + '</div>';
+                html += '<div style="margin-top:7px;"><span class="fd-note-chip">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>'
+                    + escapeHtml(address.notes) + '</span></div>';
             }
         } else {
-            html += '<div style="color:#94a3b8;margin-top:4px;font-size:12px;">Sin dirección registrada</div>';
+            html += '<div style="font-size:12.5px;color:#94a3b8;">Sin dirección registrada</div>';
         }
 
         if (o.notes) {
-            html += '<div style="margin-top:4px;font-size:12px;color:#9a3412;">Nota: ' + escapeHtml(o.notes) + '</div>';
+            html += '<div style="margin-top:7px;font-size:12px;color:#9a3412;"><b>Nota del pedido:</b> ' + escapeHtml(o.notes) + '</div>';
         }
 
+        html += '</div></div></div>';
+
+        // ---------- Repartidor ----------
+        var dStatus = FD_DELIVERY_STATUS[o.delivery_status] || FD_DELIVERY_STATUS['pending'];
+        html += '<div class="fd-block">'
+            + '<div class="fd-block-title"><span>Repartidor asignado</span>'
+            + (driver ? fdBadge(dStatus[0], dStatus[1], dStatus[2]) : fdBadge('Sin asignar', '#64748b', '#f1f5f9'))
+            + '</div>';
+
+        if (driver) {
+            html += '<div style="display:flex;gap:12px;align-items:flex-start;">'
+                + '<div class="fd-avatar fd-avatar-blue">' + escapeHtml(fdInitials(driver.name)) + '</div>'
+                + '<div style="min-width:0;">'
+                + '<div class="fd-info-name">' + escapeHtml(driver.name || 'Repartidor') + '</div>'
+                + (driver.email ? '<div class="fd-info-meta">' + escapeHtml(driver.email) + '</div>' : '')
+                + (driver.phone ? '<div class="fd-info-meta">' + escapeHtml(driver.phone) + '</div>' : '')
+                + '</div>'
+                + '</div>';
+        } else {
+            html += '<div style="display:flex;gap:10px;align-items:flex-start;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>'
+                + '<div><div style="font-size:13px;font-weight:600;color:#334155;">Todavía no hay repartidor asignado</div>'
+                + '<div style="font-size:12px;color:#94a3b8;margin-top:2px;">Los repartidores toman el pedido desde su panel cuando está listo para retirar.</div>'
+                + '</div>'
+                + '</div>';
+        }
+
+        html += fdOrderStepperHtml(o) + '</div>';
+
+        // ---------- Productos y totales ----------
+        html += '<div class="fd-block">'
+            + '<div class="fd-items-head"><span>Detalle de productos</span><span>Subtotal</span></div>'
+            + (o.items || []).map(fdRenderOrderItem).join('')
+            + '<div style="padding-top:12px;">'
+            + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
+            + fdTotalRow('Costo de envío', fdMoney(o.delivery_fee), false)
+            + fdTotalRow('Descuento cupón', '-' + fdMoney(o.discount), false)
+            + '<div class="fd-total-final"><span>Total a cobrar</span><span>' + fdMoney(o.total) + '</span></div>'
+            + '</div>'
+            + '</div>';
+
+        // ---------- Calificación (solo pedidos entregados) ----------
         if (o.status === 'delivered') {
             if (o.provider_rated && o.provider_rating) {
                 var r = o.provider_rating;
@@ -3806,35 +4246,47 @@
                 for (var i = 1; i <= 5; i++) {
                     stars += '<span style="color:' + (i <= r.stars ? '#f59e0b' : '#d1d5db') + ';">&#9733;</span>';
                 }
-                html += '<div style="margin-top:12px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">'
-                    + '<div style="font-size:12px;font-weight:700;color:#0c2a4d;margin-bottom:2px;">Tu calificación al cliente:</div>'
-                    + '<div style="font-size:18px;line-height:1;margin-bottom:4px;">' + stars + '</div>'
+                html += '<div class="fd-block" style="background:#f8fafc;">'
+                    + '<div class="fd-block-title" style="margin-bottom:8px;"><span>Tu calificación al cliente</span></div>'
+                    + '<div style="font-size:18px;line-height:1;margin-bottom:5px;">' + stars + '</div>'
                     + (r.comment ? '<div style="font-size:12px;color:#475569;font-style:italic;">"' + escapeHtml(r.comment) + '"</div>' : '')
                     + '</div>';
             } else {
-                html += '<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">'
-                    + '<button type="button" onclick="fdOrderOpenRate(' + o.id + ')" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Calificar cliente</button>'
+                html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px;">'
+                    + '<button type="button" class="fd-btn fd-btn-primary" onclick="fdOrderOpenRate(' + Number(o.id) + ')">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+                    + 'Calificar cliente</button>'
                     + '</div>'
                     + fdOrderRatePanel(o);
             }
         }
 
-        html += '</div>'
-            + '<div style="border-top:1px solid #f1f5f9;padding-top:10px;">'
-            + (o.items || []).map(fdRenderOrderItem).join('')
+        // ---------- Pago y contacto rápido ----------
+        var waText = 'Hola ' + (client.name || '') + ', te contactamos por tu pedido ' + o.order_number + '.';
+        var waLink = client.phone ? fdWaLink(client.phone, waText) : '';
+        var driverTel = (driver && driver.phone) ? 'tel:' + String(driver.phone).replace(/[^\d+]/g, '') : '';
+
+        html += '<div class="fd-card-foot">'
+            + '<span class="fd-pay">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>'
+            + '<span>' + escapeHtml(fdPaymentLine(o)) + '</span>'
+            + fdPaymentBadge(o.payments)
+            + '</span>'
+            + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+            + (waLink
+                ? '<a class="fd-btn fd-btn-whatsapp" href="' + waLink + '" target="_blank" rel="noopener noreferrer">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>'
+                    + 'WhatsApp Cliente</a>'
+                : '')
+            + (driverTel
+                ? '<a class="fd-btn" href="' + driverTel + '">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'
+                    + 'Contactar repartidor</a>'
+                : '')
             + '</div>'
-            + '<div style="border-top:1px solid #e5e7eb;padding-top:10px;font-size:13px;">'
-            + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
-            + fdTotalRow('Envío', fdMoney(o.delivery_fee), false)
-            + fdTotalRow('Descuento', '-' + fdMoney(o.discount), false)
-            + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
-            + '<span>Total</span><span>' + fdMoney(o.total) + '</span></div>'
-            + '</div>'
-            + '</div>'
-            + fdOrderActions(o)
             + '</div>';
 
-        return html;
+        return html + '</div></div>';
     }
 
     function fdRenderOrderItem(it) {
@@ -3842,22 +4294,24 @@
         var optionsHtml = '';
 
         if (options.length) {
-            optionsHtml = '<div style="font-size:11px;color:#94a3b8;margin-top:2px;">'
+            optionsHtml = '<div style="font-size:11px;color:#94a3b8;margin-top:3px;">'
                 + options.map(function (op) {
                     return escapeHtml(op.option_name) +
                         (Number(op.extra_price) > 0 ? ' +' + fdMoney(op.extra_price) : '');
-                }).join(' · ')
+                }).join(' &middot; ')
                 + '</div>';
         }
 
-        return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px;flex-wrap:wrap;">'
+        return '<div class="fd-item">'
+            + '<span class="fd-qty">' + Number(it.quantity) + '&times;</span>'
             + '<div style="min-width:0;">'
-            + '<b>' + Number(it.quantity) + '× </b>' + escapeHtml(it.product_name)
-            + (it.variant_name ? ' <span style="color:#94a3b8;">(' + escapeHtml(it.variant_name) + ')</span>' : '')
-            + '<div style="font-size:11px;color:#94a3b8;">' + fdMoney(it.unit_price) + ' c/u</div>'
+            + '<div style="font-size:13.5px;font-weight:600;color:#0f172a;">' + escapeHtml(it.product_name)
+            + (it.variant_name ? ' <span style="font-weight:500;color:#94a3b8;">(' + escapeHtml(it.variant_name) + ')</span>' : '')
+            + '</div>'
+            + '<div style="font-size:11.5px;color:#94a3b8;margin-top:2px;">' + fdMoney(it.unit_price) + ' c/u</div>'
             + optionsHtml
             + '</div>'
-            + '<div style="font-weight:600;white-space:nowrap;">' + fdMoney(it.total_price) + '</div>'
+            + '<span class="fd-item-total">' + fdMoney(it.total_price) + '</span>'
             + '</div>';
     }
 
@@ -3870,7 +4324,7 @@
     // ============ FAST DELIVERY: COMERCIOS Y MIS PEDIDOS DEL CLIENTE ============
 
     var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '' };
-    var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
+    var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'transferencia_bancaria': 'Transferencia bancaria', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
     var fdShopsTimer = null;
     var fdShopsTabActive = 'favorites';
     var fdShopsCounts = { favorites: 0, all: 0 };
