@@ -26,7 +26,24 @@ class User extends Authenticatable
         'user_status_id',
         'type_user_id',
         'email_verified_at',
+        'vehicle_type',
+        'vehicle_plate',
     ];
+
+    /**
+     * Tipos de vehiculo que puede declarar un repartidor.
+     * La clave es el valor persistido y el texto lo que ve el usuario.
+     */
+    public const VEHICLE_TYPES = [
+        'moto_150' => 'Motocicleta (150cc)',
+        'moto_250' => 'Motocicleta (250cc)',
+        'auto' => 'Auto',
+        'camioneta' => 'Camioneta',
+        'bici' => 'Bicicleta',
+        'pie' => 'A pie',
+    ];
+
+    public const DEFAULT_VEHICLE_TYPE = 'moto_150';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -59,6 +76,22 @@ class User extends Authenticatable
     public function typeUser()
     {
         return $this->belongsTo(TypeUser::class, 'type_user_id');
+    }
+
+    /**
+     * El usuario tiene el rol operativo de repartidor.
+     */
+    public function isDriver(): bool
+    {
+        return strcasecmp((string) $this->typeUser?->description, 'Repartidor') === 0;
+    }
+
+    /**
+     * Etiqueta visible del vehiculo guardado (o el valor por defecto).
+     */
+    public function vehicleTypeLabel(): string
+    {
+        return self::VEHICLE_TYPES[$this->vehicle_type] ?? self::VEHICLE_TYPES[self::DEFAULT_VEHICLE_TYPE];
     }
 
     /**

@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/api/v1/delivery/orders', [DeliveryOrderController::class, 'availableOrders'])->name('api.delivery.orders');
 Route::get('/api/v1/delivery/orders/mine', [DeliveryOrderController::class, 'myOrders'])->name('api.delivery.orders.mine');
+Route::patch('/api/driver/vehicle', [DeliveryOrderController::class, 'updateVehicle'])->name('api.driver.vehicle.update');
 Route::post('/api/v1/delivery/orders/{order}/take', [DeliveryOrderController::class, 'takeOrder'])->name('api.delivery.orders.take');
 Route::post('/api/v1/delivery/orders/{order}/pickup', [DeliveryOrderController::class, 'markPickedUp'])->name('api.delivery.orders.pickup');
 Route::post('/api/v1/delivery/orders/{order}/confirm', [DeliveryOrderController::class, 'confirmDelivery'])->name('api.delivery.orders.confirm');

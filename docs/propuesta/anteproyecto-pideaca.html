@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Anteproyecto pideaca · Propuesta de Distribución Estratégica</title>
+<meta name="description" content="Anteproyecto comercial de alianza y distribución estratégica entre pideaca y la empresa distribuidora." />
+<meta name="author" content="pideaca" />
+<meta name="keywords" content="pideaca, distribución estratégica, alianza comercial, anteproyecto confidencial" />
+<style>
+  /* ============================================================
+     ANTEPROYECTO · PROPUESTA DE DISTRIBUCIÓN ESTRATÉGICA
+     Documento confidencial · Propiedad intelectual de pideaca
+     Formato A4 · Print-ready (Chrome / Edge headless)
+     ============================================================ */
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --navy:      #0A1B2B;
+    --navy-2:    #0D2438;
+    --navy-3:    #12324B;
+    --ink:       #0E202F;
+    --slate:     #44586B;
+    --muted:     #7C8D9D;
+    --line:      #DCE3EA;
+    --line-2:    #E9EEF3;
+    --accent:    #DC5B24;
+    --accent-2:  #F08A5B;
+    --cream:     #F3EBDD;
+    --wash:      #F5F8FA;
+    --sans:      "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --serif:     Georgia, "Times New Roman", serif;
+  }
+
+  html {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #E8EDF3;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 9.5pt;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    position: relative;
+    width: 215.9mm;
+    height: 279.4mm;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  @media screen {
+    body { padding: 22px 0; }
+    .page { margin: 0 auto 22px; box-shadow: 0 3px 26px rgba(10, 27, 43, .18); }
+  }
+
+  @media print {
+    body { background: #FFFFFF; }
+    .page { margin: 0; box-shadow: none; }
+    .page:not(:last-child) { break-after: page; }
+  }
+
+  @page {
+    size: Letter;
+    margin: 0;
+  }
+
+  /* ---------- Cabecera de página ---------- */
+
+  .sheet-head {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 22mm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16mm;
+    background: linear-gradient(90deg, #071523 0%, #0E2942 58%, #0A2033 100%);
+    color: #FFFFFF;
+  }
+
+  .sheet-head::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: .5mm;
+    background: linear-gradient(90deg, var(--accent) 0 24mm, rgba(255, 255, 255, .14) 24mm 100%);
+  }
+
+  .sheet-head .brand { height: 11.5mm; width: auto; display: block; }
+
+  .h-meta { text-align: right; }
+
+  .h-kicker {
+    display: block;
+    font-size: 6.6pt;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .58);
+    font-weight: 600;
+  }
+
+  .h-sub {
+    display: block;
+    margin-top: .9mm;
+    font-size: 8.6pt;
+    font-weight: 600;
+    letter-spacing: .015em;
+    color: #FFFFFF;
+  }
+
+  /* ---------- Cuerpo ---------- */
+
+  .body {
+    position: absolute;
+    top: 22mm; left: 16mm; right: 16mm; bottom: 19mm;
+    padding-top: 6.5mm;
+  }
+
+  /* ---------- Pie de página ---------- */
+
+  .sheet-foot { position: absolute; left: 16mm; right: 16mm; bottom: 7.5mm; }
+
+  .foot-rule { height: .4pt; background: var(--line); margin-bottom: 2.3mm; }
+
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 6.3pt;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #8B9AA8;
+  }
+
+  .foot-num { color: var(--ink); letter-spacing: .12em; }
+
+  .foot-legal {
+    margin: 1.5mm 0 0;
+    font-size: 6.1pt;
+    line-height: 1.5;
+    color: #9AA8B5;
+  }
+
+  /* ---------- Títulos de sección ---------- */
+
+  .sec-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 2.6mm;
+    font-size: 7.1pt;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sec-eyebrow .num { color: var(--accent); }
+  .sec-eyebrow .rule { display: block; width: 7mm; height: .55mm; background: var(--accent); }
+
+  h1.sec-title {
+    margin: 3.2mm 0 0;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 25.5pt;
+    line-height: 1.08;
+    letter-spacing: -.012em;
+    color: var(--ink);
+  }
+
+  .lead {
+    margin: 4.6mm 0 0;
+    max-width: 160mm;
+    font-size: 10.6pt;
+    line-height: 1.56;
+    color: var(--slate);
+  }
+
+  h2.sub {
+    display: flex;
+    align-items: center;
+    gap: 2.6mm;
+    margin: 6mm 0 3.2mm;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 12.4pt;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  h2.sub::before {
+    content: "";
+    width: 1.9mm; height: 1.9mm;
+    background: var(--accent);
+    display: block;
+    flex: 0 0 auto;
+  }
+
+  .mini-h {
+    margin: 0 0 2.6mm;
+    font-size: 8.1pt;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  /* ---------- Estructuras ---------- */
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .mt-6 { margin-top: 6mm; }
+  .mt-5 { margin-top: 5mm; }
+
+  /* ---------- Tarjetas ---------- */
+
+  .card {
+    border: .5pt solid var(--line);
+    background: #FFFFFF;
+    border-radius: 1.4mm;
+    padding: 4mm 5.2mm;
+  }
+
+  .card.dark {
+    border: none;
+    background: linear-gradient(155deg, #0D2438 0%, #081725 100%);
+    color: #D7E1EA;
+  }
+
+  .card.dark .mini-h { color: #FFFFFF; }
+
+  .card p { margin: 0; font-size: 9.1pt; line-height: 1.55; color: var(--slate); }
+  .card.dark p { color: #C5D2DE; }
+  .card p + p { margin-top: 2.6mm; }
+
+  .card .strong {
+    font-family: var(--serif);
+    font-size: 11pt;
+    line-height: 1.4;
+    color: var(--cream);
+  }
+
+  /* ---------- Listas ---------- */
+
+  ul.ticks { margin: 0; padding: 0; list-style: none; }
+
+  ul.ticks li {
+    position: relative;
+    padding-left: 4.1mm;
+    margin-bottom: 1.75mm;
+    font-size: 8.9pt;
+    line-height: 1.5;
+    color: #3C4F61;
+  }
+
+  ul.ticks li:last-child { margin-bottom: 0; }
+
+  ul.ticks li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 1.55mm;
+    width: 1.35mm; height: 1.35mm;
+    border-radius: .25mm;
+    background: var(--accent);
+  }
+
+  .card.dark ul.ticks li { color: #C5D2DE; }
+  .card.dark ul.ticks li::before { background: var(--accent-2); }
+
+  /* ---------- KPIs ---------- */
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 4.6mm 0 0;
+    padding: 3mm 0;
+    border-top: .5pt solid var(--line);
+    border-bottom: .5pt solid var(--line);
+  }
+
+  .kpi { padding-left: 5mm; border-left: .5pt solid var(--line); }
+  .kpi:first-child { padding-left: 0; border-left: none; }
+
+  .kpi .n {
+    font-family: var(--serif);
+    font-size: 22pt;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .kpi .n small { font-size: 11pt; }
+
+  .kpi .l {
+    margin-top: 1.6mm;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ---------- Callout ---------- */
+
+  .callout {
+    margin-top: 4.2mm;
+    padding: 4.2mm 6mm;
+    background: linear-gradient(100deg, #0B2034 0%, #071523 100%);
+    border-left: 1.2mm solid var(--accent);
+    border-radius: 0 1.4mm 1.4mm 0;
+  }
+
+  .callout .tag {
+    display: block;
+    margin-bottom: 2mm;
+    font-size: 6.4pt;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+
+  .callout p {
+    margin: 0;
+    font-size: 9.3pt;
+    line-height: 1.5;
+    color: #DCE6EF;
+  }
+
+  .callout p strong { color: #FFFFFF; font-weight: 600; }
+
+  /* ---------- Tablas ---------- */
+
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.7pt;
+  }
+
+  table.matrix thead th {
+    padding: 0 3mm 2.2mm 0;
+    text-align: left;
+    font-size: 6.9pt;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: .6pt solid var(--navy);
+    vertical-align: bottom;
+  }
+
+  table.matrix tbody td {
+    padding: 2.05mm 3mm 2.05mm 0;
+    border-bottom: .5pt solid var(--line-2);
+    vertical-align: top;
+    color: #35485C;
+    line-height: 1.4;
+  }
+
+  table.matrix tbody tr:last-child td { border-bottom: .5pt solid var(--line); }
+
+  table.matrix td.key {
+    font-weight: 600;
+    color: var(--ink);
+    width: 27%;
+  }
+
+  table.matrix th.ally, table.matrix td.ally {
+    background: #F3F7FA;
+    padding-left: 3mm;
+    padding-right: 3mm;
+  }
+
+  table.matrix th.ally { color: var(--accent); border-bottom-color: var(--accent); }
+
+  table.matrix td.ally { color: var(--ink); }
+
+  .tick {
+    display: inline-block;
+    width: 3mm;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .dash { color: #B4C1CC; }
+
+  .note {
+    margin: 2.8mm 0 0;
+    font-size: 6.9pt;
+    line-height: 1.5;
+    color: #8A99A7;
+  }
+
+  /* ---------- Mini tarjetas de ventaja ---------- */
+
+  .adv {
+    border-top: 1.2mm solid var(--navy);
+    padding-top: 3.2mm;
+  }
+
+  .adv .idx {
+    font-family: var(--serif);
+    font-size: 15pt;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .adv h3 {
+    margin: 2mm 0 1.4mm;
+    font-size: 8.6pt;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: var(--ink);
+  }
+
+  .adv p {
+    margin: 0;
+    font-size: 7.9pt;
+    line-height: 1.45;
+    color: var(--slate);
+  }
+
+  /* ---------- Flujo ---------- */
+
+  .flowbar { display: flex; align-items: stretch; gap: 1.6mm; }
+
+  .flowbar .node {
+    flex: 1;
+    padding: 2.7mm 2.8mm;
+    background: linear-gradient(160deg, #0E2942, #081725);
+    border-radius: 1.2mm;
+    color: #FFFFFF;
+  }
+
+  .flowbar .node .n {
+    display: block;
+    font-size: 6.2pt;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: var(--accent-2);
+  }
+
+  .flowbar .node .t {
+    display: block;
+    margin-top: 1mm;
+    font-size: 7.8pt;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .flowbar .arrow {
+    align-self: center;
+    color: #B9C7D4;
+    font-size: 8pt;
+    line-height: 1;
+  }
+
+  .rail { position: relative; margin-top: 6mm; padding-left: 13mm; }
+
+  .rail::before {
+    content: "";
+    position: absolute;
+    left: 6mm; top: 2mm; bottom: 4mm;
+    width: .45mm;
+    background: linear-gradient(180deg, var(--accent) 0%, #D5DEE7 100%);
+  }
+
+  .step { position: relative; margin-bottom: 4.1mm; }
+  .step:last-child { margin-bottom: 0; }
+
+  .step .dot {
+    position: absolute;
+    left: -10.8mm; top: -.4mm;
+    width: 6.4mm; height: 6.4mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: .5mm solid var(--accent);
+    border-radius: 50%;
+    background: #FFFFFF;
+    font-size: 7.6pt;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .step .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4mm;
+  }
+
+  .step h4 {
+    margin: 0;
+    font-size: 9.4pt;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .step p {
+    margin: .9mm 0 0;
+    font-size: 8.6pt;
+    line-height: 1.48;
+    color: var(--slate);
+    max-width: 146mm;
+  }
+
+  .chips { display: flex; gap: 1.4mm; flex: 0 0 auto; }
+
+  .chip {
+    display: inline-block;
+    padding: .5mm 1.8mm .7mm;
+    border-radius: 10mm;
+    border: .4pt solid var(--line);
+    background: #F7FAFC;
+    font-size: 6.1pt;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #62758A;
+    white-space: nowrap;
+  }
+
+  .chip.pid { background: #FBEDE6; border-color: #F3C9B3; color: #B84A1B; }
+  .chip.emp { background: #EAF0F5; border-color: #CBD8E3; color: #24445F; }
+
+  .defn {
+    margin-top: 4.5mm;
+    padding: 4mm 5mm;
+    background: var(--wash);
+    border: .5pt solid var(--line);
+    border-radius: 1.2mm;
+    font-size: 7.6pt;
+    line-height: 1.5;
+    color: #5A7085;
+  }
+
+  .defn strong { color: var(--ink); }
+
+  /* ---------- Piloto ---------- */
+
+  .pilot {
+    padding: 3.9mm 4.6mm;
+    background: #FFFFFF;
+    border: .5pt solid var(--line);
+    border-top: 1.2mm solid var(--accent);
+    border-radius: 0 0 1.2mm 1.2mm;
+  }
+
+  .pilot .l {
+    display: block;
+    font-size: 6.6pt;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .pilot .v {
+    display: block;
+    margin-top: 1.4mm;
+    font-family: var(--serif);
+    font-size: 14pt;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .pilot p { margin: 1.4mm 0 0; font-size: 7.7pt; line-height: 1.45; color: var(--slate); }
+
+  /* ---------- Hoja de ruta ---------- */
+
+  .road { position: relative; display: flex; margin-top: 2.5mm; }
+
+  .road::before {
+    content: "";
+    position: absolute;
+    left: 1.6mm; right: 0; top: 1.6mm;
+    height: .45mm;
+    background: linear-gradient(90deg, var(--accent) 0%, #CFDAE3 100%);
+  }
+
+  .ms { flex: 1; position: relative; padding: 6.5mm 4mm 0 0; }
+
+  .ms::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 3.2mm; height: 3.2mm;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 1.4mm #FFFFFF;
+  }
+
+  .ms:last-child::before { background: var(--navy); }
+
+  .ms .w {
+    display: block;
+    font-size: 6.4pt;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .ms:last-child .w { color: var(--navy); }
+
+  .ms h4 { margin: 1.2mm 0 1mm; font-size: 8.4pt; color: var(--ink); }
+  .ms p { margin: 0; font-size: 7.4pt; line-height: 1.42; color: var(--slate); }
+
+  /* ---------- NDA ---------- */
+
+  .nda {
+    margin-top: 4.2mm;
+    padding: 4.6mm 5.5mm;
+    background: linear-gradient(120deg, #0B2034 0%, #071523 100%);
+    border-radius: 1.4mm;
+    border-left: 1.2mm solid var(--accent);
+  }
+
+  .nda h3 {
+    margin: 0 0 1.8mm;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 11pt;
+    color: #FFFFFF;
+  }
+
+  .nda p { margin: 0; font-size: 8.3pt; line-height: 1.55; color: #C5D2DE; }
+  .nda p strong { color: #FFFFFF; font-weight: 600; }
+
+  /* ---------- Cierre / firmas ---------- */
+
+  .next-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; margin-top: 2mm; }
+
+  .next {
+    position: relative;
+    padding: 4.5mm 5mm 4.5mm 5mm;
+    border: .5pt solid var(--line);
+    border-radius: 1.2mm;
+    background: #FFFFFF;
+  }
+
+  .next .step-n {
+    font-family: var(--serif);
+    font-size: 17pt;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .next h4 { margin: 2mm 0 1.2mm; font-size: 9pt; color: var(--ink); }
+  .next p { margin: 0; font-size: 7.9pt; line-height: 1.45; color: var(--slate); }
+
+  .signs { display: grid; grid-template-columns: 1fr 1fr; gap: 16mm; margin-top: 16mm; }
+
+  .sign .party {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .sign .who { margin-top: 1.2mm; font-size: 9.4pt; font-weight: 600; color: var(--ink); }
+
+  .sign .line { margin-top: 15mm; border-top: .5pt solid #A9B7C4; padding-top: 2.2mm; }
+
+  .sign .cap { font-size: 6.9pt; color: #8A99A7; line-height: 1.5; }
+
+  .closing {
+    margin-top: 9mm;
+    padding: 4.5mm 5.5mm;
+    background: var(--wash);
+    border-left: .9mm solid var(--accent);
+    font-size: 8.6pt;
+    line-height: 1.55;
+    color: var(--slate);
+  }
+
+  .closing strong { color: var(--ink); }
+
+  .close-quote {
+    margin-top: 12mm;
+    padding-left: 6mm;
+    border-left: 1.2mm solid var(--accent);
+  }
+
+  .close-quote p {
+    margin: 0;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 17pt;
+    line-height: 1.3;
+    letter-spacing: -.012em;
+    color: var(--ink);
+  }
+
+  .page-close .mt-6 { margin-top: 9mm; }
+  .page-close .closing { margin-top: 12mm; }
+  .page-close .signs { margin-top: 24mm; }
+  .page-close .sign .line { margin-top: 20mm; }
+
+  /* ---------- Portada ---------- */
+
+  .cover {
+    background:
+      radial-gradient(120mm 90mm at 88% 6%, rgba(220, 91, 36, .22) 0%, rgba(220, 91, 36, 0) 68%),
+      radial-gradient(150mm 120mm at 4% 96%, rgba(26, 74, 112, .55) 0%, rgba(26, 74, 112, 0) 70%),
+      linear-gradient(145deg, #0A1B2B 0%, #071320 55%, #050F19 100%);
+    color: #FFFFFF;
+  }
+
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0, rgba(255, 255, 255, .035) .25mm, transparent .25mm, transparent 13mm),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0, rgba(255, 255, 255, .03) .25mm, transparent .25mm, transparent 13mm);
+    pointer-events: none;
+  }
+
+  .cv-head {
+    position: absolute;
+    top: 13mm; left: 16mm; right: 16mm;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .cv-head .brand {
+    height: 17mm;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 2mm 5mm rgba(0, 0, 0, .35));
+  }
+
+  .cv-tag {
+    padding: 1.6mm 3.4mm;
+    border: .4pt solid rgba(255, 255, 255, .24);
+    border-radius: 12mm;
+    font-size: 6.3pt;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .78);
+  }
+
+  .cv-body { position: absolute; top: 74mm; left: 16mm; right: 16mm; }
+
+  .cv-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 3.4mm;
+    font-size: 7.1pt;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+  }
+
+  .cv-eyebrow .line { display: block; width: 11mm; height: .6mm; background: var(--accent); }
+
+  .cv-title {
+    margin: 8mm 0 0;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 43pt;
+    line-height: 1.07;
+    letter-spacing: -.018em;
+    color: #FFFFFF;
+  }
+
+  .cv-sub {
+    margin: 8mm 0 0;
+    font-size: 13.6pt;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--cream);
+  }
+
+  .cv-sub .amp { color: var(--accent-2); font-family: var(--serif); font-style: italic; padding: 0 .8mm; }
+
+  .cv-rule { width: 26mm; height: .5mm; background: rgba(255, 255, 255, .22); margin: 9mm 0 0; }
+
+  .cv-lead {
+    margin: 7mm 0 0;
+    max-width: 128mm;
+    font-size: 10.2pt;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, .7);
+  }
+
+  .cv-meta {
+    position: absolute;
+    left: 16mm; right: 16mm; bottom: 50mm;
+    display: grid;
+    grid-template-columns: 1.7fr 1.15fr .95fr 1fr;
+    gap: 5mm;
+    padding-top: 5.5mm;
+    border-top: .4pt solid rgba(255, 255, 255, .16);
+  }
+
+  .cv-meta .l {
+    display: block;
+    font-size: 6.1pt;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .45);
+  }
+
+  .cv-meta .v {
+    display: block;
+    margin-top: 1.4mm;
+    font-size: 8.7pt;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, .92);
+  }
+
+  .cv-index {
+    position: absolute;
+    left: 16mm; right: 16mm; bottom: 24mm;
+    display: flex;
+    gap: 5.5mm;
+    padding-top: 4mm;
+    border-top: .4pt solid rgba(255, 255, 255, .08);
+  }
+
+  .cv-index .it { flex: 1; }
+
+  .cv-index .k {
+    display: block;
+    font-size: 6.3pt;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--accent-2);
+  }
+
+  .cv-index .t {
+    display: block;
+    margin-top: .8mm;
+    font-size: 7.2pt;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, .62);
+  }
+
+  .cv-legal {
+    position: absolute;
+    left: 16mm; right: 16mm; bottom: 7.5mm;
+    display: flex;
+    justify-content: space-between;
+    gap: 10mm;
+    font-size: 6.1pt;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, .42);
+  }
+
+  .cv-legal .p { max-width: 126mm; }
+  .cv-legal .n { letter-spacing: .12em; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ============================ 01 · PORTADA ============================ -->
+<section class="page cover">
+  <div class="cover-grid"></div>
+
+  <header class="cv-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="cv-tag">Confidencial · Versión 1.0</div>
+  </header>
+
+  <div class="cv-body">
+    <div class="cv-eyebrow"><span class="line"></span><span>Anteproyecto comercial</span></div>
+    <h1 class="cv-title">Propuesta de<br />Distribución Estratégica</h1>
+    <p class="cv-sub">Alianza Comercial: pideaca <span class="amp">&amp;</span> [Nombre de la Empresa]</p>
+    <div class="cv-rule"></div>
+    <p class="cv-lead">
+      Incorporar pideaca al canal comercial de la empresa, sin desarrollo propio y sin riesgo
+      tecnológico, para capturar la demanda que hoy se pierde entre el pedido manual y la venta
+      que no se concreta.
+    </p>
+  </div>
+
+  <div class="cv-meta">
+    <div>
+      <span class="l">Destinatario</span>
+      <span class="v">[Nombre de la Empresa]<br />Dirección General</span>
+    </div>
+    <div>
+      <span class="l">Elaborado por</span>
+      <span class="v">pideaca<br />Equipo Comercial</span>
+    </div>
+    <div>
+      <span class="l">Versión</span>
+      <span class="v">1.0</span>
+    </div>
+    <div>
+      <span class="l">Fecha</span>
+      <span class="v">29 de octubre de 2026</span>
+    </div>
+  </div>
+
+  <div class="cv-index">
+    <div class="it"><span class="k">01</span><span class="t">Resumen ejecutivo</span></div>
+    <div class="it"><span class="k">02</span><span class="t">Propuesta de valor para la empresa</span></div>
+    <div class="it"><span class="k">03</span><span class="t">Esquema de negocio y distribución</span></div>
+    <div class="it"><span class="k">04</span><span class="t">Flujo operativo de alto nivel</span></div>
+    <div class="it"><span class="k">05</span><span class="t">Próximos pasos y hoja de ruta</span></div>
+  </div>
+
+  <div class="cv-legal">
+    <p class="p">
+      Documento confidencial. La información contenida es propiedad intelectual de pideaca y se entrega
+      exclusivamente para la evaluación de la alianza propuesta. Prohibida su reproducción, distribución
+      o divulgación total o parcial sin autorización escrita.
+    </p>
+    <span class="n">© 2026 pideaca · 01 / 08</span>
+  </div>
+</section>
+
+<!-- ============================ 02 · RESUMEN EJECUTIVO ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">01</span><span class="rule"></span><span>Contexto y oportunidad</span></div>
+    <h1 class="sec-title">Resumen ejecutivo</h1>
+    <p class="lead">
+      El mercado dejó de premiar al mejor catálogo y empezó a premiar la forma más simple de
+      comprar. La demanda está en el teléfono y la captura quien la atiende en ese momento.
+    </p>
+
+    <div class="kpis">
+      <div class="kpi"><div class="n">0</div><div class="l">Meses de desarrollo</div></div>
+      <div class="kpi"><div class="n">0</div><div class="l">Inversión en tecnología</div></div>
+      <div class="kpi"><div class="n">90 <small>días</small></div><div class="l">Para medir el primer piloto</div></div>
+    </div>
+
+    <div class="grid-2 mt-6">
+      <div class="card">
+        <div class="mini-h">La fricción que detectamos</div>
+        <ul class="ticks">
+          <li>El pedido depende de llamadas, mensajes y visitas: el vendedor dedica tiempo a tomar pedidos en lugar de vender.</li>
+          <li>Catálogos y precios desactualizados generan dudas, errores y pedidos que se postergan.</li>
+          <li>La recompra no está sistematizada: se atiende cuando el cliente se acuerda.</li>
+          <li>La operación no deja información medible sobre qué compra cada cliente y cada cuánto.</li>
+          <li>Cada pedido manual es un costo que no baja a medida que el negocio crece.</li>
+        </ul>
+      </div>
+
+      <div class="card dark">
+        <div class="mini-h">La oportunidad</div>
+        <p>
+          La empresa ya tiene lo más difícil de construir: cobertura, relación con el cliente,
+          logística y capacidad de cobranza. Lo que falta es la capa digital que ordene y
+          multiplique ese canal.
+        </p>
+        <p class="strong">
+          pideaca aporta esa capa ya construida y probada. La empresa aporta el mercado.
+        </p>
+      </div>
+    </div>
+
+    <h2 class="sub">Qué cambia para el cliente y para la empresa</h2>
+
+    <div class="grid-2">
+      <div>
+        <div class="mini-h">Para los clientes</div>
+        <ul class="ticks">
+          <li>Pedir en minutos, desde el teléfono y sin llamar.</li>
+          <li>Ver catálogo, precios y disponibilidad vigentes.</li>
+          <li>Confirmar el pedido y seguir su estado.</li>
+          <li>Repetir la compra anterior en un par de toques.</li>
+          <li>Acceder fuera del horario de visita del vendedor.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="mini-h">Para la empresa</div>
+        <ul class="ticks">
+          <li>Convierte el catálogo en un canal transaccional, no solo informativo.</li>
+          <li>Amplía la ventana comercial a 24 horas, los siete días.</li>
+          <li>Estandariza el pedido y reduce errores de toma manual.</li>
+          <li>Libera al vendedor para captar y asesorar.</li>
+          <li>Agrega una línea de ingreso digital que crece con el volumen.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="tag">En una frase</span>
+      <p>
+        pideaca pone el producto digital; la empresa pone el canal.
+        <strong>El ingreso se comparte por transacción, no por licencia.</strong>
+      </p>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">02 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 03 · PROPUESTA DE VALOR ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">02</span><span class="rule"></span><span>Ventaja competitiva</span></div>
+    <h1 class="sec-title">Por qué aliarse en lugar de desarrollar</h1>
+    <p class="lead">
+      Construir una plataforma propia es un proyecto de tecnología. Distribuir pideaca es una
+      decisión comercial. La diferencia no está en el costo inicial: está en el tiempo de salida
+      al mercado, en el riesgo y en la atención que cada camino consume.
+    </p>
+
+    <div class="mt-6">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Dimensión</th>
+            <th>Desarrollo interno</th>
+            <th class="ally">Alianza con pideaca</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="key">Tiempo hasta el primer pedido</td>
+            <td>12 a 18 meses, en el mejor de los casos.</td>
+            <td class="ally"><span class="tick">✓</span>Semanas: el producto ya está operando.</td>
+          </tr>
+          <tr>
+            <td class="key">Inversión inicial</td>
+            <td>Equipo técnico, licencias, infraestructura y diseño.</td>
+            <td class="ally"><span class="tick">✓</span>Sin inversión en tecnología.</td>
+          </tr>
+          <tr>
+            <td class="key">Riesgo de producto</td>
+            <td>Se descubre con el cliente; cada error se paga en ventas.</td>
+            <td class="ally"><span class="tick">✓</span>Producto probado en operación real.</td>
+          </tr>
+          <tr>
+            <td class="key">Costo de mantenimiento</td>
+            <td>Estructura técnica permanente y creciente.</td>
+            <td class="ally"><span class="tick">✓</span>Incluido en el modelo de comisión.</td>
+          </tr>
+          <tr>
+            <td class="key">Evolución del producto</td>
+            <td>Compite por prioridad con el resto del negocio.</td>
+            <td class="ally"><span class="tick">✓</span>Hoja de ruta de pideaca, sin costo adicional.</td>
+          </tr>
+          <tr>
+            <td class="key">Foco de la empresa</td>
+            <td>Gestionar un proyecto de software.</td>
+            <td class="ally"><span class="tick">✓</span>Vender, distribuir y cobrar.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">Estimaciones referenciales de mercado para desarrollos a medida. No constituyen una cotización.</p>
+    </div>
+
+    <h2 class="sub">Ventajas inmediatas</h2>
+    <div class="grid-4">
+      <div class="adv">
+        <div class="idx">01</div>
+        <h3>Cero meses de desarrollo</h3>
+        <p>Se activa sobre el canal que la empresa ya tiene funcionando.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">02</div>
+        <h3>Riesgo acotado</h3>
+        <p>Sin contrataciones, sin infraestructura y sin deuda técnica.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">03</div>
+        <h3>Producto probado</h3>
+        <p>Flujos validados con clientes y comercios reales.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">04</div>
+        <h3>Relación preservada</h3>
+        <p>La empresa mantiene la titularidad y la cercanía con su cliente.</p>
+      </div>
+    </div>
+
+    <h2 class="sub">Nuevos ingresos y fidelización</h2>
+    <div class="grid-2">
+      <ul class="ticks">
+        <li>Ingreso recurrente por cada cliente activo y por transacción, sin canibalizar la venta asistida: el canal digital la ordena y la extiende.</li>
+        <li>Mayor frecuencia de compra: la recompra deja de depender de la memoria del cliente.</li>
+        <li>Retención: un cliente que pide fácil y recibe bien tiene menos motivos para buscar alternativas.</li>
+      </ul>
+      <ul class="ticks">
+        <li>Reactivación de cartera dormida con campañas sobre la base existente.</li>
+        <li>Venta cruzada de categorías complementarias dentro del mismo pedido.</li>
+        <li>Información comercial agregada para decidir surtido, precios y frecuencia de visita.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">03 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 04 · ESQUEMA DE NEGOCIO ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">03</span><span class="rule"></span><span>Modelo de negocio</span></div>
+    <h1 class="sec-title">Esquema de negocio y distribución</h1>
+    <p class="lead">
+      Un modelo de ingreso compartido —<em>revenue share</em>—: pideaca no cobra licencia ni cuota
+      de entrada. Su retribución depende de que la empresa venda. Los intereses quedan alineados
+      desde el primer pedido.
+    </p>
+
+    <div class="grid-4 mt-6">
+      <div class="adv">
+        <div class="idx">01</div>
+        <h3>Sin licencia inicial</h3>
+        <p>La inversión tecnológica es de pideaca, no de la empresa.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">02</div>
+        <h3>Comisión por transacción</h3>
+        <p>Se paga sobre lo efectivamente vendido y cobrado.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">03</div>
+        <h3>Conciliación transparente</h3>
+        <p>Reporte mensual por cliente, con derecho a auditoría.</p>
+      </div>
+      <div class="adv">
+        <div class="idx">04</div>
+        <h3>Escalonado por volumen</h3>
+        <p>A mayor volumen, mejor participación para la empresa.</p>
+      </div>
+    </div>
+
+    <h2 class="sub">Fuentes de ingreso y participación</h2>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>Fuente de ingreso</th>
+          <th>Base de cálculo</th>
+          <th class="ally">Participación de la empresa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="key">Suscripción mensual</td>
+          <td>Por cliente activo, según el plan comercial contratado.</td>
+          <td class="ally"><strong>50%</strong> del ingreso por suscripción.</td>
+        </tr>
+        <tr>
+          <td class="key">Comisión por transacción</td>
+          <td>Sobre pedidos entregados y efectivamente cobrados.</td>
+          <td class="ally"><strong>30%</strong> de la comisión de plataforma.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">
+      Porcentajes referenciales para la etapa piloto. La estructura definitiva se fija en el acuerdo
+      comercial. Los pedidos anulados, rechazados o devueltos no generan comisión.
+    </p>
+
+    <h2 class="sub">Escenarios de ingreso mensual para la empresa</h2>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>Escenario</th>
+          <th>Clientes activos</th>
+          <th>Volumen transaccionado</th>
+          <th class="ally">Ingreso estimado para la empresa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="key">Conservador</td>
+          <td>40</td>
+          <td>$ 28.000</td>
+          <td class="ally">$ 1.000 / mes</td>
+        </tr>
+        <tr>
+          <td class="key">Base</td>
+          <td>100</td>
+          <td>$ 80.000</td>
+          <td class="ally">$ 2.650 / mes</td>
+        </tr>
+        <tr>
+          <td class="key">Escala</td>
+          <td>250</td>
+          <td>$ 225.000</td>
+          <td class="ally">$ 7.000 / mes</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">
+      Cifras ilustrativas en dólares, calculadas con un plan de $ 29 por mes y una comisión de
+      plataforma del 5% sobre el volumen. No constituyen una proyección garantizada.
+    </p>
+
+    <div class="callout">
+      <span class="tag">El beneficio que importa</span>
+      <p>
+        Además del ingreso por plataforma, cada cliente activado compra más de la oferta actual de la
+        empresa. <strong>El objetivo del piloto es demostrar exactamente eso:</strong> que el canal
+        digital eleva la frecuencia y el tamaño del pedido sobre el catálogo que ya se distribuye.
+      </p>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">04 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 05 · RESPONSABILIDADES ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">03</span><span class="rule"></span><span>Modelo de negocio · Continuidad</span></div>
+    <h1 class="sec-title">Responsabilidades y gobernanza</h1>
+    <p class="lead">
+      La alianza funciona con una regla simple: cada parte hace lo que ya sabe hacer. pideaca se
+      ocupa de la plataforma; la empresa, del mercado, la entrega y el cobro.
+    </p>
+
+    <div class="mt-6">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th style="width:22%">Ámbito</th>
+            <th style="width:39%">pideaca</th>
+            <th class="ally" style="width:39%">Empresa distribuidora</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="key">Plataforma y producto</td>
+            <td>Infraestructura tecnológica, disponibilidad, seguridad y evolución del producto.</td>
+            <td class="ally">Uso comercial de la plataforma y adhesión de clientes.</td>
+          </tr>
+          <tr>
+            <td class="key">Soporte</td>
+            <td>Soporte técnico de segundo nivel y acompañamiento a la operación.</td>
+            <td class="ally">Atención de primer nivel al cliente y canal de escalamiento.</td>
+          </tr>
+          <tr>
+            <td class="key">Actualizaciones y mantenimiento</td>
+            <td>Mejoras, correcciones y mantenimiento continuo, sin costo adicional.</td>
+            <td class="ally">Comunicación de cambios relevantes a su base de clientes.</td>
+          </tr>
+          <tr>
+            <td class="key">Capacitación</td>
+            <td>Formación inicial y material de referencia para el equipo comercial.</td>
+            <td class="ally">Capacitación continua de su fuerza de ventas.</td>
+          </tr>
+          <tr>
+            <td class="key">Fuerza de ventas y captación</td>
+            <td>Material comercial y acompañamiento en la propuesta de valor.</td>
+            <td class="ally">Prospección, presentación, cierre y alta de clientes.</td>
+          </tr>
+          <tr>
+            <td class="key">Distribución y cumplimiento</td>
+            <td>—</td>
+            <td class="ally">Preparación, entrega, logística y nivel de servicio.</td>
+          </tr>
+          <tr>
+            <td class="key">Cobranza y conciliación</td>
+            <td>Facturación de la comisión y reporte mensual de operaciones.</td>
+            <td class="ally">Cobro al cliente, gestión de mora y liquidación.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">
+        El detalle funcional, la documentación técnica y los niveles de servicio se entregan una vez
+        firmados el Acuerdo de Confidencialidad y el acuerdo piloto.
+      </p>
+    </div>
+
+    <h2 class="sub">Gobernanza de la alianza</h2>
+    <div class="grid-3">
+      <div class="pilot">
+        <span class="l">Ritmo</span>
+        <span class="v">Comité mensual</span>
+        <p>Revisión de resultados, incidencias y plan del mes siguiente, con responsables de ambas partes.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Medición</span>
+        <span class="v">Tablero de indicadores</span>
+        <p>Clientes activos, pedidos, ticket promedio, recompra y nivel de servicio.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Control</span>
+        <span class="v">Conciliación mensual</span>
+        <p>Corte por cliente, reporte de comisión y derecho de auditoría sobre lo facturado.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="tag">Carga operativa</span>
+      <p>
+        La empresa no asume carga técnica. pideaca opera, mantiene y evoluciona la plataforma como
+        parte del servicio; <strong>la empresa conserva el foco en vender, entregar y cobrar.</strong>
+      </p>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">05 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 06 · FLUJO OPERATIVO ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">04</span><span class="rule"></span><span>Operación</span></div>
+    <h1 class="sec-title">Flujo operativo de alto nivel</h1>
+    <p class="lead">
+      Seis etapas, tres actores y una lógica simple: el cliente pide, la empresa cumple, pideaca
+      sostiene la plataforma y ambas partes concilian. El diagrama es conceptual y no expone
+      lógica interna del producto.
+    </p>
+
+    <div class="flowbar mt-6">
+      <div class="node"><span class="n">01</span><span class="t">Captación</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">02</span><span class="t">Activación</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">03</span><span class="t">Pedido</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">04</span><span class="t">Cumplimiento</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">05</span><span class="t">Cobranza</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="n">06</span><span class="t">Recompra</span></div>
+    </div>
+
+    <div class="rail">
+      <div class="step">
+        <div class="dot">1</div>
+        <div class="head">
+          <h4>Captación</h4>
+          <div class="chips"><span class="chip emp">Empresa</span></div>
+        </div>
+        <p>La fuerza de ventas presenta pideaca a su cartera y detecta clientes con volumen y recurrencia.</p>
+      </div>
+
+      <div class="step">
+        <div class="dot">2</div>
+        <div class="head">
+          <h4>Activación</h4>
+          <div class="chips"><span class="chip emp">Empresa</span><span class="chip pid">pideaca</span></div>
+        </div>
+        <p>El cliente queda habilitado con su catálogo, precios y condiciones comerciales. pideaca acompaña la puesta en marcha.</p>
+      </div>
+
+      <div class="step">
+        <div class="dot">3</div>
+        <div class="head">
+          <h4>Pedido</h4>
+          <div class="chips"><span class="chip">Cliente</span></div>
+        </div>
+        <p>El cliente arma y confirma su pedido desde el teléfono, en el horario que le conviene.</p>
+      </div>
+
+      <div class="step">
+        <div class="dot">4</div>
+        <div class="head">
+          <h4>Cumplimiento</h4>
+          <div class="chips"><span class="chip emp">Empresa</span></div>
+        </div>
+        <p>La empresa prepara, despacha y entrega. El pedido se cierra con la confirmación de recepción.</p>
+      </div>
+
+      <div class="step">
+        <div class="dot">5</div>
+        <div class="head">
+          <h4>Cobranza y conciliación</h4>
+          <div class="chips"><span class="chip emp">Empresa</span><span class="chip pid">pideaca</span></div>
+        </div>
+        <p>La empresa cobra al cliente; pideaca factura la comisión y ambas partes concilian con el reporte mensual.</p>
+      </div>
+
+      <div class="step">
+        <div class="dot">6</div>
+        <div class="head">
+          <h4>Recompra</h4>
+          <div class="chips"><span class="chip">Cliente</span></div>
+        </div>
+        <p>El historial y la recompra en un par de toques devuelven al cliente al canal sin intervención del vendedor.</p>
+      </div>
+    </div>
+
+    <h2 class="sub">Puntos de control del flujo</h2>
+    <div class="grid-3">
+      <div class="pilot">
+        <span class="l">Control 01</span>
+        <span class="v">Pedido firme</span>
+        <p>Nace con precio, cantidad y fecha acordados: no hay lugar a interpretaciones.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Control 02</span>
+        <span class="v">Entrega verificada</span>
+        <p>El cumplimiento se mide contra lo prometido, no contra lo recordado.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Control 03</span>
+        <span class="v">Cobro trazable</span>
+        <p>Cada monto facturado tiene un pedido que lo respalda y un reporte que lo explica.</p>
+      </div>
+    </div>
+
+    <div class="defn">
+      <strong>Alcance del diagrama.</strong> Representa el flujo comercial de alto nivel. No describe
+      arquitectura, integraciones, modelos de datos ni lógica propietaria de la plataforma, que se
+      comparten únicamente bajo Acuerdo de Confidencialidad.
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">06 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 07 · PRÓXIMOS PASOS ============================ -->
+<section class="page">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">05</span><span class="rule"></span><span>Implementación</span></div>
+    <h1 class="sec-title">Próximos pasos y hoja de ruta</h1>
+    <p class="lead">
+      La propuesta no arranca con una inversión: arranca con una prueba. Un piloto acotado en
+      alcance y tiempo permite medir el resultado real antes de comprometer el despliegue completo.
+    </p>
+
+    <div class="grid-3 mt-6">
+      <div class="pilot">
+        <span class="l">Alcance</span>
+        <span class="v">Acotado</span>
+        <p>Una zona, una categoría y un equipo comercial. Hasta 40 clientes activos.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Duración</span>
+        <span class="v">90 días</span>
+        <p>Desde la firma del acuerdo piloto hasta la decisión de escalamiento.</p>
+      </div>
+      <div class="pilot">
+        <span class="l">Criterios de éxito</span>
+        <span class="v">Medibles</span>
+        <p>Activación, pedidos por semana, ticket promedio, recompra y nivel de servicio.</p>
+      </div>
+    </div>
+
+    <h2 class="sub">Hoja de ruta del piloto</h2>
+    <div class="road">
+      <div class="ms">
+        <span class="w">Semana 0</span>
+        <h4>Acuerdo</h4>
+        <p>NDA y acuerdo piloto: alcance, comisión y responsables.</p>
+      </div>
+      <div class="ms">
+        <span class="w">Semanas 1–2</span>
+        <h4>Onboarding</h4>
+        <p>Catálogo, precios, accesos y capacitación del equipo.</p>
+      </div>
+      <div class="ms">
+        <span class="w">Semanas 3–8</span>
+        <h4>Operación</h4>
+        <p>Venta, activación y acompañamiento en campo.</p>
+      </div>
+      <div class="ms">
+        <span class="w">Semanas 9–11</span>
+        <h4>Medición</h4>
+        <p>Revisión de indicadores, ajustes y conciliación.</p>
+      </div>
+      <div class="ms">
+        <span class="w">Semana 12</span>
+        <h4>Decisión</h4>
+        <p>Escalar, ajustar o cerrar el piloto.</p>
+      </div>
+    </div>
+
+    <h2 class="sub">Qué se necesita de la empresa</h2>
+    <div class="grid-2">
+      <ul class="ticks">
+        <li>Un responsable interno con mandato para decidir.</li>
+        <li>Acceso a la base de clientes y a su cartera activa.</li>
+      </ul>
+      <ul class="ticks">
+        <li>Catálogo y precios vigentes para la carga inicial.</li>
+        <li>Equipo comercial y logística asignados al piloto.</li>
+      </ul>
+    </div>
+
+    <h2 class="sub">Riesgos del piloto y mitigación</h2>
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th style="width:30%">Riesgo</th>
+          <th>Mitigación acordada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="key">Baja adopción inicial</td>
+          <td>Selección conjunta de clientes con volumen y recurrencia, con acompañamiento en las primeras semanas.</td>
+        </tr>
+        <tr>
+          <td class="key">Presión sobre la logística</td>
+          <td>Alcance acotado a una zona y una categoría, con cupo de pedidos controlado.</td>
+        </tr>
+        <tr>
+          <td class="key">Diferencias en la conciliación</td>
+          <td>Corte mensual único, reporte por cliente y derecho de auditoría sobre la comisión.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="nda">
+      <h3>Confidencialidad como condición previa</h3>
+      <p>
+        La apertura de especificaciones técnicas, documentación funcional, accesos operativos y
+        cualquier detalle de la plataforma está sujeta a la firma previa de un
+        <strong>Acuerdo de Confidencialidad (NDA)</strong> entre pideaca y [Nombre de la Empresa].
+        Este anteproyecto no constituye una oferta vinculante ni transfiere derechos sobre la
+        propiedad intelectual de pideaca.
+      </p>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">07 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+<!-- ============================ 08 · CIERRE ============================ -->
+<section class="page page-close">
+  <header class="sheet-head">
+    <img class="brand" src="logo-pideaca.png" alt="pideaca" />
+    <div class="h-meta">
+      <span class="h-kicker">Anteproyecto · Distribución estratégica</span>
+      <span class="h-sub">pideaca &amp; [Nombre de la Empresa]</span>
+    </div>
+  </header>
+
+  <div class="body">
+    <div class="sec-eyebrow"><span class="num">06</span><span class="rule"></span><span>Cierre</span></div>
+    <h1 class="sec-title">Siguiente paso</h1>
+    <p class="lead">
+      Tres pasos, sin ambigüedad: proteger la información, acordar el piloto y empezar a medir.
+      La decisión de escalar se toma con resultados sobre la mesa, no con proyecciones.
+    </p>
+
+    <div class="next-grid mt-6">
+      <div class="next">
+        <div class="step-n">01</div>
+        <h4>Acuerdo de confidencialidad</h4>
+        <p>Firma del NDA y designación de un responsable por cada parte.</p>
+      </div>
+      <div class="next">
+        <div class="step-n">02</div>
+        <h4>Acuerdo piloto</h4>
+        <p>Alcance, comisión, indicadores y calendario de 90 días.</p>
+      </div>
+      <div class="next">
+        <div class="step-n">03</div>
+        <h4>Kickoff</h4>
+        <p>Onboarding, capacitación del equipo y primera venta.</p>
+      </div>
+    </div>
+
+    <div class="closing">
+      <strong>Quedamos a disposición</strong> para revisar esta propuesta con el equipo directivo y
+      ajustar el alcance del piloto a la realidad comercial de la empresa.
+    </div>
+
+    <div class="close-quote">
+      <p>El siguiente paso no requiere inversión:<br />requiere una decisión.</p>
+    </div>
+
+    <div class="grid-2 mt-6">
+      <div>
+        <div class="mini-h">Contacto comercial</div>
+        <p style="margin:0;font-size:8.8pt;color:var(--slate);">pideaca · Equipo Comercial</p>
+      </div>
+      <div>
+        <div class="mini-h">Vigencia del documento</div>
+        <p style="margin:0;font-size:8.8pt;color:var(--slate);">Versión 1.0 · Emitido el 29 de octubre de 2026</p>
+      </div>
+    </div>
+
+    <div class="signs">
+      <div class="sign">
+        <div class="party">Por pideaca</div>
+        <div class="who">Nombre y cargo</div>
+        <div class="line">
+          <div class="cap">Firma y fecha</div>
+        </div>
+      </div>
+      <div class="sign">
+        <div class="party">Por [Nombre de la Empresa]</div>
+        <div class="who">Nombre y cargo</div>
+        <div class="line">
+          <div class="cap">Firma y fecha</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="foot-rule"></div>
+    <div class="foot-row">
+      <span>Confidencial · Propiedad intelectual de pideaca</span>
+      <span class="foot-num">08 / 08</span>
+    </div>
+    <p class="foot-legal">Prohibida su reproducción o divulgación total o parcial sin autorización escrita de pideaca. © 2026 pideaca. Todos los derechos reservados.</p>
+  </footer>
+</section>
+
+</body>
+</html>

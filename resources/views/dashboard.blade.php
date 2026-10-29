@@ -230,11 +230,13 @@
                     @php
                         $esPerfilPrestador = strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0;
                         $esPerfilCliente = strcasecmp((string) $user->typeUser?->description, 'Cliente') === 0;
-                        $perfilPanelInicial = $esPerfilPrestador ? 'negocio' : ($esPerfilCliente ? 'direccion' : 'cuenta');
+                        $esPerfilRepartidor = strcasecmp((string) $user->typeUser?->description, 'Repartidor') === 0;
+                        $perfilPanelInicial = $esPerfilPrestador ? 'negocio' : ($esPerfilCliente ? 'direccion' : ($esPerfilRepartidor ? 'vehiculo' : 'cuenta'));
                         $perfilEtiquetas = [
                             'negocio' => 'Datos del Negocio',
                             'direccion' => 'Mi Dirección',
                             'cuenta' => 'Contraseñas',
+                            'vehiculo' => 'Mi Vehículo',
                         ];
                         $estadoPerfil = $user->status?->status ?? '-';
                         $estadoPerfilKey = strtolower(trim($estadoPerfil));
@@ -278,6 +280,12 @@
                             <a href="#" onclick="event.preventDefault();showProfilePanel('categorias')" class="sidebar-link" data-panel="categorias" id="sidebar-link-categorias">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path d="M6 6h.008v.008H6V6Z"/></svg>
                                 <span>Categorias</span>
+                            </a>
+                            @endif
+                            @if($esPerfilRepartidor)
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('vehiculo')" class="sidebar-link{{ $perfilPanelInicial === 'vehiculo' ? ' active' : '' }}" data-panel="vehiculo" id="sidebar-link-vehiculo">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                <span>Mi Vehículo</span>
                             </a>
                             @endif
                             <a href="#" onclick="event.preventDefault();showProfilePanel('direccion')" class="sidebar-link{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion" id="sidebar-link-direccion">
@@ -463,6 +471,39 @@
                                     <div id="profile-usuarios-slot"></div>
                                 </div>
 
+                                @if($esPerfilRepartidor)
+                                @php
+                                    $selectedVehicle = $user->vehicle_type ?: \App\Models\User::DEFAULT_VEHICLE_TYPE;
+                                @endphp
+                                <div class="profile-panel{{ $perfilPanelInicial === 'vehiculo' ? ' active' : '' }}" data-panel="vehiculo">
+                                    <div class="pcard">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Mi Vehículo</h3>
+                                        <p class="pcard-sub">Configurá con qué unidad trabajás. Se usa para asignarte los pedidos y se guarda automáticamente.</p>
+                                        <div class="profile-field-grid">
+                                            <div>
+                                                <label class="field-label" for="profile-vehicle">Tipo de vehículo</label>
+                                                <select id="profile-vehicle" class="field-input">
+                                                    @foreach(\App\Models\User::VEHICLE_TYPES as $vehicleValue => $vehicleLabel)
+                                                        <option value="{{ $vehicleValue }}" @selected($selectedVehicle === $vehicleValue)>{{ $vehicleLabel }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <span class="err-msg" id="profile-vehicle-error"></span>
+                                            </div>
+                                            <div>
+                                                <label class="field-label" for="profile-vehicle-plate">Patente / Placa <span style="font-weight:500;text-transform:none;letter-spacing:0;color:#94a3b8;">(opcional)</span></label>
+                                                <input type="text" id="profile-vehicle-plate" class="field-input" value="{{ $user->vehicle_plate }}" placeholder="Ej: AB123CD" maxlength="20" autocomplete="off" />
+                                                <span class="err-msg" id="profile-vehicle-plate-error"></span>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
+                                            <span class="save-msg" id="profile-vehicle-msg" aria-live="polite"></span>
+                                            <button type="button" onclick="submitVehicle()" title="Guardar vehículo" aria-label="Guardar vehículo" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
                                 <div class="profile-panel{{ $perfilPanelInicial === 'cuenta' ? ' active' : '' }}" data-panel="cuenta">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Datos personales</h3>
@@ -9862,7 +9903,8 @@
         categorias: 'Categorias',
         direccion: 'Mi Dirección',
         usuarios: 'Usuarios',
-        cuenta: 'Contraseñas'
+        cuenta: 'Contraseñas',
+        vehiculo: 'Mi Vehículo'
     };
 
     var profileUsuariosActive = false;
@@ -11296,6 +11338,157 @@
             showMsg('profile-msg', 'Error de conexión.', false);
         });
     }
+
+    /* ── Vehículo del repartidor: Terminal Central + Perfil ── */
+    // Ambos selectores (#drv-vehicle en el dashboard y #profile-vehicle en
+    // "Datos del Vehículo") comparten el mismo valor persistido en users.
+    var VEHICLE_TYPES = @json(\App\Models\User::VEHICLE_TYPES);
+    var VEHICLE_DEFAULT_TYPE = @json(\App\Models\User::DEFAULT_VEHICLE_TYPE);
+    var vehicleSaving = false;
+
+    function vehicleMsgId(sourceEl) {
+        return sourceEl && sourceEl.id === 'drv-vehicle' ? 'drv-vehicle-msg' : 'profile-vehicle-msg';
+    }
+
+    function setVehicleFeedback(sourceEl, text, tone) {
+        var el = document.getElementById(vehicleMsgId(sourceEl));
+        if (!el) return;
+        clearTimeout(el._vehicleTimer);
+        if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+        el.textContent = text;
+        el.className = 'save-msg';
+        el.style.color = tone === 'error' ? '#dc2626' : (tone === 'success' ? '#059669' : '#64748b');
+        el.style.display = 'inline';
+        if (tone !== 'loading') {
+            el._vehicleTimer = setTimeout(function () { el.style.display = 'none'; }, 3500);
+        }
+    }
+
+    function vehicleSelects() {
+        return ['drv-vehicle', 'profile-vehicle']
+            .map(function (id) { return document.getElementById(id); })
+            .filter(Boolean);
+    }
+
+    function setVehicleSaving(on) {
+        vehicleSaving = on;
+        vehicleSelects().forEach(function (sel) { sel.disabled = on; });
+        var btn = document.querySelector('button[onclick="submitVehicle()"]');
+        if (btn) {
+            btn.disabled = on;
+            btn.style.opacity = on ? '0.6' : '1';
+            btn.style.cursor = on ? 'wait' : 'pointer';
+        }
+    }
+
+    function applyVehicle(type, plate) {
+        if (type && VEHICLE_TYPES[type]) {
+            vehicleSelects().forEach(function (sel) {
+                sel.value = type;
+                sel.dataset.savedValue = type;
+            });
+        }
+        if (plate !== undefined) {
+            var plateEl = document.getElementById('profile-vehicle-plate');
+            if (plateEl) {
+                plateEl.value = plate || '';
+                plateEl.dataset.savedValue = (plate || '').trim();
+            }
+        }
+    }
+
+    window.pideacaSaveVehicle = function (sourceEl) {
+        if (!sourceEl || vehicleSaving) return;
+
+        var fromProfile = sourceEl.id === 'profile-vehicle';
+        var plateEl = document.getElementById('profile-vehicle-plate');
+        var payload = { vehicle_type: sourceEl.value };
+        if (fromProfile && plateEl) payload.vehicle_plate = plateEl.value.trim();
+
+        var previous = sourceEl.dataset.savedValue || sourceEl.value;
+
+        // Nada cambió respecto de lo guardado: no malgastamos el request.
+        if (previous === payload.vehicle_type
+            && (!fromProfile || (plateEl && plateEl.value.trim() === (plateEl.dataset.savedValue || '')))) {
+            return;
+        }
+
+        setVehicleFeedback(sourceEl, 'Guardando…', 'loading');
+        setVehicleSaving(true);
+
+        fetch('{{ url("/api/driver/vehicle") }}', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) {
+            return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+        })
+        .then(function (res) {
+            var data = res.data || {};
+            if (!res.ok || data.status !== 'success') {
+                var firstError = data.errors
+                    ? ((data.errors.vehicle_type && data.errors.vehicle_type[0]) || (data.errors.vehicle_plate && data.errors.vehicle_plate[0]))
+                    : '';
+                var msg = data.message || firstError || 'No se pudo actualizar el vehículo.';
+                sourceEl.value = previous;
+                setVehicleFeedback(sourceEl, msg, 'error');
+                fdToast(msg, true);
+                return;
+            }
+            applyVehicle(data.vehicle_type, data.vehicle_plate);
+            setVehicleFeedback(sourceEl, data.message || 'Vehículo actualizado', 'success');
+            fdToast('Vehículo actualizado', false);
+        })
+        .catch(function () {
+            sourceEl.value = previous;
+            setVehicleFeedback(sourceEl, 'Error de conexión. Intentá de nuevo.', 'error');
+            fdToast('No se pudo guardar el vehículo.', true);
+        })
+        .finally(function () {
+            setVehicleSaving(false);
+        });
+    };
+
+    function submitVehicle() {
+        var sel = document.getElementById('profile-vehicle');
+        if (sel) pideacaSaveVehicle(sel);
+    }
+
+    (function initVehiclePersistence() {
+        var profileSel = document.getElementById('profile-vehicle');
+        var plateEl = document.getElementById('profile-vehicle-plate');
+
+        // En el perfil el tipo de vehículo se guarda apenas cambia.
+        if (profileSel) {
+            profileSel.dataset.savedValue = profileSel.value || VEHICLE_DEFAULT_TYPE;
+            profileSel.addEventListener('change', submitVehicle);
+        }
+
+        // La patente se confirma al salir del campo, y solo si se tocó.
+        if (plateEl) {
+            plateEl.dataset.savedValue = (plateEl.value || '').trim();
+            plateEl.addEventListener('input', function () {
+                plateEl.dataset.dirty = '1';
+            });
+            plateEl.addEventListener('blur', function () {
+                if (!plateEl.dataset.dirty) return;
+                delete plateEl.dataset.dirty;
+                submitVehicle();
+            });
+        }
+
+        // En la Terminal Central se guarda apenas cambia el selector.
+        var drvSel = document.getElementById('drv-vehicle');
+        if (drvSel) {
+            drvSel.dataset.savedValue = drvSel.value || VEHICLE_DEFAULT_TYPE;
+            drvSel.addEventListener('change', function () { pideacaSaveVehicle(drvSel); });
+        }
+    })();
 
     var PW_EYE_ON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';
     var PW_EYE_OFF = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.774 3.162 10.066 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.63.6M17.25 12a7.5 7.5 0 0 1-12.75 3.75"/></svg>';

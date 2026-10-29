@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\DriverWallet;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class DeliveryOrderController extends Controller
 {
@@ -91,6 +93,53 @@ class DeliveryOrderController extends Controller
         }
 
         return redirect()->route('dashboard', ['section' => 'repartidor']);
+    }
+
+    /**
+     * Actualiza el tipo de vehiculo (y opcionalmente la patente) del
+     * repartidor autenticado. Se usa tanto desde la Terminal Central de
+     * Repartos como desde "Datos del Vehiculo" en el perfil.
+     */
+    public function updateVehicle(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user()->loadMissing('typeUser');
+
+        if (! $user->isDriver()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Solo los repartidores pueden actualizar su vehículo.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'vehicle_type' => ['required', 'string', Rule::in(array_keys(User::VEHICLE_TYPES))],
+            'vehicle_plate' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $attributes = [
+            'vehicle_type' => $data['vehicle_type'],
+        ];
+
+        // La patente es opcional: solo se pisa si el formulario la envio.
+        if ($request->exists('vehicle_plate')) {
+            $plate = trim((string) $request->input('vehicle_plate'));
+
+            $attributes['vehicle_plate'] = $plate !== '' ? mb_strtoupper($plate) : null;
+        }
+
+        $user->update($attributes);
+
+        return response()->json([
+            'status' => 'success',
+            'vehicle_type' => $user->vehicle_type,
+            'vehicle_plate' => $user->vehicle_plate,
+            'label' => $user->vehicleTypeLabel(),
+            'message' => 'Vehículo actualizado correctamente.',
+        ]);
     }
 
     /**

@@ -43,6 +43,8 @@
                     #dash-repartidor .drv-tool-label{font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;}
                     #dash-repartidor .drv-tool-select,.drv-tool-input{font-family:inherit;font-size:13px;font-weight:700;color:#0f172a;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0;padding:8px 11px;outline:none;transition:border-color .15s;}
                     #dash-repartidor .drv-tool-select:focus,.drv-tool-input:focus{border-color:#D24C19;}
+                    #dash-repartidor .drv-tool-select:disabled{opacity:.55;cursor:wait;}
+                    #dash-repartidor .drv-tool .save-msg{align-self:center;white-space:nowrap;}
                     #dash-repartidor .drv-tool-input{width:100%;font-weight:600;}
 
                     /* ── KPIs ── */
@@ -228,14 +230,15 @@
                     <div class="drv-toolbar">
                         <label class="drv-tool">
                             <span class="drv-tool-label">Vehículo:</span>
+                            @php
+                                $selectedVehicle = $user->vehicle_type ?: \App\Models\User::DEFAULT_VEHICLE_TYPE;
+                            @endphp
                             <select class="drv-tool-select" id="drv-vehicle">
-                                <option>Motocicleta (150cc)</option>
-                                <option>Motocicleta (250cc)</option>
-                                <option>Auto</option>
-                                <option>Camioneta</option>
-                                <option>Bicicleta</option>
-                                <option>A pie</option>
+                                @foreach(\App\Models\User::VEHICLE_TYPES as $vehicleValue => $vehicleLabel)
+                                    <option value="{{ $vehicleValue }}" @selected($selectedVehicle === $vehicleValue)>{{ $vehicleLabel }}</option>
+                                @endforeach
                             </select>
+                            <span class="save-msg" id="drv-vehicle-msg" aria-live="polite"></span>
                         </label>
                         <label class="drv-tool drv-tool--grow">
                             <span class="drv-tool-label">Zona de cobertura:</span>
@@ -355,7 +358,6 @@
                     var radarOn = true;
                     var connected = true;
                     var lastAvailableIds = [];
-                    var VEHICLE_KEY = 'drv_vehicle';
                     var ZONE_KEY = 'drv_zone';
                     var GOAL_KEY = 'drv_goal';
 
@@ -434,17 +436,14 @@
                         document.getElementById('drv-live-dot').style.background = connected ? '#22c55e' : '#f59e0b';
                     };
 
-                    /* ── Barra de contexto: vehículo y zona (persistidas) ── */
+                    /* ── Barra de contexto: vehículo (BD) y zona (local) ── */
+                    // El selector de vehiculo lo sincroniza y guarda el modulo
+                    // compartido del dashboard (#drv-vehicle / #profile-vehicle).
                     function initToolbar() {
-                        var v = document.getElementById('drv-vehicle');
                         var z = document.getElementById('drv-zone');
                         try {
-                            if (localStorage.getItem(VEHICLE_KEY) && v) v.value = localStorage.getItem(VEHICLE_KEY);
                             if (localStorage.getItem(ZONE_KEY) && z) z.value = localStorage.getItem(ZONE_KEY);
                         } catch (e) { /* sin storage */ }
-                        if (v) v.addEventListener('change', function () {
-                            try { localStorage.setItem(VEHICLE_KEY, v.value); } catch (e) {}
-                        });
                         if (z) z.addEventListener('input', function () {
                             try { localStorage.setItem(ZONE_KEY, z.value); } catch (e) {}
                         });
