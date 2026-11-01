@@ -415,7 +415,7 @@ class ProviderPanelTest extends TestCase
 
     public function test_dashboard_renders_the_catalog_and_orders_sections_for_a_prestador(): void
     {
-        $response = $this->actingAs($this->owner)->get('/dashboard');
+        $response = $this->actingAs($this->owner)->get('/');
 
         $response->assertOk();
 
@@ -461,7 +461,7 @@ class ProviderPanelTest extends TestCase
 
     public function test_provider_orders_are_split_into_today_and_history_tabs(): void
     {
-        $html = $this->actingAs($this->owner)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->owner)->get('/')->assertOk()->getContent();
 
         // Dos pestañas con sus contadores
         $this->assertStringContainsString('id="fd-orders-tab-today"', $html);
@@ -490,8 +490,10 @@ class ProviderPanelTest extends TestCase
         $this->assertStringContainsString("fdOrdersActive === 'history' ? 'flex' : 'none'", $html);
         $this->assertStringContainsString("if (fdOrdersActive === 'history' && fdOrdersRangeActive())", $html);
 
-        // El resumen cuenta los pedidos de cada pestaña con los del servidor
-        $this->assertStringContainsString("' de hoy · ' + (fdOrdersCounts.history || 0) + ' en historial'", $html);
+        // Los contadores de cada pestaña se pintan con los totales del servidor
+        $this->assertStringContainsString('fdOrdersCounts = Object.assign({ today: 0, history: 0', $html);
+        $this->assertStringContainsString("document.getElementById('fd-orders-count-' + key)", $html);
+        $this->assertStringContainsString('badge.textContent = count;', $html);
     }
 
     public function test_dashboard_hides_the_prestador_sections_from_a_cliente(): void
@@ -504,7 +506,7 @@ class ProviderPanelTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response = $this->actingAs($clienteUser)->get('/dashboard');
+        $response = $this->actingAs($clienteUser)->get('/');
 
         $response->assertOk()
             ->assertDontSee('id="dash-mi-catalogo"', false)
@@ -521,7 +523,7 @@ class ProviderPanelTest extends TestCase
         ]);
         $sinComercio->pages()->attach([$this->miCatalogoId, $this->pedidosId]);
 
-        $response = $this->actingAs($sinComercio)->get('/dashboard');
+        $response = $this->actingAs($sinComercio)->get('/');
 
         $response->assertOk()
             ->assertSee('id="dash-mi-catalogo"', false)

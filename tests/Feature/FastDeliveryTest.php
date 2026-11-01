@@ -164,6 +164,22 @@ class FastDeliveryTest extends TestCase
         $this->assertCount(2, $response->json('categories.0.products.0.option_groups.0.options'));
     }
 
+    public function test_catalog_exposes_provider_pickup_address(): void
+    {
+        $address = Address::create([
+            'user_id' => $this->providerUser->id,
+            'country_id' => $this->country->id,
+            'street' => 'Calle del Local',
+            'number' => '55',
+            'is_primary' => true,
+        ]);
+
+        $this->getJson("/api/providers/{$this->provider->id}/catalog")
+            ->assertOk()
+            ->assertJsonPath('provider.address', $address->formatted)
+            ->assertJsonPath('provider.delivery_fee', (int) config('fastdelivery.delivery_fee'));
+    }
+
     public function test_catalog_can_filter_unavailable_items(): void
     {
         $response = $this->getJson("/api/providers/{$this->provider->id}/catalog?only_available=1");
@@ -242,6 +258,64 @@ class FastDeliveryTest extends TestCase
     public function test_guest_cannot_create_order(): void
     {
         $this->postJson('/api/orders', $this->payload())->assertStatus(401);
+    }
+
+    public function test_order_records_delivery_method_with_address_and_fee(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/orders', $this->payload(['delivery_type' => 'delivery']))
+            ->assertStatus(201);
+
+        $order = Order::firstOrFail();
+
+        $this->assertSame('delivery', $order->delivery_type);
+        $this->assertSame($this->address->id, $order->address_id);
+        $this->assertSame('3500.00', $order->delivery_fee);
+        $this->assertSame('pending', $order->delivery_status);
+    }
+
+    public function test_takeaway_order_has_no_address_and_no_delivery_fee(): void
+    {
+        $this->actingAs($this->customer)
+            ->postJson('/api/orders', $this->payload([
+                'delivery_type' => 'takeaway',
+                'address_id' => null,
+            ]))
+            ->assertStatus(201);
+
+        $order = Order::firstOrFail();
+
+        $this->assertSame('takeaway', $order->delivery_type);
+        $this->assertNull($order->address_id);
+        $this->assertSame('0.00', $order->delivery_fee);
+        $this->assertSame(Order::DELIVERY_STATUS_NOT_REQUIRED, $order->delivery_status);
+        $this->assertSame($order->subtotal, $order->total);
+    }
+
+    public function test_takeaway_order_is_not_offered_to_drivers(): void
+    {
+        $driver = User::create([
+            'name' => 'Repartidor de prueba',
+            'email' => 'repartidor.pedido@pideaca.com',
+            'password' => 'password',
+        ]);
+
+        $this->actingAs($this->customer)
+            ->postJson('/api/orders', $this->payload([
+                'delivery_type' => 'takeaway',
+                'address_id' => null,
+            ]))
+            ->assertStatus(201);
+
+        $order = Order::firstOrFail();
+        $order->update(['status' => Order::STATUS_IN_PREPARATION]);
+
+        $response = $this->actingAs($driver)->getJson('/api/v1/delivery/orders');
+        $response->assertOk();
+
+        $ids = collect($response->json('orders'))->pluck('id')->all();
+
+        $this->assertNotContains($order->id, $ids);
     }
 
     public function test_order_rejects_address_from_another_user(): void

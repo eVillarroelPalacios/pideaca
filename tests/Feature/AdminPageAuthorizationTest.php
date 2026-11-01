@@ -121,7 +121,7 @@ class AdminPageAuthorizationTest extends TestCase
 
         $this->cliente->pages()->syncWithoutDetaching([$this->usuarios->id, $sinUrl->id]);
 
-        $response = $this->actingAs($this->cliente)->get('/dashboard');
+        $response = $this->actingAs($this->cliente)->get('/');
 
         $response->assertOk()
             ->assertDontSee("showDashSection('')", false)

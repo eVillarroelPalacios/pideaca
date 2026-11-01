@@ -138,7 +138,7 @@ class CommerceModulePagesUiTest extends TestCase
         $this->assertTrue($urls->contains('suscripciones'));
         $this->assertFalse($urls->contains('mis-suscripciones'));
 
-        $this->get('/dashboard')
+        $this->get('/')
             ->assertOk()
             ->assertSee('dash-finanzas', false)
             ->assertSee('dash-retencion', false)
@@ -153,7 +153,7 @@ class CommerceModulePagesUiTest extends TestCase
     {
         $this->actingAs($this->prestador);
 
-        $html = $this->get('/dashboard')->assertOk()->getContent();
+        $html = $this->get('/')->assertOk()->getContent();
 
         // Sidebar a la izquierda con una entrada por campana de retencion
         $this->assertStringContainsString('id="ret-sidebar"', $html);
@@ -194,7 +194,7 @@ class CommerceModulePagesUiTest extends TestCase
     {
         $this->actingAs($this->prestador);
 
-        $html = $this->get('/dashboard')->assertOk()->getContent();
+        $html = $this->get('/')->assertOk()->getContent();
 
         // html, body { height:100% } dejaba la caja del body igual al viewport:
         // el nav sticky se despegaba al scrollear y el header quedaba cortado.
@@ -214,7 +214,7 @@ class CommerceModulePagesUiTest extends TestCase
         $this->assertFalse($urls->contains('retencion'));
         $this->assertFalse($urls->contains('suscripciones'));
 
-        $this->get('/dashboard')
+        $this->get('/')
             ->assertOk()
             ->assertSee('dash-mis-suscripciones', false)
             ->assertSee('loadMySubscriptions()', false)
@@ -226,7 +226,7 @@ class CommerceModulePagesUiTest extends TestCase
     {
         $this->actingAs($this->cliente);
 
-        $html = $this->get('/dashboard')->assertOk()->getContent();
+        $html = $this->get('/')->assertOk()->getContent();
 
         // La tarjeta del comercio pasa id y nombre a la suscripcion
         $this->assertStringContainsString('function fdSubscribeToProvider(providerId, providerName)', $html);
@@ -253,7 +253,7 @@ class CommerceModulePagesUiTest extends TestCase
     {
         $this->actingAs($this->cliente);
 
-        $html = $this->get('/dashboard')->assertOk()->getContent();
+        $html = $this->get('/')->assertOk()->getContent();
 
         // Entrar a Mis Suscripciones desde el nav habilita el combo de comercios
         $this->assertStringContainsString("if (key === 'mis-suscripciones') {", $html);
@@ -293,7 +293,7 @@ class CommerceModulePagesUiTest extends TestCase
     {
         $this->actingAs($this->prestador);
 
-        $html = $this->get('/dashboard')->assertOk()->getContent();
+        $html = $this->get('/')->assertOk()->getContent();
 
         // Sidebar a la izquierda con una entrada por seccion
         $this->assertStringContainsString('id="fin-sidebar"', $html);

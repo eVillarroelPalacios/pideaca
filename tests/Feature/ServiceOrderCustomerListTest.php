@@ -256,7 +256,7 @@ class ServiceOrderCustomerListTest extends TestCase
 
     public function test_dashboard_renderiza_la_seccion_mis_servicios(): void
     {
-        $html = $this->actingAs($this->customer)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->customer)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="dash-mis-servicios"', $html);
         $this->assertStringContainsString("showDashSection('mis-servicios')", $html);

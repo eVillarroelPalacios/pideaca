@@ -20,36 +20,45 @@
                     /* ── Header ── */
                     #dash-repartidor .drv-header{background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);border-bottom:3px solid #D24C19;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-radius:0;}
                     #dash-repartidor .drv-brand{display:flex;align-items:center;gap:13px;}
-                    #dash-repartidor .drv-logo{width:46px;height:46px;border-radius:0;background:#fff;display:flex;align-items:center;justify-content:center;color:#D24C19;box-shadow:0 6px 16px rgba(0,0,0,.22);flex-shrink:0;}
+                    #dash-repartidor .drv-logo{width:46px;height:46px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;color:#D24C19;box-shadow:0 6px 16px rgba(0,0,0,.22);flex-shrink:0;}
                     #dash-repartidor .drv-logo svg{width:25px;height:25px;}
                     #dash-repartidor .drv-title{color:#fff;font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1.1;display:flex;align-items:center;gap:9px;}
-                    #dash-repartidor .drv-badge{background:#D24C19;color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:0;letter-spacing:.8px;}
+                    #dash-repartidor .drv-badge{display:inline-flex;align-items:center;background:#D24C19;color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:9999px;letter-spacing:.8px;line-height:1.5;}
                     #dash-repartidor .drv-subtitle{color:rgba(255,255,255,.68);font-size:12.5px;margin-top:4px;font-weight:500;}
                     #dash-repartidor .drv-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-                    #dash-repartidor .drv-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:700;padding:8px 15px;border-radius:0;cursor:pointer;transition:.15s;font-family:inherit;}
+                    #dash-repartidor .drv-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:700;padding:9px 16px;border-radius:9999px;cursor:pointer;transition:.15s;font-family:inherit;line-height:1;}
                     #dash-repartidor .drv-pill:hover{background:rgba(255,255,255,.18);}
-                    #dash-repartidor .drv-dot{width:8px;height:8px;border-radius:0;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.28);}
+                    #dash-repartidor .drv-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.28);flex:none;}
                     #dash-repartidor .drv-dot.paused{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.28);}
-                    #dash-repartidor .drv-avatar{width:42px;height:42px;border-radius:0;background:#D24C19;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border:2px solid rgba(255,255,255,.38);flex-shrink:0;}
-                    #dash-repartidor .drv-driver{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);padding:6px 12px 6px 6px;}
+                    #dash-repartidor .drv-avatar{width:42px;height:42px;border-radius:50%;background:#D24C19;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border:2px solid rgba(255,255,255,.38);flex-shrink:0;overflow:hidden;}
+                    #dash-repartidor .drv-driver{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:9999px;padding:5px 16px 5px 5px;}
                     #dash-repartidor .drv-driver-meta{display:flex;flex-direction:column;line-height:1.25;min-width:0;}
                     #dash-repartidor .drv-driver-name{color:#fff;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;}
-                    #dash-repartidor .drv-driver-id{color:rgba(255,255,255,.62);font-size:10.5px;font-weight:700;letter-spacing:.7px;}
+                    #dash-repartidor .drv-driver-id{display:inline-flex;align-items:center;width:fit-content;margin-top:2px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:9999px;padding:1px 8px;color:rgba(255,255,255,.72);font-size:10.5px;font-weight:700;letter-spacing:.7px;}
 
                     /* ── Barra de contexto: vehículo / zona / radar / GPS ── */
                     #dash-repartidor .drv-toolbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 24px;background:#fff;border-bottom:1px solid #e8edf3;}
                     #dash-repartidor .drv-tool{display:inline-flex;align-items:center;gap:8px;min-width:0;}
                     #dash-repartidor .drv-tool--grow{flex:1;min-width:220px;}
                     #dash-repartidor .drv-tool-label{font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#94a3b8;white-space:nowrap;}
-                    #dash-repartidor .drv-tool-select,.drv-tool-input{font-family:inherit;font-size:13px;font-weight:700;color:#0f172a;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0;padding:8px 11px;outline:none;transition:border-color .15s;}
-                    #dash-repartidor .drv-tool-select:focus,.drv-tool-input:focus{border-color:#D24C19;}
-                    #dash-repartidor .drv-tool-select:disabled{opacity:.55;cursor:wait;}
+                    #dash-repartidor .drv-tool-input{font-family:inherit;font-size:13px;font-weight:700;color:#0f172a;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9999px;padding:9px 16px;outline:none;transition:border-color .15s;}
+                    #dash-repartidor .drv-tool-input:focus{border-color:#D24C19;}
                     #dash-repartidor .drv-tool .save-msg{align-self:center;white-space:nowrap;}
                     #dash-repartidor .drv-tool-input{width:100%;font-weight:600;}
 
+                    /* ── Ficha del vehículo configurado (solo lectura) ── */
+                    #dash-repartidor .drv-vehicle-badge{display:inline-flex;align-items:center;gap:8px;background:#0c2a4d;color:#fff;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:9999px;letter-spacing:.2px;white-space:nowrap;}
+                    #dash-repartidor .drv-vehicle-plate{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:9999px;padding:3px 10px;font-size:11.5px;letter-spacing:1.2px;}
+                    #dash-repartidor .drv-vehicle-edit{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid #cbd5e1;color:#64748b;font-size:11.5px;font-weight:700;padding:8px 14px;border-radius:9999px;cursor:pointer;font-family:inherit;transition:.15s;}
+                    #dash-repartidor .drv-vehicle-edit:hover{color:#D24C19;border-color:#FED7AA;background:#FFF7ED;}
+                    #dash-repartidor .drv-vehicle-edit svg{width:13px;height:13px;}
+                    #dash-repartidor .drv-vehicle-setup{display:inline-flex;align-items:center;gap:7px;background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:9999px;cursor:pointer;font-family:inherit;transition:.15s;}
+                    #dash-repartidor .drv-vehicle-setup:hover{background:#FEE2E2;}
+                    #dash-repartidor .drv-vehicle-setup svg{width:15px;height:15px;}
+
                     /* ── KPIs ── */
                     #dash-repartidor .drv-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;padding:20px 24px 6px;}
-                    #dash-repartidor .drv-kpi{background:#fff;border:1px solid #e8edf3;border-radius:0;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(15,23,42,.05);}
+                    #dash-repartidor .drv-kpi{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(15,23,42,.05);}
                     #dash-repartidor .drv-kpi.accent{background:#FFF7ED;border-color:#FED7AA;}
                     #dash-repartidor .drv-kpi-label{font-size:10.5px;font-weight:800;color:#94a3b8;letter-spacing:.7px;text-transform:uppercase;line-height:1.4;}
                     #dash-repartidor .drv-kpi-body{min-width:0;flex:1;}
@@ -60,10 +69,10 @@
                     #dash-repartidor .drv-kpi-value .drv-kpi-delta{font-size:13px;font-weight:800;color:#16a34a;letter-spacing:0;margin-left:4px;}
                     #dash-repartidor .drv-kpi-value .drv-kpi-goal-of{font-size:13px;font-weight:700;color:#64748b;letter-spacing:0;}
                     #dash-repartidor .drv-kpi-sub{font-size:11px;font-weight:600;color:#94a3b8;margin-top:7px;}
-                    #dash-repartidor .drv-kpi-progress{height:6px;background:#e8edf3;margin-top:10px;overflow:hidden;}
-                    #dash-repartidor .drv-kpi-progress span{display:block;height:100%;background:#D24C19;transition:width .4s ease;}
+                    #dash-repartidor .drv-kpi-progress{height:6px;background:#e8edf3;border-radius:9999px;margin-top:10px;overflow:hidden;}
+                    #dash-repartidor .drv-kpi-progress span{display:block;height:100%;background:#D24C19;border-radius:9999px;transition:width .4s ease;}
                     #dash-repartidor .drv-kpi.kpi-goal{cursor:pointer;}
-                    #dash-repartidor .drv-kpi-icon{width:46px;height:46px;border-radius:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+                    #dash-repartidor .drv-kpi-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
                     #dash-repartidor .drv-kpi-icon svg{width:21px;height:21px;}
                     #dash-repartidor .ico-earn{background:#FFE3D0;color:#D24C19;}
                     #dash-repartidor .ico-done{background:#EEF2F7;color:#64748b;}
@@ -72,16 +81,16 @@
 
                     /* ── Tabs ── */
                     #dash-repartidor .drv-tabs-wrap{padding:18px 24px 0;}
-                    #dash-repartidor .drv-tabs{display:inline-flex;background:#e8edf3;border:1px solid #e2e8f0;border-radius:0;padding:5px;gap:4px;flex-wrap:wrap;}
-                    #dash-repartidor .drv-tab{display:inline-flex;align-items:center;gap:9px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:700;padding:10px 20px;border-radius:0;cursor:pointer;transition:.18s;font-family:inherit;}
+                    #dash-repartidor .drv-tabs{display:inline-flex;background:#e8edf3;border:1px solid #e2e8f0;border-radius:9999px;padding:5px;gap:4px;flex-wrap:wrap;}
+                    #dash-repartidor .drv-tab{display:inline-flex;align-items:center;gap:9px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:700;padding:10px 20px;border-radius:9999px;cursor:pointer;transition:.18s;font-family:inherit;}
                     #dash-repartidor .drv-tab:hover{color:#0f172a;}
                     #dash-repartidor .drv-tab.active{background:#fff;color:#D24C19;box-shadow:0 3px 8px rgba(15,23,42,.12);}
-                    #dash-repartidor .drv-count{min-width:23px;height:23px;padding:0 7px;border-radius:0;background:#D24C19;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;}
+                    #dash-repartidor .drv-count{min-width:23px;height:23px;padding:0 7px;border-radius:9999px;background:#D24C19;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;}
                     #dash-repartidor .drv-tab:not(.active) .drv-count{background:#cbd5e1;color:#475569;}
 
                     /* ── Radar row ── */
                     #dash-repartidor .drv-radar-row{display:flex;align-items:center;gap:16px;padding:16px 24px 0;flex-wrap:wrap;}
-                    #dash-repartidor .drv-radar{display:inline-flex;align-items:center;gap:8px;background:#FFF7ED;border:1px solid #FED7AA;color:#D24C19;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:0;cursor:pointer;transition:.15s;font-family:inherit;}
+                    #dash-repartidor .drv-radar{display:inline-flex;align-items:center;gap:8px;background:#FFF7ED;border:1px solid #FED7AA;color:#D24C19;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:9999px;cursor:pointer;transition:.15s;font-family:inherit;}
                     #dash-repartidor .drv-radar:hover{background:#FFE8D6;}
                     #dash-repartidor .drv-radar.off{background:#fff;border-color:#e2e8f0;color:#94a3b8;}
                     #dash-repartidor .drv-radar svg{width:15px;height:15px;}
@@ -91,19 +100,19 @@
 
                     /* ── Section head ── */
                     #dash-repartidor .drv-section-head{display:flex;align-items:center;gap:11px;padding:22px 24px 6px;flex-wrap:wrap;}
-                    #dash-repartidor .drv-section-dot{width:12px;height:12px;border-radius:0;background:#D24C19;flex-shrink:0;box-shadow:0 0 0 4px rgba(210,76,25,.14);}
+                    #dash-repartidor .drv-section-dot{width:12px;height:12px;border-radius:50%;background:#D24C19;flex-shrink:0;box-shadow:0 0 0 4px rgba(210,76,25,.14);}
                     #dash-repartidor .drv-section-title{font-size:18px;font-weight:800;color:#0f172a;letter-spacing:-.3px;}
                     #dash-repartidor .drv-section-hint{margin-left:auto;font-size:12px;color:#94a3b8;font-weight:500;}
-                    #dash-repartidor .drv-scroll-btn{width:36px;height:36px;border-radius:0;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.10);transition:.15s;}
+                    #dash-repartidor .drv-scroll-btn{width:36px;height:36px;border-radius:9999px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;color:#64748b;cursor:pointer;box-shadow:0 3px 8px rgba(15,23,42,.10);transition:.15s;}
                     #dash-repartidor .drv-scroll-btn:hover{color:#D24C19;border-color:#FED7AA;transform:translateY(2px);}
                     #dash-repartidor .drv-scroll-btn svg{width:17px;height:17px;}
 
                     /* ── List & cards ── */
                     #dash-repartidor .drv-list{padding:14px 24px 26px;display:flex;flex-direction:column;gap:16px;}
-                    #dash-repartidor .drv-card{background:#fff;border:1px solid #e8edf3;border-radius:0;padding:20px;box-shadow:0 4px 16px rgba(15,23,42,.05);transition:.18s;}
+                    #dash-repartidor .drv-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(15,23,42,.05);transition:.18s;}
                     #dash-repartidor .drv-card:hover{box-shadow:0 10px 26px rgba(15,23,42,.09);border-color:#e2e8f0;}
                     #dash-repartidor .drv-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;}
-                    #dash-repartidor .drv-order-no{font-size:11.5px;font-weight:800;color:#D24C19;background:#FFF7ED;border:1px solid #FED7AA;padding:4px 11px;border-radius:0;display:inline-block;letter-spacing:.2px;}
+                    #dash-repartidor .drv-order-no{font-size:11.5px;font-weight:800;color:#D24C19;background:#FFF7ED;border:1px solid #FED7AA;padding:5px 12px;border-radius:9999px;display:inline-block;letter-spacing:.2px;}
                     #dash-repartidor .drv-shop{font-size:16px;font-weight:800;color:#0f172a;margin-top:9px;letter-spacing:-.2px;}
                     #dash-repartidor .drv-shop-sub{font-size:12.5px;color:#64748b;margin-top:3px;}
                     #dash-repartidor .drv-fee{text-align:right;flex-shrink:0;}
@@ -111,9 +120,9 @@
                     #dash-repartidor .drv-fee-label{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.6px;}
 
                     /* ── Route ── */
-                    #dash-repartidor .drv-route{display:flex;gap:15px;margin:18px 0 6px;padding:16px;background:#f8fafc;border:1px solid #eef2f7;border-radius:0;}
+                    #dash-repartidor .drv-route{display:flex;gap:15px;margin:18px 0 6px;padding:16px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;}
                     #dash-repartidor .drv-rail{display:flex;flex-direction:column;align-items:center;padding-top:4px;}
-                    #dash-repartidor .drv-node{width:13px;height:13px;border-radius:0;flex-shrink:0;}
+                    #dash-repartidor .drv-node{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
                     #dash-repartidor .drv-node.origin{background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.16);}
                     #dash-repartidor .drv-node.dest{background:#D24C19;box-shadow:0 0 0 4px rgba(210,76,25,.16);}
                     #dash-repartidor .drv-line{width:2px;flex:1;min-height:40px;background:repeating-linear-gradient(to bottom,#cbd5e1 0 5px,transparent 5px 10px);margin:5px 0;}
@@ -124,38 +133,38 @@
 
                     /* ── Chips ── */
                     #dash-repartidor .drv-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;}
-                    #dash-repartidor .drv-chip{font-size:11px;font-weight:700;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 11px;border-radius:0;display:inline-flex;align-items:center;gap:5px;}
+                    #dash-repartidor .drv-chip{font-size:11px;font-weight:700;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 12px;border-radius:9999px;display:inline-flex;align-items:center;gap:5px;}
                     #dash-repartidor .drv-chip svg{width:12px;height:12px;}
                     #dash-repartidor .drv-chip.hot{background:#FFF7ED;border-color:#FED7AA;color:#D24C19;}
                     #dash-repartidor .drv-chip.ok{background:#F0FDF4;border-color:#BBF7D0;color:#16a34a;}
 
                     /* ── Buttons ── */
-                    #dash-repartidor .drv-take{width:100%;background:#D24C19;color:#fff;border:none;border-radius:0;padding:16px;font-size:15px;font-weight:800;letter-spacing:.3px;cursor:pointer;box-shadow:0 8px 20px rgba(210,76,25,.30);transition:.16s;display:flex;align-items:center;justify-content:center;gap:9px;font-family:inherit;}
+                    #dash-repartidor .drv-take{width:100%;background:#D24C19;color:#fff;border:none;border-radius:8px;padding:16px;font-size:15px;font-weight:800;letter-spacing:.3px;cursor:pointer;box-shadow:0 8px 20px rgba(210,76,25,.30);transition:.16s;display:flex;align-items:center;justify-content:center;gap:9px;font-family:inherit;}
                     #dash-repartidor .drv-take:hover{background:#bd4115;transform:translateY(-2px);box-shadow:0 12px 26px rgba(210,76,25,.36);}
                     #dash-repartidor .drv-take:active{transform:translateY(0);}
                     #dash-repartidor .drv-take svg{width:17px;height:17px;}
 
                     /* ── Viaje en curso ── */
                     #dash-repartidor .drv-section-dot.green{background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.15);}
-                    #dash-repartidor .drv-card--trip{border:2px solid #BBF7D0;background:#fff;box-shadow:0 6px 22px rgba(22,163,74,.08);border-radius:0;}
+                    #dash-repartidor .drv-card--trip{border:2px solid #BBF7D0;background:#fff;box-shadow:0 6px 22px rgba(22,163,74,.08);border-radius:14px;}
                     #dash-repartidor .drv-card--trip:hover{border-color:#86EFAC;box-shadow:0 12px 30px rgba(22,163,74,.13);}
                     
                     #dash-repartidor .drv-trip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
                     #dash-repartidor .drv-trip-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
-                    #dash-repartidor .drv-badge-progress{display:inline-flex;align-items:center;gap:7px;background:#16a34a;color:#fff;font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:0;letter-spacing:.2px;box-shadow:0 4px 10px rgba(22,163,74,.25);}
-                    #dash-repartidor .drv-badge-progress .pulse{width:7px;height:7px;border-radius:0;background:#fff;animation:drvPulse 1.4s ease-in-out infinite;}
+                    #dash-repartidor .drv-badge-progress{display:inline-flex;align-items:center;gap:7px;background:#16a34a;color:#fff;font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:9999px;letter-spacing:.2px;box-shadow:0 4px 10px rgba(22,163,74,.25);}
+                    #dash-repartidor .drv-badge-progress .pulse{width:7px;height:7px;border-radius:50%;background:#fff;animation:drvPulse 1.4s ease-in-out infinite;}
                     @keyframes drvPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.7);}}
                     #dash-repartidor .drv-gain{text-align:right;line-height:1.1;}
                     #dash-repartidor .drv-gain-label{font-size:12.5px;color:#64748b;font-weight:600;display:block;}
                     #dash-repartidor .drv-gain-value{font-size:29px;font-weight:800;color:#D24C19;letter-spacing:-.9px;}
 
                     #dash-repartidor .drv-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:17px 0 18px;}
-                    #dash-repartidor .drv-step{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;border-radius:0;font-size:12.5px;font-weight:800;background:#eef2f7;color:#94a3b8;text-align:center;transition:.2s;letter-spacing:-.1px;}
+                    #dash-repartidor .drv-step{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;border-radius:9999px;font-size:12.5px;font-weight:800;background:#eef2f7;color:#94a3b8;text-align:center;transition:.2s;letter-spacing:-.1px;}
                     #dash-repartidor .drv-step.done{background:#D24C19;color:#fff;box-shadow:0 4px 11px rgba(210,76,25,.24);}
                     #dash-repartidor .drv-step.current{background:#D24C19;color:#fff;box-shadow:0 5px 14px rgba(210,76,25,.34);}
                     #dash-repartidor .drv-step svg{width:14px;height:14px;flex-shrink:0;}
 
-                    #dash-repartidor .drv-info{background:#f8fafc;border:1px solid #eef2f7;border-radius:0;padding:17px 19px;display:flex;flex-direction:column;gap:15px;}
+                    #dash-repartidor .drv-info{background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:17px 19px;display:flex;flex-direction:column;gap:15px;}
                     #dash-repartidor .drv-info-label{font-size:10.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:#94a3b8;}
                     #dash-repartidor .drv-info-name{font-size:15px;font-weight:800;color:#0f172a;margin-top:5px;letter-spacing:-.2px;}
                     #dash-repartidor .drv-info-line{font-size:13px;color:#64748b;margin-top:3px;line-height:1.5;}
@@ -163,7 +172,7 @@
                     #dash-repartidor .drv-info-phone svg{width:13px;height:13px;}
                     
                     #dash-repartidor .drv-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px;}
-                    #dash-repartidor .drv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:0;padding:14px 20px;font-size:13.5px;font-weight:800;cursor:pointer;text-decoration:none;transition:.16s;font-family:inherit;border:none;}
+                    #dash-repartidor .drv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9999px;padding:14px 22px;font-size:13.5px;font-weight:800;cursor:pointer;text-decoration:none;transition:.16s;font-family:inherit;border:none;}
                     #dash-repartidor .drv-btn svg{width:16px;height:16px;}
                     #dash-repartidor .drv-btn-maps{background:#0c2a4d;color:#fff;box-shadow:0 6px 14px rgba(12,42,77,.22);}
                     #dash-repartidor .drv-btn-maps:hover{background:#123a63;transform:translateY(-1px);}
@@ -174,14 +183,14 @@
                     #dash-repartidor .drv-btn-done{background:#16a34a;color:#fff;box-shadow:0 6px 16px rgba(22,163,74,.30);margin-left:auto;}
                     #dash-repartidor .drv-btn-done:hover{background:#15803d;transform:translateY(-1px);}
                     
-                    #dash-repartidor .drv-pin-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;padding:14px;background:#F0FDF4;border:1px dashed #BBF7D0;border-radius:0;}
-                    #dash-repartidor .drv-pin{flex:1;min-width:170px;border:1px solid #cbd5e1;border-radius:0;padding:14px 15px;font-size:15px;font-weight:700;letter-spacing:3px;outline:none;font-family:inherit;background:#fff;text-align:center;}
+                    #dash-repartidor .drv-pin-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;padding:14px;background:#F0FDF4;border:1px dashed #BBF7D0;border-radius:12px;}
+                    #dash-repartidor .drv-pin{flex:1;min-width:170px;border:1px solid #cbd5e1;border-radius:12px;padding:14px 15px;font-size:15px;font-weight:700;letter-spacing:3px;outline:none;font-family:inherit;background:#fff;text-align:center;}
                     #dash-repartidor .drv-pin:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.14);}
                     #dash-repartidor .drv-pin-hint{font-size:11.5px;color:#64748b;width:100%;font-weight:600;}
 
                     /* ── Empty / loading ── */
-                    #dash-repartidor .drv-empty{background:#fff;border:2px dashed #e2e8f0;border-radius:0;padding:48px 26px;text-align:center;}
-                    #dash-repartidor .drv-empty-icon{width:80px;height:80px;border-radius:0;background:#FFF1E8;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#D24C19;}
+                    #dash-repartidor .drv-empty{background:#fff;border:2px dashed #e2e8f0;border-radius:14px;padding:48px 26px;text-align:center;}
+                    #dash-repartidor .drv-empty-icon{width:80px;height:80px;border-radius:50%;background:#FFF1E8;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#D24C19;}
                     #dash-repartidor .drv-empty-icon svg{width:34px;height:34px;}
                     #dash-repartidor .drv-empty-title{font-size:18px;font-weight:800;color:#0f172a;letter-spacing:-.3px;}
                     #dash-repartidor .drv-empty-sub{font-size:13.5px;color:#94a3b8;margin-top:9px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.65;}
@@ -227,19 +236,33 @@
                     </header>
 
                     {{-- ═══ Barra de contexto: vehículo, zona, radar y GPS ═══ --}}
-                    <div class="drv-toolbar">
-                        <label class="drv-tool">
+                    {{-- El vehículo es el que el repartidor configuró en su perfil --}}
+                    {{-- (Mi Panel > Mi Vehículo): acá se muestra como ficha de solo --}}
+                    {{-- lectura, con acceso directo a la edición. --}}
+                    @php
+                        $hasVehicle = filled($user->vehicle_type);
+                        $vehicleLabel = $user->vehicleTypeLabel();
+                        $vehiclePlate = $user->vehicle_plate;
+                    @endphp
+                    <div class="drv-toolbar" data-vehicle-configured="{{ $hasVehicle ? '1' : '0' }}">
+                        <div class="drv-tool" id="drv-vehicle-tool">
                             <span class="drv-tool-label">Vehículo:</span>
-                            @php
-                                $selectedVehicle = $user->vehicle_type ?: \App\Models\User::DEFAULT_VEHICLE_TYPE;
-                            @endphp
-                            <select class="drv-tool-select" id="drv-vehicle">
-                                @foreach(\App\Models\User::VEHICLE_TYPES as $vehicleValue => $vehicleLabel)
-                                    <option value="{{ $vehicleValue }}" @selected($selectedVehicle === $vehicleValue)>{{ $vehicleLabel }}</option>
-                                @endforeach
-                            </select>
-                            <span class="save-msg" id="drv-vehicle-msg" aria-live="polite"></span>
-                        </label>
+                            @if($hasVehicle)
+                                <span class="drv-vehicle-badge" id="drv-vehicle-badge" title="Unidad con la que trabajás (configurada en Mi Vehículo)">
+                                    🚘 {{ $vehicleLabel }}@if($vehiclePlate) • <span class="drv-vehicle-plate">{{ $vehiclePlate }}</span>@endif
+                                </span>
+                                <button type="button" class="drv-vehicle-edit" onclick="drvGoVehicleProfile()" title="Cambiar vehículo" aria-label="Cambiar vehículo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                                    Cambiar
+                                </button>
+                            @else
+                                <button type="button" class="drv-vehicle-setup" id="drv-vehicle-setup" onclick="drvGoVehicleProfile()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                                    Configurar vehículo
+                                </button>
+                                <span class="save-msg" style="display:inline;color:#b91c1c;font-weight:700;">Configurá tu unidad antes de recibir pedidos.</span>
+                            @endif
+                        </div>
                         <label class="drv-tool drv-tool--grow">
                             <span class="drv-tool-label">Zona de cobertura:</span>
                             <input type="text" class="drv-tool-input" id="drv-zone" placeholder="Ej: Almagro &amp; Caballito" />
@@ -402,6 +425,26 @@
                         return map[s] || (s || '—');
                     }
 
+                    /* ── Vehículo: acceso directo a "Mi Panel > Mi Vehículo" ── */
+                    // En el dashboard unificado el panel de perfil vive en la misma
+                    // página: se abre con showDashSection/showProfilePanel. Servida
+                    // la sección por fuera, se redirige al dashboard.
+                    window.drvGoVehicleProfile = function () {
+                        if (typeof showDashSection === 'function' && typeof showProfilePanel === 'function') {
+                            showDashSection('perfil');
+                            showProfilePanel('vehiculo');
+                            var sb = document.getElementById('profile-sidebar');
+                            if (sb) sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            return;
+                        }
+                        window.location.href = '{{ url("/") }}';
+                    };
+
+                    function vehicleConfigured() {
+                        var bar = document.querySelector('.drv-toolbar');
+                        return !bar || bar.dataset.vehicleConfigured === '1';
+                    }
+
                     /* ── Radar sonoro ── */
                     window.drvToggleRadar = function () {
                         radarOn = !radarOn;
@@ -436,9 +479,9 @@
                         document.getElementById('drv-live-dot').style.background = connected ? '#22c55e' : '#f59e0b';
                     };
 
-                    /* ── Barra de contexto: vehículo (BD) y zona (local) ── */
-                    // El selector de vehiculo lo sincroniza y guarda el modulo
-                    // compartido del dashboard (#drv-vehicle / #profile-vehicle).
+                    /* ── Barra de contexto: vehículo (ficha de solo lectura) y zona (local) ── */
+                    // El vehículo se muestra como ficha informativa tomada del perfil;
+                    // su edición vive en "Mi Panel > Mi Vehículo" (drvGoVehicleProfile).
                     function initToolbar() {
                         var z = document.getElementById('drv-zone');
                         try {
@@ -756,6 +799,13 @@
 
                     /* ── Acciones ── */
                     window.drvTakeOrder = function (orderId) {
+                        // Sin unidad configurada no se pueden recibir pedidos:
+                        // primero hay que completar "Mi Vehículo".
+                        if (!vehicleConfigured()) {
+                            alert('Configurá tu vehículo (tipo de unidad y, si querés, la patente) en Mi Panel > Mi Vehículo antes de tomar pedidos.');
+                            drvGoVehicleProfile();
+                            return;
+                        }
                         fetch('{{ url("/api/v1/delivery/orders") }}/' + orderId + '/take', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf() }

@@ -126,6 +126,7 @@ class OrderController extends Controller
                 'id' => $provider->id,
                 'business_name' => $provider->business_name,
                 'is_active' => (bool) $provider->is_active,
+                'trusted_drivers_enabled' => (bool) $provider->trusted_drivers_enabled,
             ],
             'statuses' => Order::STATUSES,
             'orders' => $mappedOrders,
@@ -166,6 +167,8 @@ class OrderController extends Controller
                     'provider:id,business_name,is_active,user_id',
                     // provider.user.phone alimenta el botón "Ayuda / Contacto".
                     'provider.user:id,name,phone',
+                    // Dirección del local para los pedidos con retiro.
+                    'provider.user.primaryAddress',
                     // driver alimenta el circuito: el cliente ve quién lo lleva.
                     'driver:id,name,phone',
                     'items.options',
@@ -181,6 +184,7 @@ class OrderController extends Controller
                     $providerRating = $order->ratings->first(fn ($r) => (int) $r->reviewer_id === (int) $order->provider?->user_id);
 
                     $arr = $order->toArray();
+                    $arr['pickup_address'] = $order->provider?->user?->primaryAddress?->formatted;
                     $arr['customer_rated'] = (bool) $customerRating;
                     $arr['customer_rating'] = $customerRating ? [
                         'stars' => $customerRating->stars,
@@ -300,7 +304,8 @@ class OrderController extends Controller
 
         $data = $request->validate([
             'provider_id' => ['required', 'integer', 'exists:providers,id'],
-            'address_id' => ['required', 'integer', 'exists:addresses,id'],
+            'delivery_type' => ['nullable', 'string', 'in:'.Order::DELIVERY_TYPE_DELIVERY.','.Order::DELIVERY_TYPE_TAKEAWAY],
+            'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
             'payment_method' => ['required', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1', 'max:'.config('fastdelivery.max_items_per_order')],
@@ -311,6 +316,8 @@ class OrderController extends Controller
             'items.*.options.*' => ['integer'],
         ]);
 
+        $deliveryType = $data['delivery_type'] ?? Order::DELIVERY_TYPE_DELIVERY;
+
         $provider = Provider::where('id', $data['provider_id'])->where('is_active', true)->first();
 
         if (! $provider) {
@@ -319,23 +326,39 @@ class OrderController extends Controller
             ]);
         }
 
-        $address = Address::where('id', $data['address_id'])
-            ->where('user_id', $user->id)
-            ->first();
+        // El retiro en el local no lleva direccion: el pedido se prepara en el
+        // comercio y queda fuera de la cola de repartidores.
+        $address = null;
 
-        if (! $address) {
-            throw ValidationException::withMessages([
-                'address_id' => 'La direccion de entrega no pertenece a tu usuario.',
-            ]);
+        if ($deliveryType === Order::DELIVERY_TYPE_DELIVERY) {
+            if (empty($data['address_id'])) {
+                throw ValidationException::withMessages([
+                    'address_id' => 'Selecciona la direccion de entrega.',
+                ]);
+            }
+
+            $address = Address::where('id', $data['address_id'])
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (! $address) {
+                throw ValidationException::withMessages([
+                    'address_id' => 'La direccion de entrega no pertenece a tu usuario.',
+                ]);
+            }
         }
 
-        $order = DB::transaction(function () use ($data, $provider, $user, $address) {
+        $order = DB::transaction(function () use ($data, $deliveryType, $provider, $user, $address) {
             $order = Order::create([
                 'provider_id' => $provider->id,
                 'user_id' => $user->id,
-                'address_id' => $address->id,
+                'address_id' => $address?->id,
                 'order_number' => Order::nextNumber(),
                 'status' => Order::STATUS_PENDING,
+                'delivery_type' => $deliveryType,
+                'delivery_status' => $deliveryType === Order::DELIVERY_TYPE_TAKEAWAY
+                    ? Order::DELIVERY_STATUS_NOT_REQUIRED
+                    : 'pending',
                 'payment_method' => $data['payment_method'],
                 'notes' => $data['notes'] ?? null,
             ]);
@@ -382,7 +405,9 @@ class OrderController extends Controller
 
             $this->inventory->applySale($provider, $order, $stockLines);
 
-            $deliveryFee = (float) config('fastdelivery.delivery_fee');
+            $deliveryFee = $deliveryType === Order::DELIVERY_TYPE_TAKEAWAY
+                ? 0.0
+                : (float) config('fastdelivery.delivery_fee');
 
             $order->update([
                 'subtotal' => $subtotal,

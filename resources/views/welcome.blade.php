@@ -1339,7 +1339,7 @@
                 loginSpinnerOverlay.style.display = 'flex';
                 if (r.data.user) sessionStorage.setItem('pideaca_user', JSON.stringify(r.data.user));
                 setTimeout(function () {
-                    window.location.href = '{{ url("/dashboard") }}';
+                    window.location.href = '{{ url("/") }}';
                 }, 1000);
             } else {
                 loginError.style.color = '#dc2626';

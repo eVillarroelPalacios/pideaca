@@ -74,7 +74,7 @@ class EstadosDeLosGruposTest extends TestCase
     {
         $this->seed(EstadosDeLosGruposPageSeeder::class);
 
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee("showDashSection('estados-grupos')", false)

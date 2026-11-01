@@ -115,7 +115,7 @@ class InventoryPageTest extends TestCase
     {
         $this->seed(InventoryPagesSeeder::class);
 
-        $response = $this->actingAs($this->prestadorUser)->get('/dashboard');
+        $response = $this->actingAs($this->prestadorUser)->get('/');
 
         $response->assertOk();
         $response->assertSee('id="dash-inventario"', false);
@@ -126,7 +126,7 @@ class InventoryPageTest extends TestCase
     {
         $this->seed(InventoryPagesSeeder::class);
 
-        $response = $this->actingAs($this->clienteUser)->get('/dashboard');
+        $response = $this->actingAs($this->clienteUser)->get('/');
 
         $response->assertOk();
         $response->assertDontSee('id="dash-inventario"', false);

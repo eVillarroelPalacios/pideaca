@@ -451,7 +451,7 @@ class ServiceOrderProviderOperationsTest extends TestCase
 
     public function test_el_dashboard_incluye_la_vista_operativa_compartida(): void
     {
-        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->providerUser)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="fd-so-modal"', $html);
         $this->assertStringContainsString('window.FdServicioUI', $html);

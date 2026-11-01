@@ -391,7 +391,7 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_renders_the_favorite_shops_tabs(): void
     {
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="fd-shops-tabs"', $html);
         $this->assertStringContainsString("fdShopsTab('favorites')", $html);
@@ -459,7 +459,7 @@ class ClientPanelTest extends TestCase
 
         // La pagina "Comercios" le pasa su modulo al listado
         $this->actingAs($this->client)
-            ->get('/dashboard')
+            ->get('/')
             ->assertOk()
             ->assertSee('data-module-id="'.$this->comerciosPage->module_id.'"', false);
 
@@ -635,7 +635,7 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_renders_the_client_sections(): void
     {
-        $response = $this->actingAs($this->client)->get('/dashboard');
+        $response = $this->actingAs($this->client)->get('/');
 
         $response->assertOk()
             ->assertSee('id="dash-comercios"', false)
@@ -664,7 +664,7 @@ class ClientPanelTest extends TestCase
 
     public function test_shop_confirm_button_sits_inside_the_shop_section_below_the_cart(): void
     {
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $cartPos = strpos($html, 'id="fd-shop-cart"');
         $btnPos = strpos($html, 'id="fd-shop-submit"');
@@ -687,7 +687,7 @@ class ClientPanelTest extends TestCase
 
     public function test_shop_has_a_category_combo_that_filters_the_catalog(): void
     {
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $comboPos = strpos($html, 'id="fd-shop-category"');
         $bodyPos = strpos($html, 'id="fd-shop-body"');
@@ -704,7 +704,7 @@ class ClientPanelTest extends TestCase
 
     public function test_shop_error_message_is_visible_next_to_the_confirm_button(): void
     {
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $cartPos = strpos($html, 'id="fd-shop-cart"');
         $msgPos = strpos($html, 'id="fd-shop-msg"');
@@ -723,7 +723,7 @@ class ClientPanelTest extends TestCase
 
     public function test_history_tab_shows_three_orders_per_page(): void
     {
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="fd-myorders-pagination" style="display:none;', $html);
         $this->assertStringContainsString('var FD_MYORDERS_PER_PAGE = 3;', $html);
@@ -746,7 +746,7 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_browser_back_stays_on_the_user_sections(): void
     {
-        $response = $this->actingAs($this->client)->get('/dashboard');
+        $response = $this->actingAs($this->client)->get('/');
 
         $response->assertOk()
             ->assertSee("history.pushState(state, '', ", false)
@@ -757,7 +757,7 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_does_not_show_client_sections_to_a_prestador(): void
     {
-        $response = $this->actingAs($this->providerUser)->get('/dashboard');
+        $response = $this->actingAs($this->providerUser)->get('/');
 
         $response->assertOk()
             ->assertDontSee('id="dash-comercios"', false)
@@ -768,7 +768,7 @@ class ClientPanelTest extends TestCase
     {
         // Todas las secciones arrancan con display:none: sin una llamada inicial
         // el dashboard quedaba completamente en blanco hasta hacer clic en el menú.
-        $response = $this->actingAs($this->client)->get('/dashboard');
+        $response = $this->actingAs($this->client)->get('/');
 
         $response->assertOk()
             ->assertSee("showDashSection('perfil');", false)
@@ -787,7 +787,7 @@ class ClientPanelTest extends TestCase
         $activo->update(['icon' => '<svg data-footer="activo"></svg>']);
         $inactivo->update(['icon' => '<svg data-footer="cerrado"></svg>']);
 
-        $html = $this->actingAs($this->client)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
         $pos = strpos($html, '<footer');
         $this->assertNotFalse($pos);
         $footer = substr($html, $pos);
@@ -801,11 +801,12 @@ class ClientPanelTest extends TestCase
 
     public function test_dashboard_renders_the_live_tracking_helpers(): void
     {
-        $response = $this->actingAs($this->client)->get('/dashboard');
+        $response = $this->actingAs($this->client)->get('/');
 
         $response->assertOk()
-            ->assertSee('var FD_TRACK_STEPS = [', false)
-            ->assertSee('function fdTrackHtml(status)', false)
+            ->assertSee('function fdMyOrdersSplit()', false)
+            ->assertSee('function fdMyOrdersRender(silent)', false)
+            ->assertSee('function fdMyOrdersLiveTitle(o)', false)
             ->assertSee('function loadMyOrders(silent)', false)
             ->assertSee('loadMyOrders(true)', false)
             ->assertSee('fdStartPolling(key)', false)
@@ -815,7 +816,7 @@ class ClientPanelTest extends TestCase
 
     public function test_provider_dashboard_renders_the_status_actions(): void
     {
-        $response = $this->actingAs($this->providerUser)->get('/dashboard');
+        $response = $this->actingAs($this->providerUser)->get('/');
 
         $response->assertOk()
             ->assertSee('var FD_ORDER_FLOW = {', false)

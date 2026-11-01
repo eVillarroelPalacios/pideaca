@@ -160,7 +160,7 @@ class UnitOfMeasureTest extends TestCase
 
     public function test_dashboard_renders_the_units_section(): void
     {
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee('id="dash-unidades-medida"', false)

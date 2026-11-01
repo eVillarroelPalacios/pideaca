@@ -91,23 +91,47 @@ class DriverVehicleTest extends TestCase
         $this->assertNull($customer->refresh()->vehicle_type);
     }
 
-    public function test_el_dashboard_preselecciona_el_vehiculo_y_la_patente_guardados(): void
+    public function test_el_dashboard_muestra_el_vehiculo_guardado_como_ficha_de_solo_lectura(): void
     {
         $this->driver->update([
             'vehicle_type' => 'bici',
             'vehicle_plate' => 'AB123CD',
         ]);
 
-        $response = $this->actingAs($this->driver)->get('/dashboard?section=repartidor');
+        $response = $this->actingAs($this->driver)->get('/?section=repartidor');
 
         $response->assertOk()
-            ->assertSee('id="drv-vehicle"', false)
+            ->assertSee('id="drv-vehicle-tool"', false)
+            ->assertSee('id="drv-vehicle-badge"', false)
             ->assertSee('id="profile-vehicle"', false)
             ->assertSee('Mi Vehículo')
             ->assertSee('AB123CD');
 
         $html = $response->getContent();
+
+        // La ficha informativa de la Terminal Central no es editable.
+        $this->assertStringNotContainsString('id="drv-vehicle"', $html);
+        $this->assertDoesNotMatchRegularExpression('/<select[^>]+id="drv-vehicle"/', $html);
+
+        // El tipo guardado aparece como etiqueta (ficha "Bicicleta") y el
+        // perfil sigue preseleccionando la opción correcta.
+        $this->assertStringContainsString('Bicicleta', $html);
         $this->assertMatchesRegularExpression('/<option value="bici"\s+selected>/', $html);
+
+        // Acceso directo a la edición del vehículo.
+        $this->assertStringContainsString('drvGoVehicleProfile', $html);
+    }
+
+    /** Sin unidad cargada aparece el aviso para configurarla (y nada de combo). */
+    public function test_sin_vehiculo_configurado_muestra_el_boton_de_configurar(): void
+    {
+        $html = $this->actingAs($this->driver)->get('/?section=repartidor')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Configurar vehículo', $html);
+        $this->assertStringContainsString('data-vehicle-configured="0"', $html);
+        $this->assertDoesNotMatchRegularExpression('/<select[^>]+id="drv-vehicle"/', $html);
     }
 
     /**
@@ -117,7 +141,7 @@ class DriverVehicleTest extends TestCase
      */
     public function test_el_repartidor_ve_una_entrada_de_vehiculo_en_el_sidebar_y_el_panel_abre_por_defecto(): void
     {
-        $html = $this->actingAs($this->driver)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->driver)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="sidebar-link-vehiculo"', $html);
         $this->assertStringContainsString('>Mi Vehículo</span>', $html);
@@ -137,7 +161,7 @@ class DriverVehicleTest extends TestCase
         $customer = User::factory()->create();
 
         $this->actingAs($customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertOk()
             ->assertDontSee('id="sidebar-link-vehiculo"', false)
             ->assertDontSee('id="profile-vehicle"', false);

@@ -115,7 +115,7 @@ class UserStatusTest extends TestCase
         );
         $this->admin->pages()->syncWithoutDetaching([$page->id]);
 
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee('id="userstatuses-table"', false)

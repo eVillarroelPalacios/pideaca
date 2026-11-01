@@ -34,7 +34,7 @@ class SubGroupGridTest extends TestCase
 
     public function test_subgroup_grid_renders_the_group_filter_combo(): void
     {
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee('id="subgroup-group-filter"', false)
@@ -45,7 +45,7 @@ class SubGroupGridTest extends TestCase
 
     public function test_subgroup_grid_filters_by_text_and_selected_group(): void
     {
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee("document.getElementById('subgroup-group-filter')", false)
@@ -58,7 +58,7 @@ class SubGroupGridTest extends TestCase
     {
         // El pintado post-carga y post-recarga pasa por los filtros: sin esto
         // la grilla se refrescaba completa ignorando el combo y el buscador.
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertSee('Promise.all([', false)
@@ -68,7 +68,7 @@ class SubGroupGridTest extends TestCase
 
     public function test_subgroup_grid_does_not_render_the_group_column(): void
     {
-        $response = $this->actingAs($this->admin)->get('/dashboard');
+        $response = $this->actingAs($this->admin)->get('/');
 
         $response->assertOk()
             ->assertDontSee('>Grupo</th>', false)

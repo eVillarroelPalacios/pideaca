@@ -29,6 +29,7 @@ class Provider extends Model
         'is_verified',
         'base_visit_fee',
         'has_inventory_control',
+        'trusted_drivers_enabled',
     ];
 
     protected $casts = [
@@ -39,6 +40,7 @@ class Provider extends Model
         'is_verified' => 'boolean',
         'base_visit_fee' => 'decimal:2',
         'has_inventory_control' => 'boolean',
+        'trusted_drivers_enabled' => 'boolean',
     ];
 
     public function user(): BelongsTo

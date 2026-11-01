@@ -208,7 +208,7 @@ class ServiceOrderProviderListTest extends TestCase
 
     public function test_dashboard_renderiza_la_seccion_del_prestador(): void
     {
-        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->providerUser)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="dash-ordenes-servicio"', $html);
         $this->assertStringContainsString("showDashSection('ordenes-servicio')", $html);
@@ -225,7 +225,7 @@ class ServiceOrderProviderListTest extends TestCase
         );
         $this->providerUser->pages()->attach($pagina->id);
 
-        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->providerUser)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="dash-gestionar-solicitudes"', $html);
         $this->assertStringContainsString('id="fd-gs-list"', $html);

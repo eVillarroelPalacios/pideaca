@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DriverWallet;
 use App\Models\Order;
+use App\Models\ProviderDriver;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
@@ -226,12 +227,19 @@ class DeliveryOrderController extends Controller
     /**
      * Lista los pedidos disponibles para el repartidor.
      * Debe mostrar pedidos con envío por repartidor que aún no tengan conductor asignado.
+     *
+     * Si el comercio tiene activa la opción de repartidores de confianza, el
+     * pedido solo se muestra a los repartidores activos de su lista (o a todo
+     * el pool cuando el comercio lo liberó manualmente). No hay timer ni
+     * liberación automática: el pedido espera a la lista del comercio.
      */
     public function availableOrders(Request $request)
     {
         if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
         }
+
+        $user = Auth::user();
 
         $orders = Order::with([
             'provider:id,business_name,phone,zone',
@@ -263,6 +271,20 @@ class DeliveryOrderController extends Controller
                 ])
                     ->orWhereRaw('LOWER(status) LIKE ?', ['%prepar%'])
                     ->orWhereRaw('LOWER(status) LIKE ?', ['%ready%']);
+            })
+            ->where(function ($q) use ($user) {
+                // Visible para todos: pedido liberado manualmente al pool o
+                // comercio sin la modalidad de confianza activa.
+                $q->whereNotNull('orders.released_to_pool_at')
+                    ->orWhereDoesntHave('provider', fn ($provider) => $provider
+                        ->where('trusted_drivers_enabled', true))
+                    // Modalidad cerrada: solo los repartidores de la lista.
+                    ->orWhereHas('provider', function ($provider) use ($user) {
+                        $provider->where('trusted_drivers_enabled', true)
+                            ->whereHas('providerDrivers', fn ($trusted) => $trusted
+                                ->where('user_id', $user->id)
+                                ->where('status', 'active'));
+                    });
             })
             ->latest()
             ->get();
@@ -298,18 +320,79 @@ class DeliveryOrderController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($order, $user) {
-            $order->update([
+        if (! $this->driverCanTakeTrustedOrder($order, $user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este pedido está reservado para los repartidores de confianza del comercio.',
+            ], 403);
+        }
+
+        $assigned = DB::transaction(function () use ($order, $user) {
+            // Bloqueo pesimista: evita que dos repartidores tomen el mismo
+            // pedido y revalida la restriccion de confianza con datos frescos.
+            $locked = Order::query()->whereKey($order->getKey())->lockForUpdate()->first();
+
+            if (! $locked || ! empty($locked->driver_id)) {
+                return false;
+            }
+
+            if (! is_null($locked->delivery_status)
+                && ! in_array($locked->delivery_status, ['pending', 'assigned'], true)) {
+                return false;
+            }
+
+            if (! $this->driverCanTakeTrustedOrder($locked, $user)) {
+                return false;
+            }
+
+            $locked->update([
                 'driver_id' => $user->id,
                 'delivery_status' => 'assigned',
             ]);
+
+            return true;
         });
+
+        if (! $assigned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este pedido ya no está disponible para tomar.',
+            ], 422);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Pedido asignado correctamente.',
-            'order' => $order->load(['provider:id,business_name,phone,zone', 'address', 'driver:id,name,phone']),
+            'order' => $order->fresh()->load(['provider:id,business_name,phone,zone', 'address', 'driver:id,name,phone']),
         ]);
+    }
+
+    /**
+     * Restriccion de despacho por repartidores de confianza.
+     *
+     * No hay fallback por tiempo: si el comercio activo la modalidad, el
+     * pedido solo lo pueden tomar los repartidores activos de su lista hasta
+     * que el comercio lo libere manualmente al pool general.
+     */
+    private function driverCanTakeTrustedOrder(Order $order, User $user): bool
+    {
+        if ($order->isReleasedToPool()) {
+            return true;
+        }
+
+        $provider = $order->relationLoaded('provider')
+            ? $order->provider
+            : $order->provider()->first();
+
+        if (! $provider || ! $provider->trusted_drivers_enabled) {
+            return true;
+        }
+
+        return ProviderDriver::query()
+            ->where('provider_id', $provider->id)
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
     }
 
     /**

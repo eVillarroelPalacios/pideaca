@@ -169,7 +169,7 @@ class FastDeliveryPagesTest extends TestCase
 
         $user = $this->registrar('Cliente Del Menu', 'cliente.menu@example.com', $this->cliente);
 
-        $this->actingAs($user)->get('/dashboard')
+        $this->actingAs($user)->get('/')
             ->assertOk()
             ->assertSee('Pide acá')
             ->assertSee('Comercios')
@@ -187,7 +187,7 @@ class FastDeliveryPagesTest extends TestCase
 
         $user = $this->registrar('Prestador Del Menu', 'prestador.menu@example.com', $this->prestador);
 
-        $this->actingAs($user)->get('/dashboard')
+        $this->actingAs($user)->get('/')
             ->assertOk()
             ->assertSee('Pide acá')
             ->assertSee('Mi Catálogo')

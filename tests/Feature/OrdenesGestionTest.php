@@ -259,7 +259,7 @@ class OrdenesGestionTest extends TestCase
 
     public function test_dashboard_renderiza_la_seccion_unificada(): void
     {
-        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->providerUser)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="dash-ordenes-gestion"', $html);
         $this->assertStringContainsString("showDashSection('ordenes-gestion')", $html);

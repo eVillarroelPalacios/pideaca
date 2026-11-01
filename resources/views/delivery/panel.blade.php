@@ -18,7 +18,7 @@
                 <div id="wallet-balance-box" style="background:#fff;border:1px solid #cbd5e1;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;color:#0c2a4d;">
                     Saldo Billetera: $ <span id="wallet-balance">0.00</span>
                 </div>
-                <a href="{{ url('/dashboard') }}" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">← Volver al Panel</a>
+                <a href="{{ url('/') }}" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">← Volver al Panel</a>
             </div>
         </div>
 

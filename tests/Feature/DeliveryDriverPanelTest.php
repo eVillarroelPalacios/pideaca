@@ -77,7 +77,7 @@ class DeliveryDriverPanelTest extends TestCase
 
     public function test_el_panel_del_repartidor_se_renderiza_con_el_diseno_del_modelo(): void
     {
-        $response = $this->actingAs($this->driver)->get('/dashboard?section=repartidor');
+        $response = $this->actingAs($this->driver)->get('/?section=repartidor');
 
         $response->assertOk()
             ->assertSee('PideAca')
@@ -115,7 +115,7 @@ class DeliveryDriverPanelTest extends TestCase
         $response->assertRedirect(route('dashboard', ['section' => 'repartidor']));
 
         $html = $this->actingAs($this->driver)
-            ->get('/dashboard?section=repartidor')
+            ->get('/?section=repartidor')
             ->assertOk()
             ->getContent();
 
@@ -129,7 +129,7 @@ class DeliveryDriverPanelTest extends TestCase
      */
     public function test_el_dashboard_incluye_la_seccion_sin_variable_stats(): void
     {
-        $response = $this->actingAs($this->driver)->get('/dashboard?section=repartidor');
+        $response = $this->actingAs($this->driver)->get('/?section=repartidor');
 
         $response->assertOk()->assertSee('dash-repartidor', false);
         $this->assertStringNotContainsString('Undefined variable', $response->getContent());

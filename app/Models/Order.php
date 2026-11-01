@@ -33,6 +33,14 @@ class Order extends Model
         self::STATUS_CANCELLED,
     ];
 
+    /** Modalidades de entrega elegidas por el cliente en el carrito. */
+    public const DELIVERY_TYPE_DELIVERY = 'delivery';
+
+    public const DELIVERY_TYPE_TAKEAWAY = 'takeaway';
+
+    /** El pedido no requiere reparto: se retira en el local. */
+    public const DELIVERY_STATUS_NOT_REQUIRED = 'not_required';
+
     /**
      * Flujo de seguimiento: de cada estado solo se aceptan los siguientes.
      * El comercio recorre la cadena completa; el cliente unicamente cancela.
@@ -65,6 +73,9 @@ class Order extends Model
         'driver_id',
         'delivery_status',
         'delivery_pin',
+        // Se completa solo cuando el comercio decide enviar el pedido al
+        // pool general de forma manual (sin fallback automatico).
+        'released_to_pool_at',
     ];
 
     protected $casts = [
@@ -72,6 +83,7 @@ class Order extends Model
         'delivery_fee' => 'decimal:2',
         'discount' => 'decimal:2',
         'total' => 'decimal:2',
+        'released_to_pool_at' => 'datetime',
     ];
 
     public function provider(): BelongsTo
@@ -133,6 +145,23 @@ class Order extends Model
     public function scopeWithStatus($query, string $status)
     {
         return $query->where('status', $status);
+    }
+
+    /**
+     * El comercio libero manualmente el pedido al pool general.
+     */
+    public function isReleasedToPool(): bool
+    {
+        return $this->released_to_pool_at !== null;
+    }
+
+    /**
+     * El cliente retira el pedido en el local: queda fuera de la cola de
+     * repartidores y no se le cobra envio.
+     */
+    public function isTakeaway(): bool
+    {
+        return $this->delivery_type === self::DELIVERY_TYPE_TAKEAWAY;
     }
 
     public function isCancellable(): bool

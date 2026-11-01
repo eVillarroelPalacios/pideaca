@@ -77,6 +77,19 @@
                     #dash-pedidos .fd-empty-ico{width:58px;height:58px;border-radius:50%;background:#f1f5f9;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;}
                     #dash-pedidos .fd-spinner{width:26px;height:26px;border:3px solid #e2e8f0;border-top-color:var(--fd-orange);border-radius:50%;margin:0 auto;animation:fdSpin .8s linear infinite;}
                     @keyframes fdSpin{to{transform:rotate(360deg);}}
+                    /* Despacho cerrado: switch y lista de repartidores de confianza */
+                    #dash-pedidos .fd-switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;position:relative;margin-left:auto;padding:4px 2px;}
+                    #dash-pedidos .fd-switch input{position:absolute;opacity:0;width:0;height:0;}
+                    #dash-pedidos .fd-switch-track{width:42px;height:24px;border-radius:9999px;background:#cbd5e1;position:relative;transition:background .18s ease;flex:none;}
+                    #dash-pedidos .fd-switch-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25);transition:transform .18s ease;}
+                    #dash-pedidos .fd-switch input:checked + .fd-switch-track{background:var(--fd-orange);}
+                    #dash-pedidos .fd-switch input:checked + .fd-switch-track .fd-switch-thumb{transform:translateX(18px);}
+                    #dash-pedidos .fd-switch input:focus-visible + .fd-switch-track{box-shadow:0 0 0 3px rgba(210,76,25,.22);}
+                    #dash-pedidos .fd-switch input:disabled + .fd-switch-track{opacity:.55;}
+                    #dash-pedidos .fd-trusted-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f1f5f9;}
+                    #dash-pedidos .fd-trusted-row:last-child{border-bottom:none;}
+                    #dash-pedidos .fd-trusted-avatar{width:32px;height:32px;border-radius:50%;background:#e0f2fe;color:#0369a1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none;}
+                    #dash-pedidos .fd-trusted-empty{padding:12px 0;font-size:12.5px;color:#94a3b8;}
                     @media (max-width:768px){
                         #dash-pedidos .fd-search-wrap{flex:1;}
                         #dash-pedidos .fd-search-wrap input{width:100%;}
@@ -114,6 +127,52 @@
                 <div style="margin-bottom:14px;">
                     <h2 style="font-size:22px;font-weight:800;color:#0c2a4d;margin:0;letter-spacing:-.3px;">Control de Pedidos</h2>
                     <p style="font-size:13px;color:#64748b;margin:5px 0 0;">Supervisá el flujo de preparación, la asignación de repartidores y las entregas en tiempo real.</p>
+                </div>
+
+                {{-- Despacho cerrado a repartidores de confianza. Sin timer ni
+                     liberación automática: el pedido espera a la lista del
+                     comercio hasta que lo envíe manualmente al pool general. --}}
+                <div class="fd-card" style="padding:16px 18px;margin-bottom:14px;">
+                    <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:260px;">
+                            <div class="fd-eyebrow">Despacho de pedidos</div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                                <span class="fd-dot" id="fd-trusted-dot" style="background:#94a3b8;"></span>
+                                <span id="fd-trusted-status" style="font-size:14px;font-weight:700;color:#0c2a4d;">Pool general</span>
+                                <span id="fd-trusted-count" class="fd-chip" style="padding:3px 9px;">0 en la lista</span>
+                            </div>
+                            <p style="font-size:12px;color:#64748b;margin:6px 0 0;max-width:640px;line-height:1.5;">
+                                Con la opción activa, tus pedidos solo los ven los repartidores de tu lista. No se liberan solos por tiempo: esperan a tu lista hasta que desactives la modalidad o envíes el pedido al pool general.
+                            </p>
+                        </div>
+                        <label class="fd-switch" title="Despachar solo a los repartidores de confianza">
+                            <input type="checkbox" id="fd-trusted-toggle" onchange="fdTrustedToggle(this)">
+                            <span class="fd-switch-track"><span class="fd-switch-thumb"></span></span>
+                            <span style="font-size:12px;font-weight:700;color:#334155;">Solo repartidores de confianza</span>
+                        </label>
+                    </div>
+
+                    <div id="fd-trusted-msg" style="display:none;margin-top:12px;padding:9px 12px;border-radius:6px;font-size:12px;font-weight:600;line-height:1.4;" role="status" aria-live="polite"></div>
+
+                    <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f5f9;">
+                        <div class="fd-block-title" style="margin-bottom:8px;">
+                            <span>Lista de confianza</span>
+                            <span id="fd-trusted-list-count" style="font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px;color:#94a3b8;"></span>
+                        </div>
+                        <div id="fd-trusted-list" style="font-size:12.5px;color:#94a3b8;">Cargando repartidores...</div>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+                            <div class="fd-select-wrap" style="height:34px;">
+                                <select id="fd-trusted-candidate" aria-label="Repartidor para agregar a la lista de confianza">
+                                    <option value="">Seleccioná un repartidor...</option>
+                                </select>
+                                <svg class="fd-select-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <button type="button" class="fd-btn fd-btn-primary" id="fd-trusted-add" onclick="fdTrustedAdd()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                Agregar a la lista
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Indicadores rápidos --}}

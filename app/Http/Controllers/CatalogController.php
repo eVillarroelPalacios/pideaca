@@ -54,6 +54,10 @@ class CatalogController extends Controller
 
         $usesInventory = $provider->usesInventory();
 
+        // Direccion del comercio para el retiro en el local. Sale de la
+        // direccion principal del prestador y se muestra en el carrito.
+        $pickupAddress = $provider->user?->primaryAddress?->formatted;
+
         foreach ($categories as $category) {
             foreach ($category->products as $product) {
                 $inventory = $product->inventory;
@@ -78,6 +82,8 @@ class CatalogController extends Controller
                 'whatsapp' => $provider->whatsapp,
                 'hours' => $provider->hours,
                 'is_active' => (bool) $provider->is_active,
+                'address' => $pickupAddress,
+                'delivery_fee' => (float) config('fastdelivery.delivery_fee'),
                 'categories' => [
                     'id' => $provider->category->id ?? null,
                     'name' => $provider->category->description ?? null,

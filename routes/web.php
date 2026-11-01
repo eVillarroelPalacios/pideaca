@@ -20,12 +20,14 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\ProviderDispatchController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\ReporteHogarController;
 use App\Http\Controllers\ReportController;
 
 use App\Http\Controllers\DeliveryOrderController;
+use Illuminate\Http\Request;
 
 // Rutas de Reportes Hogar (Servicios)
 Route::get('/reportes-hogar', [ReporteHogarController::class, 'index'])->name('reportes.hogar');
@@ -46,6 +48,16 @@ Route::patch('/api/driver/vehicle', [DeliveryOrderController::class, 'updateVehi
 Route::post('/api/v1/delivery/orders/{order}/take', [DeliveryOrderController::class, 'takeOrder'])->name('api.delivery.orders.take');
 Route::post('/api/v1/delivery/orders/{order}/pickup', [DeliveryOrderController::class, 'markPickedUp'])->name('api.delivery.orders.pickup');
 Route::post('/api/v1/delivery/orders/{order}/confirm', [DeliveryOrderController::class, 'confirmDelivery'])->name('api.delivery.orders.confirm');
+
+// Despacho cerrado a repartidores de confianza. La autenticacion y la
+// pertenencia del comercio se validan dentro del controlador. No hay timer:
+// el pedido solo sale al pool general por accion manual del comercio.
+Route::get('/api/v1/provider/trusted-drivers', [ProviderDispatchController::class, 'index'])->name('api.provider.trusted-drivers.index');
+Route::put('/api/v1/provider/trusted-drivers/settings', [ProviderDispatchController::class, 'updateSettings'])->name('api.provider.trusted-drivers.settings');
+Route::post('/api/v1/provider/trusted-drivers', [ProviderDispatchController::class, 'store'])->name('api.provider.trusted-drivers.store');
+Route::delete('/api/v1/provider/trusted-drivers/{driver}', [ProviderDispatchController::class, 'destroy'])->name('api.provider.trusted-drivers.destroy');
+Route::post('/api/v1/provider/orders/{order}/send-to-pool', [ProviderDispatchController::class, 'sendOrderToPool'])->name('api.provider.orders.send-to-pool');
+
 use App\Http\Controllers\ServiceBookingController;
 use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\SubGroupController;
@@ -58,7 +70,10 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VariantController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [AdvertisingController::class, 'index']);
+// Raiz del proyecto: es el panel del usuario cuando hay sesion iniciada y la
+// landing publica cuando no. Los enlaces del sitio usan siempre esta URL, sin
+// el segmento /dashboard.
+Route::get('/', [DashboardController::class, 'home'])->name('dashboard');
 
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -70,12 +85,19 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name(
 Route::get('/registro/tipos', [RegisterController::class, 'types'])->name('registro.tipos');
 Route::post('/registro', [RegisterController::class, 'store'])->name('registro.store');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Compatibilidad: la vieja URL del panel redirige a la raiz para no romper
+// accesos guardados ni favoritos (se conserva la query, ej. ?section=pedidos).
+Route::get('/dashboard', function (Request $request) {
+    $query = $request->getQueryString();
+
+    return redirect('/'.($query ? '?'.$query : ''), 302);
+})->name('dashboard.legacy');
 
 // Camino directo a la pagina unificada del prestador: entra al dashboard
 // con la seccion "Ordenes y Gestion" abierta (la permision de la pagina
 // se valida dentro del controlador con redirect, porque el middleware
 // page: esta pensado para respuestas JSON).
+Route::get('/ordenes-gestion', [OrdenesGestionController::class, 'index'])->name('ordenes-gestion.index');
 Route::get('/dashboard/ordenes-gestion', [OrdenesGestionController::class, 'index'])->name('dashboard.ordenes-gestion');
 
 // Cada bloque de administracion pide la pagina que lo maneja en el menu, para

@@ -227,7 +227,7 @@ class ProviderServiceTypesTest extends TestCase
 
     public function test_dashboard_renderiza_el_panel_de_tipos_de_servicio(): void
     {
-        $html = $this->actingAs($this->providerUser)->get('/dashboard')->assertOk()->getContent();
+        $html = $this->actingAs($this->providerUser)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="service-types-list"', $html);
         $this->assertStringContainsString('Tipos de servicio', $html);

@@ -237,6 +237,7 @@
                             'direccion' => 'Mi Dirección',
                             'cuenta' => 'Contraseñas',
                             'vehiculo' => 'Mi Vehículo',
+                            'repartidores' => 'Repartidores de confianza',
                         ];
                         $estadoPerfil = $user->status?->status ?? '-';
                         $estadoPerfilKey = strtolower(trim($estadoPerfil));
@@ -273,6 +274,12 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085"/></svg>
                                 <span>Mis Servicios</span>
                             </a>
+                            @if($user->provider)
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('repartidores')" class="sidebar-link" data-panel="repartidores" id="sidebar-link-repartidores">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 18h6l3-9h3l2 5h2"/><path d="M9 9h5"/><path d="M14 5h3"/></svg>
+                                <span>Repartidores de confianza</span>
+                            </a>
+                            @endif
                             <a href="#" onclick="event.preventDefault();showProfilePanel('imagenes')" class="sidebar-link" data-panel="imagenes" id="sidebar-link-imagenes">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
                                 <span>Publicidad</span>
@@ -310,7 +317,7 @@
                             <button onclick="toggleProfileSidebar()" id="sidebar-toggle-btn" style="display:none;background:none;border:none;cursor:pointer;padding:4px;color:#0f172a;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                             </button>
-                            <span style="font-size:12px;color:#64748b;">Mi Panel</span>
+                            <a href="{{ url('/') }}" style="font-size:12px;color:#64748b;text-decoration:none;" title="Ir al inicio del panel">Mi Panel</a>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
                             <span style="font-size:12px;color:#0f172a;font-weight:600;" id="breadcrumb-current">{{ $perfilEtiquetas[$perfilPanelInicial] }}</span>
                             <div style="flex:1;"></div>
@@ -379,6 +386,12 @@
                                         <div id="services-list" style="display:none;flex-direction:column;gap:10px;margin-top:16px;"></div>
                                     </div>
                                 </div>
+
+                                @if($user->provider)
+                                <div class="profile-panel" data-panel="repartidores">
+                                    @include('dashboard.partials.repartidores-confianza')
+                                </div>
+                                @endif
 
                                 <div class="profile-panel" data-panel="imagenes">
                                     <div class="pcard">
@@ -857,9 +870,9 @@
         if (!fdSectionPopNav && (!history.state || history.state.fdSection !== key)) {
             var state = { fdSection: key };
             if (fdSectionHistoryReady) {
-                history.pushState(state, '', '{{ url('/dashboard') }}');
+                history.pushState(state, '', '{{ url('/') }}');
             } else {
-                history.replaceState(state, '', '{{ url('/dashboard') }}');
+                history.replaceState(state, '', '{{ url('/') }}');
                 fdSectionHistoryReady = true;
             }
         }
@@ -1757,15 +1770,30 @@
         var flow = FD_ORDER_FLOW[o.status];
 
         if (flow) {
-            html += '<button type="button" data-order-action class="fd-btn fd-btn-primary" title="' + escapeHtml(flow[1]) + '" aria-label="' + escapeHtml(flow[1]) + '" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)">'
+            var actionLabel = flow[1];
+            if (o.delivery_type === 'takeaway') {
+                if (o.status === 'in_preparation') actionLabel = 'Marcar listo para retirar';
+                if (o.status === 'on_the_way') actionLabel = 'Marcar retirado';
+            }
+            html += '<button type="button" data-order-action class="fd-btn fd-btn-primary" title="' + escapeHtml(actionLabel) + '" aria-label="' + escapeHtml(actionLabel) + '" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'' + flow[0] + '\', this)">'
                 + FD_ORDER_ACTION_ICONS[flow[0]]
-                + '<span>' + escapeHtml(flow[1]) + '</span></button>';
+                + '<span>' + escapeHtml(actionLabel) + '</span></button>';
         }
 
         if (FD_ORDER_CANCELLABLE.indexOf(o.status) !== -1) {
             html += '<button type="button" data-order-action class="fd-btn fd-btn-danger" title="Cancelar pedido" aria-label="Cancelar pedido" onclick="fdUpdateOrderStatus(' + Number(o.id) + ', \'cancelled\', this)">'
                 + FD_ORDER_ACTION_ICONS['cancelled']
                 + '<span>Cancelar</span></button>';
+        }
+
+        // Liberacion manual al pool general: solo para pedidos sin repartidor
+        // de un comercio con despacho cerrado y que aun no fueron liberados.
+        if (!o.driver_id && !o.released_to_pool_at && fdTrustedState.enabled
+            && o.delivery_type !== 'takeaway'
+            && o.status !== 'delivered' && o.status !== 'cancelled') {
+            html += '<button type="button" class="fd-btn" title="Enviar al pool general" aria-label="Enviar al pool general" onclick="fdTrustedSendToPool(' + Number(o.id) + ', this)">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>'
+                + '<span>Enviar al pool</span></button>';
         }
 
         html += '<button type="button" class="fd-icon-btn" onclick="fdPrintOrder(' + Number(o.id) + ')" title="Imprimir pedido" aria-label="Imprimir pedido">'
@@ -3735,6 +3763,13 @@
     var fdOrdersLastHtml = '';
     var fdMyOrdersLastHtml = '';
 
+    // Despacho cerrado: estado del toggle y lista de repartidores de confianza
+    // del comercio. No hay fallback por tiempo; loadTrustedDrivers solo se
+    // consulta al abrir la seccion y despues de cada accion del comercio.
+    var fdTrustedState = { enabled: false, drivers: [], candidates: [], loaded: false };
+    var fdTrustedLoading = false;
+    var fdTrustedSearch = '';
+
     // Mis Pedidos: pestaña activa (en curso / historial) y pedido completos.
     var fdMyOrdersActive = 'today';
     var fdMyOrdersAll = [];
@@ -3816,6 +3851,16 @@
 
                 var orders = res.data.orders || [];
                 var provider = res.data.provider || {};
+
+                // Mantiene sincronizado el estado del despacho cerrado. La
+                // lista de integrantes se carga una vez (o tras cada accion)
+                // para no repintar el selector en cada sondeo de 8 s.
+                fdTrustedState.enabled = !!provider.trusted_drivers_enabled;
+                if (fdTrustedState.loaded) {
+                    fdTrustedPaint(provider);
+                } else if (!fdTrustedLoading) {
+                    loadTrustedDrivers();
+                }
 
                 fdOrdersAll = orders;
                 fdOrdersCounts = Object.assign({ today: 0, history: 0, pending: 0, in_preparation: 0 }, res.data.counts || {});
@@ -3933,6 +3978,497 @@
             fdOrdersLastHtml = '';
             loadProviderOrders();
         }, 350);
+    }
+
+    // ===== Repartidores de confianza (despacho cerrado, sin fallback) =====
+
+    function fdTrustedApi(path) {
+        return '{{ url("/api/v1/provider/trusted-drivers") }}' + (path || '');
+    }
+
+    function fdTrustedMessage(text, isError) {
+        var targets = ['fd-trusted-msg', 'fd-td-msg'];
+        var any = false;
+
+        if (fdTrustedMessage.timer) {
+            clearTimeout(fdTrustedMessage.timer);
+            fdTrustedMessage.timer = null;
+        }
+
+        targets.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            any = true;
+
+            if (!text) {
+                el.style.display = 'none';
+                el.textContent = '';
+                return;
+            }
+
+            el.textContent = text;
+            el.style.display = 'block';
+            el.style.color = isError ? '#991b1b' : '#166534';
+            el.style.background = isError ? '#fef2f2' : '#f0fdf4';
+            el.style.border = '1px solid ' + (isError ? '#fecaca' : '#bbf7d0');
+        });
+
+        if (!any || !text) return;
+
+        // Los errores quedan visibles hasta la proxima accion para que no
+        // pasen desapercibidos, por ejemplo al intentar quitar al ultimo
+        // repartidor con la modalidad activa.
+        if (isError) return;
+
+        fdTrustedMessage.timer = setTimeout(function () {
+            targets.forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }, 5000);
+    }
+
+    function loadTrustedDrivers() {
+        if (fdTrustedLoading) return;
+
+        fdTrustedLoading = true;
+
+        if (!fdTrustedState.loaded) {
+            var box = document.getElementById('fd-trusted-list');
+            if (box) box.textContent = 'Cargando repartidores...';
+
+            var panelList = document.getElementById('fd-td-list');
+            if (panelList) panelList.innerHTML = '<tr><td colspan="5" class="fd-td-empty">Cargando lista de confianza...</td></tr>';
+        }
+
+        fdFetchJson(fdTrustedApi())
+            .then(function (res) {
+                fdTrustedLoading = false;
+                if (!res.ok) {
+                    fdTrustedMessage((res.data && res.data.message) || 'No se pudo cargar la lista de confianza.', true);
+                    return;
+                }
+
+                fdTrustedState.loaded = true;
+                fdTrustedState.enabled = !!(res.data.provider && res.data.provider.trusted_drivers_enabled);
+                fdTrustedState.drivers = res.data.drivers || [];
+                fdTrustedState.candidates = res.data.candidates || [];
+                fdTrustedPaint();
+            })
+            .catch(function () {
+                fdTrustedLoading = false;
+                fdTrustedMessage('No se pudo conectar con el servidor.', true);
+            });
+    }
+
+    function fdTrustedPaint(provider) {
+        if (provider && typeof provider.trusted_drivers_enabled !== 'undefined') {
+            fdTrustedState.enabled = !!provider.trusted_drivers_enabled;
+        }
+
+        var enabled = !!fdTrustedState.enabled;
+        var drivers = fdTrustedState.drivers || [];
+        var candidates = fdTrustedState.candidates || [];
+
+        var panelToggle = document.getElementById('fd-td-toggle');
+        if (panelToggle) panelToggle.checked = enabled;
+
+        var toggle = document.getElementById('fd-trusted-toggle');
+        if (toggle) toggle.checked = enabled;
+
+        var dot = document.getElementById('fd-trusted-dot');
+        if (dot) dot.style.background = enabled ? '#D24C19' : '#94a3b8';
+
+        var status = document.getElementById('fd-trusted-status');
+        if (status) {
+            status.textContent = enabled ? 'Solo repartidores de confianza' : 'Pool general';
+            status.style.color = enabled ? '#D24C19' : '#0c2a4d';
+        }
+
+        var count = document.getElementById('fd-trusted-count');
+        if (count) count.textContent = drivers.length + (drivers.length === 1 ? ' integrante' : ' integrantes');
+
+        var listCount = document.getElementById('fd-trusted-list-count');
+        if (listCount) listCount.textContent = drivers.length ? 'lista activa' : 'sin integrantes';
+
+        var list = document.getElementById('fd-trusted-list');
+        if (list) {
+            if (!drivers.length) {
+                list.innerHTML = '<div class="fd-trusted-empty">Todavía no agregaste repartidores. Sumá al menos uno para poder activar la modalidad.</div>';
+            } else {
+                list.innerHTML = drivers.map(function (d) {
+                    var name = d.name || 'Repartidor';
+                    var meta = [d.vehicle_label, d.phone].filter(Boolean).join(' · ');
+                    return '<div class="fd-trusted-row">'
+                        + '<div class="fd-trusted-avatar">' + escapeHtml(fdInitials(name)) + '</div>'
+                        + '<div style="min-width:0;flex:1;">'
+                        + '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + escapeHtml(name) + '</div>'
+                        + (meta ? '<div style="font-size:11.5px;color:#64748b;margin-top:1px;">' + escapeHtml(meta) + '</div>' : '')
+                        + '</div>'
+                        + '<button type="button" class="fd-icon-btn" title="Quitar de la lista" aria-label="Quitar a ' + escapeHtml(name) + ' de la lista" onclick="fdTrustedRemove(' + Number(d.id) + ', this)">'
+                        + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+                        + '</button>'
+                        + '</div>';
+                }).join('');
+            }
+        }
+
+        var select = document.getElementById('fd-trusted-candidate');
+        if (select) {
+            var current = select.value;
+            select.innerHTML = '<option value="">' + (candidates.length ? 'Seleccioná un repartidor...' : 'No hay repartidores disponibles') + '</option>'
+                + candidates.map(function (c) {
+                    var label = (c.name || 'Repartidor') + (c.vehicle_label ? ' · ' + c.vehicle_label : '');
+                    return '<option value="' + Number(c.id) + '">' + escapeHtml(label) + '</option>';
+                }).join('');
+            select.value = candidates.some(function (c) { return String(c.id) === String(current); }) ? current : '';
+        }
+
+        var addBtn = document.getElementById('fd-trusted-add');
+        if (addBtn) addBtn.disabled = !candidates.length;
+
+        fdTrustedPaintPanel();
+    }
+
+    // ===== Panel "Repartidores de confianza" del menú lateral =====
+    // Pinta el estado, los KPIs, la tabla de integrantes y los resultados del
+    // buscador. Comparte el mismo fdTrustedState que la tarjeta de Pedidos.
+
+    function fdTrustedPaintPanel() {
+        var panel = document.getElementById('fd-td-panel');
+        if (!panel) return;
+
+        var enabled = !!fdTrustedState.enabled;
+        var drivers = fdTrustedState.drivers || [];
+        var active = drivers.filter(function (d) { return d.status === 'active'; }).length;
+
+        var toggle = document.getElementById('fd-td-toggle');
+        if (toggle) toggle.checked = enabled;
+
+        var dot = document.getElementById('fd-td-dot');
+        if (dot) dot.style.background = enabled ? '#D24C19' : '#94a3b8';
+
+        var mode = document.getElementById('fd-td-mode');
+        if (mode) mode.textContent = enabled ? 'Solo repartidores de confianza' : 'Pool general';
+
+        var kpiMode = document.getElementById('fd-td-kpi-mode');
+        if (kpiMode) {
+            kpiMode.textContent = enabled ? 'Cerrado' : 'Pool general';
+            kpiMode.style.color = enabled ? '#D24C19' : '#0c2a4d';
+        }
+
+        var count = document.getElementById('fd-td-count');
+        if (count) count.textContent = drivers.length + (drivers.length === 1 ? ' integrante' : ' integrantes');
+
+        var kpiCount = document.getElementById('fd-td-kpi-count');
+        if (kpiCount) kpiCount.textContent = drivers.length;
+
+        var kpiActive = document.getElementById('fd-td-kpi-active');
+        if (kpiActive) kpiActive.textContent = active;
+
+        var listCount = document.getElementById('fd-td-list-count');
+        if (listCount) listCount.textContent = drivers.length
+            ? (active + (active === 1 ? ' activo' : ' activos') + ' de ' + drivers.length)
+            : 'Sin integrantes';
+
+        var list = document.getElementById('fd-td-list');
+        if (list) {
+            if (!drivers.length) {
+                list.innerHTML = '<tr><td colspan="5" class="fd-td-empty">Todavía no agregaste repartidores. Buscá uno arriba y sumalo para poder activar la modalidad.</td></tr>';
+            } else {
+                list.innerHTML = drivers.map(function (d) {
+                    var name = d.name || 'Repartidor';
+                    var meta = [d.email, d.phone ? 'Tel. ' + d.phone : '', 'ID ' + d.user_id].filter(Boolean).join(' · ');
+                    var isActive = d.status === 'active';
+                    var plate = d.vehicle_plate
+                        ? '<span class="fd-td-plate">' + escapeHtml(String(d.vehicle_plate).toUpperCase()) + '</span>'
+                        : '<span style="color:#94a3b8;">—</span>';
+
+                    return '<tr>'
+                        + '<td><div class="fd-td-user">'
+                        + '<div class="fd-td-avatar">' + escapeHtml(fdInitials(name)) + '</div>'
+                        + '<div style="min-width:0;"><div class="fd-td-name">' + escapeHtml(name) + '</div>'
+                        + '<div class="fd-td-meta">' + escapeHtml(meta) + '</div></div>'
+                        + '</div></td>'
+                        + '<td>' + escapeHtml(d.vehicle_label || 'Sin definir') + '</td>'
+                        + '<td>' + plate + '</td>'
+                        + '<td><span class="fd-td-badge ' + (isActive ? 'on' : 'off') + '">'
+                        + '<span class="fd-td-dot" style="background:' + (isActive ? '#10b981' : '#94a3b8') + ';"></span>'
+                        + (isActive ? 'Activo' : 'Inactivo') + '</span></td>'
+                        + '<td style="text-align:right;">'
+                        + '<button type="button" class="fd-td-btn fd-td-btn-ghost" title="Quitar de la lista" aria-label="Quitar a ' + escapeHtml(name) + ' de la lista" onclick="fdTrustedRemove(' + Number(d.id) + ', this)">'
+                        + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+                        + '</button></td>'
+                        + '</tr>';
+                }).join('');
+            }
+        }
+
+        fdTrustedPaintResults();
+    }
+
+    // Resultados del buscador: filtra por nombre, correo, teléfono o ID.
+    function fdTrustedPaintResults() {
+        var box = document.getElementById('fd-td-results');
+        if (!box) return;
+
+        var drivers = fdTrustedState.drivers || [];
+        var candidates = fdTrustedState.candidates || [];
+        var query = String(fdTrustedSearch || '').trim().toLowerCase();
+
+        var filtered = !query ? candidates : candidates.filter(function (c) {
+            return String(c.name || '').toLowerCase().indexOf(query) !== -1
+                || String(c.email || '').toLowerCase().indexOf(query) !== -1
+                || String(c.phone || '').toLowerCase().indexOf(query) !== -1
+                || String(c.id) === query
+                || String(c.id).indexOf(query) === 0;
+        });
+
+        var resultsCount = document.getElementById('fd-td-results-count');
+        if (resultsCount) {
+            resultsCount.textContent = filtered.length + (filtered.length === 1 ? ' disponible' : ' disponibles');
+        }
+
+        var html = '';
+
+        filtered.forEach(function (c) {
+            var name = c.name || 'Repartidor';
+            var meta = [c.vehicle_label || 'Sin vehículo', c.vehicle_plate ? 'Patente ' + String(c.vehicle_plate).toUpperCase() : '', 'ID ' + c.id].filter(Boolean).join(' · ');
+
+            html += '<div class="fd-td-result">'
+                + '<div class="fd-td-avatar">' + escapeHtml(fdInitials(name)) + '</div>'
+                + '<div class="fd-td-result-main">'
+                + '<div class="fd-td-name">' + escapeHtml(name) + '</div>'
+                + '<div class="fd-td-meta">' + escapeHtml(meta) + '</div>'
+                + '</div>'
+                + '<button type="button" class="fd-td-btn fd-td-btn-primary" onclick="fdTrustedAdd(' + Number(c.id) + ', this)">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>'
+                + 'Agregar</button>'
+                + '</div>';
+        });
+
+        // Búsqueda exacta por ID de un usuario que no está en la lista de
+        // candidatos (por ejemplo, porque el listado aún no lo incluye).
+        var numeric = /^\d+$/.test(query);
+        if (numeric && filtered.length === 0) {
+            var inList = drivers.some(function (d) { return String(d.user_id) === query; });
+
+            if (inList) {
+                html += '<div class="fd-td-empty">El usuario #' + escapeHtml(query) + ' ya está en tu lista de confianza.</div>';
+            } else {
+                html += '<div class="fd-td-result">'
+                    + '<div class="fd-td-avatar" style="background:#fff7ed;color:#b45309;">#</div>'
+                    + '<div class="fd-td-result-main">'
+                    + '<div class="fd-td-name">Agregar por ID</div>'
+                    + '<div class="fd-td-meta">Usuario #' + escapeHtml(query) + ' · se valida que tenga rol Repartidor</div>'
+                    + '</div>'
+                    + '<button type="button" class="fd-td-btn fd-td-btn-primary" onclick="fdTrustedAdd(' + Number(query) + ', this)">Agregar</button>'
+                    + '</div>';
+            }
+        } else if (!filtered.length && !numeric) {
+            html += '<div class="fd-td-empty">' + (query
+                ? 'No encontramos repartidores que coincidan con “' + escapeHtml(fdTrustedSearch) + '”.'
+                : 'No hay repartidores disponibles para agregar. Todos los del sistema ya están en tu lista.')
+                + '</div>';
+        }
+
+        box.innerHTML = html;
+    }
+
+    function fdTrustedSearchInput(value) {
+        fdTrustedSearch = value || '';
+        fdTrustedPaintResults();
+    }
+
+    function fdTrustedToggle(input) {
+        if (!input) return;
+
+        var enabled = !!input.checked;
+        input.disabled = true;
+
+        fdFetchJson(fdTrustedApi('/settings'), {
+            method: 'PUT',
+            body: JSON.stringify({ enabled: enabled })
+        })
+            .then(function (res) {
+                input.disabled = false;
+                if (!res.ok) {
+                    input.checked = !enabled;
+                    fdTrustedMessage((res.data && res.data.message) || 'No se pudo actualizar la modalidad.', true);
+                    return;
+                }
+
+                fdTrustedState.enabled = !!(res.data.provider && res.data.provider.trusted_drivers_enabled);
+                input.checked = fdTrustedState.enabled;
+                fdTrustedPaint();
+                fdTrustedMessage(res.data.message || 'Modalidad actualizada.', false);
+                loadProviderOrders(true);
+            })
+            .catch(function () {
+                input.disabled = false;
+                input.checked = !enabled;
+                fdTrustedMessage('No se pudo conectar con el servidor.', true);
+            });
+    }
+
+    function fdTrustedAdd(userId, btn) {
+        var select = document.getElementById('fd-trusted-candidate');
+        var id = (userId !== undefined && userId !== null && userId !== '')
+            ? Number(userId)
+            : Number(select ? select.value : 0);
+
+        if (!id || isNaN(id)) {
+            fdTrustedMessage('Seleccioná un repartidor para agregar.', true);
+            return;
+        }
+
+        var addBtn = document.getElementById('fd-trusted-add');
+        if (addBtn) addBtn.disabled = true;
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
+        fdFetchJson(fdTrustedApi(), {
+            method: 'POST',
+            body: JSON.stringify({ user_id: id })
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                    fdTrustedMessage((res.data && res.data.message) || 'No se pudo agregar el repartidor.', true);
+                    return;
+                }
+
+                fdTrustedState.drivers = res.data.drivers || [];
+                fdTrustedState.candidates = res.data.candidates || [];
+                fdTrustedSearch = '';
+                var search = document.getElementById('fd-td-search');
+                if (search) search.value = '';
+                fdTrustedPaint();
+                fdTrustedMessage(res.data.message || 'Repartidor agregado.', false);
+            })
+            .catch(function () {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                fdTrustedMessage('No se pudo conectar con el servidor.', true);
+            })
+            .then(function () {
+                if (addBtn) addBtn.disabled = !(fdTrustedState.candidates || []).length;
+            });
+    }
+
+    async function fdTrustedRemove(driverId, btn) {
+        var drivers = fdTrustedState.drivers || [];
+        var driver = drivers.filter(function (d) { return Number(d.id) === Number(driverId); })[0];
+        var name = driver && driver.name ? driver.name : 'este repartidor';
+
+        // Si la modalidad esta activa y este es el ultimo integrante activo,
+        // el backend desactiva la modalidad junto con la baja para no dejar
+        // pedidos cerrados sin nadie que pueda verlos.
+        var activeCount = drivers.filter(function (d) { return d.status === 'active'; }).length;
+        var isLastActive = !!driver && driver.status === 'active' && activeCount <= 1;
+        var mustDisable = !!fdTrustedState.enabled && isLastActive;
+
+        var question = '¿Quitar a ' + name + ' de tus repartidores de confianza?';
+
+        if (mustDisable) {
+            question += '\n\nEs el último repartidor y la modalidad está activa. '
+                + 'Al quitarlo también se desactivará la modalidad y los pedidos volverán al pool general.';
+        }
+
+        if (!window.confirm(question)) return;
+
+        var restoreButton = function () {
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '';
+            }
+        };
+
+        var showError = function (message) {
+            restoreButton();
+            fdTrustedMessage(message, true);
+            fdToast(message, true);
+            loadTrustedDrivers();
+        };
+
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.55';
+        }
+
+        fdTrustedMessage('', false);
+
+        try {
+            var res = await fdFetchJson(
+                fdTrustedApi('/' + Number(driverId)) + (mustDisable ? '?disable_mode=1' : ''),
+                { method: 'DELETE' }
+            );
+
+            // Estado local desactualizado: el servidor confirma que es el
+            // ultimo integrante activo. Se ofrece desactivar y reintentar.
+            if (!res.ok && res.data && res.data.code === 'last_active_driver') {
+                var retry = window.confirm(
+                    (res.data.message || 'No se puede quitar al último repartidor con la modalidad activa.')
+                    + '\n\n¿Desactivar la modalidad y quitar a ' + name + '? Los pedidos volverán al pool general.'
+                );
+
+                if (!retry) {
+                    showError(res.data.message || 'No se pudo quitar el repartidor.');
+                    return;
+                }
+
+                res = await fdFetchJson(
+                    fdTrustedApi('/' + Number(driverId)) + '?disable_mode=1',
+                    { method: 'DELETE' }
+                );
+            }
+
+            if (!res.ok) {
+                showError((res.data && res.data.message) || 'No se pudo quitar el repartidor.');
+                return;
+            }
+
+            var data = res.data || {};
+            fdTrustedState.drivers = data.drivers || [];
+            fdTrustedState.candidates = data.candidates || [];
+
+            if (data.provider && typeof data.provider.trusted_drivers_enabled !== 'undefined') {
+                fdTrustedState.enabled = !!data.provider.trusted_drivers_enabled;
+            } else if (mustDisable) {
+                fdTrustedState.enabled = false;
+            }
+
+            fdTrustedPaint();
+            fdTrustedMessage(data.message || 'Repartidor quitado.', false);
+            loadProviderOrders(true);
+        } catch (e) {
+            console.error('Error al quitar repartidor de confianza:', e);
+            showError('No se pudo quitar el repartidor. Revisá tu conexión e intentá nuevamente.');
+        }
+    }
+
+    // Accion manual del comercio: la unica forma de liberar un pedido cerrado.
+    // No existe ningun timer ni proceso en segundo plano que lo haga solo.
+    function fdTrustedSendToPool(orderId, btn) {
+        if (!window.confirm('¿Enviar este pedido al pool general? Cualquier repartidor podrá verlo y tomarlo.')) return;
+
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
+        fdFetchJson('{{ url("/api/v1/provider/orders") }}/' + Number(orderId) + '/send-to-pool', { method: 'POST' })
+            .then(function (res) {
+                if (!res.ok) {
+                    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                    fdToast((res.data && res.data.message) || 'No se pudo enviar el pedido al pool general.', true);
+                    return;
+                }
+
+                fdToast(res.data.message || 'Pedido enviado al pool general.', false);
+                // El pedido fresco no trae relaciones: se recarga la lista
+                // para pintar la tarjeta completa con el estado de liberacion.
+                loadProviderOrders(true);
+            })
+            .catch(function () {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                fdToast('No se pudo conectar con el servidor.', true);
+            });
     }
 
     // KPI (Hoy / Historial / Pendientes) y chips de carga del centro de despacho.
@@ -4139,7 +4675,9 @@
             return '<div style="margin-top:12px;font-size:12px;font-weight:600;color:#b91c1c;">Pedido cancelado: el reparto no continúa.</div>';
         }
 
-        var labels = ['Confirmado', 'En camino a local', 'A entrega'];
+        var labels = o.delivery_type === 'takeaway'
+            ? ['Confirmado', 'En preparación', 'Listo para retirar']
+            : ['Confirmado', 'En camino a local', 'A entrega'];
         var step = fdOrderStep(o.status);
         var html = '<div class="fd-stepbar">';
 
@@ -4177,6 +4715,7 @@
         var client = o.user || {};
         var address = o.address;
         var driver = o.driver || null;
+        var isTakeaway = o.delivery_type === 'takeaway';
         var collapsed = !!fdOrdersCollapsed[o.id];
         var idx = Number(index) || fdOrderPosition(o.id);
 
@@ -4220,58 +4759,91 @@
             + '</div>'
             + '</div>';
 
-        // Dirección de entrega + referencia del timbre.
-        html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;gap:9px;align-items:flex-start;">'
-            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
-            + '<div style="min-width:0;">';
-
-        if (address) {
-            html += '<div style="font-size:13px;color:#334155;">'
-                + '<b>' + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '') + '</b>'
-                + (address.floor_apartment ? ' &middot; ' + escapeHtml(address.floor_apartment) : '')
-                + (address.postal_code ? ' &middot; CP ' + escapeHtml(address.postal_code) : '')
-                + '</div>';
-            if (address.notes) {
-                html += '<div style="margin-top:7px;"><span class="fd-note-chip">'
-                    + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>'
-                    + escapeHtml(address.notes) + '</span></div>';
-            }
+        // Dirección de entrega + referencia del timbre. En retiro se indica
+        // que el cliente pasa por el local y no hay dirección que enviar.
+        if (isTakeaway) {
+            html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;gap:9px;align-items:flex-start;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M9 21v-5h6v5"/></svg>'
+                + '<div style="min-width:0;">'
+                + '<div style="font-size:13px;font-weight:700;color:#334155;">Retiro en el local</div>'
+                + '<div style="font-size:12px;color:#64748b;margin-top:2px;">El cliente retira el pedido en el comercio. No requiere dirección de entrega.</div>'
+                + '</div></div>';
         } else {
-            html += '<div style="font-size:12.5px;color:#94a3b8;">Sin dirección registrada</div>';
+            html += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;gap:9px;align-items:flex-start;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+                + '<div style="min-width:0;">';
+
+            if (address) {
+                html += '<div style="font-size:13px;color:#334155;">'
+                    + '<b>' + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '') + '</b>'
+                    + (address.floor_apartment ? ' &middot; ' + escapeHtml(address.floor_apartment) : '')
+                    + (address.postal_code ? ' &middot; CP ' + escapeHtml(address.postal_code) : '')
+                    + '</div>';
+                if (address.notes) {
+                    html += '<div style="margin-top:7px;"><span class="fd-note-chip">'
+                        + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>'
+                        + escapeHtml(address.notes) + '</span></div>';
+                }
+            } else {
+                html += '<div style="font-size:12.5px;color:#94a3b8;">Sin dirección registrada</div>';
+            }
+
+            html += '</div></div>';
         }
 
         if (o.notes) {
             html += '<div style="margin-top:7px;font-size:12px;color:#9a3412;"><b>Nota del pedido:</b> ' + escapeHtml(o.notes) + '</div>';
         }
 
-        html += '</div></div></div>';
+        html += '</div>';
 
         // ---------- Repartidor ----------
-        var dStatus = FD_DELIVERY_STATUS[o.delivery_status] || FD_DELIVERY_STATUS['pending'];
-        html += '<div class="fd-block">'
-            + '<div class="fd-block-title"><span>Repartidor asignado</span>'
-            + (driver ? fdBadge(dStatus[0], dStatus[1], dStatus[2]) : fdBadge('Sin asignar', '#64748b', '#f1f5f9'))
-            + '</div>';
-
-        if (driver) {
-            html += '<div style="display:flex;gap:12px;align-items:flex-start;">'
-                + '<div class="fd-avatar fd-avatar-blue">' + escapeHtml(fdInitials(driver.name)) + '</div>'
-                + '<div style="min-width:0;">'
-                + '<div class="fd-info-name">' + escapeHtml(driver.name || 'Repartidor') + '</div>'
-                + (driver.email ? '<div class="fd-info-meta">' + escapeHtml(driver.email) + '</div>' : '')
-                + (driver.phone ? '<div class="fd-info-meta">' + escapeHtml(driver.phone) + '</div>' : '')
+        if (isTakeaway) {
+            html += '<div class="fd-block">'
+                + '<div class="fd-block-title"><span>Entrega</span>'
+                + fdBadge('Retiro en local', '#9a3412', '#ffedd5')
                 + '</div>'
-                + '</div>';
+                + '<div style="display:flex;gap:10px;align-items:flex-start;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M9 21v-5h6v5"/></svg>'
+                + '<div><div style="font-size:13px;font-weight:600;color:#334155;">Pedido para preparar en el comercio</div>'
+                + '<div style="font-size:12px;color:#94a3b8;margin-top:2px;">No se envía a la cola de repartidores. El cliente lo retira cuando esté listo.</div>'
+                + '</div>'
+                + '</div>'
+                + fdOrderStepperHtml(o) + '</div>';
         } else {
-            html += '<div style="display:flex;gap:10px;align-items:flex-start;">'
-                + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>'
-                + '<div><div style="font-size:13px;font-weight:600;color:#334155;">Todavía no hay repartidor asignado</div>'
-                + '<div style="font-size:12px;color:#94a3b8;margin-top:2px;">Los repartidores toman el pedido desde su panel cuando está listo para retirar.</div>'
-                + '</div>'
+            var dStatus = FD_DELIVERY_STATUS[o.delivery_status] || FD_DELIVERY_STATUS['pending'];
+            html += '<div class="fd-block">'
+                + '<div class="fd-block-title"><span>Repartidor asignado</span>'
+                + (driver ? fdBadge(dStatus[0], dStatus[1], dStatus[2]) : fdBadge('Sin asignar', '#64748b', '#f1f5f9'))
                 + '</div>';
-        }
 
-        html += fdOrderStepperHtml(o) + '</div>';
+            if (driver) {
+                html += '<div style="display:flex;gap:12px;align-items:flex-start;">'
+                    + '<div class="fd-avatar fd-avatar-blue">' + escapeHtml(fdInitials(driver.name)) + '</div>'
+                    + '<div style="min-width:0;">'
+                    + '<div class="fd-info-name">' + escapeHtml(driver.name || 'Repartidor') + '</div>'
+                    + (driver.email ? '<div class="fd-info-meta">' + escapeHtml(driver.email) + '</div>' : '')
+                    + (driver.phone ? '<div class="fd-info-meta">' + escapeHtml(driver.phone) + '</div>' : '')
+                    + '</div>'
+                    + '</div>';
+            } else {
+                var noDriverHelp = 'Los repartidores toman el pedido desde su panel cuando está listo para retirar.';
+                if (o.released_to_pool_at) {
+                    noDriverHelp = 'Enviado al pool general el ' + fdDateTime(o.released_to_pool_at) + '. Cualquier repartidor puede tomarlo.';
+                } else if (fdTrustedState.enabled) {
+                    noDriverHelp = 'Solo visible para tus repartidores de confianza. No se libera automáticamente: usá "Enviar al pool" para abrirlo a todos.';
+                }
+
+                html += '<div style="display:flex;gap:10px;align-items:flex-start;">'
+                    + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>'
+                    + '<div><div style="font-size:13px;font-weight:600;color:#334155;">Todavía no hay repartidor asignado</div>'
+                    + '<div style="font-size:12px;color:#94a3b8;margin-top:2px;">' + escapeHtml(noDriverHelp) + '</div>'
+                    + '</div>'
+                    + '</div>';
+            }
+
+            html += fdOrderStepperHtml(o) + '</div>';
+        }
 
         // ---------- Productos y totales ----------
         html += '<div class="fd-block">'
@@ -4279,7 +4851,9 @@
             + (o.items || []).map(fdRenderOrderItem).join('')
             + '<div style="padding-top:12px;">'
             + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
-            + fdTotalRow('Costo de envío', fdMoney(o.delivery_fee), false)
+            + (isTakeaway
+                ? fdTotalRow('Retiro en el local', 'Sin costo', false)
+                : fdTotalRow('Costo de envío', fdMoney(o.delivery_fee), false))
             + fdTotalRow('Descuento cupón', '-' + fdMoney(o.discount), false)
             + '<div class="fd-total-final"><span>Total a cobrar</span><span>' + fdMoney(o.total) + '</span></div>'
             + '</div>'
@@ -4370,7 +4944,7 @@
 
     // ============ FAST DELIVERY: COMERCIOS Y MIS PEDIDOS DEL CLIENTE ============
 
-    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '' };
+    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '', deliveryType: 'delivery', addressId: '', pickupAddress: '' };
     var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'transferencia_bancaria': 'Transferencia bancaria', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
     var fdShopsTimer = null;
     var fdShopsTabActive = 'favorites';
@@ -4631,6 +5205,9 @@
         FD_SHOP.catalog = null;
         FD_SHOP.cart = [];
         FD_SHOP.categoryFilter = '';
+        FD_SHOP.deliveryType = 'delivery';
+        FD_SHOP.addressId = '';
+        FD_SHOP.pickupAddress = '';
         fdShopFillCategoryFilter([]);
 
         var overlay = document.getElementById('fd-shop-overlay');
@@ -4642,7 +5219,7 @@
             window.scrollTo(0, 0);
 
             if (fdSectionHistoryReady) {
-                history.pushState({ fdSection: 'tienda' }, '', '{{ url('/dashboard') }}');
+                history.pushState({ fdSection: 'tienda' }, '', '{{ url('/') }}');
             }
         }
 
@@ -4651,6 +5228,7 @@
         document.getElementById('fd-shop-body').innerHTML =
             '<p style="font-size:13px;color:#6b7280;text-align:center;padding:32px 0;margin:0;">Cargando catálogo...</p>';
         document.getElementById('fd-shop-cart').innerHTML = '';
+        fdShopRenderDelivery();
         fdShopPaintBadge();
 
         fdLoadShopAddresses();
@@ -4669,6 +5247,10 @@
 
                 var provider = res.data.provider || {};
                 FD_SHOP.providerName = provider.business_name || '';
+                FD_SHOP.pickupAddress = provider.address || '';
+                if (provider.delivery_fee !== undefined && provider.delivery_fee !== null) {
+                    FD_SHOP.settings.delivery_fee = provider.delivery_fee;
+                }
 
                 document.getElementById('fd-shop-title').textContent = provider.business_name || 'Comercio';
 
@@ -4695,6 +5277,7 @@
         FD_SHOP.catalog = null;
         FD_SHOP.cart = [];
         fdShopRepeatQueue = null;
+        fdShopRenderDelivery();
         fdShopPaintBadge();
         fdStopShopPolling();
     }
@@ -4787,6 +5370,10 @@
 
                 var provider = res.data.provider || {};
                 FD_SHOP.providerName = provider.business_name || '';
+                FD_SHOP.pickupAddress = provider.address || '';
+                if (provider.delivery_fee !== undefined && provider.delivery_fee !== null) {
+                    FD_SHOP.settings.delivery_fee = provider.delivery_fee;
+                }
 
                 var title = document.getElementById('fd-shop-title');
                 if (title) title.textContent = provider.business_name || 'Comercio';
@@ -4854,7 +5441,7 @@
     function fdShopGo(key) {
         closeFdShop();
         if (fdSectionHistoryReady && history.state && history.state.fdSection === 'tienda') {
-            history.replaceState({ fdSection: key }, '', '{{ url('/dashboard') }}');
+            history.replaceState({ fdSection: key }, '', '{{ url('/') }}');
             fdSectionPopNav = true;
             try {
                 showDashSection(key);
@@ -5211,14 +5798,16 @@
         var prevAddress = document.getElementById('fd-shop-address');
         var prevNotes = document.getElementById('fd-shop-notes');
         var prevPayment = document.getElementById('fd-shop-payment');
-        var keepAddress = prevAddress ? prevAddress.value : '';
         var keepNotes = prevNotes ? prevNotes.value : '';
         var keepPayment = prevPayment ? prevPayment.value : '';
+
+        if (prevAddress && prevAddress.value) FD_SHOP.addressId = String(prevAddress.value);
 
         if (!FD_SHOP.cart.length) {
             el.innerHTML = '<div style="font-size:12px;color:#6b7280;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">'
                 + '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>'
                 + 'Tu carrito está vacío. Agregá productos para continuar.</div>';
+            fdShopRenderDelivery();
             fdShopPaintBadge();
             return;
         }
@@ -5249,28 +5838,9 @@
                 + '</div></div>';
         }).join('');
 
-        var fee = Number(FD_SHOP.settings.delivery_fee || 0);
+        var isTakeaway = FD_SHOP.deliveryType === 'takeaway';
+        var fee = isTakeaway ? 0 : Number(FD_SHOP.settings.delivery_fee || 0);
         var total = subtotal + fee;
-        var addresses = FD_SHOP.addresses;
-
-        var addressHtml;
-        if (addresses === null) {
-            addressHtml = '<div style="font-size:12px;color:#6b7280;margin-top:10px;">Cargando direcciones...</div>';
-        } else if (!addresses.length) {
-            addressHtml = '<div style="font-size:12px;color:#b45309;margin-top:10px;">'
-                + 'No tenés direcciones cargadas. Cargá una desde <b>Tu Perfil</b> para poder pedir.</div>';
-        } else {
-            addressHtml = '<div style="margin-top:10px;">'
-                + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Dirección de entrega *</label>'
-                + '<select id="fd-shop-address" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
-                + addresses.map(function (a) {
-                    return '<option value="' + a.id + '"' + (String(a.id) === keepAddress ? ' selected' : '') + '>'
-                        + escapeHtml(a.formatted || (a.street + ' ' + (a.number || '')))
-                        + (a.is_primary ? ' · principal' : '')
-                        + '</option>';
-                }).join('')
-                + '</select></div>';
-        }
 
         var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
             if (key === 'transferencia' || key === 'mercadopago') return '';
@@ -5288,11 +5858,12 @@
             + lines
             + '<div style="border-top:1px solid #e5e7eb;margin-top:8px;padding-top:8px;font-size:13px;">'
             + fdTotalRow('Subtotal', fdMoney(subtotal), false)
-            + fdTotalRow('Envío', fdMoney(fee), false)
+            + (isTakeaway
+                ? fdTotalRow('Retiro en el local', 'Sin costo', false)
+                : fdTotalRow('Envío', fdMoney(fee), false))
             + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
             + '<span>Total estimado</span><span>' + fdMoney(total) + '</span></div>'
             + '</div>'
-            + addressHtml
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
             + '<select id="fd-shop-payment" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
@@ -5315,7 +5886,99 @@
             if (notes) notes.value = keepNotes;
         }
 
+        fdShopRenderDelivery();
         fdShopPaintBadge();
+    }
+
+    function fdShopSetDeliveryType(type) {
+        if (type !== 'delivery' && type !== 'takeaway') return;
+        if (FD_SHOP.deliveryType === type) return;
+
+        var addressSel = document.getElementById('fd-shop-address');
+        if (addressSel && addressSel.value) FD_SHOP.addressId = String(addressSel.value);
+
+        FD_SHOP.deliveryType = type;
+        fdRenderShopCart();
+    }
+
+    // Seccion "Metodo de entrega" que vive arriba del boton de confirmar.
+    // Envio: costo + direccion del cliente. Retiro: sin costo + direccion del
+    // comercio. La opcion activa se resalta con el naranja primario.
+    function fdShopRenderDelivery() {
+        var el = document.getElementById('fd-shop-delivery');
+        if (!el) return;
+
+        if (!FD_SHOP.cart.length) {
+            el.style.display = 'none';
+            el.innerHTML = '';
+            return;
+        }
+
+        el.style.display = 'block';
+
+        var isDelivery = FD_SHOP.deliveryType !== 'takeaway';
+        var fee = Number(FD_SHOP.settings.delivery_fee || 0);
+        var addresses = FD_SHOP.addresses;
+        var activeStyle = 'background:#fff7f2;border:2px solid #D24C19;box-shadow:0 4px 14px rgba(210,76,25,.14);';
+        var idleStyle = 'background:#fff;border:2px solid #e5e7eb;';
+        var cardBase = 'display:flex;align-items:flex-start;gap:10px;width:100%;padding:11px 12px;border-radius:8px;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,box-shadow .15s;';
+
+        var truckIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>';
+        var storeIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M9 21v-5h6v5"/></svg>';
+        var checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-left:auto;"><circle cx="12" cy="12" r="10" fill="#D24C19" stroke="none"/><polyline points="16.5 9 10.8 14.7 7.5 11.4" stroke="#fff"/></svg>';
+        var dotIcon = '<span style="width:16px;height:16px;border-radius:50%;border:2px solid #cbd5e1;flex:none;margin-left:auto;"></span>';
+
+        var html = '<div style="font-size:11px;font-weight:800;color:#0c2a4d;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;">Método de entrega</div>'
+            + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;">'
+            + '<button type="button" onclick="fdShopSetDeliveryType(\'delivery\')" aria-pressed="' + (isDelivery ? 'true' : 'false') + '" title="Envío con repartidor" style="' + cardBase + (isDelivery ? activeStyle : idleStyle) + 'color:' + (isDelivery ? '#9a3412' : '#334155') + ';">'
+            + truckIcon
+            + '<span style="min-width:0;display:block;">'
+            + '<span style="display:block;font-size:12.5px;font-weight:800;color:#0f172a;">Envío con repartidor</span>'
+            + '<span style="display:block;font-size:11px;color:#64748b;margin-top:1px;">Costo de envío ' + fdMoney(fee) + '</span>'
+            + '</span>'
+            + (isDelivery ? checkIcon : dotIcon)
+            + '</button>'
+            + '<button type="button" onclick="fdShopSetDeliveryType(\'takeaway\')" aria-pressed="' + (!isDelivery ? 'true' : 'false') + '" title="Retiro en el local" style="' + cardBase + (!isDelivery ? activeStyle : idleStyle) + 'color:' + (!isDelivery ? '#9a3412' : '#334155') + ';">'
+            + storeIcon
+            + '<span style="min-width:0;display:block;">'
+            + '<span style="display:block;font-size:12.5px;font-weight:800;color:#0f172a;">Retiro en el local</span>'
+            + '<span style="display:block;font-size:11px;color:#64748b;margin-top:1px;">Sin costo adicional</span>'
+            + '</span>'
+            + (!isDelivery ? checkIcon : dotIcon)
+            + '</button>'
+            + '</div>';
+
+        if (isDelivery) {
+            if (addresses === null) {
+                html += '<div style="font-size:12px;color:#6b7280;margin-top:9px;">Cargando direcciones...</div>';
+            } else if (!addresses.length) {
+                html += '<div style="font-size:12px;color:#b45309;margin-top:9px;">'
+                    + 'No tenés direcciones cargadas. Cargá una desde <b>Tu Perfil</b> para poder pedir con envío.</div>';
+            } else {
+                var selectedAddress = FD_SHOP.addressId ? String(FD_SHOP.addressId) : '';
+                html += '<div style="margin-top:9px;">'
+                    + '<label for="fd-shop-address" style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Dirección de entrega *</label>'
+                    + '<select id="fd-shop-address" onchange="fdShopRememberAddress(this.value)" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+                    + addresses.map(function (a) {
+                        return '<option value="' + a.id + '"' + (String(a.id) === selectedAddress ? ' selected' : '') + '>'
+                            + escapeHtml(a.formatted || (a.street + ' ' + (a.number || '')))
+                            + (a.is_primary ? ' · principal' : '')
+                            + '</option>';
+                    }).join('')
+                    + '</select></div>';
+            }
+        } else {
+            html += '<div style="margin-top:9px;padding:9px 11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#475569;display:flex;gap:8px;align-items:flex-start;">'
+                + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+                + '<span><b>Retirás en:</b> ' + escapeHtml(FD_SHOP.pickupAddress || 'Consultá la dirección del local con el comercio.') + '</span>'
+                + '</div>';
+        }
+
+        el.innerHTML = html;
+    }
+
+    function fdShopRememberAddress(value) {
+        FD_SHOP.addressId = value ? String(value) : '';
     }
 
     function fdShopShowMsg(text, isError) {
@@ -5339,12 +6002,19 @@
             return;
         }
 
-        var addressSel = document.getElementById('fd-shop-address');
-        var addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
+        var isTakeaway = FD_SHOP.deliveryType === 'takeaway';
+        var addressId = null;
 
-        if (isNaN(addressId)) {
-            fdShopShowMsg('Seleccioná la dirección de entrega.', true);
-            return;
+        if (!isTakeaway) {
+            var addressSel = document.getElementById('fd-shop-address');
+            addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
+
+            if (isNaN(addressId)) {
+                fdShopShowMsg('Seleccioná la dirección de entrega.', true);
+                return;
+            }
+
+            FD_SHOP.addressId = String(addressId);
         }
 
         var notesEl = document.getElementById('fd-shop-notes');
@@ -5353,6 +6023,7 @@
 
         var payload = {
             provider_id: FD_SHOP.providerId,
+            delivery_type: FD_SHOP.deliveryType,
             address_id: addressId,
             payment_method: paymentEl ? paymentEl.value : 'efectivo',
             notes: notesEl ? notesEl.value.trim() : '',
@@ -5406,6 +6077,7 @@
             var orderNumber = (res.data.order && res.data.order.order_number) || '';
 
             FD_SHOP.cart = [];
+            fdShopRenderDelivery();
             fdShopPaintBadge();
             document.getElementById('fd-shop-cart').innerHTML =
                 '<div style="text-align:center;padding:6px 0;">'
@@ -5751,15 +6423,24 @@
     ];
 
     // Subtexto informativo de cada paso del circuito.
+    var FD_MY_STEPS_TAKEAWAY = [
+        ['pending', 'Recibido'],
+        ['confirmed', 'Confirmado'],
+        ['in_preparation', 'En preparación'],
+        ['on_the_way', 'Listo para retirar'],
+        ['delivered', 'Retirado']
+    ];
+
     function fdMyStepSub(o, key) {
         if (key === 'pending') return 'Esperando confirmación';
         if (key === 'confirmed') return 'Va a cocina';
         if (key === 'in_preparation') return 'En cocina';
         if (key === 'on_the_way') {
+            if (o.delivery_type === 'takeaway') return 'Te avisamos';
             if (o.driver) return 'Con ' + String(o.driver.name || 'repartidor').split(' ')[0];
             return 'Próximamente';
         }
-        if (key === 'delivered') return 'Destino';
+        if (key === 'delivered') return o.delivery_type === 'takeaway' ? 'Retirado' : 'Destino';
         return '';
     }
 
@@ -5769,20 +6450,25 @@
             return '<div style="background:#fef2f2;border-bottom:1px solid #fecaca;padding:12px 16px;font-size:13px;color:#b91c1c;font-weight:700;">Pedido cancelado</div>';
         }
 
+        var isTakeaway = o.delivery_type === 'takeaway';
+        var steps = isTakeaway ? FD_MY_STEPS_TAKEAWAY : FD_MY_STEPS;
+
         var current = -1;
-        FD_MY_STEPS.forEach(function (step, i) { if (step[0] === o.status) current = i; });
+        steps.forEach(function (step, i) { if (step[0] === o.status) current = i; });
         if (current < 0) return '';
 
         var html = '<div data-track="' + o.status + '" class="fd-steps">';
 
-        FD_MY_STEPS.forEach(function (step, i) {
+        steps.forEach(function (step, i) {
             var done = i < current;
             var active = i === current;
             var cls = 'fd-step' + (done ? ' done' : '') + (active ? ' now' : '');
 
             // El paso "En camino" muestra la cara del repartidor si esta asignado.
             var icon = FD_MY_STEP_ICONS[i];
-            if (step[0] === 'on_the_way' && o.driver) {
+            if (isTakeaway && step[0] === 'on_the_way') {
+                icon = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M9 21v-5h6v5"/></svg>';
+            } else if (step[0] === 'on_the_way' && o.driver) {
                 icon = '<span style="font-size:12px;font-weight:800;">' + escapeHtml(fdInitials(o.driver.name)) + '</span>';
             }
 
@@ -5793,7 +6479,7 @@
                 + '<div class="fd-step-sub">' + escapeHtml(fdMyStepSub(o, step[0])) + '</div>'
                 + '</div>';
 
-            if (i < FD_MY_STEPS.length - 1) {
+            if (i < steps.length - 1) {
                 html += '<div class="fd-step-line' + (i < current ? ' done' : '') + '"></div>';
             }
         });
@@ -5805,6 +6491,11 @@
     function fdMyOrdersLiveTitle(o) {
         if (o.status === 'pending') return 'El comercio está revisando tu pedido';
         if (o.status === 'confirmed') return '¡Pedido confirmado! Preparan todo';
+        if (o.delivery_type === 'takeaway') {
+            if (o.status === 'in_preparation') return 'Tu pedido se está preparando para retirar';
+            if (o.status === 'on_the_way') return '¡Tu pedido está listo para retirar!';
+            if (o.status === 'delivered') return 'Pedido retirado';
+        }
         if (o.status === 'in_preparation') return 'Tu pedido se encuentra en el horno';
         if (o.status === 'on_the_way') {
             return o.driver
@@ -5825,10 +6516,11 @@
         if (!created) return '';
         var arrive = new Date(created.getTime() + mins * 60000);
         var diff = arrive.getTime() - Date.now();
-        if (diff <= 0) return 'Llega en breve';
+        var isTakeaway = o.delivery_type === 'takeaway';
+        if (diff <= 0) return isTakeaway ? 'Listo en breve' : 'Llega en breve';
         var hh = arrive.getHours();
         var mm = arrive.getMinutes();
-        return 'Llega ≈ ' + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + ' hs';
+        return (isTakeaway ? 'Listo ≈ ' : 'Llega ≈ ') + (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + ' hs';
     }
 
     // Tarjeta del pedido en curso: cabecera del local, estado en vivo con el
@@ -5837,6 +6529,7 @@
         var shop = o.provider || {};
         var address = o.address;
         var driver = o.driver;
+        var isTakeaway = o.delivery_type === 'takeaway';
         var pay = (o.payments && o.payments[0]) || null;
         var eta = fdMyOrdersEta(o);
 
@@ -5876,7 +6569,7 @@
             + '<div class="fd-live-title">' + escapeHtml(fdMyOrdersLiveTitle(o)) + '</div>'
             + '</div>'
             + (eta
-                ? '<div class="fd-eta"><div class="fd-eyebrow">Tiempo estimado de entrega</div>'
+                ? '<div class="fd-eta"><div class="fd-eyebrow">' + (isTakeaway ? 'Tiempo estimado de preparación' : 'Tiempo estimado de entrega') + '</div>'
                     + '<b><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
                     + escapeHtml(eta) + '</b></div>'
                 : '')
@@ -5915,23 +6608,32 @@
         html += '<div class="fd-block">'
             + '<div style="display:flex;gap:11px;align-items:flex-start;">'
             + '<span class="fd-block-ico">'
-            + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+            + (isTakeaway
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M9 21v-5h6v5"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>')
             + '</span>'
             + '<div style="min-width:0;">'
-            + '<div class="fd-eyebrow">Dirección de entrega</div>'
-            + (address
+            + '<div class="fd-eyebrow">' + (isTakeaway ? 'Retiro en el local' : 'Dirección de entrega') + '</div>'
+            + (isTakeaway
                 ? '<div style="font-size:14px;font-weight:700;color:#0f172a;margin-top:3px;">'
-                    + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
-                    + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
+                    + escapeHtml(shop.business_name || 'Comercio')
                     + '</div>'
                     + '<div style="font-size:12px;color:#64748b;margin-top:2px;">'
-                    + (address.postal_code ? 'CP ' + escapeHtml(address.postal_code) : 'Sin código postal')
+                    + escapeHtml(o.pickup_address || 'Coordiná la dirección del local con el comercio.')
                     + '</div>'
-                    + (address.notes ? '<div style="margin-top:7px;"><span class="fd-note-chip">'
-                        + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
-                        + escapeHtml(address.notes) + '</span></div>'
-                    : '')
-                : '<div style="font-size:13px;color:#94a3b8;margin-top:3px;">Sin dirección registrada</div>')
+                : (address
+                    ? '<div style="font-size:14px;font-weight:700;color:#0f172a;margin-top:3px;">'
+                        + escapeHtml(address.street) + ' ' + escapeHtml(address.number || '')
+                        + (address.floor_apartment ? ', ' + escapeHtml(address.floor_apartment) : '')
+                        + '</div>'
+                        + '<div style="font-size:12px;color:#64748b;margin-top:2px;">'
+                        + (address.postal_code ? 'CP ' + escapeHtml(address.postal_code) : 'Sin código postal')
+                        + '</div>'
+                        + (address.notes ? '<div style="margin-top:7px;"><span class="fd-note-chip">'
+                            + '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
+                            + escapeHtml(address.notes) + '</span></div>'
+                        : '')
+                    : '<div style="font-size:13px;color:#94a3b8;margin-top:3px;">Sin dirección registrada</div>'))
             + '</div>'
             + '</div>'
             + '</div>';
@@ -5964,7 +6666,9 @@
             + '</div>'
             + '<div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;font-size:13px;">'
             + fdTotalRow('Subtotal', fdMoney(o.subtotal), false)
-            + fdTotalRow('Envío', fdMoney(o.delivery_fee), false)
+            + (isTakeaway
+                ? fdTotalRow('Retiro en el local', 'Sin costo', false)
+                : fdTotalRow('Envío', fdMoney(o.delivery_fee), false))
             + fdTotalRow('Descuento', '-' + fdMoney(o.discount), false)
             + '<div class="fd-total-final">'
             + '<span>Total</span><span>' + fdMoney(o.total) + '</span></div>'
@@ -6269,7 +6973,7 @@
             if (key === 'paginas') loadPages();
             if (key === 'perfil') loadProfile();
             if (key === 'mi-catalogo') fdCatShow();
-            if (key === 'pedidos') loadProviderOrders();
+            if (key === 'pedidos') { loadProviderOrders(); loadTrustedDrivers(); }
             if (key === 'inventario') loadInventory();
             if (key === 'comercios') loadComercios();
             if (key === 'mis-pedidos') loadMyOrders();
@@ -9899,6 +10603,7 @@
         negocio: 'Datos del Negocio',
         horarios: 'Horarios de Atención',
         servicios: 'Mis Servicios',
+        repartidores: 'Repartidores de confianza',
         imagenes: 'Publicidad',
         categorias: 'Categorias',
         direccion: 'Mi Dirección',
@@ -10010,6 +10715,7 @@
             console.error('Error al cambiar de panel de perfil:', e);
         }
         if (key === 'direccion') loadAddress();
+        if (key === 'repartidores') loadTrustedDrivers();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
             link.classList.toggle('active', link.dataset.panel === key);
         });
@@ -11339,19 +12045,16 @@
         });
     }
 
-    /* ── Vehículo del repartidor: Terminal Central + Perfil ── */
-    // Ambos selectores (#drv-vehicle en el dashboard y #profile-vehicle en
-    // "Datos del Vehículo") comparten el mismo valor persistido en users.
+    /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */
+    // La Terminal Central muestra el vehículo del perfil como ficha de solo
+    // lectura (#drv-vehicle-badge); quien edita es el panel "Mi Vehículo"
+    // (#profile-vehicle), y al guardar se refresca también esa ficha.
     var VEHICLE_TYPES = @json(\App\Models\User::VEHICLE_TYPES);
     var VEHICLE_DEFAULT_TYPE = @json(\App\Models\User::DEFAULT_VEHICLE_TYPE);
     var vehicleSaving = false;
 
-    function vehicleMsgId(sourceEl) {
-        return sourceEl && sourceEl.id === 'drv-vehicle' ? 'drv-vehicle-msg' : 'profile-vehicle-msg';
-    }
-
     function setVehicleFeedback(sourceEl, text, tone) {
-        var el = document.getElementById(vehicleMsgId(sourceEl));
+        var el = document.getElementById('profile-vehicle-msg');
         if (!el) return;
         clearTimeout(el._vehicleTimer);
         if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
@@ -11365,7 +12068,7 @@
     }
 
     function vehicleSelects() {
-        return ['drv-vehicle', 'profile-vehicle']
+        return ['profile-vehicle']
             .map(function (id) { return document.getElementById(id); })
             .filter(Boolean);
     }
@@ -11381,12 +12084,33 @@
         }
     }
 
+    /* Refresca la ficha de la Terminal Central (#drv-vehicle-badge). Si el
+       repartidor todavía no tenía unidad, la ficha se crea en el momento. */
+    function paintDrvVehicleBadge(type, plate) {
+        var bar = document.querySelector('.drv-toolbar');
+        var tool = document.getElementById('drv-vehicle-tool');
+        if (!bar || !tool) return;
+
+        var label = (type && VEHICLE_TYPES[type]) || VEHICLE_TYPES[VEHICLE_DEFAULT_TYPE] || type || '';
+        var plateHtml = plate
+            ? ' • <span class="drv-vehicle-plate">' + String(plate).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>'
+            : '';
+        var editBtn = '<button type="button" class="drv-vehicle-edit" onclick="drvGoVehicleProfile()" title="Cambiar vehículo" aria-label="Cambiar vehículo">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>'
+            + 'Cambiar</button>';
+
+        tool.innerHTML = '<span class="drv-tool-label">Vehículo:</span>'
+            + '<span class="drv-vehicle-badge" id="drv-vehicle-badge" title="Unidad con la que trabajás (configurada en Mi Vehículo)">'
+            + '🚘 ' + label + plateHtml + '</span>'
+            + editBtn;
+        bar.dataset.vehicleConfigured = '1';
+    }
+
     function applyVehicle(type, plate) {
-        if (type && VEHICLE_TYPES[type]) {
-            vehicleSelects().forEach(function (sel) {
-                sel.value = type;
-                sel.dataset.savedValue = type;
-            });
+        var profileSel = document.getElementById('profile-vehicle');
+        if (profileSel && type && VEHICLE_TYPES[type]) {
+            profileSel.value = type;
+            profileSel.dataset.savedValue = type;
         }
         if (plate !== undefined) {
             var plateEl = document.getElementById('profile-vehicle-plate');
@@ -11394,6 +12118,7 @@
                 plateEl.value = plate || '';
                 plateEl.dataset.savedValue = (plate || '').trim();
             }
+            paintDrvVehicleBadge(type, plate);
         }
     }
 
@@ -11482,12 +12207,8 @@
             });
         }
 
-        // En la Terminal Central se guarda apenas cambia el selector.
-        var drvSel = document.getElementById('drv-vehicle');
-        if (drvSel) {
-            drvSel.dataset.savedValue = drvSel.value || VEHICLE_DEFAULT_TYPE;
-            drvSel.addEventListener('change', function () { pideacaSaveVehicle(drvSel); });
-        }
+        // La Terminal Central solo muestra la ficha del vehículo: quien
+        // edita es el panel de perfil, y al guardar se refresca la ficha.
     })();
 
     var PW_EYE_ON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>';

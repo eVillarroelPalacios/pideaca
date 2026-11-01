@@ -275,7 +275,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_encabezado_del_prestador_con_los_nuevos_badges(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->assertSee('id="fd-solic-chosen-verified"', false)
             ->assertSee('Prestador Verificado', false)
@@ -327,7 +327,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_formulario_de_urgencias_ultra_rapido(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Chips de problema rapidos.
             ->assertSee('id="fd-solic-emergency-chips"', false)
@@ -383,7 +383,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_medio_de_pago_y_el_cta_de_urgencia(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->getContent();
 
@@ -407,7 +407,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_los_tabs_del_catalogo_quedan_ocultos_al_llenar_urgencias(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->getContent();
 
@@ -570,7 +570,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_manda_el_content_type_json_en_las_citas(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->getContent();
 
@@ -756,7 +756,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_selector_de_disponibilidad_y_el_nivel_de_detalle(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Selector de disponibilidad + franja horaria.
             ->assertSee('id="fd-solic-quote-availability"', false)
@@ -780,7 +780,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_el_submit_incluye_disponibilidad_y_nivel_de_detalle(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->assertSee('fdSolicQuoteSyncState', false)
             ->assertSee('fdSolicQuoteValidate', false)
@@ -910,7 +910,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_la_pantalla_de_seguimiento(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->assertSee('id="fd-solic-track"', false)
             ->assertSee('id="fd-solic-track-body"', false)
@@ -932,7 +932,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_calendario_y_las_franjas_de_cita(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             ->assertSee('id="fd-solic-form-scheduled"', false)
             ->assertSee('id="fd-solic-calendar"', false)
@@ -994,7 +994,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_la_tarjeta_de_sena_y_politicas(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Tarjeta explicativa de la sena.
             ->assertSee('La seña del 50% garantiza el turno y se descuenta del saldo final', false)
@@ -1035,7 +1035,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_los_datos_de_acceso_y_el_recordatorio(): void
     {
         $html = $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Direccion estructurada.
             ->assertSee('id="fd-solic-address-street"', false)
@@ -1136,7 +1136,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_el_cta_de_reserva_y_la_confirmacion(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // CTA principal de envio.
             ->assertSee('id="fd-solic-scheduled-submit"', false)
@@ -1185,7 +1185,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_carga_la_configuracion_dinamica_de_presupuestos(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Configuracion por rubro + fallback + resolver.
             ->assertSee('var FD_QUOTE_CONFIGS = {', false)
@@ -1208,7 +1208,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_los_contenedores_del_presupuesto_contextual(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Contenedores dinamicos dentro del form de presupuesto.
             ->assertSee('id="fd-solic-quote-context"', false)
@@ -1228,7 +1228,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_el_presupuesto_envia_el_contexto_dinamico(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // El submit construye quote_context desde el estado unificado.
             ->assertSee("form.append('quote_context', JSON.stringify(", false)
@@ -1242,7 +1242,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_dashboard_renderiza_la_zona_de_arrastrar_y_soltar(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Dropzone + inputs ocultos + contenedores de preview.
             ->assertSee('id="fd-solic-quote-dropzone"', false)
@@ -1268,7 +1268,7 @@ class ServiceProviderBrowseTest extends TestCase
     public function test_el_submit_del_presupuesto_arma_el_formdata_desde_los_archivos(): void
     {
         $this->actingAs($this->customer)
-            ->get('/dashboard')
+            ->get('/')
             ->assertStatus(200)
             // Fotos y video salen del estado unificado (buildForm).
             ->assertSee('fdSolicQuoteBuildForm', false)
