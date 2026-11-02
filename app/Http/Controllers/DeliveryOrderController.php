@@ -465,4 +465,64 @@ class DeliveryOrderController extends Controller
             'wallet' => DriverWallet::where('user_id', $user->id)->first(),
         ]);
     }
+
+    /**
+     * Reporte del repartidor: metricas de ganancias, entregas y el historial
+     * de viajes entregados. La vista incluye impresion directa a PDF.
+     */
+    public function reportes()
+    {
+        if (! Auth::check()) {
+            return redirect('/');
+        }
+
+        $user = Auth::user();
+
+        if (! $user->hasPageUrl('repartidor')) {
+            return redirect()->route('dashboard');
+        }
+
+        $stats = self::driverStats($user);
+
+        $monthStart = now()->startOfMonth();
+        $monthEnd = now()->endOfMonth();
+
+        $monthCredits = WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'credit')
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->get();
+
+        $earningsMonth = (float) $monthCredits->sum('amount');
+        $tipsMonth = (float) $monthCredits
+            ->filter(fn ($t) => preg_match('/propina|tip/i', (string) $t->description))
+            ->sum('amount');
+
+        $totalEarnings = (float) WalletTransaction::where('user_id', $user->id)
+            ->where('type', 'credit')
+            ->where('status', 'completed')
+            ->sum('amount');
+
+        $orders = Order::with('provider:id,business_name')
+            ->where('driver_id', $user->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->orderByDesc('updated_at')
+            ->limit(200)
+            ->get();
+
+        $tripsMonth = (int) Order::where('driver_id', $user->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->whereBetween('updated_at', [$monthStart, $monthEnd])
+            ->count();
+
+        return view('repartidor.reportes', [
+            'user' => $user,
+            'stats' => $stats,
+            'orders' => $orders,
+            'earningsMonth' => $earningsMonth,
+            'tipsMonth' => $tipsMonth,
+            'totalEarnings' => $totalEarnings,
+            'tripsMonth' => $tripsMonth,
+        ]);
+    }
 }

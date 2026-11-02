@@ -27,6 +27,7 @@ use App\Http\Controllers\ReporteHogarController;
 use App\Http\Controllers\ReportController;
 
 use App\Http\Controllers\DeliveryOrderController;
+use App\Http\Controllers\DiagnosticoVistasController;
 use Illuminate\Http\Request;
 
 // Rutas de Reportes Hogar (Servicios)
@@ -40,6 +41,13 @@ Route::middleware('auth')->group(function () {
     })->name('delivery.panel');
     Route::get('/dashboard/repartidor', [DeliveryOrderController::class, 'index'])->name('dashboard.repartidor');
     Route::get('/repartidor', [DeliveryOrderController::class, 'index'])->name('repartidor.index');
+    Route::get('/repartidor/reportes', [DeliveryOrderController::class, 'reportes'])->name('repartidor.reportes');
+
+    // Panel de diagnostico en vivo de vistas (solo lectura GET).
+    Route::get('/admin/diagnostico-vistas', [DiagnosticoVistasController::class, 'index'])->name('admin.diagnostico');
+    Route::get('/admin/diagnostico-vistas/auditar', [DiagnosticoVistasController::class, 'auditar'])->name('admin.diagnostico.auditar');
+    // Simulación de flujo transaccional con rollback obligatorio.
+    Route::post('/admin/diagnostico-vistas/test-flujo', [DiagnosticoVistasController::class, 'testFlujoSimulado'])->name('admin.diagnostico.test-flujo');
 });
 
 Route::get('/api/v1/delivery/orders', [DeliveryOrderController::class, 'availableOrders'])->name('api.delivery.orders');

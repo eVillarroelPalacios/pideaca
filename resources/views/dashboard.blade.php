@@ -56,9 +56,15 @@
                     <div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">
                         @foreach($module->pages as $page)
                             @if($page->url)
+                                @if(str_starts_with($page->url, '/'))
+                        <a href="{{ url($page->url) }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
+                            {{ $page->description }}
+                        </a>
+                                @else
                         <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('{{ $page->url }}')" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
+                                @endif
                             @else
                         <div class="dropdown-item" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">
                             {{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span>
@@ -100,7 +106,11 @@
                         <div class="mobile-sub" style="display:none;width:100%;text-align:center;">
                             @foreach($module->pages as $page)
                                 @if($page->url)
+                                    @if(str_starts_with($page->url, '/'))
+                            <a href="{{ url($page->url) }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                                    @else
                             <a href="#" onclick="event.preventDefault();showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                                    @endif
                                 @else
                             <div title="Todavia no tiene seccion" style="display:block;color:#9ca3af;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">{{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>
                                 @endif
@@ -652,6 +662,8 @@
             @include('dashboard.sections.ordenes-gestion')
                     @elseif($page->url === 'repartidor')
             @include('dashboard.sections.repartidor')
+                    @elseif(in_array($page->url, ['/repartidor/reportes', 'repartidor/reportes', 'reportes-repartidor'], true))
+            @include('dashboard.sections.reportes-repartidor')
                     @elseif($page->url)
             @include('dashboard.sections.default')
                     @endif
@@ -5022,6 +5034,112 @@
         fdShopsTimer = setTimeout(loadComercios, 300);
     }
 
+    // ---- Filtro de comercios por ubicación / distancia ----
+    var fdShopsFilter = { mode: 'distance', distanceKm: 10, location: '', coords: null };
+
+    function fdShopsFilterOpen() {
+        var modal = document.getElementById('fd-shops-filter-modal');
+        if (!modal) return;
+
+        var byDistance = document.getElementById('fd-shops-filter-mode-distance');
+        var all = document.getElementById('fd-shops-filter-mode-all');
+        var range = document.getElementById('fd-shops-filter-range');
+        var location = document.getElementById('fd-shops-filter-location');
+
+        if (byDistance) byDistance.checked = fdShopsFilter.mode !== 'all';
+        if (all) all.checked = fdShopsFilter.mode === 'all';
+        if (range) range.value = fdShopsFilter.distanceKm;
+        if (location) location.value = fdShopsFilter.location;
+
+        fdShopsFilterDistanceLabel();
+        fdShopsFilterMode();
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function fdShopsFilterClose() {
+        var modal = document.getElementById('fd-shops-filter-modal');
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function fdShopsFilterMode() {
+        var all = document.getElementById('fd-shops-filter-mode-all');
+        var range = document.getElementById('fd-shops-filter-range');
+        var wrap = document.getElementById('fd-shops-filter-slider-wrap');
+        var unlimited = all && all.checked;
+
+        if (range) range.disabled = unlimited;
+        if (wrap) wrap.style.opacity = unlimited ? '.45' : '1';
+    }
+
+    function fdShopsFilterDistanceLabel() {
+        var range = document.getElementById('fd-shops-filter-range');
+        var label = document.getElementById('fd-shops-filter-distance-label');
+        if (!range || !label) return;
+
+        var value = Number(range.value);
+        label.textContent = value >= 50 ? '50+ km' : value + ' km';
+    }
+
+    function fdShopsFilterLocate() {
+        var status = document.getElementById('fd-shops-filter-geo-status');
+        var input = document.getElementById('fd-shops-filter-location');
+
+        if (!navigator.geolocation) {
+            if (status) status.textContent = 'Tu navegador no soporta geolocalización.';
+            return;
+        }
+
+        if (status) status.textContent = 'Obteniendo ubicación…';
+
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            fdShopsFilter.coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            if (input && !input.value.trim()) {
+                input.value = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
+            }
+            if (status) status.textContent = 'Ubicación detectada. Se usará como referencia.';
+        }, function () {
+            if (status) status.textContent = 'No se pudo obtener la ubicación. Escribila manualmente.';
+        }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+    }
+
+    function fdShopsFilterApply() {
+        var all = document.getElementById('fd-shops-filter-mode-all');
+        var range = document.getElementById('fd-shops-filter-range');
+        var location = document.getElementById('fd-shops-filter-location');
+
+        fdShopsFilter.mode = (all && all.checked) ? 'all' : 'distance';
+        fdShopsFilter.distanceKm = range ? Number(range.value) : 10;
+        fdShopsFilter.location = location ? location.value.trim() : '';
+
+        // Emite la selección para que la lista de comercios se filtre.
+        document.dispatchEvent(new CustomEvent('fd:shops:filter', { detail: Object.assign({}, fdShopsFilter) }));
+
+        var badge = document.getElementById('fd-shops-filter-badge');
+        if (badge) {
+            var active = fdShopsFilter.mode !== 'all' || fdShopsFilter.location !== '';
+            badge.style.display = active ? 'inline-flex' : 'none';
+        }
+
+        fdShopsFilterClose();
+        loadComercios();
+    }
+
+    document.addEventListener('keydown', function (event) {
+        var modal = document.getElementById('fd-shops-filter-modal');
+        if (event.key === 'Escape' && modal && modal.style.display === 'flex') {
+            fdShopsFilterClose();
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        var modal = document.getElementById('fd-shops-filter-modal');
+        if (modal && event.target === modal) {
+            fdShopsFilterClose();
+        }
+    });
+
     function loadComercios(silent) {
         var input = document.getElementById('fd-shops-search');
         var search = input ? input.value.trim() : '';
@@ -5038,6 +5156,20 @@
         if (moduleId > 0) params.push('module_id=' + moduleId);
         if (search) params.push('search=' + encodeURIComponent(search));
         if (isFavorites) params.push('favorite=1');
+
+        // Filtro de ubicación/distancia: se emite junto con la búsqueda.
+        if (fdShopsFilter.mode === 'distance') {
+            params.push('max_distance_km=' + encodeURIComponent(fdShopsFilter.distanceKm));
+
+            if (fdShopsFilter.coords) {
+                params.push('lat=' + encodeURIComponent(fdShopsFilter.coords.lat));
+                params.push('lng=' + encodeURIComponent(fdShopsFilter.coords.lng));
+            }
+        }
+
+        if (fdShopsFilter.location) {
+            params.push('location=' + encodeURIComponent(fdShopsFilter.location));
+        }
 
         if (!silent) fdSetShopsState('loading');
 

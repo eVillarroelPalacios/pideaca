@@ -3,7 +3,17 @@
      que los comercios (buscador + tabs Favoritos/Todos + tarjetas); cada
      tarjeta trae los botones de los servicios que ofrece y el favorito, y al
      elegir un servicio la orden se le asigna directo a ese prestador. --}}
-<section id="dash-solicitar-servicio" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+<style>
+    /* Contenedor principal 95% centrado: exactamente 2.5% de margen por lado */
+    #dash-solicitar-servicio { width: 95%; max-width: 95%; margin: 24px auto; padding: 0 1rem; box-sizing: border-box; }
+
+    /* Grilla de tarjetas: 4 columnas en desktop, 3 en md, 2 en sm y 1 en mobile */
+    #fd-solic-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+    @media (max-width: 1023px) { #fd-solic-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 767px) { #fd-solic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 639px) { #fd-solic-grid { grid-template-columns: 1fr; } }
+</style>
+<section id="dash-solicitar-servicio" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
@@ -27,8 +37,10 @@
         <p id="fd-solic-message-text" style="font-size:13px;color:#374151;margin:0;white-space:pre-line;"></p>
     </div>
 
-    {{-- Grilla de prestadores (esquema Comercios) --}}
-    <div id="fd-solic-pick" style="background:#fff;border:1px solid #e5e7eb;padding:16px;margin-bottom:14px;">
+    {{-- Grilla de prestadores (esquema Comercios): wrapper sin borde ni
+         padding lateral para que las tarjetas arranquen en la misma sangria
+         que el titulo, los filtros y las cards de Comercios --}}
+    <div id="fd-solic-pick" style="background:#fff;border:0;padding:0;margin-bottom:14px;">
         <div id="fd-solic-loading" style="display:none;text-align:center;padding:24px;">
             <p style="font-size:13px;color:#6b7280;margin:0;">Cargando prestadores...</p>
         </div>
@@ -38,7 +50,7 @@
             <div id="fd-solic-empty-action"></div>
         </div>
 
-        <div id="fd-solic-grid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;"></div>
+        <div id="fd-solic-grid" style="display:none;"></div>
     </div>
 
     {{-- Prestador elegido + formulario del servicio --}}

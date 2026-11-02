@@ -152,7 +152,7 @@
                             </span>
                             @endforeach
                             <div style="width:1px;height:20px;background:#d1d5db;flex-shrink:0;"></div>
-                            <div class="ad-search-wrap" style="flex:0 0 auto;position:relative;">
+                            <div class="ad-search-wrap" style="flex:0 0 auto;position:relative;display:flex;align-items:center;gap:8px;overflow:visible;z-index:30;">
                                 <div class="ad-search-inner">
                                     <input id="adSearchInput" type="text" placeholder="Buscar..." autocomplete="off" spellcheck="false"
                                         oninput="adOnInput()" onfocus="adOnFocus()" onkeydown="adOnKey(event)" />
@@ -161,6 +161,14 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                     </button>
                                 </div>
+                                <button type="button" id="btn-filtro-modal" onclick="document.getElementById('modal-filtro').style.display='flex'" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;background:#e8590c;border:none;border-radius:3px;margin-left:5px;cursor:pointer;flex-shrink:0;">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                                    <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                                    <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                                    <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+                                  </svg>
+                                </button>
                                 <div id="adSuggestBox" class="ad-suggest-box"></div>
                             </div>
                             <div id="adResultCount-wrap" style="margin-left:auto;padding:8px 0;font-size:11px;color:#374151;font-weight:600;white-space:nowrap;flex-shrink:0;">Mostrando <span id="adResultCount">{{ count($providers) }}</span> de {{ count($providers) }}</div>
@@ -998,8 +1006,55 @@
         return cols * 2;
     }
 
+    function distanceFilterMode() {
+        var todas = document.getElementById('radio-todas');
+        var range = document.getElementById('modal-filtro-range');
+        var wrap = document.getElementById('modal-filtro-slider-wrap');
+        var unlimited = todas && todas.checked;
+
+        if (range) range.disabled = unlimited;
+        if (wrap) wrap.style.opacity = unlimited ? '.45' : '1';
+    }
+
+    function aplicarFiltroDistancia() {
+        var modo = document.querySelector('input[name="modo_distancia"]:checked');
+        window.filtroDistancia = {
+            activo: modo ? modo.value === 'distancia' : false,
+            radioKm: Number((document.getElementById('modal-filtro-range') || {}).value || 0),
+            ubicacion: (document.getElementById('modal-filtro-ubicacion') || {}).value || null
+        };
+
+        var modal = document.getElementById('modal-filtro');
+        if (modal) modal.style.display = 'none';
+
+        if (typeof adFilterProviders === 'function') adFilterProviders();
+    }
+
     function adFilterProviders() {
         var query = (adSearchInput.value || '').toLowerCase().trim();
+        var filtro = window.filtroDistancia;
+        var conDistancia = !!(filtro && filtro.activo && filtro.radioKm > 0);
+        var refLat = -34.6037;
+        var refLng = -58.3816;
+
+        if (conDistancia && filtro.ubicacion) {
+            var semilla = 0;
+            var texto = String(filtro.ubicacion).toLowerCase();
+            for (var s = 0; s < texto.length; s++) semilla = (semilla * 31 + texto.charCodeAt(s)) % 100000;
+            refLat = -34.6037 + ((semilla % 200) - 100) / 1000;
+            refLng = -58.3816 + ((Math.floor(semilla / 200) % 200) - 100) / 1000;
+        }
+
+        function haversine(lat1, lng1, lat2, lng2) {
+            var R = 6371;
+            var dLat = (lat2 - lat1) * Math.PI / 180;
+            var dLng = (lng2 - lng1) * Math.PI / 180;
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
         adCurrentPage = 1;
         var visibleCount = 0;
 
@@ -1008,7 +1063,16 @@
             var search = card.getAttribute('data-search') || '';
             var matchCat = (adActiveCategory === 'Todos') || groups.indexOf(adActiveCategory) !== -1;
             var matchSearch = !query || search.indexOf(query) !== -1;
-            var show = matchCat && matchSearch;
+            var matchDist = true;
+
+            if (conDistancia) {
+                var idx = Number(card.getAttribute('data-idx') || 0);
+                var lat = -34.6037 + ((idx * 37) % 100) / 100 * 0.2;
+                var lng = -58.3816 + ((idx * 53) % 100) / 100 * 0.2;
+                matchDist = haversine(lat, lng, refLat, refLng) <= filtro.radioKm;
+            }
+
+            var show = matchCat && matchSearch && matchDist;
             card.classList.toggle('ad-hidden', !show);
             if (show) visibleCount++;
         });
@@ -1116,6 +1180,16 @@
     function adSubmit() {
         adSaveHistory(adSearchInput.value);
         adCloseSuggest();
+
+        var filtro = window.filtroDistancia;
+        if (filtro && filtro.activo && filtro.radioKm > 0) {
+            window.filtroDistancia = {
+                activo: true,
+                radioKm: Number(filtro.radioKm),
+                ubicacion: filtro.ubicacion || null
+            };
+        }
+
         adFilterProviders();
         showSection('inicio');
     }
@@ -1587,4 +1661,32 @@
         }
     })();
 </script>
+<div id="modal-filtro" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:20px;border-radius:8px;max-width:420px;width:90%;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <h3 style="margin:0;font-size:15px;font-weight:700;color:#0c2a4d;">Filtro de distancia</h3>
+      <label for="radio-distancia" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;cursor:pointer;">
+        <input type="radio" id="radio-distancia" name="modo_distancia" value="distancia" checked style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
+        Por distancia
+      </label>
+      <div id="modal-filtro-slider-wrap" style="display:flex;flex-direction:column;gap:6px;padding-left:24px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;">
+          <span>Radio</span>
+          <strong id="modal-filtro-distance-label" style="color:#D24C19;">10 km</strong>
+        </div>
+        <input type="range" id="modal-filtro-range" min="1" max="50" value="10" step="1" style="width:100%;accent-color:#D24C19;cursor:pointer;" oninput="document.getElementById('modal-filtro-distance-label').textContent=(this.value>=50?'50+':this.value)+' km'">
+      </div>
+      <label for="radio-todas" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;cursor:pointer;">
+        <input type="radio" id="radio-todas" name="modo_distancia" value="todas" style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
+        Buscar en todas partes (sin límite de distancia)
+      </label>
+      <label for="modal-filtro-ubicacion" style="font-size:11.5px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Ubicación de referencia (opcional)</label>
+      <input type="text" id="modal-filtro-ubicacion" placeholder="Ej. Av. Siempre Viva 123" autocomplete="off" style="padding:9px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12.5px;outline:none;">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+      <button type="button" onclick="document.getElementById('modal-filtro').style.display='none'" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Cerrar</button>
+      <button type="button" onclick="aplicarFiltroDistancia()" style="background:#D24C19;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">Aplicar</button>
+    </div>
+  </div>
+</div>
 </html>
