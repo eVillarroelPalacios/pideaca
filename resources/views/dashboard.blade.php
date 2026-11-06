@@ -8327,7 +8327,9 @@
             allUsers = Array.isArray(data) ? data : [];
             loadUserStatusOptions();
             loadTypeUserOptions();
-            filterUsers();
+            // La vista de usuarios rediseñada no usa el buscador legacy
+            // (#user-search); sin esta guarda se cortaba el refresco de la lista.
+            if (document.getElementById('user-search')) filterUsers();
             if (selectedUser) {
                 var fresh = allUsers.find(function(x) { return String(x.id) === String(selectedUser.id); });
                 if (fresh) {
@@ -9125,6 +9127,12 @@
         return (type && (type.description || type.status)) || 'Usuario';
     }
 
+    function umUserIsInactive(u) {
+        var st = u && u.status;
+        var label = String((st && (st.status || st.description)) || '').trim().toLowerCase();
+        return label.indexOf('inactiv') !== -1 || label.indexOf('inactive') !== -1;
+    }
+
     function countAccountSecondaries() {
         return Math.max(0, getUserManagementUsers().length - 1);
     }
@@ -9237,6 +9245,9 @@
             var role = escapeHtml(getUserRoleLabel(u));
             var name = escapeHtml(u.name || 'Sin nombre');
             var email = escapeHtml(u.email || '');
+            var inactiveBadge = umUserIsInactive(u)
+                ? ' <span class="um-inactive-badge" title="Usuario inactivo">Inactivo</span>'
+                : '';
             var actions =
                 '<button type="button" class="um-action-btn perm" onclick="event.stopPropagation();selectUserManagementUser(' + id + ')" title="Editar permisos" aria-label="Editar permisos">' +
                     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>' +
@@ -9252,7 +9263,7 @@
             }
             return '<tr class="um-user-row' + (isSelected ? ' active' : '') + '" onclick="selectUserManagementUser(' + id + ')">' +
                 '<td>' +
-                    '<div class="um-user-name">' + name + (isParent ? ' <span style="font-size:10px;font-weight:600;color:#D24C19;">(principal)</span>' : '') + '</div>' +
+                    '<div class="um-user-name">' + name + (isParent ? ' <span style="font-size:10px;font-weight:600;color:#D24C19;">(principal)</span>' : '') + inactiveBadge + '</div>' +
                     '<div class="um-user-email">' + (email || 'Sin email') + '</div>' +
                 '</td>' +
                 '<td style="text-align:center;"><span class="um-role' + (isParent ? ' parent' : '') + '">' + role + '</span></td>' +
@@ -9562,6 +9573,22 @@
         return el ? el.value : '';
     }
 
+    function umGetAccountPrincipalFor(u) {
+        // Devuelve el usuario principal (menor id) que comparte el email de la cuenta.
+        if (!u) return null;
+        if (!u.email) return u;
+        var email = String(u.email).toLowerCase();
+        var candidates = (allUsers || []).filter(function(x) {
+            return x.email && String(x.email).toLowerCase() === email;
+        }).sort(function(a, b) { return Number(a.id) - Number(b.id); });
+        return candidates.length ? candidates[0] : u;
+    }
+
+    function umGetUserTypeId(u) {
+        if (!u) return '';
+        return u.type_user_id || (u.type_user && u.type_user.id) || (u.typeUser && u.typeUser.id) || '';
+    }
+
     function fillUserEditForm(u) {
         var label = document.getElementById('um-edit-user-label');
         var empty = document.getElementById('um-edit-empty');
@@ -9583,10 +9610,13 @@
         showMsg('um-edit-msg', '', true);
 
         var statusId = u.user_status_id || (u.status && u.status.id) || '';
-        var typeId = u.type_user_id || (u.type_user && u.type_user.id) || (u.typeUser && u.typeUser.id) || '';
+        var principal = umGetAccountPrincipalFor(u) || u;
+        var typeId = umGetUserTypeId(principal);
+        var roleLabelEl = document.getElementById('um-edit-role-label');
+        if (roleLabelEl) roleLabelEl.textContent = getUserRoleLabel(principal) || 'Usuario';
+        umSetVal('um-edit-type', typeId);
         umEnsureEditMeta().then(function() {
             umFillSelect('um-edit-status', umEditStatuses, 'status', statusId);
-            umFillSelect('um-edit-type', umEditTypes, 'description', typeId);
             umFillSelect('um-edit-country', umEditCountries, 'name', null);
             var addr = umGetUserPrimaryAddress(u);
             umEditAddressId = addr ? addr.id : null;
@@ -9632,7 +9662,9 @@
         }
         var csrf = document.querySelector('meta[name="csrf-token"]').content;
         var statusVal = umGetVal('um-edit-status');
-        var typeVal = umGetVal('um-edit-type');
+        // El rol NO es editable: se conserva/enviar siempre el del usuario principal.
+        var principal = umGetAccountPrincipalFor(user) || user;
+        var typeVal = umGetVal('um-edit-type') || umGetUserTypeId(principal);
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
         showMsg('um-edit-msg', 'Guardando cambios...', true);
 
@@ -11574,66 +11606,139 @@
 
     function openUserDelete(id, name) {
         deleteUserId = id;
-        document.getElementById('user-delete-name').textContent = name;
-        document.getElementById('user-delete-warning').style.display = 'none';
-        document.getElementById('user-delete-overlay').style.display = 'flex';
+        var overlay = document.getElementById('user-delete-overlay');
+        if (overlay) {
+            overlay.setAttribute('data-user-id', (id === null || id === undefined) ? '' : String(id));
+            overlay.style.display = 'flex';
+        }
+        var nameEl = document.getElementById('user-delete-name');
+        if (nameEl) nameEl.textContent = name || '';
+        var warn = document.getElementById('user-delete-warning');
+        if (warn) {
+            warn.textContent = '';
+            warn.style.display = 'none';
+        }
+        var btn = document.getElementById('user-delete-btn');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+        }
     }
 
     function closeUserDelete() {
-        document.getElementById('user-delete-overlay').style.display = 'none';
+        var overlay = document.getElementById('user-delete-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            overlay.removeAttribute('data-user-id');
+        }
+        var btn = document.getElementById('user-delete-btn');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+        }
         deleteUserId = null;
     }
 
-    function confirmDeleteUser() {
-        if (!deleteUserId) return;
-        var btn = document.getElementById('user-delete-btn');
-        var deletingId = deleteUserId;
-        btn.disabled = true;
-        btn.textContent = 'Eliminando...';
+    function umFindUserStatusByName(fragment) {
+        var list = (typeof userStatusOptionsCache !== 'undefined' && userStatusOptionsCache) ? userStatusOptionsCache : [];
+        var needle = String(fragment || '').toLowerCase();
+        for (var i = 0; i < list.length; i++) {
+            var label = String(list[i].status || list[i].description || '').toLowerCase();
+            if (label.indexOf(needle) === 0) return list[i];
+        }
+        return null;
+    }
 
-        fetch('{{ url("/admin/users") }}/' + deleteUserId, {
+    function markUserInactiveLocally(id) {
+        if (!Array.isArray(allUsers)) return;
+        var target = allUsers.find(function(u) { return String(u.id) === String(id); });
+        if (!target) return;
+        var st = umFindUserStatusByName('inactiv');
+        var statusId = st ? st.id : (target.user_status_id || (target.status && target.status.id) || null);
+        target.user_status_id = statusId;
+        target.status = { id: statusId, status: st ? st.status : 'Inactivo' };
+    }
+
+    function confirmDeleteUser() {
+        var overlay = document.getElementById('user-delete-overlay');
+        // El ID sale del estado o del dataset del modal (respaldo por si el
+        // estado se perdió entre abrir y confirmar).
+        var pendingId = (deleteUserId === null || deleteUserId === undefined || deleteUserId === '')
+            ? (overlay ? overlay.getAttribute('data-user-id') : null)
+            : deleteUserId;
+        if (pendingId === null || pendingId === undefined || pendingId === '') {
+            closeUserDelete();
+            return;
+        }
+        var deletingId = String(pendingId);
+        var btn = document.getElementById('user-delete-btn');
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        var csrf = meta ? meta.content : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Eliminando...';
+        }
+
+        // Se cierra el modal de inmediato: la interfaz nunca queda bloqueada
+        // esperando la respuesta. Si algo falla, se reabre con el error.
+        closeUserDelete();
+
+        fetch('{{ url("/admin/users") }}/' + encodeURIComponent(deletingId), {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': csrf
             }
         })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            btn.disabled = false;
-            btn.textContent = 'Eliminar';
-            if (data.success) {
-                closeUserDelete();
-                var wasSelected = umSelectedUserId !== null && String(umSelectedUserId) === String(deletingId);
+        .then(function(r) {
+            return r.json().catch(function() { return {}; }).then(function(data) {
+                return { ok: r.ok, data: data || {} };
+            });
+        })
+        .then(function(res) {
+            if (!res.ok || res.data.success !== true) {
+                throw new Error(res.data.message || 'No se pudo inactivar el usuario.');
+            }
+            // Reflejar la inactivación en la tabla al instante (sin esperar refetch).
+            markUserInactiveLocally(deletingId);
+            var wasSelected = umSelectedUserId !== null && String(umSelectedUserId) === deletingId;
+            if (wasSelected) {
+                umSelectedUserId = null;
+                selectedUser = null;
+            }
+            renderUserManagement();
+            return loadUsers().then(function() {
                 if (wasSelected) {
-                    umSelectedUserId = null;
-                    selectedUser = null;
-                }
-                loadUsers().then(function() {
-                    if (wasSelected) {
-                        var principal = getSessionAccountPrincipalUser();
-                        if (principal && String(principal.id) !== String(deletingId)) {
-                            umSelectedUserId = principal.id;
-                            selectedUser = principal;
-                        }
+                    var principal = getSessionAccountPrincipalUser();
+                    if (principal && String(principal.id) !== deletingId) {
+                        umSelectedUserId = principal.id;
+                        selectedUser = principal;
                     }
-                    umDraftUserId = null;
-                    umSelectedModuleId = null;
-                    renderUserManagement();
-                    updateCreateUserBtnVisibility();
-                });
-            } else {
-                var warn = document.getElementById('user-delete-warning');
-                warn.textContent = data.message || 'No se pudo inactivar.';
+                }
+                umDraftUserId = null;
+                umSelectedModuleId = null;
+                renderUserManagement();
+                updateCreateUserBtnVisibility();
+            });
+        })
+        .catch(function(err) {
+            var msg = (err && err.message) ? err.message : 'Error de conexión.';
+            // Reabrir el modal con el error para poder reintentar.
+            if (overlay) {
+                overlay.setAttribute('data-user-id', deletingId);
+                overlay.style.display = 'flex';
+            }
+            deleteUserId = deletingId;
+            var warn = document.getElementById('user-delete-warning');
+            if (warn) {
+                warn.textContent = msg;
                 warn.style.display = 'block';
             }
-        })
-        .catch(function() {
-            btn.disabled = false;
-            btn.textContent = 'Eliminar';
-            var warn = document.getElementById('user-delete-warning');
-            warn.textContent = 'Error de conexión.';
-            warn.style.display = 'block';
+            var b = document.getElementById('user-delete-btn');
+            if (b) {
+                b.disabled = false;
+                b.textContent = 'Eliminar';
+            }
         });
     }
 

@@ -44,6 +44,7 @@
                     .um-role.parent{background:#fff7ed;color:#D24C19;}
                     .um-actions{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;}
                     .um-action-btn{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:#fff;border:1px solid #e2e8f0;cursor:pointer;transition:all .15s ease;flex-shrink:0;}
+                    .um-inactive-badge{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;vertical-align:middle;}
                     .um-action-btn.perm{color:#D24C19;border:1px solid #fdba74;}
                     .um-action-btn.perm:hover{background:#fff7ed;border-color:#D24C19;}
                     .um-action-btn.edit{color:#1d4ed8;border:1px solid #bfdbfe;}
@@ -255,10 +256,10 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="field-label" style="font-size:10px;">Rol</label>
-                                            <select id="um-edit-type" class="field-input" style="border-radius:4px;">
-                                                <option value="">-- Seleccionar --</option>
-                                            </select>
+                                            <label class="field-label" style="font-size:10px;">Rol de la cuenta principal</label>
+                                            <div id="um-edit-role-label" class="field-input" style="border-radius:4px;background:#f3f4f6;color:#374151;display:flex;align-items:center;cursor:not-allowed;" aria-readonly="true" title="El rol lo define el usuario principal de la cuenta">—</div>
+                                            <input type="hidden" id="um-edit-type" value="" />
+                                            <p style="font-size:10px;color:#6b7280;margin:4px 0 0;">El rol lo define el usuario principal de la cuenta.</p>
                                         </div>
                                     </div>
                                 </div>
