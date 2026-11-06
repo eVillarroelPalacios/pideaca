@@ -25,7 +25,16 @@ class EnsurePageAccess
             ], 401);
         }
 
-        if (! $user->hasPageUrl(...$pages)) {
+        $hasAccess = $user->hasPageUrl(...$pages);
+
+        // El usuario principal de la cuenta administra implicitamente a sus
+        // usuarios secundarios, aunque el tipo de usuario no traiga la pagina
+        // "usuarios" en su plantilla de permisos.
+        if (! $hasAccess && in_array('usuarios', $pages, true) && $user->isAccountPrincipal()) {
+            $hasAccess = true;
+        }
+
+        if (! $hasAccess) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tu usuario no tiene la pagina requerida para esta operacion.',

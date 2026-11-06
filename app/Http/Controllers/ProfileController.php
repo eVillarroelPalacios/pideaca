@@ -8,6 +8,7 @@ use App\Models\Provider;
 use App\Models\ProviderImage;
 use App\Models\Region;
 use App\Models\ServiceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -81,6 +82,15 @@ class ProfileController extends Controller
         }
 
         $user = Auth::user();
+
+        // Solo el titular configura el negocio: el secundario hereda todo del principal.
+        // El Admin omite esta validación.
+        if (! $user->isAccountPrincipal() && ! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La configuración del negocio la administra el usuario principal de la cuenta.',
+            ], 403);
+        }
 
         if (! $user->typeUser || $user->typeUser->description !== 'Prestador') {
             return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar perfil de proveedor.'], 403);
@@ -228,8 +238,9 @@ class ProfileController extends Controller
             ->get();
 
         $providerSubgroupIds = [];
-        if ($user->provider) {
-            $providerSubgroupIds = $user->provider->subgroups->pluck('id')->toArray();
+        $provider = $user->provider ?: $this->resolveAccountProvider($user);
+        if ($provider) {
+            $providerSubgroupIds = $provider->subgroups->pluck('id')->toArray();
         }
 
         return response()->json([
@@ -255,14 +266,17 @@ class ProfileController extends Controller
             'subgroup_id' => 'required|exists:sub_groups,id',
         ]);
 
-        $provider = $user->provider;
+        // El secundario hereda el negocio del principal: se opera sobre el
+        // proveedor de la cuenta para no crear negocios duplicados.
+        $owner = $this->resolveAccountPrincipal($user) ?? $user;
+        $provider = $owner->provider;
 
         // El prestador todavía no guardó "Datos del Negocio": lo damos de alta
         // para poder vincularle categorías desde el primer ingreso.
         if (! $provider) {
             $provider = Provider::create([
-                'user_id' => $user->id,
-                'business_name' => trim((string) $user->name) !== '' ? trim((string) $user->name) : 'Mi negocio',
+                'user_id' => $owner->id,
+                'business_name' => trim((string) $owner->name) !== '' ? trim((string) $owner->name) : 'Mi negocio',
                 'is_active' => true,
             ]);
         }
@@ -298,8 +312,9 @@ class ProfileController extends Controller
 
         $selected = [];
 
-        if (Auth::user()->provider) {
-            $selected = Auth::user()->provider->serviceTypes()->pluck('service_types.id')->all();
+        $accountProvider = $this->resolveAccountProvider(Auth::user());
+        if ($accountProvider) {
+            $selected = $accountProvider->serviceTypes()->pluck('service_types.id')->all();
         }
 
         return response()->json([
@@ -325,14 +340,16 @@ class ProfileController extends Controller
             'service_type_id' => 'required|exists:service_types,id',
         ]);
 
-        $provider = $user->provider;
+        // Igual que en categorías: el secundario hereda el negocio del principal.
+        $owner = $this->resolveAccountPrincipal($user) ?? $user;
+        $provider = $owner->provider;
 
         // El prestador todavía no guardó "Datos del Negocio": lo damos de alta
         // para poder vincularle tipos de servicio desde el primer ingreso.
         if (! $provider) {
             $provider = Provider::create([
-                'user_id' => $user->id,
-                'business_name' => trim((string) $user->name) !== '' ? trim((string) $user->name) : 'Mi negocio',
+                'user_id' => $owner->id,
+                'business_name' => trim((string) $owner->name) !== '' ? trim((string) $owner->name) : 'Mi negocio',
                 'is_active' => true,
             ]);
         }
@@ -364,8 +381,24 @@ class ProfileController extends Controller
 
         $user = Auth::user()->load(['primaryAddress.country', 'primaryAddress.province']);
 
+        // El secundario hereda la dirección del principal: si no tiene
+        // dirección propia se devuelve la de la cuenta (solo lectura).
+        $shared = false;
+        $address = $user->primaryAddress;
+        if (! $address) {
+            $principal = $this->resolveAccountPrincipal($user);
+            if ($principal && (int) $principal->id !== (int) $user->id) {
+                $principal->load(['primaryAddress.country', 'primaryAddress.province']);
+                if ($principal->primaryAddress) {
+                    $address = $principal->primaryAddress;
+                    $shared = true;
+                }
+            }
+        }
+
         return response()->json([
-            'address' => $user->primaryAddress,
+            'address' => $address,
+            'shared' => $shared,
         ]);
     }
 
@@ -373,6 +406,15 @@ class ProfileController extends Controller
     {
         if (! Auth::check()) {
             return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        // El secundario no configura dirección propia: pertenece al negocio padre.
+        // El Admin omite esta validación.
+        if (! Auth::user()->isAccountPrincipal() && ! Auth::user()->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La dirección la administra el usuario principal de la cuenta.',
+            ], 403);
         }
 
         $request->validate([
@@ -434,6 +476,39 @@ class ProfileController extends Controller
             ->get(['id', 'name', 'type']);
 
         return response()->json($regions);
+    }
+
+    private function resolveAccountPrincipal(User $user): ?User
+    {
+        $email = strtolower(trim((string) $user->email));
+        if ($email === '') {
+            return $user;
+        }
+
+        $principalId = User::whereRaw('LOWER(email) = ?', [$email])->min('id');
+        if (! $principalId) {
+            return $user;
+        }
+
+        if ((int) $principalId === (int) $user->id) {
+            return $user;
+        }
+
+        return User::find($principalId);
+    }
+
+    private function resolveAccountProvider(User $user): ?Provider
+    {
+        if ($user->provider) {
+            return $user->provider;
+        }
+
+        $principal = $this->resolveAccountPrincipal($user);
+        if (! $principal || (int) $principal->id === (int) $user->id) {
+            return null;
+        }
+
+        return $principal->provider;
     }
 
     private function resizeImage(string $path, string $ext, int $maxWidth)

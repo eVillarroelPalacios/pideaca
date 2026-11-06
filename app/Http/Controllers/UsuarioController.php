@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Address;
 use App\Models\Provider;
 use App\Models\ProviderImage;
+use App\Models\ProviderService;
+use App\Models\ServiceType;
 use App\Models\Page;
 use App\Models\UserStatus;
 
@@ -83,15 +85,17 @@ class UsuarioController extends Controller
     {
         if ($this->requireAuth()) return $this->requireAuth();
 
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|confirmed',
             'user_status_id' => 'nullable|integer|exists:user_statuses,id',
             'type_user_id' => 'nullable|integer|exists:type_users,id',
         ]);
 
-        $accountTotal = User::whereRaw('LOWER(email) = ?', [strtolower($request->email)])->count();
+        $email = strtolower(trim($data['email']));
+
+        $accountTotal = User::whereRaw('LOWER(email) = ?', [$email])->count();
         if ($accountTotal > 0 && ($accountTotal - 1) >= 3) {
             return response()->json([
                 'success' => false,
@@ -99,13 +103,28 @@ class UsuarioController extends Controller
             ], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'user_status_id' => $request->user_status_id,
-            'type_user_id' => $request->type_user_id,
-        ]);
+        $statusId = $data['user_status_id'] ?? UserStatus::whereRaw('LOWER(status) = ?', ['activo'])->value('id');
+        $typeId = $data['type_user_id'] ?? User::whereRaw('LOWER(email) = ?', [$email])->orderBy('id')->value('type_user_id');
+
+        $user = DB::transaction(function () use ($data, $email, $statusId, $typeId) {
+            return User::create([
+                'name' => $data['name'],
+                'email' => $email,
+                'password' => Hash::make($data['password']),
+                'user_status_id' => $statusId,
+                'type_user_id' => $typeId,
+            ]);
+        });
+
+        // El secundario nace con las páginas directas del principal: es lo que
+        // alimenta su navbar (solo páginas asignadas, sin herencias implícitas).
+        $principalId = User::whereRaw('LOWER(email) = ?', [$email])->where('id', '!=', $user->id)->min('id');
+        if ($principalId) {
+            $inherited = User::whereKey($principalId)->first()?->pages()->pluck('pages.id')->all() ?? [];
+            if ($inherited !== []) {
+                $user->pages()->syncWithoutDetaching($inherited);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -163,6 +182,7 @@ class UsuarioController extends Controller
             'whatsapp' => 'nullable|string|max:30',
             'zone' => 'nullable|string|max:255',
             'promo' => 'nullable|string|max:500',
+            'hours' => 'nullable|array',
             'category_id' => 'nullable|integer|exists:groups,id',
             'is_active' => 'nullable|boolean',
         ]);
@@ -174,6 +194,7 @@ class UsuarioController extends Controller
             'whatsapp' => $request->whatsapp,
             'zone' => $request->zone,
             'promo' => $request->promo,
+            'hours' => $request->input('hours'),
             'is_active' => (bool) $request->input('is_active', true),
         ];
         if ($request->has('category_id')) {
@@ -678,6 +699,151 @@ class UsuarioController extends Controller
             'success' => true,
             'message' => $message,
             'selected' => $provider->subgroups()->pluck('sub_groups.id')->toArray(),
+        ]);
+    }
+
+    private function resolveServiceProvider(User $user): ?Provider
+    {
+        return $this->resolveAccountProvider($user);
+    }
+
+    public function services(User $user)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $provider = $this->resolveServiceProvider($user);
+
+        return response()->json([
+            'success' => true,
+            'services' => $provider ? $provider->services()->orderBy('sort_order')->get() : [],
+        ]);
+    }
+
+    public function storeService(Request $request, User $user)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $provider = $this->resolveServiceProvider($user);
+        if (!$provider) {
+            return response()->json(['success' => false, 'message' => 'Este usuario no tiene negocio. Creá el negocio para agregar servicios.'], 400);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $maxOrder = ProviderService::where('provider_id', $provider->id)->max('sort_order');
+
+        $service = ProviderService::create([
+            'provider_id' => $provider->id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'sort_order' => ($maxOrder ?? 0) + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Servicio agregado correctamente.',
+            'service' => $service,
+        ]);
+    }
+
+    public function updateService(Request $request, User $user, ProviderService $service)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $provider = $this->resolveServiceProvider($user);
+        if (!$provider || $service->provider_id !== $provider->id) {
+            return response()->json(['success' => false, 'message' => 'Servicio no encontrado.'], 404);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $service->update([
+            'name' => $request->name,
+            'description' => $request->input('description', $service->description),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Servicio actualizado correctamente.',
+            'service' => $service,
+        ]);
+    }
+
+    public function destroyService(User $user, ProviderService $service)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $provider = $this->resolveServiceProvider($user);
+        if (!$provider || $service->provider_id !== $provider->id) {
+            return response()->json(['success' => false, 'message' => 'Servicio no encontrado.'], 404);
+        }
+
+        $service->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Servicio eliminado correctamente.',
+        ]);
+    }
+
+    public function serviceTypes(User $user)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $types = ServiceType::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['id', 'code', 'name', 'description']);
+
+        $provider = $this->resolveServiceProvider($user);
+        $selected = $provider ? $provider->serviceTypes()->pluck('service_types.id')->all() : [];
+
+        return response()->json([
+            'success' => true,
+            'service_types' => $types,
+            'selected' => $selected,
+        ]);
+    }
+
+    public function toggleServiceType(Request $request, User $user)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        $request->validate([
+            'service_type_id' => 'required|exists:service_types,id',
+        ]);
+
+        $owner = $this->resolveAccountPrincipal($user) ?? $user;
+        $provider = $owner->provider;
+
+        if (! $provider) {
+            $provider = Provider::create([
+                'user_id' => $owner->id,
+                'business_name' => trim((string) $owner->name) !== '' ? trim((string) $owner->name) : 'Mi negocio',
+                'is_active' => true,
+            ]);
+        }
+
+        $serviceTypeId = $request->input('service_type_id');
+        $exists = $provider->serviceTypes()->where('service_type_id', $serviceTypeId)->exists();
+
+        if ($exists) {
+            $provider->serviceTypes()->detach($serviceTypeId);
+            $message = 'Tipo de servicio removido correctamente.';
+        } else {
+            $provider->serviceTypes()->attach($serviceTypeId);
+            $message = 'Tipo de servicio agregado correctamente.';
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'selected' => $provider->serviceTypes()->pluck('service_types.id')->all(),
         ]);
     }
 }

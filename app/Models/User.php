@@ -139,6 +139,34 @@ class User extends Authenticatable
     }
 
     /**
+     * El usuario principal (padre) de la cuenta: el de menor id entre los
+     * usuarios que comparten el email de la cuenta.
+     */
+    public function isAccountPrincipal(): bool
+    {
+        $email = strtolower(trim((string) $this->email));
+
+        if ($email === '') {
+            return false;
+        }
+
+        $principalId = static::whereRaw('LOWER(email) = ?', [$email])->min('id');
+
+        return $principalId !== null && (int) $principalId === (int) $this->id;
+    }
+
+    /**
+     * Rol administrador (bypass total de permisos puntuales).
+     */
+    public function isAdmin(): bool
+    {
+        $tipo = strtolower(trim((string) $this->typeUser?->description));
+        $rol = strtolower(trim((string) ($this->role ?? '')));
+
+        return str_contains($tipo, 'admin') || str_contains($rol, 'admin');
+    }
+
+    /**
      * Permiso real del usuario: la pagina es la unidad de permiso del sistema
      * (manda el menu), asi que se busca tanto en lo que se le asigno a el como
      * en la plantilla de su tipo de usuario.
@@ -149,6 +177,11 @@ class User extends Authenticatable
 
         if ($urls === []) {
             return false;
+        }
+
+        // El Admin omite cualquier validación puntual: acceso total.
+        if ($this->isAdmin()) {
+            return true;
         }
 
         return $this->pages()

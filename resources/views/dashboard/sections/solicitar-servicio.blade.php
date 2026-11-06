@@ -19,7 +19,13 @@
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
             <p id="fd-solic-summary" style="font-size:13px;color:#6b7280;margin:4px 0 0;">Buscá al prestador que necesitás y pedile el servicio.</p>
         </div>
-        <input id="fd-solic-search" type="text" placeholder="Buscar prestador..." oninput="fdSolicSearchDebounce()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;min-width:200px;background:#fff;outline:none;">
+        <div id="fd-solic-search-wrap" style="display:flex;align-items:center;gap:8px;">
+            <input id="fd-solic-search" type="text" placeholder="Buscar prestador..." oninput="fdSolicSearchDebounce()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;min-width:200px;background:#fff;outline:none;">
+            <button type="button" id="fd-solic-filter-btn" onclick="fdShopsFilterOpen()" title="Filtrar por ubicación y distancia" aria-label="Filtrar por ubicación y distancia" style="position:relative;background:#fff;color:#0c2a4d;border:1px solid #d1d5db;border-radius:4px;padding:7px 9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span id="fd-solic-filter-badge" style="display:none;position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:#D24C19;color:#fff;font-size:9px;font-weight:700;align-items:center;justify-content:center;line-height:1;border:2px solid #fff;">1</span>
+            </button>
+        </div>
     </div>
 
     <div id="fd-solic-tabs" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
@@ -748,7 +754,122 @@
 
         if (grid) grid.innerHTML = fdSolicProviders.map(renderCard).join('');
         pickState('grid');
+        fdSolicApplyDistanceFilter();
     }
+
+    // --------------------------------------------- filtro por distancia
+    var fdSolicDistFilter = null;
+
+    function fdSolicHaversine(lat1, lng1, lat2, lng2) {
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLng = (lng2 - lng1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function fdSolicSeedPoint(text) {
+        var seed = 0;
+        var value = String(text || '').toLowerCase();
+        for (var i = 0; i < value.length; i++) seed = (seed * 31 + value.charCodeAt(i)) % 100000;
+        return {
+            lat: -34.6037 + ((seed % 200) - 100) / 1000,
+            lng: -58.3816 + ((Math.floor(seed / 200) % 200) - 100) / 1000
+        };
+    }
+
+    function fdSolicRefPoint() {
+        var f = fdSolicDistFilter || {};
+        if (f.coords && typeof f.coords.lat === 'number') return { lat: f.coords.lat, lng: f.coords.lng };
+
+        var typed = String(f.location || '').trim();
+        if (typed) return fdSolicSeedPoint(typed);
+
+        var profile = (typeof window.fdProfileAddress !== 'undefined') ? window.fdProfileAddress : null;
+        var profileText = (typeof fdProfileAddressText === 'function') ? fdProfileAddressText(profile) : '';
+        if (profileText) {
+            var profileCoords = (typeof fdProfileAddressCoords === 'function') ? fdProfileAddressCoords(profile) : null;
+            return profileCoords || fdSolicSeedPoint(profileText);
+        }
+
+        var pending = typeof fdProfileAddressLoad === 'function'
+            && typeof fdProfileAddressState !== 'undefined'
+            && !fdProfileAddressState.done;
+        if (pending) {
+            fdProfileAddressLoad().then(function () { fdSolicApplyDistanceFilter(); });
+        }
+
+        return { lat: -34.6037, lng: -58.3816 };
+    }
+
+    function fdSolicProviderPoint(p) {
+        if (p && typeof p.lat === 'number' && typeof p.lng === 'number') return { lat: p.lat, lng: p.lng };
+        var id = Number(p && p.id ? p.id : 0);
+        return {
+            lat: -34.6037 + ((id * 37) % 100) / 100 * 0.3,
+            lng: -58.3816 + ((id * 53) % 100) / 100 * 0.3
+        };
+    }
+
+    window.fdSolicClearDistanceFilter = function () {
+        fdSolicDistFilter = null;
+        var badge = document.getElementById('fd-solic-filter-badge');
+        if (badge) badge.style.display = 'none';
+        fdSolicApplyDistanceFilter();
+    };
+
+    function fdSolicApplyDistanceFilter() {
+        var grid = document.getElementById('fd-solic-grid');
+        var empty = document.getElementById('fd-solic-empty');
+        var emptyText = document.getElementById('fd-solic-empty-text');
+        var emptyAction = document.getElementById('fd-solic-empty-action');
+        if (!grid) return;
+
+        var active = !!(fdSolicDistFilter && fdSolicDistFilter.mode === 'distance');
+        var radius = active ? Number(fdSolicDistFilter.distanceKm || 0) : 0;
+        var ref = active ? fdSolicRefPoint() : null;
+        var cards = grid.querySelectorAll('[data-fd-solic-provider]');
+        var visible = 0;
+
+        Array.prototype.forEach.call(cards, function (card) {
+            var id = Number(card.getAttribute('data-fd-solic-provider'));
+            var show = true;
+            if (active && radius > 0) {
+                var found = null;
+                fdSolicProviders.forEach(function (item) { if (item.id === id) found = item; });
+                var point = fdSolicProviderPoint(found || { id: id });
+                show = fdSolicHaversine(point.lat, point.lng, ref.lat, ref.lng) <= radius;
+            }
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        if (!active) {
+            grid.style.display = 'grid';
+            if (empty) empty.style.display = 'none';
+            return;
+        }
+
+        if (visible === 0) {
+            grid.style.display = 'none';
+            if (emptyText) emptyText.textContent = 'No hay prestadores dentro de ' + (radius >= 50 ? '50+' : radius) + ' km de la ubicacion elegida.';
+            if (emptyAction) emptyAction.innerHTML = '<button type="button" onclick="fdSolicClearDistanceFilter()" style="background:#D24C19;color:#fff;border:none;border-radius:4px;cursor:pointer;padding:8px 16px;font-size:12px;font-weight:700;">Quitar filtro de distancia</button>';
+            if (empty) empty.style.display = 'block';
+        } else {
+            grid.style.display = 'grid';
+            if (empty) empty.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('fd:shops:filter', function (event) {
+        var detail = event.detail || {};
+        fdSolicDistFilter = detail.mode === 'distance' ? detail : null;
+        var badge = document.getElementById('fd-solic-filter-badge');
+        if (badge) badge.style.display = fdSolicDistFilter ? 'inline-flex' : 'none';
+        fdSolicApplyDistanceFilter();
+    });
 
     function renderCard(p) {
         var html = '<div data-fd-solic-provider="' + p.id + '" style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
@@ -977,8 +1098,8 @@
 
         document.getElementById('fd-solic-pick').style.display = 'none';
         document.getElementById('fd-solic-chosen').style.display = 'block';
-        var fdSolicSearchInput = document.getElementById('fd-solic-search');
-        if (fdSolicSearchInput) fdSolicSearchInput.style.display = 'none';
+        var fdSolicSearchWrap = document.getElementById('fd-solic-search-wrap');
+        if (fdSolicSearchWrap) fdSolicSearchWrap.style.display = 'none';
         // Con un prestador elegido (urgencia, cita o presupuesto) se ocultan
         // los tabs Favoritos/Todos: el formulario ocupa toda la ventana.
         var fdSolicTabsBar = document.getElementById('fd-solic-tabs');
@@ -1019,8 +1140,8 @@
         fdSolicSchedConfirmOrder = null;
         document.getElementById('fd-solic-chosen').style.display = 'none';
         document.getElementById('fd-solic-pick').style.display = 'block';
-        var fdSolicSearchInput = document.getElementById('fd-solic-search');
-        if (fdSolicSearchInput) fdSolicSearchInput.style.display = '';
+        var fdSolicSearchWrap = document.getElementById('fd-solic-search-wrap');
+        if (fdSolicSearchWrap) fdSolicSearchWrap.style.display = 'flex';
         var fdSolicTabsBar = document.getElementById('fd-solic-tabs');
         if (fdSolicTabsBar) fdSolicTabsBar.style.display = 'flex';
         showForms();
@@ -2319,7 +2440,7 @@
         if (pick) pick.style.display = 'none';
         var chosen = document.getElementById('fd-solic-chosen');
         if (chosen) chosen.style.display = 'none';
-        var search = document.getElementById('fd-solic-search');
+        var search = document.getElementById('fd-solic-search-wrap');
         if (search) search.style.display = 'none';
         var confirmEl = document.getElementById('fd-solic-scheduled-confirm');
         if (confirmEl) confirmEl.style.display = 'block';
@@ -2431,7 +2552,7 @@
         if (pick) pick.style.display = 'none';
         var chosen = document.getElementById('fd-solic-chosen');
         if (chosen) chosen.style.display = 'none';
-        var search = document.getElementById('fd-solic-search');
+        var search = document.getElementById('fd-solic-search-wrap');
         if (search) search.style.display = 'none';
         var track = document.getElementById('fd-solic-track');
         if (track) track.style.display = 'block';

@@ -70,7 +70,7 @@
                     <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
                     <a href="#" onclick="openRegister();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Registrate</a>
                     <a href="#" onclick="openLogin();return false;" class="header-btn" style="padding:2px 10px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;">Entrar</a>
-                    <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
+                    <button id="menu-toggle" class="block md:hidden" onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
                 </div>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
@@ -901,6 +901,8 @@
         .fb-services li, .fb-meta-row, .fb-promo { font-size: 10px; }
         .fb-promo { padding: 5px 7px; }
     }
+
+    #menu-toggle { display: none !important; }
 
     @media (max-width: 768px) {
         .nav-link, .nav-separator { display: none !important; }

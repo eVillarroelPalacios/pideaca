@@ -168,6 +168,12 @@ Route::middleware('page:usuarios')->group(function () {
     Route::delete('/admin/users/{user}/pages/{page}', [UsuarioController::class, 'detachPage'])->name('admin.users.pages.detach');
     Route::get('/admin/users/{user}/subgroups', [UsuarioController::class, 'subgroups'])->name('admin.users.subgroups.index');
     Route::post('/admin/users/{user}/subgroups/toggle', [UsuarioController::class, 'toggleSubgroup'])->name('admin.users.subgroups.toggle');
+    Route::get('/admin/users/{user}/services', [UsuarioController::class, 'services'])->name('admin.users.services.index');
+    Route::post('/admin/users/{user}/services', [UsuarioController::class, 'storeService'])->name('admin.users.services.store');
+    Route::put('/admin/users/{user}/services/{service}', [UsuarioController::class, 'updateService'])->name('admin.users.services.update');
+    Route::delete('/admin/users/{user}/services/{service}', [UsuarioController::class, 'destroyService'])->name('admin.users.services.destroy');
+    Route::get('/admin/users/{user}/service-types', [UsuarioController::class, 'serviceTypes'])->name('admin.users.service-types.index');
+    Route::post('/admin/users/{user}/service-types/toggle', [UsuarioController::class, 'toggleServiceType'])->name('admin.users.service-types.toggle');
 });
 
 Route::middleware('page:paginas')->group(function () {

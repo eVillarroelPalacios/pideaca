@@ -55,7 +55,7 @@
             <div id="user-select-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:0;width:100%;max-width:860px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;display:flex;flex-direction:column;box-sizing:border-box;">
                     <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
-                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Seleccionar usuario</h3>
+                        <h3 style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Buscar y Seleccionar Usuario</h3>
                         <button onclick="closeUserSelectModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
                     </div>
                     <div style="padding:16px 20px 0;">
@@ -83,6 +83,8 @@
                                     <tr style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);">
                                         <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Nombre</th>
                                         <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Email</th>
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Rol</th>
+                                        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Estado</th>
                                         <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Acción</th>
                                     </tr>
                                 </thead>
@@ -107,15 +109,20 @@
                         <h3 id="user-modal-title" style="font-size:16px;font-weight:700;color:#0c2a4d;margin:0;">Nuevo Usuario</h3>
                         <button onclick="closeUserModal()" style="background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;font-size:18px;line-height:1;">&times;</button>
                     </div>
-                    <form id="user-form" onsubmit="submitUser(event)" style="padding:20px;">
+                    <form id="user-form" onsubmit="submitUser(event)" novalidate style="padding:20px;">
                         @csrf
                         <input type="hidden" id="user-id" value="" />
+                        <p id="user-form-error" style="font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 10px;margin:0 0 14px;display:none;"></p>
                         <div style="margin-bottom:16px;">
                             <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Nombre <span style="color:#dc2626;">*</span></label>
                             <input type="text" id="user-name" maxlength="255" placeholder="Nombre completo" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='#D24C19'" onblur="this.style.borderColor='#d1d5db'" />
                             <p id="user-name-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
                         </div>
-                        <input type="hidden" id="user-email" value="" />
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Email de la cuenta <span style="color:#dc2626;">*</span></label>
+                            <input type="email" id="user-email" maxlength="255" placeholder="correo@dominio.com" disabled style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;outline:none;box-sizing:border-box;background-color:#f3f4f6;color:#6b7280;cursor:not-allowed;" />
+                            <p id="user-email-error" style="font-size:11px;color:#dc2626;margin:4px 0 0;display:none;"></p>
+                        </div>
                         <div style="margin-bottom:16px;">
                             <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Contraseña <span id="user-password-required" style="color:#dc2626;">*</span></label>
                             <div style="position:relative;">

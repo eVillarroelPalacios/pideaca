@@ -33,9 +33,10 @@
                         <span style="font-size:10px;color:rgba(255,255,255,0.7);">{{ $user->email }}</span>
                     </div>
                 </div>
+                <script>console.log("NAVBAR_MODULOS_FILTRADOS:", @json($modules->map(function ($m) { return ['modulo' => $m->description, 'paginas' => $m->pages->pluck('description')->values()]; })->values()));</script>
                 @foreach($modules->sortBy(function ($m) { return $m->description === 'Administrar' ? 1 : 0; }) as $module)
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
-                <div class="nav-dropdown" style="position:relative;">
+                <div class="nav-dropdown" data-module-id="{{ $module->id }}" style="position:relative;">
                     <button class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;">
                         @if($module->icon)
                         <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
@@ -57,16 +58,16 @@
                         @foreach($module->pages as $page)
                             @if($page->url)
                                 @if(str_starts_with($page->url, '/'))
-                        <a href="{{ url($page->url) }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
+                        <a href="{{ url($page->url) }}" data-page-id="{{ $page->id }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
                                 @else
-                        <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('{{ $page->url }}')" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
+                        <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('{{ $page->url }}')" data-page-id="{{ $page->id }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
                                 @endif
                             @else
-                        <div class="dropdown-item" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">
+                        <div class="dropdown-item" data-page-id="{{ $page->id }}" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">
                             {{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span>
                         </div>
                             @endif
@@ -80,13 +81,16 @@
                     </div>
                 </div>
                 @endforeach
-                <button id="menu-toggle" onclick="toggleMenu()" style="display:none;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
+                @if($modules->isEmpty())
+                <a href="#" onclick="event.preventDefault();doLogout()" class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;">Cerrar Sesión</a>
+                @endif
+                <button id="menu-toggle" class="block md:hidden" onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;">&#9776;</button>
             </div>
             <div id="mobile-menu" style="display:none;background:#ffffff;padding:10px 8px;position:absolute;top:100%;left:0;right:0;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                 <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0;">
                     <div style="width:100%;height:1px;background:#e5e7eb;"></div>
                     @foreach($modules->sortBy(function ($m) { return $m->description === 'Administrar' ? 1 : 0; }) as $module)
-                        <button onclick="toggleMobileSub(this)" style="width:100%;background:none;border:none;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <button onclick="toggleMobileSub(this)" data-module-id="{{ $module->id }}" style="width:100%;background:none;border:none;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
                             @if($module->icon)
                             <span style="display:flex;align-items:center;">{!! $module->icon !!}</span>
                             @elseif($module->description === 'Comercio & Gastronomía')
@@ -107,12 +111,12 @@
                             @foreach($module->pages as $page)
                                 @if($page->url)
                                     @if(str_starts_with($page->url, '/'))
-                            <a href="{{ url($page->url) }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                            <a href="{{ url($page->url) }}" data-page-id="{{ $page->id }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
                                     @else
-                            <a href="#" onclick="event.preventDefault();showDashSection('{{ $page->url }}')" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                            <a href="#" onclick="event.preventDefault();showDashSection('{{ $page->url }}')" data-page-id="{{ $page->id }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
                                     @endif
                                 @else
-                            <div title="Todavia no tiene seccion" style="display:block;color:#9ca3af;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">{{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>
+                            <div data-page-id="{{ $page->id }}" title="Todavia no tiene seccion" style="display:block;color:#9ca3af;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">{{ $page->description }} <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>
                                 @endif
                             @endforeach
                             @if($module->description === 'Administrar' || $loop->last)
@@ -121,6 +125,9 @@
                             @endif
                         </div>
                     @endforeach
+                    @if($modules->isEmpty())
+                    <button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
+                    @endif
                 </div>
             </div>
         </nav>
@@ -241,7 +248,28 @@
                         $esPerfilPrestador = strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0;
                         $esPerfilCliente = strcasecmp((string) $user->typeUser?->description, 'Cliente') === 0;
                         $esPerfilRepartidor = strcasecmp((string) $user->typeUser?->description, 'Repartidor') === 0;
+                        $perfilDireccion = $user->primaryAddress;
+                        $perfilTieneDireccion = $perfilDireccion
+                            && trim((string) $perfilDireccion->street) !== ''
+                            && trim((string) $perfilDireccion->number) !== '';
                         $perfilPanelInicial = $esPerfilPrestador ? 'negocio' : ($esPerfilCliente ? 'direccion' : ($esPerfilRepartidor ? 'vehiculo' : 'cuenta'));
+                        // Solo el titular configura el negocio: el secundario hereda
+                        // todo del principal (solo lectura) y nunca lo edita.
+                        $esCuentaPrincipal = $user->isAccountPrincipal();
+                        // Rol efectivo: la cuenta gestionada manda sobre la sesión.
+                        $esRolNegocio = in_array($activeRole ?? '', ['prestador', 'comercio', 'comerciante', 'admin', 'administrador'], true);
+                        $puedeConfigurarNegocio = (($esPerfilPrestador || $user->isAdmin()) && ($esCuentaPrincipal || $user->isAdmin())) && $esRolNegocio;
+                        // Mi Dirección: solo el titular (o quien tenga el permiso explícito).
+                        $puedeVerDireccion = $esCuentaPrincipal || ($user->typeUser && $user->hasPageUrl('direccion'));
+                        if (! $perfilTieneDireccion && $esCuentaPrincipal) {
+                            $perfilPanelInicial = 'direccion';
+                        }
+                        if (! $esCuentaPrincipal && $perfilPanelInicial === 'direccion') {
+                            $perfilPanelInicial = 'cuenta';
+                        }
+                        if (! $puedeConfigurarNegocio && in_array($perfilPanelInicial, ['negocio', 'horarios', 'servicios', 'repartidores', 'imagenes', 'categorias'], true)) {
+                            $perfilPanelInicial = 'cuenta';
+                        }
                         $perfilEtiquetas = [
                             'negocio' => 'Datos del Negocio',
                             'direccion' => 'Mi Dirección',
@@ -268,11 +296,16 @@
                                     <div style="font-size:11px;color:#94a3b8;">{{ $user->typeUser ? $user->typeUser->description : '' }}</div>
                                 </div>
                             </div>
+                            <div id="profile-managed-badge" style="display:none;margin-top:12px;padding:10px 12px;background:#fff7ed;border:1px solid #fdba74;border-radius:4px;">
+                                <div style="font-size:10px;font-weight:700;color:#9a3412;text-transform:uppercase;letter-spacing:.5px;">Administrando</div>
+                                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-top:2px;"><span id="profile-managed-name"></span> <span style="font-weight:500;color:#64748b;">(<span id="profile-managed-role"></span>)</span></div>
+                                <button type="button" onclick="umExitManagedUser()" style="margin-top:8px;background:#fff;border:1px solid #fdba74;color:#D24C19;border-radius:4px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">Volver a mi cuenta</button>
+                            </div>
                         </div>
 
                         <nav style="flex:1;padding:12px 0;">
-                            @if($esPerfilPrestador)
-                            <a href="#" onclick="event.preventDefault();showProfilePanel('negocio')" class="sidebar-link active" data-panel="negocio" id="sidebar-link-negocio">
+                            @if($puedeConfigurarNegocio)
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('negocio')" class="sidebar-link{{ $perfilPanelInicial === 'negocio' ? ' active' : '' }}" data-panel="negocio" id="sidebar-link-negocio">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
                                 <span>Datos del Negocio</span>
                             </a>
@@ -305,11 +338,13 @@
                                 <span>Mi Vehículo</span>
                             </a>
                             @endif
+                            @if($puedeVerDireccion)
                             <a href="#" onclick="event.preventDefault();showProfilePanel('direccion')" class="sidebar-link{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion" id="sidebar-link-direccion">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
                                 <span>Mi Dirección</span>
                             </a>
-                            @if(strcasecmp((string) $user->typeUser?->description, 'Cliente') !== 0)
+                            @endif
+                            @if(strcasecmp((string) $user->typeUser?->description, 'Cliente') !== 0 && (($user->typeUser && $user->hasPageUrl('usuarios')) || $user->isAccountPrincipal()))
                             <a href="#" onclick="event.preventDefault();showProfilePanel('usuarios')" class="sidebar-link" data-panel="usuarios" id="sidebar-link-usuarios">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                                 <span>Usuarios</span>
@@ -341,7 +376,8 @@
                             <div id="profile-loading" style="text-align:center;padding:40px;color:#64748b;font-size:13px;{{ $esPerfilPrestador ? '' : 'display:none;' }}">Cargando tu panel...</div>
                             <div id="profile-panels" style="{{ $esPerfilPrestador ? 'display:none;' : '' }}max-width:960px;margin:0 auto;">
 
-                                <div class="profile-panel{{ $esPerfilPrestador ? ' active' : '' }}" data-panel="negocio">
+                                @if($puedeConfigurarNegocio)
+                                <div class="profile-panel{{ $perfilPanelInicial === 'negocio' ? ' active' : '' }}" data-panel="negocio">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg> Información del negocio</h3>
                                         <p class="pcard-sub">Estos datos se muestran en las tarjetas publicitarias de la landing.</p>
@@ -443,14 +479,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endif
 
+                                @if($puedeVerDireccion)
                                 <div class="profile-panel{{ $perfilPanelInicial === 'direccion' ? ' active' : '' }}" data-panel="direccion">
                                     <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg> Mi Dirección</h3>
                                         <div class="profile-field-grid">
                                             <div>
                                                 <label class="field-label">País</label>
-                                                <select id="addr-country" class="field-input" onchange="loadRegionsForCountry(this.value)">
+                                                <input type="hidden" id="addr-country-id" value="" />
+                                                <select id="addr-country" class="field-input" disabled style="cursor:not-allowed;background-color:#f1f3f5;color:#6b7280;">
                                                     <option value="">-- Seleccionar --</option>
                                                 </select>
                                             </div>
@@ -489,6 +528,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endif
 
                                 <div class="profile-panel" data-panel="usuarios">
                                     <div id="profile-usuarios-slot"></div>
@@ -817,6 +857,8 @@
         #fd-cat-overlay { display: none !important; }
     }
 
+    #menu-toggle { display: none !important; }
+
     @media (max-width: 768px) {
         .nav-link, .nav-separator, .nav-dropdown { display: none !important; }
         #menu-toggle { display: block !important; }
@@ -845,11 +887,16 @@
         document.querySelectorAll('.nav-dropdown-menu').forEach(function (m) { m.style.display = 'none'; });
     }
 
-    document.querySelectorAll('.nav-dropdown').forEach(function (dd) {
-        var menu = dd.querySelector('.nav-dropdown-menu');
-        if (!menu) return;
-        dd.addEventListener('mouseenter', function () { menu.style.display = 'block'; });
-        dd.addEventListener('mouseleave', function () { menu.style.display = 'none'; });
+    // Delegado para que los dropdowns reconstruidos dinámicamente también abran.
+    document.addEventListener('mouseover', function (e) {
+        var dd = e.target && e.target.closest ? e.target.closest('nav .nav-dropdown') : null;
+        document.querySelectorAll('nav .nav-dropdown-menu').forEach(function (m) {
+            if (!dd || m.parentNode !== dd) m.style.display = 'none';
+        });
+        if (dd) {
+            var menu = dd.querySelector('.nav-dropdown-menu');
+            if (menu) menu.style.display = 'block';
+        }
     });
 
     function toggleMobileSub(btn) {
@@ -881,10 +928,15 @@
         // navegador recorre el panel del usuario en vez de salir al sitio.
         if (!fdSectionPopNav && (!history.state || history.state.fdSection !== key)) {
             var state = { fdSection: key };
+            var navUrl = '{{ url('/') }}';
+            try {
+                var mid = (typeof umManagedId === 'function') ? umManagedId() : null;
+                if (mid) navUrl += '?managed=' + encodeURIComponent(mid);
+            } catch (e) {}
             if (fdSectionHistoryReady) {
-                history.pushState(state, '', '{{ url('/') }}');
+                history.pushState(state, '', navUrl);
             } else {
-                history.replaceState(state, '', '{{ url('/') }}');
+                history.replaceState(state, '', navUrl);
                 fdSectionHistoryReady = true;
             }
         }
@@ -5034,6 +5086,153 @@
         fdShopsTimer = setTimeout(loadComercios, 300);
     }
 
+    // ---- Direccion principal del perfil: fallback del filtro de distancia ----
+    var fdProfileAddressState = { done: false, promise: null, address: null };
+
+    function fdProfileAddressLoad() {
+        if (fdProfileAddressState.done) return Promise.resolve(fdProfileAddressState.address);
+        if (!fdProfileAddressState.promise) {
+            fdProfileAddressState.promise = fetch('{{ url("/profile/address") }}', { headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    fdProfileAddressState.address = (data && data.address) || null;
+                    fdProfileAddressState.done = true;
+                    window.fdProfileAddress = fdProfileAddressState.address;
+                    return fdProfileAddressState.address;
+                })
+                .catch(function () {
+                    fdProfileAddressState.address = null;
+                    fdProfileAddressState.done = true;
+                    window.fdProfileAddress = null;
+                    return null;
+                });
+        }
+        return fdProfileAddressState.promise;
+    }
+
+    function fdProfileAddressText(address) {
+        if (!address) return '';
+        if (address.formatted) return String(address.formatted).trim();
+        var parts = [
+            ((address.street || '') + ' ' + (address.number || '')).trim(),
+            address.floor_apartment || '',
+            [address.postal_code, (address.province && address.province.name) || ''].filter(Boolean).join(' '),
+            (address.region && address.region.name) || '',
+            (address.country && address.country.name) || ''
+        ].filter(Boolean);
+        return parts.join(', ');
+    }
+
+    function fdProfileAddressCoords(address) {
+        if (!address) return null;
+        var lat = parseFloat(address.latitude);
+        var lng = parseFloat(address.longitude);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        return { lat: lat, lng: lng };
+    }
+
+    // Origen del filtro: lo que escribio el usuario o, si esta vacio, la
+    // direccion principal del perfil (texto + coordenadas almacenadas).
+    function fdFilterResolveOrigin(typed, callback) {
+        var text = String(typed || '').trim();
+        if (text) {
+            callback({ location: text, coords: null });
+            return;
+        }
+        fdProfileAddressLoad().then(function (address) {
+            callback({
+                location: fdProfileAddressText(address),
+                coords: fdProfileAddressCoords(address)
+            });
+        });
+    }
+
+    function fdShopsHaversine(lat1, lng1, lat2, lng2) {
+        var R = 6371;
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLng = (lng2 - lng1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function fdFilterTokens(text) {
+        var stop = { av:1, avenida:1, calle:1, depto:1, piso:1, torre:1, argentina:1, buenos:1, aires:1, ciudad:1, autonoma:1, caba:1, zona:1, norte:1, sur:1, este:1, oeste:1, y:1, de:1, del:1, la:1, el:1, los:1, las:1, para:1, por:1, con:1 };
+        var out = [];
+        String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z0-9]+/).forEach(function (token) {
+            if (token.length >= 4 && !stop[token] && out.indexOf(token) === -1) out.push(token);
+        });
+        return out;
+    }
+
+    function fdFilterZoneMatch(tokens, zoneText) {
+        var zone = String(zoneText || '').toLowerCase();
+        if (zone.normalize) zone = zone.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        for (var i = 0; i < tokens.length; i++) {
+            if (zone.indexOf(tokens[i]) !== -1) return true;
+        }
+        return false;
+    }
+
+    function fdShopsOriginPoint(filter) {
+        var coords = filter.coords;
+        if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
+            return { lat: Number(coords.lat), lng: Number(coords.lng) };
+        }
+        var text = String(filter.location || '').trim();
+        var seed = 0;
+        var value = text.toLowerCase();
+        for (var i = 0; i < value.length; i++) seed = (seed * 31 + value.charCodeAt(i)) % 100000;
+        return {
+            lat: -34.6037 + ((seed % 200) - 100) / 1000,
+            lng: -58.3816 + ((Math.floor(seed / 200) % 200) - 100) / 1000
+        };
+    }
+
+    function fdProviderRealPoint(p) {
+        var lat = parseFloat(p && (p.lat !== undefined && p.lat !== null ? p.lat : p.latitude));
+        var lng = parseFloat(p && (p.lng !== undefined && p.lng !== null ? p.lng : p.longitude));
+        if (isNaN(lat) || isNaN(lng)) return null;
+        return { lat: lat, lng: lng };
+    }
+
+    function fdProviderMockKm(p) {
+        var id = Number(p && p.id ? p.id : 0);
+        return ((id * 13) % 50) + 1;
+    }
+
+    function aplicarFiltroComercios(providers) {
+        var list = providers || [];
+        var filter = (typeof fdShopsFilter !== 'undefined' && fdShopsFilter) ? fdShopsFilter : { mode: 'all' };
+        var radius = Number(filter.distanceKm || 0);
+
+        if (filter.mode !== 'distance' || !(radius > 0)) return list;
+
+        var origin = fdShopsOriginPoint(filter);
+        var tokens = fdFilterTokens(filter.location);
+
+        var filtered = list.filter(function (p) {
+            var zoneText = String((p && p.zone) || '') + ' ' + String((p && p.rubro) || '') + ' ' + String((p && p.business_name) || '');
+            if (tokens.length && fdFilterZoneMatch(tokens, zoneText)) return true;
+
+            var point = fdProviderRealPoint(p);
+            if (point) return fdShopsHaversine(point.lat, point.lng, origin.lat, origin.lng) <= radius;
+
+            return fdProviderMockKm(p) <= radius;
+        });
+
+        if (typeof fdShopsCounts !== 'undefined' && fdShopsCounts) {
+            if (typeof fdShopsTabActive !== 'undefined' && fdShopsTabActive === 'favorites') {
+                fdShopsCounts.favorites = filtered.length;
+            } else {
+                fdShopsCounts.all = filtered.length;
+            }
+        }
+
+        return filtered;
+    }
+
     // ---- Filtro de comercios por ubicación / distancia ----
     var fdShopsFilter = { mode: 'distance', distanceKm: 10, location: '', coords: null };
 
@@ -5053,6 +5252,11 @@
 
         fdShopsFilterDistanceLabel();
         fdShopsFilterMode();
+        fdProfileAddressLoad().then(function (address) {
+            var text = fdProfileAddressText(address);
+            var loc = document.getElementById('fd-shops-filter-location');
+            if (loc) loc.placeholder = text ? 'Por defecto: ' + text : 'Ej. Av. Siempre Viva 123';
+        });
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
@@ -5094,7 +5298,8 @@
         if (status) status.textContent = 'Obteniendo ubicación…';
 
         navigator.geolocation.getCurrentPosition(function (pos) {
-            fdShopsFilter.coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            fdShopsFilter.geoCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            fdShopsFilter.coords = fdShopsFilter.geoCoords;
             if (input && !input.value.trim()) {
                 input.value = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
             }
@@ -5111,19 +5316,23 @@
 
         fdShopsFilter.mode = (all && all.checked) ? 'all' : 'distance';
         fdShopsFilter.distanceKm = range ? Number(range.value) : 10;
-        fdShopsFilter.location = location ? location.value.trim() : '';
 
-        // Emite la selección para que la lista de comercios se filtre.
-        document.dispatchEvent(new CustomEvent('fd:shops:filter', { detail: Object.assign({}, fdShopsFilter) }));
+        fdFilterResolveOrigin(location ? location.value : '', function (origin) {
+            fdShopsFilter.location = origin.location;
+            fdShopsFilter.coords = fdShopsFilter.geoCoords || origin.coords;
 
-        var badge = document.getElementById('fd-shops-filter-badge');
-        if (badge) {
-            var active = fdShopsFilter.mode !== 'all' || fdShopsFilter.location !== '';
-            badge.style.display = active ? 'inline-flex' : 'none';
-        }
+            // Emite la selección para que la lista de comercios se filtre.
+            document.dispatchEvent(new CustomEvent('fd:shops:filter', { detail: Object.assign({}, fdShopsFilter) }));
 
-        fdShopsFilterClose();
-        loadComercios();
+            var badge = document.getElementById('fd-shops-filter-badge');
+            if (badge) {
+                var active = fdShopsFilter.mode !== 'all' || fdShopsFilter.location !== '';
+                badge.style.display = active ? 'inline-flex' : 'none';
+            }
+
+            fdShopsFilterClose();
+            loadComercios();
+        });
     }
 
     document.addEventListener('keydown', function (event) {
@@ -5188,6 +5397,8 @@
                     all: Number(res.data.total_count || 0),
                 };
 
+                providers = aplicarFiltroComercios(providers);
+
                 if (firstLoad) {
                     fdShopsInitialized = true;
                     fdShopsTabActive = fdShopsCounts.favorites > 0 ? 'favorites' : 'all';
@@ -5217,6 +5428,8 @@
                 if (!providers.length) {
                     if (fdShopsTabActive === 'favorites') {
                         fdSetShopsState('message', '', fdShopsFavoritesEmptyHtml());
+                    } else if (fdShopsFilter.mode === 'distance' && !search) {
+                        fdSetShopsState('message', 'No hay comercios dentro del radio seleccionado.');
                     } else {
                         fdSetShopsState('message', search
                             ? 'No encontramos comercios con ese nombre.'
@@ -7090,10 +7303,168 @@
         if (!document.hidden && fdPollKey && FD_POLL_SECTIONS[fdPollKey]) FD_POLL_SECTIONS[fdPollKey]();
     });
 
+    // ---------- Bloqueo global por direccion obligatoria ----------
+    var fdDireccionBloqueada = false;
+    var fdDireccionVerificada = false;
+
+    function verificarDireccionCompleta(usuario) {
+        var a = usuario && (usuario.primary_address || usuario.address || usuario.direccion || usuario);
+        if (!a) return false;
+        var pais = a.country_id || a.country || (a.country && a.country.id) || '';
+        var provincia = a.province_id || a.province || (a.province && a.province.id) || '';
+        var calle = String(a.street || '').trim();
+        var numero = String(a.number || '').trim();
+        var postal = String(a.postal_code || '').trim();
+        return !!(pais && provincia && calle && numero && postal);
+    }
+
+    function fdDireccionOcultarNavegacion(ocultar) {
+        ['nav .nav-dropdown', 'nav .nav-separator', '#menu-toggle', '#mobile-menu', '.footer-group-icons'].forEach(function (sel) {
+            document.querySelectorAll(sel).forEach(function (el) {
+                el.style.display = ocultar ? 'none' : '';
+            });
+        });
+        document.querySelectorAll('nav .nav-link').forEach(function (el) {
+            el.disabled = !!ocultar;
+        });
+        var nav = document.querySelector('nav');
+        if (nav) nav.setAttribute('aria-hidden', ocultar ? 'true' : 'false');
+    }
+
+    function fdForzarVistaDireccion() {
+        fdDireccionBloqueada = true;
+        fdDireccionOcultarNavegacion(true);
+        showDashSection('perfil');
+        if (typeof showProfilePanel === 'function') showProfilePanel('direccion');
+    }
+
+    function fdDesbloquearDireccion() {
+        fdDireccionBloqueada = false;
+        fdDireccionVerificada = true;
+        fdDireccionOcultarNavegacion(false);
+    }
+
+    function fdVerificarDireccionGuard() {
+        fetch('{{ url("/profile/address") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            var address = (data && data.address) || null;
+            fdDireccionVerificada = true;
+            if (!verificarDireccionCompleta(address)) {
+                fdForzarVistaDireccion();
+            } else {
+                fdDesbloquearDireccion();
+            }
+        })
+        .catch(function () {});
+    }
+
+    function fdPaisAutomatico() {
+        var tz = '';
+        try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+        var lang = String(navigator.language || '').toLowerCase();
+        if (tz.indexOf('Europe/') === 0 || /(^|-)es(-|$)/.test(lang)) return 'España';
+        return 'Argentina';
+    }
+
+    function fdBloquearPais(sel, paisId) {
+        var hidden = document.getElementById('addr-country-id');
+        if (hidden) hidden.value = paisId || '';
+        if (!sel) return;
+        sel.disabled = true;
+        sel.style.cursor = 'not-allowed';
+        sel.style.backgroundColor = '#f1f3f5';
+        sel.style.color = '#6b7280';
+    }
+
+    function fdSeleccionarPais(sel, nombre) {
+        if (!sel || !nombre) return '';
+        var normal = function (v) {
+            return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+        var target = normal(nombre);
+        for (var i = 0; i < sel.options.length; i++) {
+            if (normal(sel.options[i].textContent) === target) {
+                sel.value = sel.options[i].value;
+                fdBloquearPais(sel, sel.value);
+                if (typeof loadRegionsForCountry === 'function' && sel.value) loadRegionsForCountry(sel.value, null);
+                return sel.value;
+            }
+        }
+        return '';
+    }
+
+    function fdInicializarPaisDireccion(sel, tienePaisGuardado) {
+        if (!sel) return;
+
+        if (tienePaisGuardado && sel.value) {
+            fdBloquearPais(sel, sel.value);
+            return;
+        }
+
+        var aplicar = function (nombre) {
+            if (sel.value) {
+                fdBloquearPais(sel, sel.value);
+                return;
+            }
+            var elegido = fdSeleccionarPais(sel, nombre);
+            if (!elegido) fdSeleccionarPais(sel, fdPaisAutomatico());
+        };
+
+        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var timer = controller ? setTimeout(function () { controller.abort(); }, 4000) : null;
+
+        fetch('https://ipapi.co/json/', {
+            headers: { 'Accept': 'application/json' },
+            signal: controller ? controller.signal : undefined
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (timer) clearTimeout(timer);
+            aplicar((data && (data.country_name || data.country)) || fdPaisAutomatico());
+        })
+        .catch(function () {
+            if (timer) clearTimeout(timer);
+            aplicar(fdPaisAutomatico());
+        });
+    }
+
+    // Sidebar lateral acoplado a la pantalla Gestión de Usuarios (solo Admin):
+    // mueve el nodo sin duplicar IDs y lo devuelve a su lugar al salir.
+    var umSidebarHome = null;
+    function dockProfileSidebar(dock) {
+        var sidebar = document.getElementById('profile-sidebar');
+        var slot = document.getElementById('um-sidebar-slot');
+        var wrap = document.getElementById('um-with-sidebar');
+        if (!sidebar || !slot || !wrap) return;
+        if (!umSidebarHome) {
+            umSidebarHome = { parent: sidebar.parentNode, next: sidebar.nextSibling };
+        }
+        if (dock) {
+            if (sidebar.parentNode !== slot) slot.appendChild(sidebar);
+            slot.style.display = '';
+            wrap.classList.add('docked');
+        } else {
+            if (sidebar.parentNode !== umSidebarHome.parent) {
+                umSidebarHome.parent.insertBefore(sidebar, umSidebarHome.next);
+            }
+            slot.style.display = 'none';
+            wrap.classList.remove('docked');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        if (typeof umSnapshotSessionNav === 'function') umSnapshotSessionNav();
         var origShow = showDashSection;
         showDashSection = function(key) {
+            if (fdDireccionBloqueada && key !== 'perfil') {
+                fdForzarVistaDireccion();
+                return;
+            }
             origShow(key);
+            dockProfileSidebar(key === 'usuarios' && actorIsAdmin);
             if (key === 'modulos') loadModules();
             if (key === 'grupos') loadGroups();
             if (key === 'sub-grupos') loadSubGroups();
@@ -7146,8 +7517,23 @@
             showDashSection('perfil');
         }
 
-        @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0)
+        // El secundario hereda la dirección del principal y no pasa por
+        // el bloqueo de dirección obligatoria: accede a sus rutas asignadas.
+        @if($user->isAccountPrincipal() && !$user->isAdmin())
+            fdVerificarDireccionGuard();
+        @endif
+
+        try {
+            var managedParam = new URL(window.location.href).searchParams.get('managed');
+            if (typeof actorIsAdmin !== 'undefined' && actorIsAdmin && managedParam && !umManagedId()) {
+                umSetManagedUser(managedParam);
+            }
+        } catch (e) {}
+        umRestoreManagedUser();
+
+        @if (strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0 && $user->isAccountPrincipal())
             // Prestador que todavía no eligió categorías: no deja avanzar hasta configurarlas.
+            // Los usuarios secundarios heredan negocio/categorías del principal y omiten este modal.
             checkCategoryOnboarding();
         @endif
     });
@@ -7622,23 +8008,326 @@
     var allUserStatuses = [];
     var deleteUserStatusId = null;
 
+    // Gestion de usuarios de la cuenta (pantalla Usuarios).
+    var userParentModules = @json($permissionModules->values());
+    var umSelectedUserId = null;
+    var umSelectedModuleId = null;
+    var umDraftUserId = null;
+    var umDraftPages = {};
+    var umOriginalPages = {};
+    var umSavingPermissions = false;
+    var actorIsAdmin = {{ $user->isAdmin() ? 'true' : 'false' }};
+
+    // Contexto de administración: Admin gestionando a otro usuario (impersonación).
+    // Se persiste en sessionStorage para que el sidebar lo conserve al navegar.
+    var umManagedUserId = null;
+    var umManagedProfile = null;
+    var umManagedAccountEmail = null;
+    try {
+        umManagedUserId = window.sessionStorage.getItem('pideaca_managed_user_id');
+        umManagedAccountEmail = window.sessionStorage.getItem('pideaca_managed_email');
+    } catch (e) { umManagedUserId = null; umManagedAccountEmail = null; }
+    function umManagedId() {
+        return (typeof actorIsAdmin !== 'undefined' && actorIsAdmin && umManagedUserId) ? umManagedUserId : null;
+    }
+    function umAdminUserUrl(path) {
+        return '{{ url("/admin/users") }}/' + umManagedUserId + path;
+    }
+    function umSetManagedUser(id, email) {
+        umManagedUserId = (id === null || id === undefined || id === '') ? null : String(id);
+        if (email) {
+            umManagedAccountEmail = String(email).toLowerCase();
+        } else if (!umManagedUserId) {
+            umManagedAccountEmail = null;
+        }
+        try {
+            if (umManagedUserId) {
+                window.sessionStorage.setItem('pideaca_managed_user_id', umManagedUserId);
+                if (umManagedAccountEmail) window.sessionStorage.setItem('pideaca_managed_email', umManagedAccountEmail);
+            } else {
+                window.sessionStorage.removeItem('pideaca_managed_user_id');
+                window.sessionStorage.removeItem('pideaca_managed_email');
+            }
+            var url = new URL(window.location.href);
+            if (umManagedUserId) url.searchParams.set('managed', umManagedUserId);
+            else url.searchParams.delete('managed');
+            window.history.replaceState(history.state, '', url.toString());
+        } catch (e) {}
+        umManagedProfile = null;
+        profileDireccionCargada = false;
+        umRenderManagedBadge();
+        umRenderTopNavForManaged();
+        umRefreshManagedScope();
+        if (typeof umApplyManagedSidebar === 'function') umApplyManagedSidebar();
+        if (typeof loadProfile === 'function' && document.getElementById('dash-perfil') && document.getElementById('dash-perfil').style.display !== 'none') loadProfile();
+    }
+    function umManagedEmail() {
+        if (!umManagedId()) return null;
+        var u = (allUsers || []).find(function(x) { return String(x.id) === String(umManagedId()); });
+        if (u && u.email) return String(u.email).toLowerCase();
+        return umManagedAccountEmail ? String(umManagedAccountEmail).toLowerCase() : null;
+    }
+    // Rol efectivo de la cuenta activa: gestionada si hay impersonación, si no la propia.
+    // Las secciones comerciales solo aplican a Prestador/Comercio/Admin.
+    function umManagedCanConfigureBusiness() {
+        // Rol efectivo en tiempo real: gestionada si hay impersonación, si no la sesión.
+        // No depende del flag server-side (queda obsoleto al cambiar de gestionado sin recargar).
+        var mid = umManagedId();
+        if (!mid) return profilePuedeConfigurarNegocio;
+        var mu = (typeof umManagedProfile !== 'undefined') ? umManagedProfile : null;
+        if (!mu) {
+            var cached = (allUsers || []).find(function(x) { return String(x.id) === String(mid); });
+            if (!cached) return profilePuedeConfigurarNegocio;
+            mu = cached;
+        }
+        var t = mu.type_user || mu.typeUser;
+        var d = String((t && (t.description || t.status)) || '').trim().toLowerCase();
+        return d === 'prestador' || d === 'comercio' || d === 'comerciante' || d === 'admin' || d === 'administrador';
+    }
+    function umApplyManagedSidebar() {
+        var can = umManagedCanConfigureBusiness();
+        ['sidebar-link-negocio', 'sidebar-link-horarios', 'sidebar-link-servicios', 'sidebar-link-repartidores', 'sidebar-link-imagenes', 'sidebar-link-categorias'].forEach(function(id) {
+            var link = document.getElementById(id);
+            if (link) link.style.display = can ? '' : 'none';
+        });
+    }
+    function umRefreshManagedScope() {
+        var id = umManagedId();
+        if (!id) return;
+        var apply = function(user) {
+            if (user && user.email) {
+                umManagedAccountEmail = String(user.email).toLowerCase();
+                try { window.sessionStorage.setItem('pideaca_managed_email', umManagedAccountEmail); } catch (e) {}
+            }
+            if (user) umManagedProfile = user;
+            if (typeof umApplyManagedSidebar === 'function') umApplyManagedSidebar();
+            if (typeof renderUserManagement === 'function') renderUserManagement();
+            if (typeof fillUserEditForm === 'function') {
+                var current = (typeof getUserManagementSelectedUser === 'function') ? getUserManagementSelectedUser() : null;
+                if (current) fillUserEditForm(current);
+            }
+        };
+        var cached = (allUsers || []).find(function(x) { return String(x.id) === String(id); });
+        if (cached) { apply(cached); return; }
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ url("/admin/users") }}/' + id, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(fresh) {
+            if (!fresh || fresh.error) return;
+            var idx = (allUsers || []).findIndex(function(x) { return String(x.id) === String(fresh.id); });
+            if (idx !== -1) allUsers[idx] = fresh; else allUsers.push(fresh);
+            apply(fresh);
+        })
+        .catch(function() {});
+    }
+    function umExitManagedUser() {
+        umSetManagedUser(null);
+        umRestoreTopNav();
+        showUserPermissionMsg('', true);
+        if (typeof renderUserManagement === 'function') renderUserManagement();
+        if (typeof loadProfile === 'function') loadProfile();
+    }
+    function umRenderManagedBadge() {
+        var badge = document.getElementById('profile-managed-badge');
+        var nameEl = document.getElementById('profile-managed-name');
+        var roleEl = document.getElementById('profile-managed-role');
+        if (!badge) return;
+        var id = umManagedId();
+        if (!id) { badge.style.display = 'none'; return; }
+        var done = function(u) {
+            if (nameEl) nameEl.textContent = u ? (u.name || '') : '';
+            if (roleEl) roleEl.textContent = getUserRoleLabel(u);
+            badge.style.display = '';
+        };
+        var cached = (allUsers || []).find(function(x) { return String(x.id) === String(id); });
+        if (cached) { done(cached); return; }
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ url("/admin/users") }}/' + id, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(u) { done(u && !u.error ? u : null); })
+        .catch(function() { done(null); });
+    }
+    function umRestoreManagedUser() {
+        if (umManagedId()) { umRenderManagedBadge(); umRenderTopNavForManaged(); umRefreshManagedScope(); }
+    }
+    // Navbar superior según el usuario en gestión (activeTargetUser ?? currentUser).
+    // Filtra módulos/páginas por permisos activos; oculta el módulo sin hijos.
+    function umRenderTopNavForManaged() {
+        var id = umManagedId();
+        if (!id) { umRestoreTopNav(); return; }
+        var done = function(u) {
+            if (!u) { umRestoreTopNav(); return; }
+            var allowed = {};
+            ((u && u.pages) || []).forEach(function(pg) { allowed[String(pg.id)] = true; });
+            umRebuildTopNav(allowed);
+        };
+        var cached = (allUsers || []).find(function(x) { return String(x.id) === String(id); });
+        if (cached && cached.pages) { done(cached); return; }
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ url("/admin/users") }}/' + id, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(u) { done(u && !u.error ? u : null); })
+        .catch(function() { umRestoreTopNav(); });
+    }
+    var umNavIcons = {};
+    var umSessionAllowedIds = null;
+    var UM_BASE_URL = '{{ url('/') }}';
+    function umSnapshotSessionNav() {
+        if (umSessionAllowedIds !== null) return;
+        var allowed = {};
+        document.querySelectorAll('nav [data-page-id]').forEach(function(it) {
+            allowed[String(it.getAttribute('data-page-id'))] = true;
+        });
+        umSessionAllowedIds = allowed;
+        document.querySelectorAll('nav .nav-dropdown').forEach(function(dd) {
+            var btn = dd.querySelector('.nav-link');
+            var sp = btn ? btn.querySelector('span') : null;
+            var key = dd.getAttribute('data-module-id');
+            if (key && sp && !umNavIcons[key]) umNavIcons[key] = sp.outerHTML;
+        });
+    }
+    function umNavSortedModules(modules) {
+        return (modules || []).filter(function(m) {
+            return m && m.pages && m.pages.length;
+        }).sort(function(a, b) {
+            var ad = String(a.description || ''), bd = String(b.description || '');
+            var aA = ad.trim().toLowerCase() === 'administrar', bA = bd.trim().toLowerCase() === 'administrar';
+            if (aA !== bA) return aA ? 1 : -1;
+            return ad.localeCompare(bd);
+        });
+    }
+    function umNavPageHref(pg) {
+        if (!pg.url) return null;
+        return (String(pg.url).charAt(0) === '/') ? (UM_BASE_URL + pg.url) : null;
+    }
+    function umNavLogoutDesktop() {
+        return '<div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>' +
+            '<a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#dc2626;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">Cerrar Sesi\u00f3n</a>';
+    }
+    function umRebuildTopNav(allowed) {
+        allowed = allowed || {};
+        console.log("NAVBAR_MODULOS_FILTRADOS:", Object.keys(allowed).length, "paginas permitidas");
+        var catalog = Array.isArray(userParentModules) ? userParentModules.slice() : [];
+        var mods = umNavSortedModules(catalog).map(function(m) {
+            var pages = (m.pages || []).filter(function(pg) { return !!allowed[String(pg.id)]; });
+            return { id: m.id, description: m.description, icon: m.icon, pages: pages };
+        }).filter(function(m) { return m.pages.length > 0; });
+        var container = document.querySelector('nav .nav-container');
+        var toggle = document.getElementById('menu-toggle');
+        if (container) {
+            Array.prototype.slice.call(container.querySelectorAll('.nav-dropdown, .nav-separator')).forEach(function(n) { n.parentNode.removeChild(n); });
+            if (!mods.length) {
+                var only = document.createElement('a');
+                only.href = '#';
+                only.setAttribute('onclick', "event.preventDefault();doLogout()");
+                only.className = 'nav-link';
+                only.style.cssText = 'padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;text-decoration:none;';
+                only.textContent = 'Cerrar Sesión';
+                container.insertBefore(only, toggle);
+            }
+            mods.forEach(function(m, idx) {
+                var sep = document.createElement('div');
+                sep.className = 'nav-separator';
+                sep.style.cssText = 'width:1px;height:20px;background:rgba(255,255,255,0.4);';
+                container.insertBefore(sep, toggle);
+                var dd = document.createElement('div');
+                dd.className = 'nav-dropdown';
+                dd.setAttribute('data-module-id', m.id);
+                dd.style.cssText = 'position:relative;';
+                var iconHtml = umNavIcons[String(m.id)] || (m.icon || '');
+                var itemsHtml = m.pages.map(function(pg) {
+                    var href = umNavPageHref(pg);
+                    if (href) return '<a href="' + href + '" data-page-id="' + pg.id + '" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">' + escapeHtml(pg.description || '') + '</a>';
+                    if (pg.url) return '<a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection(\'' + pg.url + '\')" data-page-id="' + pg.id + '" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">' + escapeHtml(pg.description || '') + '</a>';
+                    return '<div class="dropdown-item" data-page-id="' + pg.id + '" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">' + escapeHtml(pg.description || '') + ' <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>';
+                }).join('');
+                if (String(m.description).trim().toLowerCase() === 'administrar' || idx === mods.length - 1) itemsHtml += umNavLogoutDesktop();
+                dd.innerHTML = '<button class="nav-link" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;">' + iconHtml + escapeHtml(m.description || '') +
+                    ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button>' +
+                    '<div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">' + itemsHtml + '</div>';
+                container.insertBefore(dd, toggle);
+            });
+        }
+        var mWrap = document.querySelector('#mobile-menu > div');
+        if (mWrap) {
+            mWrap.innerHTML = '<div style="width:100%;height:1px;background:#e5e7eb;"></div>';
+            if (!mods.length) {
+                mWrap.innerHTML += '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
+            }
+            mods.forEach(function(m, idx) {
+                var btn = document.createElement('button');
+                btn.setAttribute('onclick', 'toggleMobileSub(this)');
+                btn.setAttribute('data-module-id', m.id);
+                btn.style.cssText = 'width:100%;background:none;border:none;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;';
+                var iconHtml = umNavIcons[String(m.id)] || (m.icon || '');
+                btn.innerHTML = iconHtml + escapeHtml(m.description || '') +
+                    ' <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>';
+                var sub = document.createElement('div');
+                sub.className = 'mobile-sub';
+                sub.style.cssText = 'display:none;width:100%;text-align:center;';
+                sub.innerHTML = m.pages.map(function(pg) {
+                    var href = umNavPageHref(pg);
+                    if (href) return '<a href="' + href + '" data-page-id="' + pg.id + '" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">' + escapeHtml(pg.description || '') + '</a>';
+                    if (pg.url) return '<a href="#" onclick="event.preventDefault();showDashSection(\'' + pg.url + '\')" data-page-id="' + pg.id + '" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">' + escapeHtml(pg.description || '') + '</a>';
+                    return '<div data-page-id="' + pg.id + '" title="Todavia no tiene seccion" style="display:block;color:#9ca3b8;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">' + escapeHtml(pg.description || '') + ' <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>';
+                }).join('');
+                if (String(m.description).trim().toLowerCase() === 'administrar' || idx === mods.length - 1) {
+                    sub.innerHTML += '<div style="width:60%;height:1px;background:#e5e7eb;margin:6px auto;"></div>' +
+                        '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
+                }
+                mWrap.appendChild(btn);
+                mWrap.appendChild(sub);
+            });
+        }
+    }
+    function umRestoreTopNav() {
+        umRebuildTopNav(umSessionAllowedIds || {});
+    }
+    function umRefreshManagedProfile() {
+        var id = umManagedId();
+        if (!id) return;
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ url("/admin/users") }}/' + id, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(u) {
+            if (!u || u.error) return;
+            umManagedProfile = u;
+            var idx = (allUsers || []).findIndex(function(x) { return String(x.id) === String(u.id); });
+            if (idx !== -1) allUsers[idx] = u;
+            profileDireccionCargada = false;
+            loadAddress();
+        })
+        .catch(function() {});
+    }
+
     function loadUsers() {
         userCurrentPage = 1;
-        document.getElementById('users-loading').style.display = 'block';
-        document.getElementById('users-empty').style.display = 'none';
-        document.getElementById('users-table-wrap').style.display = 'none';
-        document.getElementById('users-pagination').style.display = 'none';
+        var loading = document.getElementById('users-loading');
+        var empty = document.getElementById('users-empty');
+        var tableWrap = document.getElementById('users-table-wrap');
+        var pagination = document.getElementById('users-pagination');
+        if (loading) loading.style.display = 'block';
+        if (empty) empty.style.display = 'none';
+        if (tableWrap) tableWrap.style.display = 'none';
+        if (pagination) pagination.style.display = 'none';
 
         return fetch('{{ url("/admin/users") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            allUsers = data;
+            allUsers = Array.isArray(data) ? data : [];
             loadUserStatusOptions();
             loadTypeUserOptions();
             filterUsers();
-            updateCreateUserBtnVisibility();
             if (selectedUser) {
                 var fresh = allUsers.find(function(x) { return String(x.id) === String(selectedUser.id); });
                 if (fresh) {
@@ -7656,22 +8345,24 @@
                     selectedUser = fresh;
                     var sIdx = allUsers.findIndex(function(x) { return String(x.id) === String(fresh.id); });
                     if (sIdx !== -1) allUsers[sIdx] = fresh;
-                    renderUserDemographic(fresh);
-                    renderUserAccount(fresh);
-                    loadUserCategorias();
                 } else {
-                    clearUserDemographic();
+                    selectedUser = null;
                 }
             }
+            ensureUserManagementSelection();
+            updateCreateUserBtnVisibility();
+            renderUserManagement();
+            return allUsers;
         })
         .catch(function() {
-            document.getElementById('users-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar usuarios.</p>';
+            if (loading) loading.innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar usuarios.</p>';
+            renderUserManagement();
         });
     }
 
     function getActiveAccountEmail() {
-        if (selectedUser && selectedUser.email) return String(selectedUser.email).toLowerCase();
         if (authEmail) return String(authEmail).toLowerCase();
+        if (selectedUser && selectedUser.email) return String(selectedUser.email).toLowerCase();
         return '';
     }
 
@@ -8112,34 +8803,8 @@
     }
 
     function selectUser(id) {
-        var u = allUsers.find(function(x) { return String(x.id) === String(id); });
-        if (!u) return;
-        if (isInactiveUserStatus(u)) {
-            if (!confirm('\u00bfEl usuario ' + (u.name || '') + ' est\u00e1 inactivo. \u00bfQuer\u00e9s activarlo?')) {
-                return;
-            }
-            activateInactiveUser(u);
-        }
-        if (userSelectScope !== 'account') {
-            var selEmail = u.email ? String(u.email).toLowerCase() : '';
-            if (selEmail) {
-                var principal = allUsers.filter(function(x) {
-                    return x.email && String(x.email).toLowerCase() === selEmail;
-                }).sort(function(a, b) { return Number(a.id) - Number(b.id); })[0];
-                if (principal) u = principal;
-            }
-            selectedUser = u;
-            switchUserTab('demografia');
-        } else {
-            selectedUser = u;
-            switchUserTab('cuenta');
-            switchUserAccountTab('gestion');
-        }
-        renderUserDemographic(u);
-        renderUserAccount(u);
-        loadUserCategorias();
+        selectUserManagementUser(id);
         closeUserSelectModal();
-        refreshSelectedUser();
     }
 
     function refreshSelectedUser() {
@@ -8156,27 +8821,27 @@
             var idx = allUsers.findIndex(function(x) { return String(x.id) === String(fresh.id); });
             if (idx !== -1) allUsers[idx] = fresh;
             allUsers._filtered = getAccountUsers();
-            renderUserDemographic(fresh);
-            renderUserAccount(fresh);
-            loadUserCategorias();
+            renderUserManagement();
+            fillUserEditForm(getUserManagementSelectedUser());
         })
         .catch(function() {});
     }
 
     function applyUserUpdate(user) {
-        if (!user || !selectedUser) return;
+        if (!user || !user.id) return;
         var idx = allUsers.findIndex(function(x) { return String(x.id) === String(user.id); });
-        if (idx !== -1) allUsers[idx] = user;
-        var sameAccount = String(selectedUser.id) === String(user.id) ||
-            (selectedUser.email && user.email && String(selectedUser.email).toLowerCase() === String(user.email).toLowerCase());
-        if (String(selectedUser.id) === String(user.id)) {
+        if (idx !== -1) {
+            allUsers[idx] = user;
+        } else {
+            allUsers.push(user);
+        }
+        if (selectedUser && String(selectedUser.id) === String(user.id)) {
             selectedUser = user;
         }
         allUsers._filtered = getAccountUsers();
-        if (!sameAccount) return;
-        renderUserDemographic(selectedUser);
-        renderUserAccount(selectedUser);
-        loadUserCategorias();
+        ensureUserManagementSelection();
+        updateCreateUserBtnVisibility();
+        renderUserManagement();
         if (currentUserPanelTab() === 'config') loadUserAccountConfig();
     }
 
@@ -8382,26 +9047,744 @@
     }
 
     function renderUserAccount(u) {
-        renderUserAccountGestion(u);
-        renderUserAccountPaginas(u);
-        switchUserAccountTab(userAccountActiveTab);
+        if (u && (!umSelectedUserId || String(umSelectedUserId) !== String(u.id))) {
+            var accountUser = getUserManagementUsers().find(function(x) { return String(x.id) === String(u.id); });
+            if (accountUser) {
+                umSelectedUserId = accountUser.id;
+                umDraftUserId = null;
+                selectedUser = accountUser;
+            }
+        }
+        renderUserManagement();
         updateCreateUserBtnVisibility();
     }
 
     var USER_MAX_SECONDARIES = 3;
 
-    function countAccountSecondaries() {
-        var email = getActiveAccountEmail();
-        if (!email) return 0;
-        var total = allUsers.filter(function(u) {
+    function getUserManagementAccountEmail() {
+        return authEmail ? String(authEmail).toLowerCase() : '';
+    }
+
+    function getUserManagementUsers() {
+        var email = umManagedId() ? (umManagedEmail() || getUserManagementAccountEmail()) : getUserManagementAccountEmail();
+        if (!email) return allUsers.slice();
+        return allUsers.filter(function(u) {
             return u.email && String(u.email).toLowerCase() === email;
-        }).length;
-        return Math.max(0, total - 1);
+        }).sort(function(a, b) { return Number(a.id) - Number(b.id); });
+    }
+
+    function getSessionUser() {
+        if (authUserId !== null && authUserId !== undefined && authUserId !== '') {
+            var me = allUsers.find(function(x) { return String(x.id) === String(authUserId); });
+            if (me) return me;
+        }
+        var users = getUserManagementUsers();
+        return users.length ? users[0] : null;
+    }
+
+    function getSessionAccountPrincipalUser() {
+        var users = getUserManagementUsers();
+        return users.length ? users[0] : null;
+    }
+
+    function isParentAccountUser(u) {
+        if (!u) return false;
+        var session = getSessionUser();
+        var principal = getSessionAccountPrincipalUser();
+        return !!((session && String(session.id) === String(u.id)) ||
+            (principal && String(principal.id) === String(u.id)));
+    }
+
+    function getUserManagementSelectedUser() {
+        if (umSelectedUserId === null || umSelectedUserId === undefined) return null;
+        var found = getUserManagementUsers().find(function(u) {
+            return String(u.id) === String(umSelectedUserId);
+        });
+        if (found) return found;
+        if (selectedUser && String(selectedUser.id) === String(umSelectedUserId)) return selectedUser;
+        return null;
+    }
+
+    function ensureUserManagementSelection() {
+        var users = getUserManagementUsers();
+        if (umSelectedUserId !== null && umSelectedUserId !== undefined) {
+            var found = users.find(function(u) { return String(u.id) === String(umSelectedUserId); });
+            if (!found && !(selectedUser && String(selectedUser.id) === String(umSelectedUserId))) umSelectedUserId = null;
+        }
+        if ((umSelectedUserId === null || umSelectedUserId === undefined) && selectedUser) {
+            var fromSelected = users.find(function(u) { return String(u.id) === String(selectedUser.id); });
+            if (fromSelected) umSelectedUserId = fromSelected.id;
+        }
+        var current = getUserManagementSelectedUser();
+        if (current) selectedUser = current;
+        return current;
+    }
+
+    function getUserRoleLabel(u) {
+        var type = u && (u.type_user || u.typeUser);
+        return (type && (type.description || type.status)) || 'Usuario';
+    }
+
+    function countAccountSecondaries() {
+        return Math.max(0, getUserManagementUsers().length - 1);
     }
 
     function updateCreateUserBtnVisibility() {
+        var max = USER_MAX_SECONDARIES;
+        var count = countAccountSecondaries();
+        var atLimit = count >= max;
+        var text = document.getElementById('um-limit-text');
+        var hint = document.getElementById('um-limit-hint');
+        var bar = document.getElementById('um-limit-bar');
+        var progress = document.getElementById('um-progress');
         var btn = document.getElementById('user-create-btn');
-        if (btn) btn.style.display = countAccountSecondaries() >= USER_MAX_SECONDARIES ? 'none' : 'flex';
+
+        if (text) text.textContent = count + ' de ' + max + ' creados';
+        if (hint) {
+            hint.textContent = atLimit
+                ? 'Alcanzaste el límite de usuarios adicionales de la cuenta.'
+                : 'Podés crear hasta ' + max + ' usuarios adicionales.';
+        }
+        if (bar) {
+            bar.style.width = Math.min(100, (count / max) * 100) + '%';
+            bar.style.background = atLimit ? '#dc2626' : '';
+        }
+        if (progress) progress.setAttribute('aria-valuenow', String(count));
+        if (btn) {
+            btn.disabled = atLimit;
+            btn.style.display = '';
+            btn.title = atLimit ? 'Límite de usuarios alcanzado' : 'Agregar nuevo usuario';
+        }
+    }
+
+    function umSafeId(value) {
+        var n = parseInt(value, 10);
+        return isNaN(n) ? '0' : String(n);
+    }
+
+    function getAllowedPermissionModules() {
+        var modules = Array.isArray(userParentModules) ? userParentModules.slice() : [];
+        return modules.filter(function(m) {
+            return m && m.pages && m.pages.length;
+        }).sort(function(a, b) {
+            var ad = String(a.description || a.name || '');
+            var bd = String(b.description || b.name || '');
+            var aAdmin = ad.trim().toLowerCase() === 'administrar';
+            var bAdmin = bd.trim().toLowerCase() === 'administrar';
+            if (aAdmin !== bAdmin) return aAdmin ? 1 : -1;
+            return ad.localeCompare(bd);
+        });
+    }
+
+    function getAllowedPermissionPagesMap() {
+        var map = {};
+        getAllowedPermissionModules().forEach(function(module) {
+            (module.pages || []).forEach(function(pg) {
+                map[String(pg.id)] = pg;
+            });
+        });
+        return map;
+    }
+
+    function initUserPermissionDraft(user) {
+        if (!user) return;
+        umDraftUserId = String(user.id);
+        umOriginalPages = getUserAssignedPageIds(user);
+        var allowed = getAllowedPermissionPagesMap();
+        umDraftPages = {};
+        Object.keys(allowed).forEach(function(pid) {
+            if (umOriginalPages[pid]) umDraftPages[pid] = true;
+        });
+
+        var modules = getAllowedPermissionModules();
+        var keep = umSelectedModuleId !== null && modules.some(function(m) {
+            return String(m.id) === String(umSelectedModuleId);
+        });
+        if (!keep) {
+            var withSelection = modules.filter(function(m) {
+                return (m.pages || []).some(function(pg) { return !!umDraftPages[String(pg.id)]; });
+            })[0];
+            umSelectedModuleId = withSelection ? withSelection.id : (modules.length ? modules[0].id : null);
+        }
+    }
+
+    function renderUserManagement() {
+        ensureUserManagementSelection();
+        renderUserManagementTable();
+        renderUserPermissionsPanel();
+    }
+
+    function renderUserManagementTable() {
+        var tbody = document.getElementById('um-users-tbody');
+        if (!tbody) return;
+        var empty = document.getElementById('um-users-empty');
+        var countEl = document.getElementById('um-users-count');
+        var users = getUserManagementUsers();
+
+        if (countEl) countEl.textContent = String(users.length);
+
+        if (!users.length) {
+            tbody.innerHTML = '';
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+        if (empty) empty.style.display = 'none';
+
+        tbody.innerHTML = users.map(function(u) {
+            var id = umSafeId(u.id);
+            var isParent = isParentAccountUser(u);
+            var isSelected = umSelectedUserId !== null && String(umSelectedUserId) === String(u.id);
+            var role = escapeHtml(getUserRoleLabel(u));
+            var name = escapeHtml(u.name || 'Sin nombre');
+            var email = escapeHtml(u.email || '');
+            var actions =
+                '<button type="button" class="um-action-btn perm" onclick="event.stopPropagation();selectUserManagementUser(' + id + ')" title="Editar permisos" aria-label="Editar permisos">' +
+                    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>' +
+                '</button>' +
+                '<button type="button" class="um-action-btn edit" onclick="event.stopPropagation();openUserEditModal(' + id + ')" title="Editar datos" aria-label="Editar datos">' +
+                    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>' +
+                '</button>';
+            if (!isParent) {
+                actions +=
+                    '<button type="button" class="um-action-btn del" onclick="event.stopPropagation();openUserDeleteFromList(' + id + ')" title="Eliminar usuario" aria-label="Eliminar usuario">' +
+                        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0c-.34-.059-.68-.114-1.022-.165m0 0a48.11 48.11 0 0 1-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>' +
+                    '</button>';
+            }
+            return '<tr class="um-user-row' + (isSelected ? ' active' : '') + '" onclick="selectUserManagementUser(' + id + ')">' +
+                '<td>' +
+                    '<div class="um-user-name">' + name + (isParent ? ' <span style="font-size:10px;font-weight:600;color:#D24C19;">(principal)</span>' : '') + '</div>' +
+                    '<div class="um-user-email">' + (email || 'Sin email') + '</div>' +
+                '</td>' +
+                '<td style="text-align:center;"><span class="um-role' + (isParent ? ' parent' : '') + '">' + role + '</span></td>' +
+                '<td style="white-space:nowrap;"><div class="um-actions">' + actions + '</div></td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    function renderUserPermissionsPanel() {
+        var user = getUserManagementSelectedUser();
+        var label = document.getElementById('um-selected-user-label');
+        var roleEl = document.getElementById('um-selected-user-role');
+        var empty = document.getElementById('um-permissions-empty');
+        var body = document.getElementById('um-permissions-body');
+        var note = document.getElementById('um-parent-note');
+        var saveBtn = document.getElementById('um-save-btn');
+        var cancelBtn = document.querySelector('#um-permissions-panel .um-cancel-btn');
+
+        if (!user) {
+            umDraftUserId = null;
+            umSelectedModuleId = null;
+            umDraftPages = {};
+            umOriginalPages = {};
+            if (label) label.textContent = 'Seleccioná un usuario de la lista.';
+            if (roleEl) { roleEl.style.display = 'none'; roleEl.textContent = ''; }
+            if (empty) empty.style.display = 'block';
+            if (body) body.style.display = 'none';
+            if (note) note.style.display = 'none';
+            showUserPermissionMsg('', true);
+            fillUserEditForm(null);
+            return;
+        }
+
+        if (umDraftUserId !== String(user.id)) {
+            initUserPermissionDraft(user);
+        }
+
+        var isParent = isParentAccountUser(user);
+        // El Admin edita permisos de cualquier usuario sin bloqueos.
+        var umReadOnly = isParent && !actorIsAdmin;
+        var modules = getAllowedPermissionModules();
+
+        if (label) {
+            label.textContent = (user.name || 'Usuario') + (user.email ? ' · ' + user.email : '');
+        }
+        if (roleEl) {
+            roleEl.textContent = getUserRoleLabel(user);
+            roleEl.className = 'um-role' + (isParent ? ' parent' : '');
+            roleEl.style.display = '';
+        }
+        if (empty) empty.style.display = 'none';
+        if (body) body.style.display = 'block';
+
+        if (note) {
+            if (isParent && !actorIsAdmin) {
+                note.textContent = 'Este es un usuario principal de la cuenta. Sus permisos se administran desde los módulos de la barra superior y no se pueden modificar desde esta pantalla.';
+                note.style.display = 'block';
+            } else if (!modules.length) {
+                note.textContent = 'Tu usuario no tiene módulos ni páginas habilitados para asignar.';
+                note.style.display = 'block';
+            } else {
+                note.textContent = 'Solo se muestran los módulos y páginas que tu usuario tiene habilitados.';
+                note.style.display = 'block';
+            }
+        }
+
+        if (saveBtn) {
+            saveBtn.style.display = umReadOnly ? 'none' : '';
+            saveBtn.disabled = umReadOnly || umSavingPermissions;
+            saveBtn.textContent = umSavingPermissions ? 'Guardando...' : 'Guardar Cambios';
+        }
+        if (cancelBtn) cancelBtn.style.display = umReadOnly ? 'none' : '';
+
+        renderUserPermissionModules();
+        renderUserPermissionPages();
+    }
+
+    function renderUserPermissionModules() {
+        var list = document.getElementById('um-modules-list');
+        if (!list) return;
+        var modules = getAllowedPermissionModules();
+
+        if (!modules.length) {
+            list.innerHTML = '<div style="padding:16px;text-align:center;color:#64748b;font-size:12px;">No hay módulos disponibles para asignar.</div>';
+            return;
+        }
+
+        list.innerHTML = modules.map(function(module) {
+            var mid = umSafeId(module.id);
+            var active = umSelectedModuleId !== null && String(umSelectedModuleId) === String(module.id);
+            var selectedCount = (module.pages || []).filter(function(pg) {
+                return !!umDraftPages[String(pg.id)];
+            }).length;
+            return '<button type="button" class="um-module-btn' + (active ? ' active' : '') + '" onclick="selectUserPermissionModule(' + mid + ')">' +
+                '<span class="um-module-dot"></span>' +
+                '<span class="um-module-name">' + escapeHtml(module.description || module.name || ('Módulo ' + mid)) + '</span>' +
+                '<span class="um-module-count">' + selectedCount + '</span>' +
+            '</button>';
+        }).join('');
+    }
+
+    function renderUserPermissionPages() {
+        var list = document.getElementById('um-pages-list');
+        if (!list) return;
+        var user = getUserManagementSelectedUser();
+        var modules = getAllowedPermissionModules();
+        var module = modules.filter(function(m) {
+            return umSelectedModuleId !== null && String(m.id) === String(umSelectedModuleId);
+        })[0];
+
+        if (!user || !module) {
+            list.innerHTML = '<div style="padding:16px;text-align:center;color:#64748b;font-size:12px;">Seleccioná un módulo para ver sus páginas.</div>';
+            updateUserPermissionSummary();
+            return;
+        }
+
+        var pages = module.pages || [];
+        if (!pages.length) {
+            list.innerHTML = '<div style="padding:16px;text-align:center;color:#64748b;font-size:12px;">Este módulo no tiene páginas disponibles.</div>';
+            updateUserPermissionSummary();
+            return;
+        }
+
+        var disabled = (isParentAccountUser(user) && !actorIsAdmin) || umSavingPermissions;
+        list.innerHTML = pages.map(function(pg) {
+            var pid = umSafeId(pg.id);
+            var checked = !!umDraftPages[String(pg.id)];
+            return '<label class="um-page-item' + (checked ? ' checked' : '') + '">' +
+                '<input type="checkbox" value="' + pid + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') +
+                    ' onchange="toggleUserPermissionPage(' + pid + ', this.checked)" />' +
+                '<span class="um-page-text">' +
+                    '<span class="um-page-name">' + escapeHtml(pg.description || 'Página sin nombre') + '</span>' +
+                    (pg.url ? '<span class="um-page-url">' + escapeHtml(pg.url) + '</span>' : '') +
+                '</span>' +
+            '</label>';
+        }).join('');
+
+        updateUserPermissionSummary();
+    }
+
+    function selectUserPermissionModule(id) {
+        umSelectedModuleId = id;
+        renderUserPermissionModules();
+        renderUserPermissionPages();
+    }
+
+    function toggleUserPermissionPage(id, checked) {
+        if (isParentAccountUser(getUserManagementSelectedUser()) && !actorIsAdmin) return;
+        var key = String(id);
+        if (checked) {
+            umDraftPages[key] = true;
+        } else {
+            delete umDraftPages[key];
+        }
+        showUserPermissionMsg('', true);
+        renderUserPermissionModules();
+        renderUserPermissionPages();
+    }
+
+    function updateUserPermissionSummary() {
+        var summary = document.getElementById('um-selection-summary');
+        if (!summary) return;
+        var total = Object.keys(umDraftPages).length;
+        summary.textContent = total + (total === 1 ? ' seleccionada' : ' seleccionadas');
+    }
+
+    function showUserPermissionMsg(text, ok) {
+        var el = document.getElementById('um-permissions-msg');
+        if (!el) return;
+        if (!text) {
+            el.textContent = '';
+            el.style.display = 'none';
+            el.className = 'um-msg';
+            return;
+        }
+        el.textContent = text;
+        el.style.display = 'block';
+        el.className = 'um-msg ' + (ok ? 'ok' : 'err');
+    }
+
+    function selectUserManagementUser(id) {
+        var user = getUserManagementUsers().find(function(u) {
+            return String(u.id) === String(id);
+        }) || allUsers.find(function(u) {
+            return String(u.id) === String(id);
+        });
+        if (!user) return;
+
+        umSelectedUserId = user.id;
+        selectedUser = user;
+        umDraftUserId = null;
+        umSelectedModuleId = null;
+        // Modo administración: el Admin opera sobre el usuario elegido.
+        if (typeof actorIsAdmin !== 'undefined' && actorIsAdmin) {
+            umSetManagedUser(String(user.id) === String(authUserId) ? null : user.id, user.email);
+        }
+        showUserPermissionMsg('', true);
+        renderUserManagement();
+        fillUserEditForm(user);
+
+        if (isInactiveUserStatus(user)) {
+            if (confirm('\u00bfEl usuario ' + (user.name || '') + ' est\u00e1 inactivo. \u00bfQuer\u00e9s activarlo?')) {
+                activateInactiveUser(user);
+            }
+        }
+        refreshSelectedUser();
+    }
+
+    // ---------- Columna 3: editar datos del usuario ----------
+
+    var umEditAddressId = null;
+    var umEditMetaPromise = null;
+    var umEditStatuses = [];
+    var umEditTypes = [];
+    var umEditCountries = [];
+
+    function umGetUserPrimaryAddress(u) {
+        if (!u) return null;
+        if (u.primaryAddress) return u.primaryAddress;
+        if (u.primary_address) return u.primary_address;
+        var list = u.addresses || [];
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].is_primary) return list[i];
+        }
+        return list.length ? list[0] : null;
+    }
+
+    function umFillSelect(id, items, labelKey, selected) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        (items || []).forEach(function(it) {
+            var opt = document.createElement('option');
+            opt.value = it.id;
+            opt.textContent = it[labelKey] || '';
+            sel.appendChild(opt);
+        });
+        if (selected) sel.value = String(selected);
+    }
+
+    function umDistinctFromUsers(key, labelKey) {
+        var seen = {};
+        var out = [];
+        (allUsers || []).forEach(function(u) {
+            var obj = key === 'status' ? u.status : (u.type_user || u.typeUser);
+            if (!obj || !obj.id || seen[obj.id]) return;
+            seen[obj.id] = true;
+            var item = { id: obj.id };
+            item[labelKey] = obj[labelKey];
+            out.push(item);
+        });
+        return out;
+    }
+
+    function umEnsureEditMeta() {
+        if (umEditMetaPromise) return umEditMetaPromise;
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        var getJSON = function(url) {
+            return fetch(url, { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf } })
+                .then(function(r) { if (!r.ok) throw 0; return r.json(); });
+        };
+        var statusReq = (userStatusOptionsCache && userStatusOptionsCache.length)
+            ? Promise.resolve(userStatusOptionsCache)
+            : getJSON('{{ url("/user-statuses") }}').catch(function() { return umDistinctFromUsers('status', 'status'); });
+        var typeReq = (userTypeOptionsCache && userTypeOptionsCache.length)
+            ? Promise.resolve(userTypeOptionsCache)
+            : getJSON('{{ url("/type-users") }}').catch(function() { return umDistinctFromUsers('type', 'description'); });
+        umEditMetaPromise = Promise.all([
+            statusReq, typeReq, getJSON('{{ url("/countries") }}').catch(function() { return []; })
+        ]).then(function(res) {
+            umEditStatuses = Array.isArray(res[0]) ? res[0] : [];
+            umEditTypes = Array.isArray(res[1]) ? res[1] : [];
+            umEditCountries = Array.isArray(res[2]) ? res[2] : [];
+        });
+        return umEditMetaPromise;
+    }
+
+    function umLoadEditProvinces(countryId, selectedId) {
+        var sel = document.getElementById('um-edit-province');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        if (!countryId) return;
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ url("/regions") }}?country_id=' + countryId, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(regions) {
+            (regions || []).forEach(function(rg) {
+                var opt = document.createElement('option');
+                opt.value = rg.id;
+                opt.textContent = rg.name;
+                sel.appendChild(opt);
+            });
+            if (selectedId) sel.value = String(selectedId);
+        })
+        .catch(function() {});
+    }
+
+    function umSetVal(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.value = (value === null || value === undefined) ? '' : value;
+    }
+
+    function umGetVal(id) {
+        var el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
+    function fillUserEditForm(u) {
+        var label = document.getElementById('um-edit-user-label');
+        var empty = document.getElementById('um-edit-empty');
+        var body = document.getElementById('um-edit-body');
+        if (!label || !empty || !body) return;
+        if (!u) {
+            label.textContent = 'Seleccioná un usuario de la lista.';
+            empty.style.display = 'block';
+            body.style.display = 'none';
+            return;
+        }
+        label.textContent = (u.name || 'Usuario') + (u.email ? ' · ' + u.email : '');
+        empty.style.display = 'none';
+        body.style.display = 'block';
+        umSetVal('um-edit-name', u.name || '');
+        umSetVal('um-edit-email', u.email || '');
+        umSetVal('um-edit-street', '');
+        umSetVal('um-edit-number', '');
+        showMsg('um-edit-msg', '', true);
+
+        var statusId = u.user_status_id || (u.status && u.status.id) || '';
+        var typeId = u.type_user_id || (u.type_user && u.type_user.id) || (u.typeUser && u.typeUser.id) || '';
+        umEnsureEditMeta().then(function() {
+            umFillSelect('um-edit-status', umEditStatuses, 'status', statusId);
+            umFillSelect('um-edit-type', umEditTypes, 'description', typeId);
+            umFillSelect('um-edit-country', umEditCountries, 'name', null);
+            var addr = umGetUserPrimaryAddress(u);
+            umEditAddressId = addr ? addr.id : null;
+            if (addr && addr.country_id) {
+                document.getElementById('um-edit-country').value = String(addr.country_id);
+                umLoadEditProvinces(addr.country_id, addr.province_id);
+            }
+            umSetVal('um-edit-street', addr ? (addr.street || '') : '');
+            umSetVal('um-edit-number', addr ? (addr.number || '') : '');
+        });
+    }
+
+    function openUserEditModal(id) {
+        selectUserManagementUser(id);
+        var overlay = document.getElementById('um-edit-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+    }
+    function closeUserEditModal() {
+        var overlay = document.getElementById('um-edit-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+    }
+    function umCancelUserData() {
+        var u = getUserManagementSelectedUser() || selectedUser;
+        fillUserEditForm(u);
+        showMsg('um-edit-msg', 'Cambios descartados.', true);
+        closeUserEditModal();
+    }
+
+    function umSaveUserData() {
+        var user = getUserManagementSelectedUser() || selectedUser;
+        if (!user) return;
+        var btn = document.getElementById('um-edit-save-btn');
+        var name = umGetVal('um-edit-name').trim();
+        if (!name) {
+            showMsg('um-edit-msg', 'El nombre es obligatorio.', false);
+            return;
+        }
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        var statusVal = umGetVal('um-edit-status');
+        var typeVal = umGetVal('um-edit-type');
+        if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+        showMsg('um-edit-msg', 'Guardando cambios...', true);
+
+        fetch('{{ url("/admin/users") }}/' + user.id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify({
+                name: name,
+                email: umGetVal('um-edit-email').trim() || user.email,
+                user_status_id: statusVal ? parseInt(statusVal, 10) : null,
+                type_user_id: typeVal ? parseInt(typeVal, 10) : null
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.errors) {
+                var firstKey = Object.keys(data.errors)[0];
+                throw new Error(data.errors[firstKey][0]);
+            }
+            if (!data.success) throw new Error(data.message || 'Error al guardar.');
+            if (data.user) applyUserUpdate(data.user);
+            var countryId = umGetVal('um-edit-country');
+            if (!countryId) return null;
+            var addrPayload = {
+                country_id: parseInt(countryId, 10),
+                province_id: umGetVal('um-edit-province') ? parseInt(umGetVal('um-edit-province'), 10) : null,
+                street: umGetVal('um-edit-street').trim(),
+                number: umGetVal('um-edit-number').trim(),
+                is_primary: true
+            };
+            var addrUrl = '{{ url("/admin/users") }}/' + user.id + '/addresses' + (umEditAddressId ? '/' + umEditAddressId : '');
+            return fetch(addrUrl, {
+                method: umEditAddressId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: JSON.stringify(addrPayload)
+            }).then(function(r) { return r.json(); });
+        })
+        .then(function() {
+            return refreshSelectedUser().then(function() { return loadUsers(); });
+        })
+        .then(function() {
+            if (btn) { btn.disabled = false; btn.textContent = 'Guardar Cambios'; }
+            var fresh = getUserManagementSelectedUser() || selectedUser;
+            if (fresh) fillUserEditForm(fresh);
+            showMsg('um-edit-msg', 'Datos guardados correctamente.', true);
+            closeUserEditModal();
+        })
+        .catch(function(err) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Guardar Cambios'; }
+            showMsg('um-edit-msg', (err && err.message) || 'Error de conexión.', false);
+        });
+    }
+
+    function cancelUserPermissions() {
+        var user = getUserManagementSelectedUser();
+        if (!user) return;
+        umDraftUserId = null;
+        umSelectedModuleId = null;
+        renderUserManagement();
+        showUserPermissionMsg('Cambios descartados.', true);
+    }
+
+    function saveUserPermissions() {
+        var user = getUserManagementSelectedUser();
+        if (!user || umSavingPermissions) return;
+        if (isParentAccountUser(user) && !actorIsAdmin) {
+            showUserPermissionMsg('El usuario principal no puede modificarse desde esta pantalla.', false);
+            return;
+        }
+
+        var allowedPages = getAllowedPermissionPagesMap();
+        var added = [];
+        var removed = [];
+
+        Object.keys(umDraftPages).forEach(function(pid) {
+            if (allowedPages[pid] && !umOriginalPages[pid]) added.push(pid);
+        });
+        Object.keys(umOriginalPages).forEach(function(pid) {
+            if (allowedPages[pid] && !umDraftPages[pid]) removed.push(pid);
+        });
+
+        if (!added.length && !removed.length) {
+            showUserPermissionMsg('No hay cambios para guardar.', true);
+            return;
+        }
+
+        umSavingPermissions = true;
+        renderUserPermissionsPanel();
+        showUserPermissionMsg('Guardando cambios...', true);
+
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        var requests = added.map(function(pid) {
+            return fetch('{{ url("/admin/users") }}/' + user.id + '/pages/' + pid, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+            }).then(function(r) { return r.json(); }).catch(function() { return { success: false }; });
+        }).concat(removed.map(function(pid) {
+            return fetch('{{ url("/admin/users") }}/' + user.id + '/pages/' + pid, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+            }).then(function(r) { return r.json(); }).catch(function() { return { success: false }; });
+        }));
+
+        Promise.all(requests).then(function(results) {
+            var failed = (results || []).filter(function(r) { return !r || !r.success; });
+            var lastUser = null;
+            (results || []).forEach(function(r) {
+                if (r && r.user) lastUser = r.user;
+            });
+            umSavingPermissions = false;
+            umDraftUserId = null;
+            if (lastUser) applyUserUpdate(lastUser);
+
+            return refreshSelectedUser().then(function() {
+                return loadUsers();
+            }).then(function() {
+                umDraftUserId = null;
+                renderUserManagement();
+                if (typeof umRebuildTopNav === 'function' && umManagedId()) umRenderTopNavForManaged();
+                if (typeof umRebuildTopNav === 'function' && String(user.id) === String(authUserId)) {
+                    var me = (allUsers || []).find(function(x) { return String(x.id) === String(authUserId); });
+                    if (me && me.pages) {
+                        var selfAllowed = {};
+                        me.pages.forEach(function(pg) { selfAllowed[String(pg.id)] = true; });
+                        umRebuildTopNav(selfAllowed);
+                    }
+                }
+                if (failed.length) {
+                    showUserPermissionMsg('Algunos permisos no se pudieron guardar (' + failed.length + ').', false);
+                } else {
+                    showUserPermissionMsg('Permisos guardados correctamente.', true);
+                }
+            });
+        }).catch(function() {
+            umSavingPermissions = false;
+            umDraftUserId = null;
+            renderUserManagement();
+            refreshSelectedUser();
+            showUserPermissionMsg('Error de conexión al guardar los permisos.', false);
+        });
+    }
+
+    function openUserDeleteFromList(id) {
+        var user = getUserManagementUsers().find(function(u) {
+            return String(u.id) === String(id);
+        });
+        if (!user) return;
+        if (isParentAccountUser(user)) {
+            alert('No podés eliminar al usuario principal de la cuenta.');
+            return;
+        }
+        openUserDelete(user.id, user.name || user.email || '');
     }
 
     function renderUserAccountGestion(u) {
@@ -8644,6 +10027,7 @@
         var countEl = document.getElementById('user-tab-count-paginas');
         if (countEl) countEl.textContent = String((target && target.pages ? target.pages.length : 0));
 
+        if (!pane.querySelector('#user-pages-module')) {
         pane.innerHTML =
             '<div style="margin-bottom:12px;max-width:320px;">' +
                 '<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Módulo</label>' +
@@ -8661,7 +10045,7 @@
                             '<th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;width:30%;">' +
                                 '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-transform:uppercase;">' +
                                     '<input type="checkbox" id="user-pages-check-all" onchange="toggleUserAccountPagesAll(this.checked)" style="width:15px;height:15px;accent-color:#D24C19;cursor:pointer;" title="Agregar o quitar todo" />' +
-                                    '<span>Agregar/Quitar</span>' +
+                                    '<span id="user-pages-check-all-label">Agregar todo</span>' +
                                 '</label>' +
                             '</th>' +
                         '</tr>' +
@@ -8672,26 +10056,34 @@
             '</div>' +
             '<div id="user-pages-msg" class="user-pages-msg" style="display:none;"></div>' +
             '<p id="user-pages-hint" style="margin:12px 0 0;font-size:12px;color:#94a3b8;display:none;"></p>';
+        }
 
         var loading = document.getElementById('user-pages-loading');
         var moduleSel = document.getElementById('user-pages-module');
-        if (loading) loading.style.display = 'block';
+        if (loading && (!moduleSel || !moduleSel.getAttribute('data-modules'))) loading.style.display = 'block';
 
         Promise.all([ensureUserPagesModules(), ensureUserPagesCatalog()]).then(function(results) {
             var modules = results[0] || [];
             modules = getUserPagesModulesForSelection(modules);
             if (loading) loading.style.display = 'none';
             if (moduleSel) {
-                moduleSel.innerHTML = '<option value="">-- Seleccionar módulo --</option>' +
-                    modules.map(function(m) {
-                        return '<option value="' + m.id + '">' + escapeHtml(m.description || m.name || ('Módulo ' + m.id)) + '</option>';
-                    }).join('');
-                if (userPagesModuleFilter) {
-                    moduleSel.value = userPagesModuleFilter;
-                    if (moduleSel.value !== userPagesModuleFilter) {
-                        userPagesModuleFilter = '';
-                        moduleSel.value = '';
-                    }
+                var preservedModule = userPagesModuleFilter;
+                var moduleSignature = modules.map(function(m) { return m.id; }).join(',');
+                if (moduleSel.getAttribute('data-modules') !== moduleSignature) {
+                    moduleSel.innerHTML = '<option value="">-- Seleccionar módulo --</option>' +
+                        modules.map(function(m) {
+                            return '<option value="' + m.id + '">' + escapeHtml(m.description || m.name || ('Módulo ' + m.id)) + '</option>';
+                        }).join('');
+                    moduleSel.setAttribute('data-modules', moduleSignature);
+                }
+                var moduleExists = !!preservedModule && modules.some(function(m) {
+                    return String(m.id) === String(preservedModule);
+                });
+                if (moduleExists) {
+                    moduleSel.value = String(preservedModule);
+                } else {
+                    userPagesModuleFilter = '';
+                    moduleSel.value = '';
                 }
             }
             renderUserAccountPaginasRows();
@@ -8700,7 +10092,9 @@
 
     function onUserPagesModuleChange() {
         var sel = document.getElementById('user-pages-module');
-        userPagesModuleFilter = sel ? sel.value : '';
+        var value = sel ? sel.value : '';
+        if (value === userPagesModuleFilter) return;
+        userPagesModuleFilter = value;
         renderUserAccountPaginasRows();
     }
 
@@ -8719,6 +10113,7 @@
                 empty.style.display = 'block';
             }
             if (hint) hint.style.display = 'none';
+            updateUserPagesCheckAll();
             return;
         }
 
@@ -8729,6 +10124,7 @@
                 empty.style.display = 'block';
             }
             if (hint) hint.style.display = 'none';
+            updateUserPagesCheckAll();
             return;
         }
 
@@ -8736,6 +10132,7 @@
             if (list) list.style.display = 'none';
             if (empty) empty.style.display = 'none';
             if (hint) hint.style.display = 'none';
+            updateUserPagesCheckAll();
             return;
         }
 
@@ -8793,19 +10190,28 @@
         return getVisibleUserAccountPages().map(function(pg) { return pg.id; });
     }
 
+    function paintUserPagesCheckAll(checked, indeterminate) {
+        var header = document.getElementById('user-pages-check-all');
+        var label = document.getElementById('user-pages-check-all-label');
+        if (header) {
+            header.checked = !!checked;
+            header.indeterminate = !!indeterminate;
+            header.disabled = false;
+        }
+        if (label) label.textContent = checked ? 'Quitar todo' : 'Agregar todo';
+    }
+
     function updateUserPagesCheckAll() {
         var header = document.getElementById('user-pages-check-all');
         if (!header) return;
         var list = document.getElementById('user-pages-list');
         if (!list || list.style.display === 'none') {
-            header.checked = false;
-            header.indeterminate = false;
+            paintUserPagesCheckAll(false, false);
             return;
         }
         var visibleIds = getVisibleUserAccountPageIds();
         if (!visibleIds.length) {
-            header.checked = false;
-            header.indeterminate = false;
+            paintUserPagesCheckAll(false, false);
             return;
         }
         var assigned = getUserAssignedPageIds(selectedUser);
@@ -8813,15 +10219,16 @@
         visibleIds.forEach(function(id) {
             if (assigned[String(id)]) onCount++;
         });
-        header.checked = onCount === visibleIds.length;
-        header.indeterminate = onCount > 0 && onCount < visibleIds.length;
+        paintUserPagesCheckAll(
+            onCount === visibleIds.length,
+            onCount > 0 && onCount < visibleIds.length
+        );
     }
 
     function toggleUserAccountPagesAll(checked) {
-        var header = document.getElementById('user-pages-check-all');
         var visibleIds = getVisibleUserAccountPageIds();
         if (!selectedUser || !visibleIds.length) {
-            if (header) header.checked = false;
+            paintUserPagesCheckAll(false, false);
             showUserPagesMsg('No hay páginas visibles para actualizar.', false);
             return;
         }
@@ -8830,10 +10237,7 @@
             var sel = document.querySelector('.user-pages-check[value="' + id + '"]');
             if (sel) sel.checked = checked;
         });
-        if (header) {
-            header.checked = checked;
-            header.indeterminate = false;
-        }
+        paintUserPagesCheckAll(checked, false);
 
         Promise.all(visibleIds.map(function(id) {
             var url = '{{ url("/admin/users") }}/' + selectedUser.id + '/pages/' + id;
@@ -9104,18 +10508,33 @@
 
     function clearUserDemographic() {
         selectedUser = null;
-        document.getElementById('user-demo-empty').style.display = 'block';
-        document.getElementById('user-demo-panel').style.display = 'none';
+        umSelectedUserId = null;
+        umDraftUserId = null;
+        var empty = document.getElementById('user-demo-empty');
+        var panel = document.getElementById('user-demo-panel');
+        if (empty) empty.style.display = 'block';
+        if (panel) panel.style.display = 'none';
         ['user-demo-save-btn', 'user-prov-save-btn', 'user-addr-save-btn'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });
-        switchUserTab('demografia');
+        renderUserManagement();
     }
 
     function renderUserDemographic(u) {
-        document.getElementById('user-demo-empty').style.display = 'none';
-        document.getElementById('user-demo-panel').style.display = 'block';
+        var demoEmpty = document.getElementById('user-demo-empty');
+        var demoPanel = document.getElementById('user-demo-panel');
+        if (!demoEmpty || !demoPanel) {
+            if (u) {
+                umSelectedUserId = u.id;
+                selectedUser = u;
+                umDraftUserId = null;
+                renderUserManagement();
+            }
+            return;
+        }
+        demoEmpty.style.display = 'none';
+        demoPanel.style.display = 'block';
 
         ['user-demo-save-btn', 'user-prov-save-btn', 'user-addr-save-btn'].forEach(function(id) {
             var el = document.getElementById(id);
@@ -9389,11 +10808,14 @@
             var tr = document.createElement('tr');
             tr.setAttribute('data-id', u.id);
             tr.style.borderBottom = '1px solid #f3f4f6';
+            var uStatus = (u.status && u.status.status) || '';
             tr.innerHTML =
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(u.name) + '</td>' +
                 '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(u.email) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(getUserRoleLabel(u)) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;">' + escapeHtml(uStatus) + '</td>' +
                 '<td style="padding:10px 16px;text-align:center;">' +
-                    '<button onclick="selectUser(' + u.id + ')" title="Seleccionar" aria-label="Seleccionar" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:4px;background:#D24C19;border:1px solid #D24C19;cursor:pointer;color:#fff;transition:all 0.2s;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></button>' +
+                    '<button onclick="selectUser(' + u.id + ')" title="Seleccionar / Editar" aria-label="Seleccionar / Editar" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:4px;background:#D24C19;border:1px solid #D24C19;cursor:pointer;color:#fff;font-size:12px;font-weight:600;transition:all 0.2s;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>Seleccionar</button>' +
                 '</td>';
             tbody.appendChild(tr);
         });
@@ -9452,7 +10874,54 @@
             : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>';
     }
 
+    function resetUserForm() {
+        var el = function(name) { return document.getElementById(name); };
+        ['user-id', 'user-name', 'user-email', 'user-password', 'user-password-confirm'].forEach(function(name) {
+            var input = el(name);
+            if (input) input.value = '';
+        });
+        setErr('user-name-error', '');
+        setErr('user-email-error', '');
+        setErr('user-password-error', '');
+        setErr('user-password-confirm-error', '');
+        setErr('user-form-error', '');
+
+        var submitBtn = el('user-submit-btn');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar';
+        }
+        var title = el('user-modal-title');
+        if (title) title.textContent = 'Nuevo Usuario';
+        var deleteBtn = el('user-modal-delete-btn');
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        var confirmField = el('user-password-confirm-field');
+        if (confirmField) confirmField.style.display = 'block';
+        var confirmReq = el('user-password-confirm-required');
+        if (confirmReq) confirmReq.style.display = 'inline';
+        var pwReq = el('user-password-required');
+        if (pwReq) pwReq.style.display = 'inline';
+        var pwHint = el('user-password-hint');
+        if (pwHint) pwHint.style.display = 'none';
+    }
+
     function openUserModal(id) {
+        var isCreating = (id === null || id === undefined || id === '');
+        if (isCreating && countAccountSecondaries() >= USER_MAX_SECONDARIES) {
+            alert('Ya alcanzaste el límite de ' + USER_MAX_SECONDARIES + ' usuarios adicionales para esta cuenta.');
+            updateCreateUserBtnVisibility();
+            return;
+        }
+
+        var overlay = document.getElementById('user-modal-overlay');
+        if (overlay) {
+            // Abrimos el modal primero: aunque falte algun campo opcional, el
+            // clic siempre tiene que producir una accion visible.
+            overlay.style.display = 'flex';
+            overlay.setAttribute('aria-hidden', 'false');
+        }
+        resetUserForm();
+
         var u = null;
         if (id !== null && id !== undefined && id !== '') {
             u = allUsers.find(function(x) { return String(x.id) === String(id); });
@@ -9463,43 +10932,86 @@
         if (!u && selectedUser && (id === selectedUser.id || String(id) === String(selectedUser.id))) {
             u = selectedUser;
         }
-        var emailInput = document.getElementById('user-email');
-        var confirmField = document.getElementById('user-password-confirm-field');
-        var confirmReq = document.getElementById('user-password-confirm-required');
-        var deleteBtn = document.getElementById('user-modal-delete-btn');
-        document.getElementById('user-id').value = u ? u.id : '';
-        document.getElementById('user-name').value = u ? u.name : '';
+
+        var el = function(name) { return document.getElementById(name); };
+        var setDisplay = function(name, value) {
+            var node = el(name);
+            if (node) node.style.display = value;
+        };
+
+        var emailInput = el('user-email');
+        var confirmField = el('user-password-confirm-field');
+        var confirmReq = el('user-password-confirm-required');
+        var deleteBtn = el('user-modal-delete-btn');
+        var idInput = el('user-id');
+        var nameInput = el('user-name');
+        if (idInput) idInput.value = u ? u.id : '';
+        if (nameInput) nameInput.value = u ? u.name : '';
         var principal = getPrincipalAccountUser() || u || selectedUser;
-        if (emailInput) emailInput.value = (principal && principal.email) || (u && u.email) || (selectedUser && selectedUser.email) || authEmail || '';
+        var managedEmail = (typeof umManagedEmail === 'function') ? umManagedEmail() : null;
+        var accountEmail = managedEmail || (principal && principal.email) || (u && u.email) || (selectedUser && selectedUser.email) || authEmail || '';
+        if (emailInput) emailInput.value = accountEmail;
+        if (emailInput) emailInput.disabled = true;
         if (deleteBtn) deleteBtn.style.display = u ? 'inline-block' : 'none';
-        document.getElementById('user-password').value = '';
-        var confirmInput = document.getElementById('user-password-confirm');
+        var pwInput = el('user-password');
+        if (pwInput) {
+            pwInput.value = '';
+            pwInput.type = 'password';
+        }
+        var confirmInput = el('user-password-confirm');
         if (confirmInput) {
             confirmInput.value = '';
             confirmInput.type = 'password';
         }
-        var pwInput = document.getElementById('user-password');
-        if (pwInput) pwInput.type = 'password';
         document.querySelectorAll('.user-pw-toggle').forEach(function(btn) {
             if (!btn.dataset.target) return;
             btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1 1 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>';
         });
-        document.getElementById('user-name-error').style.display = 'none';
-        document.getElementById('user-password-error').style.display = 'none';
-        var confirmErr = document.getElementById('user-password-confirm-error');
-        if (confirmErr) confirmErr.style.display = 'none';
-        document.getElementById('user-password-required').style.display = u ? 'none' : 'inline';
-        document.getElementById('user-password-hint').style.display = u ? 'block' : 'none';
+        setDisplay('user-name-error', 'none');
+        setDisplay('user-password-error', 'none');
+        setDisplay('user-password-confirm-error', 'none');
+        setDisplay('user-password-required', u ? 'none' : 'inline');
+        setDisplay('user-password-hint', u ? 'block' : 'none');
         if (confirmField) confirmField.style.display = u ? 'none' : 'block';
         if (confirmReq) confirmReq.style.display = u ? 'none' : 'inline';
-        document.getElementById('user-modal-title').textContent = u ? 'Editar Usuario' : 'Nuevo Usuario';
-        document.getElementById('user-submit-btn').textContent = u ? 'Actualizar' : 'Guardar';
-        document.getElementById('user-modal-overlay').style.display = 'flex';
-        document.getElementById('user-name').focus();
+        var title = el('user-modal-title');
+        if (title) title.textContent = u ? 'Editar Usuario' : 'Nuevo Usuario';
+        var submitBtn = el('user-submit-btn');
+        if (submitBtn) submitBtn.textContent = u ? 'Actualizar' : 'Guardar';
+        if (nameInput) nameInput.focus();
     }
 
+    window.openUserModal = openUserModal;
+
+    // Respaldo por delegacion: si el onclick inline del boton no se ejecuta
+    // (sanitizadores, extensiones, CSP o un handler removido), este listener
+    // abre igualmente el modal cuando el overlay todavia esta cerrado.
+    document.addEventListener('click', function(event) {
+        var target = event.target;
+        var btn = target && target.closest ? target.closest('#user-create-btn') : null;
+        if (!btn) return;
+        var overlay = document.getElementById('user-modal-overlay');
+        if (overlay && overlay.style.display === 'flex') return;
+        event.preventDefault();
+        openUserModal(null);
+    });
+
+    // Respaldo por delegacion para el submit del formulario: si el onsubmit
+    // inline no se ejecuta, el submit igual llega al backend.
+    document.addEventListener('submit', function(event) {
+        var form = event.target;
+        if (!form || form.id !== 'user-form') return;
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        if (typeof submitUser === 'function') submitUser(event);
+    });
+
     function closeUserModal() {
-        document.getElementById('user-modal-overlay').style.display = 'none';
+        var overlay = document.getElementById('user-modal-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+        }
     }
 
     function userModalDelete() {
@@ -9589,15 +11101,17 @@
     }
 
     function submitUser(e) {
-        e.preventDefault();
-        var id = document.getElementById('user-id').value;
-        var name = document.getElementById('user-name').value.trim();
-        var emailEl = document.getElementById('user-email');
+        if (e && e.preventDefault) e.preventDefault();
+        var el = function(name) { return document.getElementById(name); };
+        var id = el('user-id') ? el('user-id').value : '';
+        var name = el('user-name') ? el('user-name').value.trim() : '';
+        var emailEl = el('user-email');
         var emailInputVal = emailEl ? emailEl.value.trim() : '';
         var principal = getPrincipalAccountUser() || selectedUser;
-        var email = emailInputVal || (principal && principal.email) || (selectedUser && selectedUser.email) || authEmail || '';
-        var password = document.getElementById('user-password').value;
-        var passwordConfirm = document.getElementById('user-password-confirm') ? document.getElementById('user-password-confirm').value : '';
+        var managedEmail = (typeof umManagedEmail === 'function') ? umManagedEmail() : null;
+        var email = emailInputVal || managedEmail || (principal && principal.email) || (selectedUser && selectedUser.email) || authEmail || '';
+        var password = el('user-password') ? el('user-password').value : '';
+        var passwordConfirm = el('user-password-confirm') ? el('user-password-confirm').value : '';
         var target = selectedUser;
         if (id) {
             target = allUsers.find(function(x) { return String(x.id) === String(id); }) || selectedUser;
@@ -9609,61 +11123,56 @@
             statusId = target.user_status_id || (target.status && target.status.id) || null;
             typeId = target.type_user_id || (target.type_user && target.type_user.id) || null;
         }
-        var nameErr = document.getElementById('user-name-error');
-        var passErr = document.getElementById('user-password-error');
-        var confirmErr = document.getElementById('user-password-confirm-error');
-        var submitBtn = document.getElementById('user-submit-btn');
 
-        nameErr.style.display = 'none';
-        passErr.style.display = 'none';
-        if (confirmErr) confirmErr.style.display = 'none';
+        setErr('user-name-error', '');
+        setErr('user-email-error', '');
+        setErr('user-password-error', '');
+        setErr('user-password-confirm-error', '');
+        setErr('user-form-error', '');
+
+        var submitBtn = el('user-submit-btn');
+        var hasError = false;
 
         if (!name) {
-            nameErr.textContent = 'El nombre es obligatorio.';
-            nameErr.style.display = 'block';
-            return;
+            setErr('user-name-error', 'El nombre es obligatorio.');
+            hasError = true;
         }
         if (!email) {
-            nameErr.textContent = 'No se pudo obtener el email del usuario principal.';
-            nameErr.style.display = 'block';
-            return;
+            setErr('user-email-error', 'El email es obligatorio.');
+            hasError = true;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setErr('user-email-error', 'Ingresá un email válido.');
+            hasError = true;
         }
         if (!id && password.length < 8) {
-            passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
-            passErr.style.display = 'block';
-            return;
+            setErr('user-password-error', 'La contraseña debe tener al menos 8 caracteres.');
+            hasError = true;
         }
-        if (!id && !passwordConfirm) {
-            if (confirmErr) {
-                confirmErr.textContent = 'Confirmá la contraseña.';
-                confirmErr.style.display = 'block';
+        if (!id) {
+            if (!passwordConfirm) {
+                setErr('user-password-confirm-error', 'Confirmá la contraseña.');
+                hasError = true;
+            } else if (password !== passwordConfirm) {
+                setErr('user-password-confirm-error', 'Las contraseñas no coinciden.');
+                hasError = true;
             }
-            return;
-        }
-        if (!id && password !== passwordConfirm) {
-            if (confirmErr) {
-                confirmErr.textContent = 'Las contraseñas no coinciden.';
-                confirmErr.style.display = 'block';
-            }
-            return;
         }
         if (id && password) {
             if (password.length < 8) {
-                passErr.textContent = 'La contraseña debe tener al menos 8 caracteres.';
-                passErr.style.display = 'block';
-                return;
+                setErr('user-password-error', 'La contraseña debe tener al menos 8 caracteres.');
+                hasError = true;
             }
             if (passwordConfirm && password !== passwordConfirm) {
-                if (confirmErr) {
-                    confirmErr.textContent = 'Las contraseñas no coinciden.';
-                    confirmErr.style.display = 'block';
-                }
-                return;
+                setErr('user-password-confirm-error', 'Las contraseñas no coinciden.');
+                hasError = true;
             }
         }
+        if (hasError) return;
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = id ? 'Actualizando...' : 'Guardando...';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = id ? 'Actualizando...' : 'Guardando...';
+        }
 
         var body = {
             name: name,
@@ -9672,6 +11181,7 @@
             type_user_id: typeId
         };
         if (password) body.password = password;
+        if (!id && passwordConfirm) body.password_confirmation = passwordConfirm;
 
         var url = id ? '{{ url("/admin/users") }}/' + id : '{{ url("/admin/users") }}';
         var method = id ? 'PUT' : 'POST';
@@ -9685,34 +11195,87 @@
             },
             body: JSON.stringify(body)
         })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+        .then(function(r) {
+            return r.json().catch(function() {
+                return { success: false, message: 'El servidor devolvió una respuesta inválida.' };
+            }).then(function(data) {
+                return { ok: r.ok, status: r.status, data: data || {} };
+            });
+        })
+        .then(function(result) {
+            var data = result.data || {};
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+            }
 
             if (data.errors) {
-                if (data.errors.name) { nameErr.textContent = data.errors.name[0]; nameErr.style.display = 'block'; }
-                if (data.errors.email) { nameErr.textContent = data.errors.email[0]; nameErr.style.display = 'block'; }
-                if (data.errors.password) { passErr.textContent = data.errors.password[0]; passErr.style.display = 'block'; }
+                var fieldTargets = {
+                    name: 'user-name-error',
+                    email: 'user-email-error',
+                    password: 'user-password-error',
+                    password_confirmation: 'user-password-confirm-error'
+                };
+                var general = [];
+                Object.keys(data.errors).forEach(function(field) {
+                    var targetId = fieldTargets[field];
+                    var message = Array.isArray(data.errors[field]) ? data.errors[field][0] : data.errors[field];
+                    if (targetId) {
+                        setErr(targetId, message);
+                    } else {
+                        general.push(message);
+                    }
+                });
+                if (general.length) setErr('user-form-error', general.join(' '));
                 return;
             }
 
-            if (data.success) {
-                closeUserModal();
-                if (data.user) applyUserUpdate(data.user);
-                loadUsers().then(function() {
-                    refreshSelectedUser();
-                });
-            } else {
-                nameErr.textContent = data.message || 'Error al guardar.';
-                nameErr.style.display = 'block';
+            if (!result.ok || !data.success) {
+                setErr('user-form-error', data.message || 'Error al guardar el usuario.');
+                return;
             }
+
+            closeUserModal();
+            resetUserForm();
+            var createdId = (!id && data.user) ? data.user.id : null;
+            if (data.user) {
+                applyUserUpdate(data.user);
+                if (createdId !== null) {
+                    umSelectedUserId = createdId;
+                    selectedUser = data.user;
+                    umDraftUserId = null;
+                    umSelectedModuleId = null;
+                    renderUserManagement();
+                }
+            }
+            loadUsers().then(function() {
+                // Al crear un usuario, seleccionarlo en la tabla y cargar sus
+                // permisos en el panel derecho sin recargar la pagina.
+                if (createdId !== null) {
+                    var created = getUserManagementUsers().find(function(u) {
+                        return String(u.id) === String(createdId);
+                    });
+                    if (created) {
+                        umSelectedUserId = created.id;
+                        selectedUser = created;
+                        umDraftUserId = null;
+                        umSelectedModuleId = null;
+                    }
+                } else if (umSelectedUserId !== null && umSelectedUserId !== undefined) {
+                    selectedUser = getUserManagementSelectedUser() || selectedUser;
+                }
+                ensureUserManagementSelection();
+                renderUserManagement();
+                refreshSelectedUser();
+                updateCreateUserBtnVisibility();
+            });
         })
         .catch(function() {
-            submitBtn.disabled = false;
-            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
-            nameErr.textContent = 'Error de conexión.';
-            nameErr.style.display = 'block';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+            }
+            setErr('user-form-error', 'Error de conexión. Intentá nuevamente.');
         });
     }
 
@@ -10041,45 +11604,22 @@
             btn.textContent = 'Eliminar';
             if (data.success) {
                 closeUserDelete();
-                var deletedEmail = '';
-                var deletedUser = allUsers.find(function(x) { return String(x.id) === String(deletingId); });
-                if (deletedUser && deletedUser.email) deletedEmail = String(deletedUser.email).toLowerCase();
-                if (selectedUser && String(selectedUser.id) === String(deletingId)) selectedUser = null;
+                var wasSelected = umSelectedUserId !== null && String(umSelectedUserId) === String(deletingId);
+                if (wasSelected) {
+                    umSelectedUserId = null;
+                    selectedUser = null;
+                }
                 loadUsers().then(function() {
-                    var email = deletedEmail || (authEmail ? String(authEmail).toLowerCase() : '');
-                    var acc = email ? allUsers.filter(function(x) {
-                        return x.email && String(x.email).toLowerCase() === email;
-                    }) : [];
-                    acc.sort(function(a, b) { return Number(a.id) - Number(b.id); });
-                    var principal = acc.length ? acc[0] : null;
-                    if (principal && String(principal.id) !== String(deletingId)) {
-                        selectedUser = principal;
-                        renderUserDemographic(principal);
-                        renderUserAccount(principal);
-                        loadUserCategorias();
-                        updateCreateUserBtnVisibility();
-                        return;
+                    if (wasSelected) {
+                        var principal = getSessionAccountPrincipalUser();
+                        if (principal && String(principal.id) !== String(deletingId)) {
+                            umSelectedUserId = principal.id;
+                            selectedUser = principal;
+                        }
                     }
-                    var demoEmpty = document.getElementById('user-demo-empty');
-                    var demoPanel = document.getElementById('user-demo-panel');
-                    if (demoEmpty) demoEmpty.style.display = 'block';
-                    if (demoPanel) demoPanel.style.display = 'none';
-                    ['user-demo-save-btn', 'user-prov-save-btn', 'user-addr-save-btn'].forEach(function(id) {
-                        var el = document.getElementById(id);
-                        if (el) el.style.display = 'none';
-                    });
-                    var g = document.getElementById('user-account-pane-gestion');
-                    if (g) {
-                        g.removeAttribute('data-user-id');
-                        g.innerHTML = '<div class="user-demo-empty-tab">Seleccion\u00e1 un usuario para ver su informaci\u00f3n.</div>';
-                    }
-                    var p = document.getElementById('user-account-pane-paginas');
-                    if (p) {
-                        p.removeAttribute('data-user-id');
-                        p.innerHTML = '<div class="user-demo-empty-tab">Seleccion\u00e1 un usuario para gestionar sus p\u00e1ginas.</div>';
-                    }
-                    var pCount = document.getElementById('user-tab-count-paginas');
-                    if (pCount) pCount.textContent = '0';
+                    umDraftUserId = null;
+                    umSelectedModuleId = null;
+                    renderUserManagement();
                     updateCreateUserBtnVisibility();
                 });
             } else {
@@ -10708,6 +12248,9 @@
     var profileIsPrestador = false;
     var profileEsPrestador = {{ $esPerfilPrestador ? 'true' : 'false' }};
     var profilePanelInicial = '{{ $perfilPanelInicial }}';
+    var profilePuedeConfigurarNegocio = {{ $puedeConfigurarNegocio ? 'true' : 'false' }};
+    var profilePuedeVerDireccion = {{ $puedeVerDireccion ? 'true' : 'false' }};
+    var firstAuthorizedSection = '{{ $firstPageUrl }}';
     var profileDireccionCargada = false;
     var profileCanAdvertise = false;
 
@@ -10756,19 +12299,14 @@
     function focusProfileAccountSelection() {
         userSelectScope = 'account';
         var apply = function() {
-            var me = null;
-            if (typeof authUserId !== 'undefined' && authUserId !== null && authUserId !== '') {
-                me = allUsers.find(function(x) { return String(x.id) === String(authUserId); });
-            }
-            if (!me && authEmail) {
-                var email = String(authEmail).toLowerCase();
-                me = allUsers.filter(function(x) { return x.email && String(x.email).toLowerCase() === email; })
-                    .sort(function(a, b) { return Number(a.id) - Number(b.id); })[0] || null;
-            }
+            var me = getSessionUser();
             if (!me) return;
+            umSelectedUserId = me.id;
             selectedUser = me;
-            renderUserAccount(me);
-            switchUserAccountTab('gestion');
+            umDraftUserId = null;
+            umSelectedModuleId = null;
+            renderUserManagement();
+            updateCreateUserBtnVisibility();
         };
         if (!allUsers.length) {
             loadUsers().then(apply);
@@ -10790,14 +12328,6 @@
             var prevPanel = document.querySelector('.user-panel.active');
             profilePrevPanelId = prevPanel ? prevPanel.id : null;
             if (host) host.classList.add('active');
-            var g = document.getElementById('user-account-pane-gestion');
-            var p = document.getElementById('user-account-pane-paginas');
-            var cg = document.getElementById('user-tab-count-gestion');
-            var cp = document.getElementById('user-tab-count-paginas');
-            profilePrevPaneG = g ? g.innerHTML : null;
-            profilePrevPaneP = p ? p.innerHTML : null;
-            profilePrevCountG = cg ? cg.textContent : null;
-            profilePrevCountP = cp ? cp.textContent : null;
         }
         focusProfileAccountSelection();
     }
@@ -10818,28 +12348,55 @@
         profilePrevPanelId = null;
         selectedUser = profilePrevUser;
         userSelectScope = profilePrevScope;
-        try {
-            if (selectedUser) {
-                renderUserAccount(selectedUser);
-            } else {
-                var g = document.getElementById('user-account-pane-gestion');
-                var p = document.getElementById('user-account-pane-paginas');
-                var cg = document.getElementById('user-tab-count-gestion');
-                var cp = document.getElementById('user-tab-count-paginas');
-                if (g && profilePrevPaneG !== null) g.innerHTML = profilePrevPaneG;
-                if (p && profilePrevPaneP !== null) p.innerHTML = profilePrevPaneP;
-                if (cg && profilePrevCountG !== null) cg.textContent = profilePrevCountG;
-                if (cp && profilePrevCountP !== null) cp.textContent = profilePrevCountP;
-            }
-        } catch (e) {
-            console.error('Error al restaurar panel de cuenta:', e);
-        }
+        umSelectedUserId = selectedUser ? selectedUser.id : null;
+        umDraftUserId = null;
+        umSelectedModuleId = null;
+        renderUserManagement();
         updateCreateUserBtnVisibility();
     }
 
     function showProfilePanel(key) {
+        // Guard de paneles de negocio: el secundario no los ve ni los edita,
+        // se lo lleva a su primera página autorizada. Con impersonación se
+        // evalúa el rol de la cuenta administrada.
+        var panelesNegocio = ['negocio', 'horarios', 'servicios', 'repartidores', 'imagenes', 'categorias'];
+        if (!umManagedCanConfigureBusiness() && panelesNegocio.indexOf(key) !== -1) {
+            if (firstAuthorizedSection && document.getElementById('dash-' + firstAuthorizedSection)) {
+                showDashSection(firstAuthorizedSection);
+            } else if (firstAuthorizedSection && firstAuthorizedSection.charAt(0) === '/') {
+                window.location.href = '{{ url('/') }}' + firstAuthorizedSection;
+            }
+            return;
+        }
+        // Guard de Mi Dirección: el secundario sin permiso vuelve a su primera página.
+        if (key === 'direccion' && !profilePuedeVerDireccion) {
+            if (firstAuthorizedSection && document.getElementById('dash-' + firstAuthorizedSection)) {
+                showDashSection(firstAuthorizedSection);
+            } else if (firstAuthorizedSection && firstAuthorizedSection.charAt(0) === '/') {
+                window.location.href = '{{ url('/') }}' + firstAuthorizedSection;
+            }
+            return;
+        }
         if (key === 'imagenes' && !profileCanAdvertise) key = profileIsPrestador ? 'negocio' : 'cuenta';
         if (key === 'usuarios' && !document.querySelector('.sidebar-link[data-panel="usuarios"]')) key = 'cuenta';
+        // El Admin gestiona usuarios en la pantalla dedicada (con sidebar acoplado).
+        if (key === 'usuarios' && actorIsAdmin && document.getElementById('dash-usuarios')) {
+            showDashSection('usuarios');
+            return;
+        }
+        // El sidebar puede estar acoplado en otra sección (Gestión de Usuarios):
+        // volver a Mi Panel antes de activar el tab, sin recargar datos.
+        var perfilSection = document.getElementById('dash-perfil');
+        if (perfilSection && perfilSection.style.display === 'none') {
+            document.querySelectorAll('.dash-section').forEach(function (s) { s.style.display = 'none'; });
+            perfilSection.style.display = 'block';
+            if (typeof unmountProfileUsuariosPanel === 'function') unmountProfileUsuariosPanel();
+            if (typeof dockProfileSidebar === 'function') dockProfileSidebar(false);
+            // Recarga con el contexto activo y aterriza en el tab pedido.
+            window.__pendingProfilePanel = key;
+            if (typeof loadProfile === 'function') loadProfile();
+            return;
+        }
         try {
             if (key === 'usuarios') mountProfileUsuariosPanel();
             else unmountProfileUsuariosPanel();
@@ -10872,7 +12429,7 @@
     }
 
     function loadProfile() {
-        if (!profileEsPrestador) {
+        if (!profileEsPrestador && !umManagedId()) {
             if (profilePanelInicial === 'direccion') showProfilePanel('direccion');
             return;
         }
@@ -10882,13 +12439,14 @@
         panels.style.display = 'none';
         loading.style.display = 'block';
 
-        fetch('{{ url("/profile") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('') : '{{ url("/profile") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
         .then(function(user) {
             profileData = user;
             profileProvider = user.provider || null;
+            if (umManagedId()) umManagedProfile = user; else umManagedProfile = null;
             var typeObj = user.type_user || user.typeUser || null;
             profileIsPrestador = typeObj && typeObj.description === 'Prestador';
             var statusObj = user.status || user.user_status || null;
@@ -10905,17 +12463,21 @@
                 if (link) link.style.display = visible ? '' : 'none';
             };
 
-            toggleSidebarLink('sidebar-link-negocio', profileIsPrestador);
-            toggleSidebarLink('sidebar-link-horarios', profileIsPrestador);
-            toggleSidebarLink('sidebar-link-servicios', profileIsPrestador);
-            toggleSidebarLink('sidebar-link-imagenes', profileCanAdvertise);
-            toggleSidebarLink('sidebar-link-categorias', profileIsPrestador);
+            toggleSidebarLink('sidebar-link-negocio', profilePuedeConfigurarNegocio);
+            toggleSidebarLink('sidebar-link-horarios', profilePuedeConfigurarNegocio);
+            toggleSidebarLink('sidebar-link-servicios', profilePuedeConfigurarNegocio);
+            toggleSidebarLink('sidebar-link-imagenes', profilePuedeConfigurarNegocio && profileCanAdvertise);
+            toggleSidebarLink('sidebar-link-categorias', profilePuedeConfigurarNegocio);
+            if (umManagedId()) umApplyManagedSidebar();
 
             loading.style.display = 'none';
             panels.style.display = 'block';
 
-            if (profileIsPrestador) {
-                showProfilePanel('negocio');
+            var targetPanel = window.__pendingProfilePanel || profilePanelInicial;
+            window.__pendingProfilePanel = null;
+
+            if (profileIsPrestador && profilePuedeConfigurarNegocio) {
+                showProfilePanel(targetPanel);
                 fillProviderForm();
                 buildHoursGrid();
                 loadProviderServices();
@@ -10924,10 +12486,11 @@
                 setupImageDropzones();
                 loadAddress();
             } else {
-                showProfilePanel('cuenta');
+                showProfilePanel(targetPanel);
             }
         })
         .catch(function() {
+            window.__pendingProfilePanel = null;
             loading.textContent = 'Error al cargar el perfil.';
         });
     }
@@ -10986,7 +12549,7 @@
             hours: collectHours()
         };
 
-        fetch('{{ url("/profile/provider") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/provider') : '{{ url("/profile/provider") }}', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
             body: JSON.stringify(payload)
@@ -11000,6 +12563,7 @@
             }
             if (data.success) {
                 profileProvider = data.provider;
+                if (umManagedId() && umManagedProfile) umManagedProfile.provider = data.provider;
                 var successMsg = (msgId === 'tab2-msg') ? 'Horarios de atención actualizados correctamente.' : data.message;
                 showMsg(msgId, successMsg, true);
             } else {
@@ -11357,7 +12921,7 @@
         var loading = document.getElementById('services-loading');
         var empty = document.getElementById('services-empty');
 
-        fetch('{{ url("/profile/services") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/services') : '{{ url("/profile/services") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
@@ -11465,7 +13029,9 @@
             return;
         }
 
-        var url = editId ? '{{ url("/profile/services/") }}/' + editId : '{{ url("/profile/services") }}';
+        var url = editId
+            ? (umManagedId() ? umAdminUserUrl('/services/') + editId : '{{ url("/profile/services/") }}/' + editId)
+            : (umManagedId() ? umAdminUserUrl('/services') : '{{ url("/profile/services") }}');
         var method = editId ? 'PUT' : 'POST';
 
         fetch(url, {
@@ -11510,7 +13076,7 @@
 
     function confirmDeleteService() {
         if (!deleteServiceId) return;
-        fetch('{{ url("/profile/services/") }}/' + deleteServiceId, {
+        fetch(umManagedId() ? umAdminUserUrl('/services/') + deleteServiceId : '{{ url("/profile/services/") }}/' + deleteServiceId, {
             method: 'DELETE',
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
@@ -11609,7 +13175,7 @@
         formData.append('image', file);
         formData.append('image_type', type);
 
-        fetch('{{ url("/profile/images") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/images') : '{{ url("/profile/images") }}', {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
             body: formData
@@ -11631,7 +13197,7 @@
 
     function deleteImage(id) {
         if (!confirm('¿Eliminar esta imagen?')) return;
-        fetch('{{ url("/profile/images/") }}/' + id, {
+        fetch(umManagedId() ? umAdminUserUrl('/images/') + id : '{{ url("/profile/images/") }}/' + id, {
             method: 'DELETE',
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
@@ -11650,7 +13216,7 @@
         var list = document.getElementById('categorias-list');
         var loading = document.getElementById('categorias-loading');
 
-        fetch('{{ url("/profile/subgroups") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/subgroups') : '{{ url("/profile/subgroups") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
@@ -11725,7 +13291,7 @@
     function toggleSubgroup(subgroupId, labelEl, cb, ctx) {
         ctx = ctx || {};
         var msgId = ctx.msgId || 'categorias-msg';
-        fetch('{{ url("/profile/subgroups/toggle") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/subgroups/toggle') : '{{ url("/profile/subgroups/toggle") }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
             body: JSON.stringify({ subgroup_id: subgroupId })
@@ -11792,7 +13358,7 @@
         var loading = document.getElementById('service-types-loading');
         if (!list || !loading) return;
 
-        fetch('{{ url("/profile/service-types") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/service-types') : '{{ url("/profile/service-types") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
@@ -11845,7 +13411,7 @@
     }
 
     function toggleServiceType(serviceTypeId, labelEl, cb) {
-        fetch('{{ url("/profile/service-types/toggle") }}', {
+        fetch(umManagedId() ? umAdminUserUrl('/service-types/toggle') : '{{ url("/profile/service-types/toggle") }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
             body: JSON.stringify({ service_type_id: serviceTypeId })
@@ -11975,24 +13541,18 @@
 
         var pwCard = document.getElementById('user-cfg-password-card');
         if (pwCard) pwCard.style.display = '';
-        var curField = document.getElementById('user-cfg-pw-current-field');
-        if (curField) curField.style.display = isAuth ? '' : 'none';
         var pwSub = document.getElementById('user-cfg-pw-sub');
-        if (pwSub) {
-            pwSub.textContent = isAuth
-                ? 'Usá una contraseña segura de al menos 8 caracteres.'
-                : 'Establecé una nueva contraseña para este usuario (mínimo 8 caracteres).';
-        }
+        if (pwSub) pwSub.textContent = 'Establecé una nueva contraseña para este usuario (mínimo 8 caracteres).';
 
-        ['user-cfg-pw-current', 'user-cfg-pw-new', 'user-cfg-pw-confirm'].forEach(function(id) {
+        ['user-cfg-pw-new', 'user-cfg-pw-confirm'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) el.value = '';
         });
-        ['user-cfg-pw-current-error', 'user-cfg-pw-new-error', 'user-cfg-pw-confirm-error'].forEach(function(id) {
+        ['user-cfg-pw-new-error', 'user-cfg-pw-confirm-error'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });
-        ['user-cfg-pw-current', 'user-cfg-pw-new', 'user-cfg-pw-confirm'].forEach(function(id) {
+        ['user-cfg-pw-new', 'user-cfg-pw-confirm'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) el.classList.remove('err');
         });
@@ -12044,15 +13604,10 @@
     }
 
     function submitUserAccountPassword() {
-        var curEl = document.getElementById('user-cfg-pw-current');
         var nwEl = document.getElementById('user-cfg-pw-new');
         var conEl = document.getElementById('user-cfg-pw-confirm');
-        var errCur = document.getElementById('user-cfg-pw-current-error');
         var errNew = document.getElementById('user-cfg-pw-new-error');
         var errCon = document.getElementById('user-cfg-pw-confirm-error');
-        var curField = document.getElementById('user-cfg-pw-current-field');
-        var curVisible = !curField || curField.style.display !== 'none';
-        var cur = curEl ? curEl.value : '';
         var nw = nwEl.value;
         var con = conEl.value;
         var principal = getPrincipalAccountUser() || selectedUser;
@@ -12060,15 +13615,9 @@
         var isAuthMode = userAccountConfigIsAuth || !targetId ||
             (authEmail && principal && principal.email && String(principal.email).toLowerCase() === String(authEmail).toLowerCase());
 
-        [errCur, errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
-        [curEl, nwEl, conEl].forEach(function(e) { if (e) e.classList.remove('err'); });
+        [errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
+        [nwEl, conEl].forEach(function(e) { if (e) e.classList.remove('err'); });
 
-        if (isAuthMode && curVisible && !cur) {
-            curEl.classList.add('err');
-            errCur.textContent = 'Ingresá tu contraseña actual.';
-            errCur.style.display = 'block';
-            return;
-        }
         if (nw.length < 8) {
             nwEl.classList.add('err');
             errNew.textContent = 'Mínimo 8 caracteres.';
@@ -12083,7 +13632,6 @@
         }
 
         var doneOk = function(message) {
-            if (curEl) curEl.value = '';
             nwEl.value = '';
             conEl.value = '';
             showMsg('user-cfg-pw-msg', message || 'Contraseña actualizada correctamente.', true);
@@ -12093,12 +13641,11 @@
             fetch('{{ url("/profile/password") }}', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                body: JSON.stringify({ current_password: cur, password: nw, password_confirmation: con })
+                body: JSON.stringify({ password: nw, password_confirmation: con })
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.errors) {
-                    if (data.errors.current_password && curEl) { curEl.classList.add('err'); errCur.textContent = data.errors.current_password[0]; errCur.style.display = 'block'; }
                     if (data.errors.password) { nwEl.classList.add('err'); errNew.textContent = data.errors.password[0]; errNew.style.display = 'block'; }
                     return;
                 }
@@ -12421,21 +13968,21 @@
 
     // ---------- Mi Dirección ----------
 
-    function loadAddress() {
-        if (profileDireccionCargada) return;
-        profileDireccionCargada = true;
-
-        fetch('{{ url("/profile/address") }}', {
+    function paintAddressForm(data) {
+        // Dirección heredada del principal: la vista queda en solo lectura.
+        window.__addressSharedReadOnly = !!(data && data.shared);
+        ['addr-country', 'addr-province', 'addr-street', 'addr-number', 'addr-floor', 'addr-postal', 'addr-notes'].forEach(function(id) {
+            var input = document.getElementById(id);
+            if (input) input.disabled = false;
+        });
+        var addrSaveBtn0 = document.querySelector('button[onclick="submitAddress()"]');
+        if (addrSaveBtn0) addrSaveBtn0.style.display = '';
+        fetch('{{ url("/countries") }}', {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-            fetch('{{ url("/countries") }}', {
-                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(countries) {
-                var sel = document.getElementById('addr-country');
+        .then(function(countries) {
+            var sel = document.getElementById('addr-country');
                 sel.innerHTML = '<option value="">-- Seleccionar --</option>';
                 countries.forEach(function(c) {
                     var opt = document.createElement('option');
@@ -12449,14 +13996,47 @@
                     if (a.country_id) {
                         sel.value = a.country_id;
                         loadRegionsForCountry(a.country_id, a.province_id);
+                        fdInicializarPaisDireccion(sel, true);
+                    } else {
+                        fdInicializarPaisDireccion(sel, false);
                     }
                     if (a.street) document.getElementById('addr-street').value = a.street;
                     if (a.number) document.getElementById('addr-number').value = a.number;
                     if (a.floor_apartment) document.getElementById('addr-floor').value = a.floor_apartment;
                     if (a.postal_code) document.getElementById('addr-postal').value = a.postal_code;
                     if (a.notes) document.getElementById('addr-notes').value = a.notes;
+                } else {
+                    fdInicializarPaisDireccion(sel, false);
+                }
+
+                if (window.__addressSharedReadOnly) {
+                    ['addr-country', 'addr-province', 'addr-street', 'addr-number', 'addr-floor', 'addr-postal', 'addr-notes'].forEach(function(id) {
+                        var input = document.getElementById(id);
+                        if (input) input.disabled = true;
+                    });
+                    var addrSaveBtn = document.querySelector('button[onclick="submitAddress()"]');
+                    if (addrSaveBtn) addrSaveBtn.style.display = 'none';
+                    showMsg('direccion-msg', 'Dirección del usuario principal (solo lectura).', true);
                 }
             });
+    }
+
+    function loadAddress() {
+        if (profileDireccionCargada) return;
+        profileDireccionCargada = true;
+
+        // Administrado por el Admin: se pinta la dirección del usuario en gestión.
+        if (umManagedId() && umManagedProfile) {
+            paintAddressForm({ address: umGetUserPrimaryAddress(umManagedProfile) });
+            return;
+        }
+
+        fetch('{{ url("/profile/address") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            paintAddressForm(data);
         })
         .catch(function() { profileDireccionCargada = false; });
     }
@@ -12490,7 +14070,12 @@
     }
 
     function submitAddress() {
-        var countryId = document.getElementById('addr-country').value;
+        if (window.__addressSharedReadOnly) {
+            showMsg('direccion-msg', 'La dirección la administra el usuario principal de la cuenta.', false);
+            return;
+        }
+        var hiddenCountry = document.getElementById('addr-country-id');
+        var countryId = (hiddenCountry && hiddenCountry.value) || document.getElementById('addr-country').value;
         var provinceId = document.getElementById('addr-province').value;
         var street = document.getElementById('addr-street').value.trim();
         var number = document.getElementById('addr-number').value.trim();
@@ -12503,8 +14088,21 @@
             return;
         }
 
-        fetch('{{ url("/profile/address") }}', {
-            method: 'PUT',
+        // Administrado por el Admin: guarda sobre la cuenta en gestión.
+        var addrUrl = '{{ url("/profile/address") }}';
+        var addrMethod = 'PUT';
+        if (umManagedId()) {
+            var mAddr = umManagedProfile ? umGetUserPrimaryAddress(umManagedProfile) : null;
+            if (mAddr && mAddr.id) {
+                addrUrl = umAdminUserUrl('/addresses/' + mAddr.id);
+            } else {
+                addrUrl = umAdminUserUrl('/addresses');
+                addrMethod = 'POST';
+            }
+        }
+
+        fetch(addrUrl, {
+            method: addrMethod,
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
             body: JSON.stringify({
                 country_id: parseInt(countryId),
@@ -12513,7 +14111,8 @@
                 number: number,
                 floor_apartment: floor,
                 postal_code: postal,
-                notes: notes
+                notes: notes,
+                is_primary: true
             })
         })
         .then(function(r) { return r.json(); })
@@ -12525,6 +14124,22 @@
             }
             if (data.success) {
                 showMsg('direccion-msg', data.message, true);
+                if (umManagedId()) {
+                    umRefreshManagedProfile();
+                    return;
+                }
+                if (typeof fdProfileAddressState !== 'undefined' && fdProfileAddressState) {
+                    fdProfileAddressState.done = false;
+                    fdProfileAddressState.promise = null;
+                    fdProfileAddressState.address = null;
+                }
+                var estabaBloqueada = fdDireccionBloqueada;
+                fdDesbloquearDireccion();
+                if (estabaBloqueada) {
+                    var destino = new URLSearchParams(window.location.search).get('section') || 'perfil';
+                    if (!document.getElementById('dash-' + destino)) destino = 'perfil';
+                    showDashSection(destino);
+                }
             }
         })
         .catch(function() {
