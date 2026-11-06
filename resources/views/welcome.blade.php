@@ -352,67 +352,75 @@
                             </div>
                         </section>
                     </div>
-                    <div id="section-servicios" class="page-section rounded-none" style="display:none;max-width:1200px;margin:0 auto;background:white;border-radius:0;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
-<div class="max-w-7xl mx-auto px-4 py-8">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-    <!-- COLUMNA IZQUIERDA: Presentación e Imagen -->
-    <div class="flex flex-col gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-[#D24C19] text-2xl font-black">::</span>
-        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Nuestros Servicios</h2>
-      </div>
-      <p class="text-gray-600 text-sm leading-relaxed">
-        Conectamos tu día a día con los mejores prestadores y comercios locales. Gestioná pedidos en tiempo real, contratá servicios técnicos garantizados para el hogar y descubrí una red confiable diseñada para resolver tus necesidades sin complicaciones.
-      </p>
-      <div class="flex flex-wrap gap-2 text-xs">
-        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Rápido</span>
-        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Seguro</span>
-        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Garantizado</span>
-      </div>
-      <img src="{{ asset('images/Imacarousel/slide2.jpg') }}" alt="Servicios" class="w-full h-56 object-cover border border-gray-200 mt-2 shadow-sm">
+                    <div id="section-servicios" class="page-section rounded-none" style="display:none;max-width:none;margin:0;background:white;border-radius:0;padding:0;box-shadow:none;">
+<div style="width: 100%; padding: 32px 24px; box-sizing: border-box;">
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch; width: 100%;">
+
+    <!-- COLUMNA IZQUIERDA: VIDEO CON PADDING/BORDE -->
+    <div style="flex: 1 1 450px; min-width: 320px;">
+      <video id="video-servicios" autoplay muted playsinline style="width: 100%; height: 100%; min-height: 460px; object-fit: cover; display: block; border: 1px solid #e5e7eb;">
+        <source src="{{ asset('images/videos/servicios.mp4') }}" type="video/mp4">
+      </video>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('video-servicios');
+    if (video) {
+      video.addEventListener('timeupdate', () => {
+        if (video.currentTime >= 8.0) {
+          video.currentTime = 0;
+          video.play();
+        }
+      });
+    }
+  });
+</script>
     </div>
 
-    <!-- COLUMNA DERECHA: Acordeón limpio (sin radio buttons visibles) -->
-    <div class="border border-gray-200 divide-y divide-gray-200 bg-white">
-      <!-- Item 1 (Abierto por defecto) -->
-      <details open class="group p-5">
-        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
-          <span>Comercio - Tiendas y Gastronomía</span>
-          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </summary>
-        <div class="mt-3 text-sm text-gray-600">
-          <p>Pedí lo que necesites de tus tiendas favoritas con entrega rápida y seguimiento en tiempo real.</p>
-          <div class="flex gap-2 my-3">
-            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Gastronomía</span>
-            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Tiendas</span>
-            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Envío Veloz</span>
+    <!-- COLUMNA DERECHA: ACORDEÓN -->
+    <div style="flex: 1 1 450px; min-width: 320px; display: flex; flex-direction: column; justify-content: center;">
+      <div style="width: 100%; border: 1px solid #e5e7eb; background: #ffffff;">
+
+        <!-- 1. Comercio -->
+        <details open style="border-bottom: 1px solid #e5e7eb;">
+          <summary style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; font-weight: 700; color: #1e293b; cursor: pointer; list-style: none; user-select: none;">
+            <span>Comercio - Tiendas y Gastronomía</span>
+            <span style="font-size: 13px; color: #64748b;">▼</span>
+          </summary>
+          <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
+            <p style="margin: 0 0 12px 0;">Pedí lo que necesites de tus tiendas favoritas con entrega rápida y seguimiento en tiempo real.</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Gastronomía</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Tiendas</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Envío Veloz</span>
+            </div>
           </div>
-          <a href="#" onclick="showSection('comercios');return false;" class="inline-flex items-center text-xs font-semibold text-white bg-[#D24C19] px-4 py-2 hover:bg-[#b83f14] transition">Explorar Comercios &rarr;</a>
-        </div>
-      </details>
+        </details>
 
-      <!-- Item 2 -->
-      <details class="group p-5">
-        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
-          <span>Hogar - Soluciones Técnicas y Mantenimiento</span>
-          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </summary>
-        <div class="mt-3 text-sm text-gray-600">
-          <p>Contratá electricistas, plomeros, técnicos y profesionales verificados para urgencias, citas programadas y presupuestos garantizados.</p>
-        </div>
-      </details>
+        <!-- 2. Hogar -->
+        <details style="border-bottom: 1px solid #e5e7eb;">
+          <summary style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; font-weight: 700; color: #1e293b; cursor: pointer; list-style: none; user-select: none;">
+            <span>Hogar - Soluciones Técnicas y Mantenimiento</span>
+            <span style="font-size: 13px; color: #64748b;">▼</span>
+          </summary>
+          <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
+            <p style="margin: 0;">Contratá electricistas, plomeros, técnicos y profesionales verificados para urgencias, citas programadas y presupuestos garantizados.</p>
+          </div>
+        </details>
 
-      <!-- Item 3 -->
-      <details class="group p-5">
-        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
-          <span>Mercado y Envíos Express</span>
-          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </summary>
-        <div class="mt-3 text-sm text-gray-600">
-          <p>Logística local y envíos express con repartidores de confianza para que recibas todo sin salir de casa.</p>
-        </div>
-      </details>
+        <!-- 3. Mercado -->
+        <details>
+          <summary style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; font-weight: 700; color: #1e293b; cursor: pointer; list-style: none; user-select: none;">
+            <span>Mercado y Envíos Express</span>
+            <span style="font-size: 13px; color: #64748b;">▼</span>
+          </summary>
+          <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
+            <p style="margin: 0;">Logística local y envíos express con repartidores de confianza para que recibas todo sin salir de casa.</p>
+          </div>
+        </details>
+
+      </div>
     </div>
+
   </div>
 </div>
                     </div>
