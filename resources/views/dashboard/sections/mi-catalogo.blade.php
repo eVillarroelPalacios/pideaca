@@ -1,4 +1,4 @@
-            <section id="dash-mi-catalogo" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+            <section id="dash-mi-catalogo" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1600px;margin:5px auto;padding:0 5px;">
                 <div class="fd-cat-topbar">
                     <button type="button" onclick="fdCatToggleSidebar()" aria-label="Abrir menú" style="background:none;border:none;cursor:pointer;padding:4px;color:#0f172a;display:flex;align-items:center;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>

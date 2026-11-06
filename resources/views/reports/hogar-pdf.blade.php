@@ -20,7 +20,7 @@
         .footer { position: fixed; bottom: 0; left: 0; right: 0; font-size: 9px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 8px; }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="header">
         <div>
             <h1 class="title">PideAca — Reporte de Servicios Hogar</h1>

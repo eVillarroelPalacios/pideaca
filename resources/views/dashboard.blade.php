@@ -20,7 +20,7 @@
 
         {{-- NAV DINAMICO --}}
         <nav style="background:linear-gradient(180deg,#0c2a4d 0%,#071a30 100%);position:sticky;top:0;z-index:50;overflow:visible;">
-            <div class="nav-container" style="max-width:1200px;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
+            <div class="nav-container" style="width:98%;margin:0 auto;padding:1px 2px;display:flex;align-items:center;justify-content:flex-end;gap:6px;position:relative;">
                 <div style="z-index:60;cursor:default;">
                     <img class="logo-img" src="{{ asset('images/logo.png') }}" alt="PideAca" style="width:170px;height:58px;border-radius:0;object-fit:contain;" />
                 </div>
@@ -73,10 +73,10 @@
                             @endif
                         @endforeach
                         @if($module->description === 'Administrar' || $loop->last)
-                        <div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>
-                        <a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#dc2626;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">
-                            Cerrar Sesión
-                        </a>
+<div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>
+<a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#ffffff'" style="display:block;padding:8px 16px;color:#000000;background:#ffffff;font-size:13px;font-weight:400;text-decoration:none;white-space:nowrap;transition:background 0.15s ease;">
+    Cerrar Sesión
+</a>
                         @endif
                     </div>
                 </div>
@@ -5234,7 +5234,8 @@
     }
 
     // ---- Filtro de comercios por ubicación / distancia ----
-    var fdShopsFilter = { mode: 'distance', distanceKm: 10, location: '', coords: null };
+    // Por defecto se busca en todas partes (sin límite de distancia).
+    var fdShopsFilter = { mode: 'all', distanceKm: 10, location: '', coords: null };
 
     function fdShopsFilterOpen() {
         var modal = document.getElementById('fd-shops-filter-modal');

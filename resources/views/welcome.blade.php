@@ -161,7 +161,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                     </button>
                                 </div>
-                                <button type="button" id="btn-filtro-modal" onclick="document.getElementById('modal-filtro').style.display='flex'" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;background:#e8590c;border:none;border-radius:3px;margin-left:5px;cursor:pointer;flex-shrink:0;">
+                                <button type="button" id="btn-filtro-modal" onclick="document.getElementById('modal-filtro').style.display='flex'; distanceFilterMode()" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;background:#e8590c;border:none;border-radius:3px;margin-left:5px;cursor:pointer;flex-shrink:0;">
                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
                                     <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
@@ -1018,6 +1018,10 @@
         if (wrap) wrap.style.opacity = unlimited ? '.45' : '1';
     }
 
+    // Por defecto se busca en todas partes (sin límite de distancia).
+    // activo:false equivale a la opción "Buscar en todas partes".
+    window.filtroDistancia = { activo: false, radioKm: 10, ubicacion: null };
+
     function aplicarFiltroDistancia() {
         var modo = document.querySelector('input[name="modo_distancia"]:checked');
         window.filtroDistancia = {
@@ -1320,7 +1324,7 @@
         card.classList.toggle('flipped');
     });
 
-    adRenderPage();
+    adFilterProviders();
     window.addEventListener('resize', adRenderPage);
     adToggleClear();
 
@@ -1664,29 +1668,29 @@
     })();
 </script>
 <div id="modal-filtro" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#fff;padding:20px;border-radius:8px;max-width:420px;width:90%;">
+  <div style="background:#fff;padding:20px;border-radius:8px;max-width:420px;width:90%;position:relative;">
+    <button type="button" aria-label="Cerrar" onclick="document.getElementById('modal-filtro').style.display='none'" style="position:absolute;top:8px;right:8px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;color:#6b7280;font-size:20px;line-height:1;cursor:pointer;">&times;</button>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <h3 style="margin:0;font-size:15px;font-weight:700;color:#0c2a4d;">Filtro de distancia</h3>
       <label for="radio-distancia" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;cursor:pointer;">
-        <input type="radio" id="radio-distancia" name="modo_distancia" value="distancia" checked style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
+        <input type="radio" id="radio-distancia" name="modo_distancia" value="distancia" style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
         Por distancia
       </label>
-      <div id="modal-filtro-slider-wrap" style="display:flex;flex-direction:column;gap:6px;padding-left:24px;">
+      <div id="modal-filtro-slider-wrap" style="display:flex;flex-direction:column;gap:6px;padding-left:24px;opacity:.45;">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;">
           <span>Radio</span>
           <strong id="modal-filtro-distance-label" style="color:#D24C19;">10 km</strong>
         </div>
-        <input type="range" id="modal-filtro-range" min="1" max="50" value="10" step="1" style="width:100%;accent-color:#D24C19;cursor:pointer;" oninput="document.getElementById('modal-filtro-distance-label').textContent=(this.value>=50?'50+':this.value)+' km'">
+        <input type="range" id="modal-filtro-range" min="1" max="50" value="10" step="1" disabled style="width:100%;accent-color:#D24C19;cursor:pointer;" oninput="document.getElementById('modal-filtro-distance-label').textContent=(this.value>=50?'50+':this.value)+' km'">
       </div>
       <label for="radio-todas" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;cursor:pointer;">
-        <input type="radio" id="radio-todas" name="modo_distancia" value="todas" style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
+        <input type="radio" id="radio-todas" name="modo_distancia" value="todas" checked style="accent-color:#D24C19;cursor:pointer;" onchange="distanceFilterMode()">
         Buscar en todas partes (sin límite de distancia)
       </label>
       <label for="modal-filtro-ubicacion" style="font-size:11.5px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Ubicación de referencia (opcional)</label>
       <input type="text" id="modal-filtro-ubicacion" placeholder="Ej. Av. Siempre Viva 123" autocomplete="off" style="padding:9px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12.5px;outline:none;">
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
-      <button type="button" onclick="document.getElementById('modal-filtro').style.display='none'" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Cerrar</button>
       <button type="button" onclick="aplicarFiltroDistancia()" style="background:#D24C19;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">Aplicar</button>
     </div>
   </div>

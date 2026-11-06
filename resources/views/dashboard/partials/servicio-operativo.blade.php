@@ -5,7 +5,7 @@
     tarjeta enrichida (ubicacion, contacto, adjuntos, presupuesto y linea de
     tiempo) y modal de detalle con las acciones operativas del prestador.
 --}}
-<div id="fd-so-modal" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.6);z-index:600;align-items:center;justify-content:center;padding:16px;">
+<div id="fd-so-modal" class="fd-modal" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.6);z-index:600;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#fff;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;">
         <div style="padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
             <div id="fd-so-modal-head" style="min-width:0;">
@@ -194,7 +194,7 @@
             html += '<a href="' + esc(waUrl(o)) + '" target="_blank" rel="noopener" style="background:#25D366;color:#fff;text-decoration:none;padding:' + pad + ';border-radius:4px;font-size:12px;font-weight:600;">WhatsApp</a>';
         }
 
-        html += '<button type="button" onclick="window.FdServicioUI.act(\'chat\',' + o.id + ')" style="background:#fff;color:#0c2a4d;border:1px solid #cbd5e1;padding:' + pad + ';border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Chat</button>';
+        html += '<button type="button" class="btn-chat" data-action="chat" onclick="window.FdServicioUI.act(\'chat\',' + o.id + ')" style="background:#fff;color:#0c2a4d;border:1px solid #cbd5e1;padding:' + pad + ';border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Chat</button>';
 
         if (email) {
             html += '<a href="mailto:' + esc(email) + '" style="background:#fff;color:#475569;text-decoration:none;border:1px solid #cbd5e1;padding:' + pad + ';border-radius:4px;font-size:12px;font-weight:600;">Email</a>';
@@ -471,7 +471,10 @@
         var pool = !!(opts && opts.pool);
         var acts = ['detail'];
 
-        if (pool && o.status === 'REQUESTED' && (o.order_type === 'EMERGENCY' || o.order_type === 'SCHEDULED')) {
+        // Aceptar: disponible tanto en el pool como en una solicitud que ya
+        // esta asignada al comercio actual (siempre que siga pendiente).
+        if ((mine || pool) && o.status === 'REQUESTED'
+            && (o.order_type === 'EMERGENCY' || o.order_type === 'SCHEDULED')) {
             acts.push('accept');
         }
         if (o.order_type === 'QUOTE' && (o.status === 'REQUESTED' || o.status === 'QUOTED') && (mine || pool)) {

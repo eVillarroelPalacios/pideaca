@@ -1,41 +1,112 @@
-<section id="dash-ordenes-gestion" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+<section id="dash-ordenes-gestion" class="dash-section" data-provider-id="{{ $user->provider?->id ?? '' }}" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
             <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Gestiona y consulta el historial de tus servicios en un solo lugar.</p>
-        </div>
-        <button type="button" onclick="window.fdOgLoad()" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-            Actualizar
-        </button>
+        </div>        
     </div>
 
+    <style>
+        #fd-og-tabs .fd-og-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+            background: transparent;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+        }
+        #fd-og-tabs .fd-og-tab svg { flex-shrink: 0; }
+        #fd-og-tabs .fd-og-tab:hover { background: #e5e7eb; }
+        #fd-og-tabs .fd-og-tab.is-active { background: #D24C19; color: #fff; box-shadow: 0 2px 8px rgba(210,76,25,.28); }
+        #fd-og-tabs .fd-og-tab.is-active:hover { background: #b8410f; }
+        #fd-og-tabs .fd-og-count {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0;
+        }
+        #fd-og-tabs .fd-og-count[data-group="all"] { background: #ffe4d6; color: #b23a0f; }
+        #fd-og-tabs .fd-og-count[data-group="pending"] { background: #fef3c7; color: #b45309; }
+        #fd-og-tabs .fd-og-count[data-group="confirmed"] { background: #dcfce7; color: #047857; }
+        #fd-og-tabs .fd-og-count[data-group="completed"] { background: #d1fae5; color: #047857; }
+        #fd-og-tabs .fd-og-count[data-group="cancelled"] { background: #fee2e2; color: #b91c1c; }
+        #fd-og-tabs .fd-og-tab.is-active .fd-og-count { background: #fff; color: #D24C19; }
+        #fd-og-client-menu { left: auto; right: 0; width: 260px; }
+        /* Ocultar botones de contacto en el modal de detalle */
+        .fd-modal a[href^="tel:"],
+        .fd-modal a[href*="wa.me"],
+        .fd-modal a[href^="mailto:"],
+        .fd-modal button:is([data-action="chat"], .btn-chat, .btn-call, .btn-whatsapp, .btn-email),
+        #dash-ordenes-gestion .fd-modal a:is([href^="tel:"], [href*="wa.me"], [href^="mailto:"]) {
+            display: none !important;
+        }
+        /* Ocultar boton Cerrar del footer del modal de ordenes */
+        #fd-so-modal #fd-so-modal-actions button[data-action="close"],
+        #fd-so-modal #fd-so-modal-actions button[onclick*="FdServicioUI.close"] {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            #fd-og-tabs .fd-og-tab-label { display: none !important; }
+            #fd-og-tabs .fd-og-tab { padding: 6px 10px; gap: 4px; justify-content: center; }
+            #fd-og-client-menu { left: 0; right: auto; min-width: 240px; width: 100%; max-width: 90vw; }
+        }
+    </style>
+
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-        <div id="fd-og-tabs" style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;flex-wrap:wrap;">
-            <button type="button" data-group="all" onclick="window.fdOgTab('all')" class="fd-og-tab" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:#D24C19;background:none;border:none;border-bottom:2px solid #D24C19;margin-bottom:-2px;cursor:pointer;">
-                Todas las órdenes
-                <span id="fd-og-count-all" style="background:#D24C19;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+        <div id="fd-og-tabs" role="tablist" style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;padding:4px;border-radius:9999px;flex-wrap:wrap;">
+            <button type="button" data-group="all" onclick="window.fdOgTab('all')" class="fd-og-tab is-active" aria-selected="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg>
+                <span class="fd-og-tab-label">Todas las órdenes</span>
+                <span id="fd-og-count-all" data-group="all" class="fd-og-count" style="display:none;">0</span>
             </button>
-            <button type="button" data-group="pending" onclick="window.fdOgTab('pending')" class="fd-og-tab" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">
-                Pendientes
-                <span id="fd-og-count-pending" style="background:#b45309;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+            <button type="button" data-group="pending" onclick="window.fdOgTab('pending')" class="fd-og-tab" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                <span class="fd-og-tab-label">Pendientes</span>
+                <span id="fd-og-count-pending" data-group="pending" class="fd-og-count" style="display:none;">0</span>
             </button>
-            <button type="button" data-group="confirmed" onclick="window.fdOgTab('confirmed')" class="fd-og-tab" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">
-                Confirmados
-                <span id="fd-og-count-confirmed" style="background:#047857;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+            <button type="button" data-group="confirmed" onclick="window.fdOgTab('confirmed')" class="fd-og-tab" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+                <span class="fd-og-tab-label">Confirmados</span>
+                <span id="fd-og-count-confirmed" data-group="confirmed" class="fd-og-count" style="display:none;">0</span>
             </button>
-            <button type="button" data-group="completed" onclick="window.fdOgTab('completed')" class="fd-og-tab" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">
-                Completados
-                <span id="fd-og-count-completed" style="background:#047857;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+            <button type="button" data-group="completed" onclick="window.fdOgTab('completed')" class="fd-og-tab" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg>
+                <span class="fd-og-tab-label">Completados</span>
+                <span id="fd-og-count-completed" data-group="completed" class="fd-og-count" style="display:none;">0</span>
             </button>
-            <button type="button" data-group="cancelled" onclick="window.fdOgTab('cancelled')" class="fd-og-tab" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">
-                Cancelados
-                <span id="fd-og-count-cancelled" style="background:#b91c1c;color:#fff;border-radius:9999px;padding:0 6px;font-size:10px;font-weight:700;display:none;">0</span>
+            <button type="button" data-group="cancelled" onclick="window.fdOgTab('cancelled')" class="fd-og-tab" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+                <span class="fd-og-tab-label">Cancelados</span>
+                <span id="fd-og-count-cancelled" data-group="cancelled" class="fd-og-count" style="display:none;">0</span>
             </button>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <input type="search" id="fd-og-search" oninput="window.fdOgSearch()" placeholder="Buscar por cliente o ID..." style="padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;min-width:200px;" />
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;">
+            <div id="fd-og-client-wrap" style="position:relative;">
+                <button type="button" id="fd-og-client-btn" onclick="window.fdOgClientToggle()" aria-haspopup="listbox" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;color:#374151;cursor:pointer;display:inline-flex;align-items:center;justify-content:space-between;gap:6px;min-width:220px;">
+                    <span id="fd-og-client-label" style="display:inline-flex;align-items:center;gap:6px;min-width:0;"><span style="color:#6b7280;">Buscar o elegir cliente...</span></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div id="fd-og-client-menu" style="display:none;position:absolute;top:calc(100% + 6px);background:#fff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 8px 24px rgba(15,23,42,.12);z-index:30;padding:6px;">
+                    <div style="padding:4px 4px 6px;">
+                        <input type="search" id="fd-og-client-filter" oninput="window.fdOgClientFilterInput()" placeholder="Escribir nombre del cliente..." autocomplete="off" style="width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;background:#fff;" />
+                    </div>
+                    <div id="fd-og-client-list" style="max-height:240px;overflow-y:auto;"></div>
+                </div>
+            </div>
             <div id="fd-og-quick-wrap" style="position:relative;">
                 <button type="button" onclick="window.fdOgQuickToggle()" id="fd-og-quick-btn" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;color:#374151;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
                     Filtros rápidos
@@ -79,8 +150,9 @@
     var providerId = sec.getAttribute('data-provider-id') || '';
     var currentTab = 'all';
     var currentQuick = 'all';
+    var currentClient = '';
+    var clients = [];
     var lastTotal = 0;
-    var searchTimer = null;
 
     var GROUPS = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
     var QUICK_LABEL = {
@@ -342,7 +414,11 @@
     }
 
     function renderItem(item) {
-        return item.source === 'service' ? serviceCard(item.raw) : commerceCard(item.raw);
+    var html = item.source === 'service' ? serviceCard(item.raw) : commerceCard(item.raw);
+    // Elimina los enlaces de tel:, wa.me, mailto: y botones de chat
+    return html
+        .replace(/<a\b[^>]*href=["'](?:tel:|mailto:|https:\/\/wa\.me)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, '')
+        .replace(/<button\b[^>]*>(?:Chat|Llamar)<\/button>/gi, '');
     }
 
     function updateCounts(counts) {
@@ -359,16 +435,129 @@
         currentTab = group;
         Array.prototype.forEach.call(sec.querySelectorAll('.fd-og-tab'), function (tab) {
             var active = tab.getAttribute('data-group') === group;
-            tab.style.color = active ? '#D24C19' : '#64748b';
-            tab.style.borderBottomColor = active ? '#D24C19' : 'transparent';
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
         });
         window.fdOgLoad();
     };
 
-    window.fdOgSearch = function () {
-        if (searchTimer) clearTimeout(searchTimer);
-        searchTimer = setTimeout(function () { window.fdOgLoad(); }, 350);
+    // ---- Selector de cliente con filtro de texto ----
+    function clientNameOf(item) {
+        var raw = (item && item.raw) || {};
+        if (raw.user && raw.user.name) return String(raw.user.name);
+        if (raw.customer && raw.customer.name) return String(raw.customer.name);
+        if (raw.client_name) return String(raw.client_name);
+        return '';
+    }
+
+    function mergeClients(items) {
+        var seen = {};
+        clients.forEach(function (name) { seen[name.toLowerCase()] = true; });
+        (items || []).forEach(function (item) {
+            var name = clientNameOf(item).trim();
+            if (!name || seen[name.toLowerCase()]) return;
+            seen[name.toLowerCase()] = true;
+            clients.push(name);
+        });
+        clients.sort(function (a, b) { return a.localeCompare(b, 'es'); });
+    }
+
+    function initials(name) {
+        var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '?';
+        var first = parts[0].charAt(0);
+        var second = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+        return (first + second).toUpperCase();
+    }
+
+    function initialsAvatar(name) {
+        if (!name) {
+            return '<span style="width:22px;height:22px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:11px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">&#9776;</span>';
+        }
+        return '<span style="width:22px;height:22px;border-radius:50%;background:#D24C19;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + esc(initials(name)) + '</span>';
+    }
+
+    function clientOption(name, label, active) {
+        var style = 'display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 8px;font-size:12px;border:none;border-radius:4px;cursor:pointer;'
+            + 'background:' + (active ? '#fff1eb' : 'none') + ';'
+            + 'color:' + (active ? '#D24C19' : '#374151') + ';'
+            + 'font-weight:' + (active ? '700' : '400') + ';';
+        return '<button type="button" data-client="' + esc(name) + '" style="' + style + '">'
+            + initialsAvatar(name)
+            + '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(label) + '</span>'
+            + '</button>';
+    }
+
+    function renderClientList(term) {
+        var list = document.getElementById('fd-og-client-list');
+        if (!list) return;
+        term = String(term || '').trim().toLowerCase();
+
+        var html = clientOption('', 'Todos los clientes', currentClient === '');
+        var shown = 0;
+        clients.forEach(function (name) {
+            if (term && name.toLowerCase().indexOf(term) === -1) return;
+            shown++;
+            html += clientOption(name, name, name === currentClient);
+        });
+        if (!shown) {
+            html += '<p style="font-size:12px;color:#6b7280;margin:10px 8px;text-align:center;">Sin coincidencias</p>';
+        }
+        list.innerHTML = html;
+    }
+
+    function setClientLabel() {
+        var label = document.getElementById('fd-og-client-label');
+        if (!label) return;
+        if (!currentClient) {
+            label.innerHTML = '<span style="color:#6b7280;">Buscar o elegir cliente...</span>';
+            return;
+        }
+        label.innerHTML = initialsAvatar(currentClient)
+            + '<span style="color:#0f172a;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(currentClient) + '</span>';
+    }
+
+    function closeClient() {
+        var menu = document.getElementById('fd-og-client-menu');
+        if (menu) menu.style.display = 'none';
+    }
+
+    window.fdOgClientToggle = function () {
+        var menu = document.getElementById('fd-og-client-menu');
+        if (!menu) return;
+        if (menu.style.display === 'none') {
+            var input = document.getElementById('fd-og-client-filter');
+            if (input) input.value = '';
+            renderClientList('');
+            menu.style.display = '';
+            if (input) input.focus();
+        } else {
+            menu.style.display = 'none';
+        }
     };
+
+    window.fdOgClientFilterInput = function () {
+        renderClientList((document.getElementById('fd-og-client-filter') || {}).value || '');
+    };
+
+    window.fdOgClientPick = function (name) {
+        currentClient = String(name || '');
+        var input = document.getElementById('fd-og-client-filter');
+        if (input) input.value = '';
+        setClientLabel();
+        renderClientList('');
+        closeClient();
+        window.fdOgLoad();
+    };
+
+    var clientListEl = document.getElementById('fd-og-client-list');
+    if (clientListEl) {
+        clientListEl.addEventListener('click', function (e) {
+            var item = e.target && e.target.closest ? e.target.closest('[data-client]') : null;
+            if (!item) return;
+            window.fdOgClientPick(item.getAttribute('data-client') || '');
+        });
+    }
 
     function closeQuick() {
         var menu = document.getElementById('fd-og-quick-menu');
@@ -397,6 +586,8 @@
     document.addEventListener('click', function (e) {
         var wrap = document.getElementById('fd-og-quick-wrap');
         if (wrap && !wrap.contains(e.target)) closeQuick();
+        var clientWrap = document.getElementById('fd-og-client-wrap');
+        if (clientWrap && !clientWrap.contains(e.target)) closeClient();
     });
 
     window.fdOgDecide = function (orderId, status) {
@@ -457,9 +648,7 @@
         var params = ['per_page=100'];
         if (currentTab !== 'all') params.push('group=' + encodeURIComponent(currentTab));
         if (currentQuick !== 'all') params.push('quick=' + encodeURIComponent(currentQuick));
-        var search = (document.getElementById('fd-og-search') || {}).value || '';
-        search = search.trim();
-        if (search) params.push('q=' + encodeURIComponent(search));
+        if (currentClient) params.push('q=' + encodeURIComponent(currentClient));
 
         fetch('{{ url('/api/v1/provider/ordenes-gestion') }}?' + params.join('&'), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
             .then(function (res) { return res.json().catch(function () { return {}; }); })
@@ -475,6 +664,8 @@
                 var data = json.data || {};
                 var items = data.items || [];
                 lastTotal = parseInt(data.total, 10) || 0;
+                mergeClients(items);
+                renderClientList((document.getElementById('fd-og-client-filter') || {}).value || '');
                 updateCounts(data.counts);
 
                 if (!items.length) {
@@ -482,7 +673,7 @@
                     show('fd-og-foot', false);
                     var empty = document.getElementById('fd-og-empty-text');
                     if (empty) {
-                        empty.textContent = lastTotal === 0 && currentTab === 'all' && currentQuick === 'all' && !search
+                        empty.textContent = lastTotal === 0 && currentTab === 'all' && currentQuick === 'all' && !currentClient
                             ? 'Todavía no hay órdenes. Cuando recibas solicitudes o pedidos van a aparecer acá.'
                             : 'Ninguna orden coincide con los filtros actuales.';
                     }

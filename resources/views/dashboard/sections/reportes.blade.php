@@ -20,7 +20,7 @@
             ['key' => 'nutrition', 'label' => 'Resumen nutricional', 'icon' => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'],
         ];
 @endphp
-<section id="dash-reportes" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+<section id="dash-reportes" class="dash-section" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
@@ -30,11 +30,10 @@
         </div>
     </div>
 
-    <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px;flex-wrap:wrap;">
+    <div class="fd-rep-tabs" style="display:inline-flex;gap:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:5px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
         @foreach($tabs as $tab)
         <button type="button" class="fd-rep-tab{{ $loop->first ? ' active' : '' }}" data-rep-tab="{{ $tab['key'] }}"
-            onclick="fdRepSwitch('{{ $tab['key'] }}')" title="{{ $tab['label'] }}"
-            style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px;font-weight:600;color:{{ $loop->first ? '#D24C19' : '#64748b' }};background:{{ $loop->first ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'transparent' }};border:none;border-bottom:2px solid {{ $loop->first ? '#D24C19' : 'transparent' }};margin-bottom:-2px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;">
+            onclick="fdRepSwitch('{{ $tab['key'] }}')" title="{{ $tab['label'] }}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $tab['icon'] !!}</svg>
             <span class="tab-label">{{ $tab['label'] }}</span>
         </button>
@@ -64,6 +63,11 @@
 <div id="fd-rep-print" style="display:none;"></div>
 
 <style>
+    #dash-reportes .fd-rep-tabs { display:inline-flex;gap:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:5px;margin-bottom:16px;flex-wrap:wrap;align-items:center; }
+    #dash-reportes .fd-rep-tab { display:inline-flex;align-items:center;gap:8px;border:none;border-radius:9999px;padding:8px 16px;font-size:13px;font-weight:500;color:#64748b;background:transparent;cursor:pointer;transition:background .15s ease,color .15s ease,box-shadow .15s ease; }
+    #dash-reportes .fd-rep-tab:hover { background:#ffffff;color:#1e293b; }
+    #dash-reportes .fd-rep-tab.active { background:#D24C19;color:#ffffff;font-weight:600;box-shadow:0 2px 4px rgba(210,76,25,0.25); }
+    #dash-reportes .fd-rep-tab.active:hover { background:#D24C19;color:#ffffff; }
     #fd-rep-print { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     @media print {
         @page { margin: 12mm; }
@@ -651,9 +655,6 @@
 
         document.querySelectorAll('.fd-rep-tab').forEach(function (btn) {
             var on = btn.getAttribute('data-rep-tab') === key;
-            btn.style.color = on ? '#D24C19' : '#64748b';
-            btn.style.borderBottomColor = on ? '#D24C19' : 'transparent';
-            btn.style.background = on ? 'linear-gradient(180deg,rgba(210,76,25,.06),transparent)' : 'transparent';
             btn.classList.toggle('active', on);
         });
 

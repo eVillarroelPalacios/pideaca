@@ -26,7 +26,7 @@
                 @media (max-width: 639px) { #fd-shops-grid { grid-template-columns: 1fr; } }
             </style>
 
-            <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;width:95%;max-width:none;margin:24px auto;padding:0 1rem;box-sizing:border-box;">
+            <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;width:1550;max-width:none;margin:10px auto;padding:0 1rem;box-sizing:border-box;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
                     <div>
                         <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
@@ -78,7 +78,7 @@
 
                     <div style="padding:18px;">
                         <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e5e7eb;border-radius:9px;cursor:pointer;margin-bottom:10px;">
-                            <input type="radio" name="fd-shops-filter-mode" id="fd-shops-filter-mode-distance" value="distance" checked onchange="fdShopsFilterMode()" style="margin-top:2px;accent-color:#D24C19;">
+                            <input type="radio" name="fd-shops-filter-mode" id="fd-shops-filter-mode-distance" value="distance" onchange="fdShopsFilterMode()" style="margin-top:2px;accent-color:#D24C19;">
                             <span>
                                 <strong style="display:block;font-size:13.5px;color:#0c2a4d;">Por distancia</strong>
                                 <span style="display:block;font-size:12px;color:#6b7280;">Mostrar comercios dentro del radio elegido.</span>
@@ -90,14 +90,14 @@
                                 <span>Radio</span>
                                 <strong id="fd-shops-filter-distance-label" style="color:#D24C19;">10 km</strong>
                             </div>
-                            <input type="range" id="fd-shops-filter-range" min="1" max="50" value="10" step="1" oninput="fdShopsFilterDistanceLabel()" style="width:100%;accent-color:#D24C19;cursor:pointer;">
+                            <input type="range" id="fd-shops-filter-range" min="1" max="50" value="10" step="1" disabled oninput="fdShopsFilterDistanceLabel()" style="width:100%;accent-color:#D24C19;cursor:pointer;">
                             <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#9ca3af;margin-top:2px;">
                                 <span>1 km</span><span>50+ km</span>
                             </div>
                         </div>
 
                         <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #e5e7eb;border-radius:9px;cursor:pointer;margin-bottom:14px;">
-                            <input type="radio" name="fd-shops-filter-mode" id="fd-shops-filter-mode-all" value="all" onchange="fdShopsFilterMode()" style="margin-top:2px;accent-color:#D24C19;">
+                            <input type="radio" name="fd-shops-filter-mode" id="fd-shops-filter-mode-all" value="all" checked onchange="fdShopsFilterMode()" style="margin-top:2px;accent-color:#D24C19;">
                             <span>
                                 <strong style="display:block;font-size:13.5px;color:#0c2a4d;">Buscar en todas partes</strong>
                                 <span style="display:block;font-size:12px;color:#6b7280;">Sin límite de distancia.</span>

@@ -1,4 +1,4 @@
-<section id="dash-mis-servicios" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+<section id="dash-mis-servicios" class="dash-section" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>

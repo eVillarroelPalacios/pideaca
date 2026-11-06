@@ -1,4 +1,4 @@
-            <section id="dash-repartidor" class="dash-section" data-csrf="{{ csrf_token() }}" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+            <section id="dash-repartidor" class="dash-section" data-csrf="{{ csrf_token() }}" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
                 @php
                     // La sección se puede incluir desde /dashboard/repartidor
                     // (con $stats) o desde el dashboard unificado (sin $stats):

@@ -1,4 +1,4 @@
-            <section id="dash-mis-pedidos" class="dash-section" style="display:none;max-width:1100px;margin:24px auto;padding:0 20px;">
+            <section id="dash-mis-pedidos" class="dash-section" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
                 <style>
                     #dash-mis-pedidos{--fd-orange:#D24C19;--fd-navy:#0c2a4d;}
                     #dash-mis-pedidos *{box-sizing:border-box;}
@@ -85,7 +85,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                         Seguimiento de pedidos
                     </div>
-                    <h2 style="font-size:24px;font-weight:800;color:#0c2a4d;margin:6px 0 0;letter-spacing:-.4px;">Mis Pedidos</h2>
+                    <h2 style="font-size:18px;font-weight:800;color:#0c2a4d;margin:6px 0 0;letter-spacing:-.4px;">Mis Pedidos</h2>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;">
                         <span id="fd-myorders-live" class="fd-chip fd-chip-live" style="display:none;"><span class="fd-dot" style="background:#10b981;"></span><span id="fd-myorders-live-text">0 activos ahora</span></span>
                         <span id="fd-myorders-summary" style="font-size:13px;color:#6b7280;">Tus pedidos y su estado</span>

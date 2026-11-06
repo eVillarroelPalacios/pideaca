@@ -6,19 +6,40 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
 </head>
 <body style="margin:0;padding:24px;background:#f8fafc;font-family:'Inter',sans-serif;color:#1e293b;">
-    <div style="max-width:1200px;margin:0 auto;">
+    <div style="max-width:1300px;margin:0 auto;">
         
         <!-- ENCABEZADO -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
             <div>
-                <h1 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">Reportes Hogar ({{ ($isPrestador ?? false) ? 'Prestador: ' . (($user->provider->business_name ?? null) ?: $user->name) : 'Cliente: ' . $user->name }})</h1>
+                <h1 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">Reportes Hogar</h1>
                 <p style="font-size:13px;color:#64748b;margin:4px 0 0;">Consolidado de servicios, métricas financieras y estados del Módulo Hogar</p>
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
-                <a href="{{ route('reportes.hogar.pdf', request()->all()) }}" target="_blank" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <button type="button" onclick="imprimirReportePdf('{{ route('reportes.hogar.pdf', request()->all()) }}')" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Exportar a PDF
-                </a>
+                </button>
+                <script>
+                function imprimirReportePdf(url) {
+                    let iframe = document.getElementById('pdf-print-frame');
+                    if (!iframe) {
+                        iframe = document.createElement('iframe');
+                        iframe.id = 'pdf-print-frame';
+                        iframe.style.position = 'fixed';
+                        iframe.style.right = '0';
+                        iframe.style.bottom = '0';
+                        iframe.style.width = '0';
+                        iframe.style.height = '0';
+                        iframe.style.border = '0';
+                        document.body.appendChild(iframe);
+                    }
+                    iframe.src = url;
+                    iframe.onload = function() {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                    };
+                }
+                </script>
             </div>
         </div>
 

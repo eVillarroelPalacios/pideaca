@@ -1,5 +1,5 @@
 {{-- Vista del cliente: elegir plan, controlar entregas, pausar y cambiar sabores. --}}
-<section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:1000px;margin:24px auto;padding:0 20px;">
+<section id="dash-{{ $page->url }}" class="dash-section" style="display:none;max-width:1550px;margin:10px auto;padding:0 10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
             <h2 style="font-size:18px;font-weight:700;color:#0c2a4d;margin:0;">{{ $page->description }}</h2>
