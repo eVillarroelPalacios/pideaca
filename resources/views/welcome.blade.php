@@ -352,21 +352,69 @@
                             </div>
                         </section>
                     </div>
-                    <div id="section-servicios" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
-                        <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Nuestros Servicios</h2>
-                        <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 12px;">Descubrí las grandes familias de servicios que ofrecemos:</p>
-                        @foreach($modules as $mod)
-                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;">
-                                <span style="font-weight:700;color:#0c2a4d;">{{ $mod->description }}:</span>
-                                {{ $mod->groups->pluck('description')->implode(', ') }}
-                            </p>
-                        @endforeach
-                        @if($orphanGroups->isNotEmpty())
-                            <p style="font-size:14px;color:#374151;line-height:1.7;margin:4px 0;">
-                                <span style="font-weight:700;color:#0c2a4d;">Otros servicios:</span>
-                                {{ $orphanGroups->pluck('description')->implode(', ') }}
-                            </p>
-                        @endif
+                    <div id="section-servicios" class="page-section rounded-none" style="display:none;max-width:1200px;margin:0 auto;background:white;border-radius:0;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+    <!-- COLUMNA IZQUIERDA: Presentación e Imagen -->
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-[#D24C19] text-2xl font-black">::</span>
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Nuestros Servicios</h2>
+      </div>
+      <p class="text-gray-600 text-sm leading-relaxed">
+        Conectamos tu día a día con los mejores prestadores y comercios locales. Gestioná pedidos en tiempo real, contratá servicios técnicos garantizados para el hogar y descubrí una red confiable diseñada para resolver tus necesidades sin complicaciones.
+      </p>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Rápido</span>
+        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Seguro</span>
+        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full font-medium">Garantizado</span>
+      </div>
+      <img src="{{ asset('images/Imacarousel/slide2.jpg') }}" alt="Servicios" class="w-full h-56 object-cover border border-gray-200 mt-2 shadow-sm">
+    </div>
+
+    <!-- COLUMNA DERECHA: Acordeón limpio (sin radio buttons visibles) -->
+    <div class="border border-gray-200 divide-y divide-gray-200 bg-white">
+      <!-- Item 1 (Abierto por defecto) -->
+      <details open class="group p-5">
+        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
+          <span>Comercio - Tiendas y Gastronomía</span>
+          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="mt-3 text-sm text-gray-600">
+          <p>Pedí lo que necesites de tus tiendas favoritas con entrega rápida y seguimiento en tiempo real.</p>
+          <div class="flex gap-2 my-3">
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Gastronomía</span>
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Tiendas</span>
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">Envío Veloz</span>
+          </div>
+          <a href="#" onclick="showSection('comercios');return false;" class="inline-flex items-center text-xs font-semibold text-white bg-[#D24C19] px-4 py-2 hover:bg-[#b83f14] transition">Explorar Comercios &rarr;</a>
+        </div>
+      </details>
+
+      <!-- Item 2 -->
+      <details class="group p-5">
+        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
+          <span>Hogar - Soluciones Técnicas y Mantenimiento</span>
+          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="mt-3 text-sm text-gray-600">
+          <p>Contratá electricistas, plomeros, técnicos y profesionales verificados para urgencias, citas programadas y presupuestos garantizados.</p>
+        </div>
+      </details>
+
+      <!-- Item 3 -->
+      <details class="group p-5">
+        <summary class="flex justify-between items-center font-bold text-slate-800 cursor-pointer list-none select-none">
+          <span>Mercado y Envíos Express</span>
+          <svg class="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="mt-3 text-sm text-gray-600">
+          <p>Logística local y envíos express con repartidores de confianza para que recibas todo sin salir de casa.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
                     </div>
                     <div id="section-contactos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
                         <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Contactos</h2>
