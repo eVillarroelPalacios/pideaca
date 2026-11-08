@@ -332,15 +332,15 @@
                     <div style="margin-top:12px;background:#fff;border:1px solid #fed7aa;border-radius:6px;padding:10px 12px;">
                         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;">
                             <span style="font-size:12.5px;color:#6b7280;">Tarifa base de visita</span>
-                            <span id="fd-solic-fee-base" style="font-size:13px;font-weight:700;color:#0f172a;">$0</span>
+                            <span id="fd-solic-fee-base" style="font-size:13px;font-weight:700;color:#0f172a;">{{ \App\Support\Money::format(0) }}</span>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px dashed #fed7aa;">
                             <span id="fd-solic-fee-now-label" style="font-size:12.5px;color:#6b7280;">Monto a abonar ahora (Seña 50%)</span>
-                            <span id="fd-solic-fee-now" style="font-size:15px;font-weight:800;color:#D24C19;">$0</span>
+                            <span id="fd-solic-fee-now" style="font-size:15px;font-weight:800;color:#D24C19;">{{ \App\Support\Money::format(0) }}</span>
                         </div>
                         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px dashed #fed7aa;">
                             <span style="font-size:12.5px;color:#6b7280;">Restante a pagar en el domicilio</span>
-                            <span id="fd-solic-fee-rest" style="font-size:13px;font-weight:700;color:#0f172a;">$0</span>
+                            <span id="fd-solic-fee-rest" style="font-size:13px;font-weight:700;color:#0f172a;">{{ \App\Support\Money::format(0) }}</span>
                         </div>
                     </div>
                 </div>
@@ -925,6 +925,7 @@
     // ------------------------------------------------- encabezado elegido
 
     function fdSolicMoney(value) {
+        if (window.fdMoney) return window.fdMoney(value);
         return '$' + Number(value || 0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
     }
 

@@ -198,6 +198,7 @@
     }
 
     function money(value) {
+        if (window.fdMoney) return window.fdMoney(value);
         var n = parseFloat(value || 0);
         return '$' + n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
     }

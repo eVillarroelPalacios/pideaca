@@ -516,7 +516,7 @@ class SubscriptionController extends Controller
 
         return response()->json([
             'success' => true,
-            'currency' => 'ARS',
+            'currency' => \App\Support\CurrencyResolver::defaultCurrency()->code,
             'recurring' => [
                 'mrr' => round($mrr, 2),
                 'mrr_basis' => 'precio del plan con descuento, sin envio',

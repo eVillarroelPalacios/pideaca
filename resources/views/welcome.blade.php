@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="es" data-theme="light">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -424,13 +424,72 @@
   </div>
 </div>
                     </div>
-                    <div id="section-contactos" class="page-section" style="display:none;max-width:900px;margin:0 auto;background:white;border-radius:16px;padding:28px 24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
-                        <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 12px;">Contactos</h2>
-                        <p style="font-size:15px;color:#374151;line-height:1.8;margin:0;">Podés escribirnos cuando necesites ayuda o quieras sumar tu comercio o servicio a PideAca:</p>
-                        <p style="font-size:14px;color:#374151;margin:10px 0 0;"><strong>Email:</strong> hola@pideaca.com</p>
-                        <p style="font-size:14px;color:#374151;margin:4px 0;"><strong>Teléfono:</strong> +54 11 5555-1234</p>
-                        <p style="font-size:14px;color:#374151;margin:4px 0;"><strong>Horario de atención:</strong> Lunes a domingo, 24 horas.</p>
+                    <div id="section-contactos" class="page-section rounded-none" style="display:none;max-width:none;margin:0;background:white;border-radius:0;padding:0;box-shadow:none;">
+                        <div style="width:100%;padding:32px 24px;box-sizing:border-box;">
+                        <h2 style="font-size:24px;font-weight:bold;color:#0c2a4d;margin:0 0 20px;">Contactos</h2>
+                        <div class="contacto-grid">
+                            <div>
+                                <p style="font-size:15px;color:#374151;line-height:1.8;margin:0 0 20px;">Podés escribirnos cuando necesites ayuda o quieras sumar tu comercio o servicio a PideAca:</p>
+                                <div style="display:flex;flex-direction:column;gap:16px;">
+                                    <div style="display:flex;align-items:flex-start;gap:12px;">
+                                        <span style="flex:0 0 38px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#fff7ed;color:#D24C19;border-radius:8px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                                        </span>
+                                        <div>
+                                            <p style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 2px;">Email</p>
+                                            <a href="mailto:hola@pideaca.com" style="font-size:14px;color:#0c2a4d;font-weight:600;text-decoration:none;">hola@pideaca.com</a>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:flex-start;gap:12px;">
+                                        <span style="flex:0 0 38px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#fff7ed;color:#D24C19;border-radius:8px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                                        </span>
+                                        <div>
+                                            <p style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 2px;">Teléfono</p>
+                                            <a href="tel:+541155551234" style="font-size:14px;color:#0c2a4d;font-weight:600;text-decoration:none;">+54 11 5555-1234</a>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:flex-start;gap:12px;">
+                                        <span style="flex:0 0 38px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#fff7ed;color:#D24C19;border-radius:8px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                                        </span>
+                                        <div>
+                                            <p style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 2px;">Horario de atención</p>
+                                            <p style="font-size:14px;color:#0c2a4d;font-weight:600;margin:0;">Lunes a domingo, 24 horas.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="contacto-form">
+                                <form id="contacto-form" onsubmit="submitContactInquiry(event)">
+                                    <div style="margin-bottom:12px;">
+                                        <label for="contact-full-name">Nombre completo</label>
+                                        <input type="text" id="contact-full-name" name="full_name" maxlength="255" placeholder="Tu nombre y apellido" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="contact-email">Correo electrónico</label>
+                                        <input type="email" id="contact-email" name="email" maxlength="255" placeholder="tu@correo.com" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')">
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="contact-inquiry-type">Tipo de consulta</label>
+                                        <select id="contact-inquiry-type" name="inquiry_type" required oninvalid="this.setCustomValidity('Por favor, selecciona una opción.')" onchange="this.setCustomValidity('')">
+                                            <option value="">Seleccioná una opción</option>
+                                            <option value="consulta">Consulta</option>
+                                            <option value="sugerencia">Sugerencia</option>
+                                            <option value="reclamo">Reclamo</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom:12px;">
+                                        <label for="contact-message">Mensaje</label>
+                                        <textarea id="contact-message" name="message" rows="5" maxlength="5000" placeholder="Contanos en qué podemos ayudarte" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')"></textarea>
+                                    </div>
+                                    <div id="contacto-msg" class="contacto-msg" role="status" aria-live="polite"></div>
+                                    <button type="submit" id="contacto-submit" style="width:100%;margin-top:12px;padding:11px;background:#D24C19;color:#ffffff;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Enviar Mensaje</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
+                </div>
                 </section>
 
         </main>
@@ -578,6 +637,77 @@
     #section-servicios,
     #section-contactos {
         scroll-margin-top: 70px;
+    }
+    .contacto-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+    .contacto-form {
+        border-left: 1px solid #e5e7eb;
+        padding-left: 32px;
+    }
+    .contacto-form label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 5px;
+    }
+    .contacto-form input,
+    .contacto-form select,
+    .contacto-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+    }
+    .contacto-form input:focus,
+    .contacto-form select:focus,
+    .contacto-form textarea:focus {
+        border-color: #D24C19;
+    }
+    .contacto-form textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+    .contacto-msg {
+        display: none;
+        font-size: 12.5px;
+        line-height: 1.4;
+        padding: 9px 12px;
+        border-radius: 4px;
+    }
+    .contacto-msg.is-success {
+        display: block;
+        color: #047857;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+    }
+    .contacto-msg.is-error {
+        display: block;
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+    }
+    @media (max-width: 768px) {
+        .contacto-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .contacto-form {
+            border-left: none;
+            border-top: 1px solid #e5e7eb;
+            padding-left: 0;
+            padding-top: 24px;
+        }
     }
     #top-social-bar {
         display: block !important;
@@ -1049,6 +1179,61 @@
         requestAnimationFrame(function () {
             window.scrollTo(0, 0);
         });
+    }
+
+    async function submitContactInquiry(event) {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const button = document.getElementById('contacto-submit');
+        const message = document.getElementById('contacto-msg');
+        const payload = {
+            full_name: form.full_name.value.trim(),
+            email: form.email.value.trim(),
+            inquiry_type: form.inquiry_type.value,
+            message: form.message.value.trim()
+        };
+
+        message.className = 'contacto-msg';
+        message.textContent = '';
+
+        if (!payload.full_name || !payload.email || !payload.inquiry_type || !payload.message) {
+            message.textContent = 'Completá todos los campos.';
+            message.classList.add('is-error');
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Enviando...';
+
+        try {
+            const response = await fetch(@json(url('/contact-inquiries')), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json().catch(function () { return {}; });
+
+            if (!response.ok) {
+                const firstKey = data.errors ? Object.keys(data.errors)[0] : null;
+                const firstError = firstKey ? data.errors[firstKey][0] : null;
+                throw new Error(firstError || data.message || 'No pudimos enviar tu mensaje. Intentá nuevamente.');
+            }
+
+            form.reset();
+            message.textContent = data.message || '¡Gracias! Recibimos tu mensaje.';
+            message.classList.add('is-success');
+        } catch (error) {
+            message.textContent = error.message || 'No pudimos enviar tu mensaje. Intentá nuevamente.';
+            message.classList.add('is-error');
+        } finally {
+            button.disabled = false;
+            button.textContent = 'Enviar Mensaje';
+        }
     }
 
     let adCurrentPage = 1;

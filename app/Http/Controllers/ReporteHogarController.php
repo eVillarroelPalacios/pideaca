@@ -26,6 +26,7 @@ class ReporteHogarController extends Controller
 
         $query = ServiceOrder::with([
             'customer:id,name,email,phone',
+            'customer.primaryAddress.country.currency',
             'merchant.user:id,name,email,phone',
             'subGroup:id,description',
             'ratings',
@@ -136,6 +137,7 @@ class ReporteHogarController extends Controller
 
         $query = ServiceOrder::with([
             'customer:id,name,email,phone',
+            'customer.primaryAddress.country.currency',
             'merchant.user:id,name,email,phone',
             'subGroup:id,description',
             'ratings',

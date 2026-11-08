@@ -86,11 +86,11 @@
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #D24C19;">
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">{{ ($isPrestador ?? false) ? 'Total Facturado' : 'Total Gastado' }}</span>
-                <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">$ {{ number_format($kpis['total_economico'] ?? 0, 2, ',', '.') }}</div>
+                <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">@money($kpis['total_economico'] ?? 0)</div>
             </div>
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #f59e0b;">
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Seña en Custodia</span>
-                <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">$ {{ number_format($kpis['senas_custodia'] ?? 0, 2, ',', '.') }}</div>
+                <div style="font-size:22px;font-weight:700;color:#0c2a4d;margin-top:6px;">@money($kpis['senas_custodia'] ?? 0)</div>
             </div>
             <div style="background:#fff;border:1px solid #e2e8f0;padding:18px;border-radius:8px;border-left:4px solid #10b981;">
                 <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;">Servicios Finalizados</span>
@@ -137,6 +137,7 @@
                     </thead>
                     <tbody>
                         @forelse($orders ?? [] as $order)
+                        @php($rowCurrency = \App\Support\CurrencyResolver::forOrder($order))
                         <tr style="border-bottom:1px solid #f1f5f9;">
                             <td style="padding:12px 16px;font-weight:700;color:#0c2a4d;font-family:monospace;">#{{ $order->id }}</td>
                             <td style="padding:12px 16px;color:#64748b;white-space:nowrap;">{{ $order->created_at?->format('d/m/Y H:i') }}</td>
@@ -159,10 +160,10 @@
                                 {{ $order->description ?? 'Sin detalle especificado' }}
                             </td>
                             <td style="padding:12px 16px;font-weight:700;color:#0c2a4d;white-space:nowrap;">
-                                $ {{ number_format((float)($order->total_amount ?? 0), 2, ',', '.') }}
+                                @money($order->total_amount ?? 0, $rowCurrency)
                             </td>
                             <td style="padding:12px 16px;color:#d97706;font-weight:600;white-space:nowrap;">
-                                $ {{ number_format((float)($order->deposit_amount ?? 0), 2, ',', '.') }}
+                                @money($order->deposit_amount ?? 0, $rowCurrency)
                                 <div style="font-size:10px;color:#64748b;">{{ $order->escrow_status ?? 'NONE' }}</div>
                             </td>
                             <td style="padding:12px 16px;white-space:nowrap;">

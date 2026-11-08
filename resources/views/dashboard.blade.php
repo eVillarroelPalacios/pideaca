@@ -665,6 +665,10 @@
             @include('dashboard.sections.estados-grupos')
                     @elseif($page->url === 'unidades-medida')
             @include('dashboard.sections.unidades-medida')
+                    @elseif($page->url === 'tipo-monedas')
+            @include('dashboard.sections.tipo-monedas')
+                    @elseif($page->url === 'consultas-sugerencias')
+            @include('dashboard.sections.consultas-sugerencias')
                     @elseif($page->url === 'usuarios')
                     @elseif($page->url === 'mi-catalogo')
             @include('dashboard.sections.mi-catalogo')
@@ -1780,10 +1784,7 @@
         return isNaN(id) ? null : id;
     }
 
-    function fdMoney(value) {
-        var n = Number(value || 0);
-        return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    }
+    @include('partials.fd-money-js')
 
     function fdDate(value) {
         if (!value) return '';
@@ -7472,6 +7473,8 @@
             if (key === 'estados-usuarios') loadUserStatuses();
             if (key === 'estados-grupos') loadGroupStatuses();
             if (key === 'unidades-medida') loadUnitsOfMeasure();
+            if (key === 'tipo-monedas') loadCurrencies();
+            if (key === 'consultas-sugerencias') loadContactInquiries();
             if (key === 'tipo-usuarios') loadTypeUsers();
             if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();
@@ -12147,6 +12150,574 @@
             var warn = document.getElementById('uom-delete-warning');
             warn.textContent = 'Error de conexión.';
             warn.style.display = 'block';
+        });
+    }
+
+    // ==================== TIPO DE MONEDAS ====================
+
+    var allCurrencies = [];
+    var allCurrencyCountries = null;
+    var deleteCurrencyId = null;
+
+    function loadCurrencies() {
+        document.getElementById('cur-loading').style.display = 'block';
+        document.getElementById('cur-empty').style.display = 'none';
+        document.getElementById('cur-table-wrap').style.display = 'none';
+
+        var currenciesReq = fetch('{{ url("/currencies") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); });
+
+        var countriesReq = allCurrencyCountries
+            ? Promise.resolve(allCurrencyCountries)
+            : fetch('{{ url("/countries") }}', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(list) {
+                allCurrencyCountries = list || [];
+                return allCurrencyCountries;
+            })
+            .catch(function() { return []; });
+
+        Promise.all([currenciesReq, countriesReq])
+        .then(function(res) {
+            allCurrencies = res[0] || [];
+            renderCurrencies(allCurrencies);
+        })
+        .catch(function() {
+            document.getElementById('cur-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">Error al cargar monedas.</p>';
+        });
+    }
+
+    function formatCurrencyPreview(c, value) {
+        var n = Number(value == null ? 0 : value);
+        var negative = n < 0;
+        n = Math.abs(n);
+
+        var decimals = Number(c.decimals == null ? 2 : c.decimals);
+        var parts = n.toFixed(decimals).split('.');
+        var thousand = c.thousand_separator == null ? '.' : c.thousand_separator;
+        var decimal = c.decimal_separator == null ? ',' : c.decimal_separator;
+        var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousand);
+        var decPart = decimals > 0 ? decimal + (parts[1] || '') : '';
+        var number = intPart + decPart;
+
+        var space = c.symbol_space === false ? '' : ' ';
+        var out = c.symbol_position === 'after'
+            ? number + space + (c.symbol || '')
+            : (c.symbol || '') + space + number;
+
+        return negative ? '-' + out : out;
+    }
+
+    function renderCurrencies(currencies) {
+        var tbody = document.getElementById('cur-tbody');
+        var loading = document.getElementById('cur-loading');
+        var empty = document.getElementById('cur-empty');
+        var tableWrap = document.getElementById('cur-table-wrap');
+
+        loading.style.display = 'none';
+        tbody.innerHTML = '';
+
+        if (currencies.length === 0) {
+            empty.style.display = 'block';
+            tableWrap.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tableWrap.style.display = 'block';
+
+        currencies.forEach(function(c) {
+            var countryName = c.country ? c.country.name : '—';
+
+            var statusBadges = '';
+            if (c.is_default) {
+                statusBadges += '<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:600;margin-right:4px;">Por defecto</span>';
+            }
+            statusBadges += c.is_active
+                ? '<span style="background:#d1fae5;color:#047857;border:1px solid #a7f3d0;border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:600;">Activa</span>'
+                : '<span style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:600;">Inactiva</span>';
+
+            var editBtn = '<button onclick="openCurrencyModal(' + c.id + ')" title="Editar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#D24C19\';this.style.color=\'#D24C19\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg></button>';
+
+            var deleteBtn = c.is_default
+                ? '<button type="button" disabled title="La moneda por defecto no se puede eliminar" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:4px 8px;color:#cbd5e1;font-size:12px;cursor:not-allowed;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg></button>'
+                : '<button onclick="openCurrencyDelete(' + c.id + ', \'' + escapeHtml(c.code).replace(/'/g, "\\'") + '\')" title="Eliminar" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;color:#6b7280;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#dc2626\';this.style.color=\'#dc2626\';" onmouseout="this.style.borderColor=\'#d1d5db\';this.style.color=\'#6b7280\';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg></button>';
+
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-id', c.id);
+            tr.style.borderBottom = '1px solid #f3f4f6';
+            tr.innerHTML =
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;">' + escapeHtml(countryName) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;"><span style="font-family:monospace;font-weight:600;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;padding:1px 6px;">' + escapeHtml(c.code) + '</span></td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#6b7280;">' + escapeHtml(c.name) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#6b7280;">' + escapeHtml(c.symbol) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:600;white-space:nowrap;">' + escapeHtml(formatCurrencyPreview(c, 1234.56)) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;white-space:nowrap;">' + statusBadges + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;white-space:nowrap;">' + editBtn + deleteBtn + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterCurrencies() {
+        var q = (document.getElementById('cur-search').value || '').toLowerCase();
+        var filtered = allCurrencies.filter(function(c) {
+            return (c.code || '').toLowerCase().indexOf(q) !== -1
+                || (c.name || '').toLowerCase().indexOf(q) !== -1
+                || (c.symbol || '').toLowerCase().indexOf(q) !== -1
+                || (c.country && (c.country.name || '').toLowerCase().indexOf(q) !== -1);
+        });
+        renderCurrencies(filtered);
+    }
+
+    function fillCurrencyCountryOptions() {
+        var sel = document.getElementById('cur-country');
+        if (!sel || sel.options.length > 1) return;
+        var list = allCurrencyCountries || [];
+        sel.innerHTML = '<option value="">-- Seleccionar --</option>';
+        list.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function updateCurrencyPreview() {
+        var preview = document.getElementById('cur-preview');
+        if (!preview) return;
+        preview.textContent = formatCurrencyPreview({
+            symbol: document.getElementById('cur-symbol').value || '$',
+            symbol_position: document.getElementById('cur-position').value,
+            symbol_space: document.getElementById('cur-space').checked,
+            decimals: document.getElementById('cur-decimals').value,
+            decimal_separator: document.getElementById('cur-decimal-sep').value,
+            thousand_separator: document.getElementById('cur-thousand-sep').value
+        }, 1234.56);
+    }
+
+    function openCurrencyModal(id) {
+        var c = id ? allCurrencies.find(function(x) { return x.id === id; }) : null;
+
+        fillCurrencyCountryOptions();
+
+        document.getElementById('cur-id').value = c ? c.id : '';
+        document.getElementById('cur-country').value = c ? c.country_id : '';
+        document.getElementById('cur-code').value = c ? c.code : '';
+        document.getElementById('cur-name').value = c ? c.name : '';
+        document.getElementById('cur-symbol').value = c ? c.symbol : '';
+        document.getElementById('cur-position').value = c ? c.symbol_position : 'before';
+        document.getElementById('cur-space').checked = c ? !!c.symbol_space : true;
+        document.getElementById('cur-decimals').value = c ? c.decimals : 2;
+        document.getElementById('cur-decimal-sep').value = c ? c.decimal_separator : ',';
+        document.getElementById('cur-thousand-sep').value = c ? c.thousand_separator : '.';
+        document.getElementById('cur-locale').value = c ? c.locale : '';
+        document.getElementById('cur-active').checked = c ? !!c.is_active : true;
+        document.getElementById('cur-error').style.display = 'none';
+        document.getElementById('cur-modal-title').textContent = c ? 'Editar Moneda' : 'Nueva Moneda';
+        document.getElementById('cur-submit-btn').textContent = c ? 'Actualizar' : 'Guardar';
+
+        updateCurrencyPreview();
+        document.getElementById('cur-modal-overlay').style.display = 'flex';
+        document.getElementById('cur-code').focus();
+    }
+
+    function closeCurrencyModal() {
+        document.getElementById('cur-modal-overlay').style.display = 'none';
+    }
+
+    function submitCurrency(e) {
+        e.preventDefault();
+        var id = document.getElementById('cur-id').value;
+        var countryVal = document.getElementById('cur-country').value;
+        var codeVal = document.getElementById('cur-code').value.trim().toUpperCase();
+        var nameVal = document.getElementById('cur-name').value.trim();
+        var symbolVal = document.getElementById('cur-symbol').value.trim();
+        var positionVal = document.getElementById('cur-position').value;
+        var spaceVal = document.getElementById('cur-space').checked;
+        var decimalsVal = document.getElementById('cur-decimals').value.trim();
+        var decimalSepVal = document.getElementById('cur-decimal-sep').value;
+        var thousandSepVal = document.getElementById('cur-thousand-sep').value;
+        var localeVal = document.getElementById('cur-locale').value.trim();
+        var activeVal = document.getElementById('cur-active').checked;
+        var errorEl = document.getElementById('cur-error');
+        var submitBtn = document.getElementById('cur-submit-btn');
+
+        errorEl.style.display = 'none';
+
+        if (!countryVal) {
+            errorEl.textContent = 'El país es obligatorio.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!/^[A-Z]{3}$/.test(codeVal)) {
+            errorEl.textContent = 'El código debe tener 3 letras (ej: ARS).';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!nameVal) {
+            errorEl.textContent = 'El nombre es obligatorio.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!symbolVal) {
+            errorEl.textContent = 'El símbolo es obligatorio.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (decimalsVal === '' || Number(decimalsVal) < 0 || Number(decimalsVal) > 4) {
+            errorEl.textContent = 'Los decimales deben estar entre 0 y 4.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (!localeVal) {
+            errorEl.textContent = 'El locale es obligatorio (ej: es-AR).';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = id ? 'Actualizando...' : 'Guardando...';
+
+        var url = id ? '{{ url("/currencies") }}/' + id : '{{ url("/currencies") }}';
+        var method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                country_id: countryVal,
+                code: codeVal,
+                name: nameVal,
+                symbol: symbolVal,
+                symbol_position: positionVal,
+                symbol_space: spaceVal,
+                decimals: Number(decimalsVal),
+                decimal_separator: decimalSepVal,
+                thousand_separator: thousandSepVal,
+                locale: localeVal,
+                is_active: activeVal
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+
+            if (data.errors) {
+                var firstKey = Object.keys(data.errors)[0];
+                errorEl.textContent = data.errors[firstKey][0];
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (data.success) {
+                closeCurrencyModal();
+                loadCurrencies();
+            } else {
+                errorEl.textContent = data.message || 'Error al guardar.';
+                errorEl.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = id ? 'Actualizar' : 'Guardar';
+            errorEl.textContent = 'Error de conexión.';
+            errorEl.style.display = 'block';
+        });
+    }
+
+    function openCurrencyDelete(id, code) {
+        deleteCurrencyId = id;
+        document.getElementById('cur-delete-name').textContent = code;
+        document.getElementById('cur-delete-warning').style.display = 'none';
+        document.getElementById('cur-delete-overlay').style.display = 'flex';
+    }
+
+    function closeCurrencyDelete() {
+        document.getElementById('cur-delete-overlay').style.display = 'none';
+        deleteCurrencyId = null;
+    }
+
+    function confirmDeleteCurrency() {
+        if (!deleteCurrencyId) return;
+        var btn = document.getElementById('cur-delete-btn');
+        btn.disabled = true;
+        btn.textContent = 'Eliminando...';
+
+        fetch('{{ url("/currencies") }}/' + deleteCurrencyId, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            if (data.success) {
+                closeCurrencyDelete();
+                loadCurrencies();
+            } else {
+                var warn = document.getElementById('cur-delete-warning');
+                warn.textContent = data.message || 'No se pudo eliminar.';
+                warn.style.display = 'block';
+            }
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            var warn = document.getElementById('cur-delete-warning');
+            warn.textContent = 'Error de conexión.';
+            warn.style.display = 'block';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        ['cur-symbol', 'cur-position', 'cur-space', 'cur-decimals', 'cur-decimal-sep', 'cur-thousand-sep'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', updateCurrencyPreview);
+            el.addEventListener('change', updateCurrencyPreview);
+        });
+    });
+
+    // ==================== CONSULTAS Y SUGERENCIAS ====================
+
+    var allContactInquiries = [];
+    var contactInquiryFilter = 'all';
+    var contactInquiryDetailId = null;
+
+    function loadContactInquiries() {
+        document.getElementById('ci-loading').innerHTML = '<p style="font-size:13px;color:#6b7280;">Cargando consultas...</p>';
+        document.getElementById('ci-loading').style.display = 'block';
+        document.getElementById('ci-empty').style.display = 'none';
+        document.getElementById('ci-table-wrap').style.display = 'none';
+
+        fetch('{{ url("/contact-inquiries") }}', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!Array.isArray(data)) {
+                throw new Error(data && data.message ? data.message : 'No se pudieron cargar las consultas.');
+            }
+            allContactInquiries = data;
+            renderContactInquiries();
+        })
+        .catch(function(error) {
+            document.getElementById('ci-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">' + escapeHtml(error.message || 'Error al cargar las consultas.') + '</p>';
+        });
+    }
+
+    function contactInquiryStatusLabel(status) {
+        return { new: 'Nueva', in_progress: 'En proceso', resolved: 'Resuelta' }[status] || 'Nueva';
+    }
+
+    function contactInquiryStatusBadge(status) {
+        var styles = {
+            new: 'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;',
+            in_progress: 'background:#fffbeb;color:#b45309;border:1px solid #fde68a;',
+            resolved: 'background:#d1fae5;color:#047857;border:1px solid #a7f3d0;'
+        };
+        return '<span style="' + (styles[status] || styles.new) + 'border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap;">' + contactInquiryStatusLabel(status) + '</span>';
+    }
+
+    function contactInquiryTypeLabel(type) {
+        return { consulta: 'Consulta', sugerencia: 'Sugerencia', reclamo: 'Reclamo' }[type] || 'Consulta';
+    }
+
+    function contactInquiryTypeBadge(type) {
+        var styles = {
+            consulta: 'background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;',
+            sugerencia: 'background:#fdf4ff;color:#a21caf;border:1px solid #f5d0fe;',
+            reclamo: 'background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;'
+        };
+        return '<span style="' + (styles[type] || styles.consulta) + 'border-radius:9999px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap;">' + contactInquiryTypeLabel(type) + '</span>';
+    }
+
+    function contactInquiryDate(value) {
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return '—';
+        return date.toLocaleString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function replyToContactInquiry(id) {
+        var item = allContactInquiries.find(function(x) { return x.id === id; });
+        if (!item) return;
+        var subject = encodeURIComponent('Respuesta a tu ' + contactInquiryTypeLabel(item.inquiry_type).toLowerCase() + ' - PideAca');
+        window.location.href = 'mailto:' + (item.email || '') + '?subject=' + subject;
+    }
+
+    function applyContactInquiryFilterStyles() {
+        document.querySelectorAll('#ci-filters [data-status]').forEach(function(btn) {
+            var active = btn.getAttribute('data-status') === contactInquiryFilter;
+            btn.style.background = active ? '#D24C19' : '#ffffff';
+            btn.style.borderColor = active ? '#D24C19' : '#d1d5db';
+            btn.style.color = active ? '#ffffff' : '#374151';
+        });
+    }
+
+    function updateContactInquiryCounts() {
+        var counts = { all: allContactInquiries.length, new: 0, in_progress: 0, resolved: 0 };
+        allContactInquiries.forEach(function(item) {
+            if (counts[item.status] !== undefined && item.status !== 'all') {
+                counts[item.status] += 1;
+            }
+        });
+        Object.keys(counts).forEach(function(key) {
+            var el = document.getElementById('ci-count-' + key);
+            if (el) el.textContent = counts[key];
+        });
+    }
+
+    function renderContactInquiries() {
+        var tbody = document.getElementById('ci-tbody');
+        var loading = document.getElementById('ci-loading');
+        var empty = document.getElementById('ci-empty');
+        var tableWrap = document.getElementById('ci-table-wrap');
+
+        loading.style.display = 'none';
+        tbody.innerHTML = '';
+        applyContactInquiryFilterStyles();
+        updateContactInquiryCounts();
+
+        var items = contactInquiryFilter === 'all'
+            ? allContactInquiries
+            : allContactInquiries.filter(function(item) { return item.status === contactInquiryFilter; });
+
+        if (items.length === 0) {
+            empty.style.display = 'block';
+            tableWrap.style.display = 'none';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tableWrap.style.display = 'block';
+
+        items.forEach(function(item) {
+            var tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f3f4f6';
+            tr.innerHTML =
+                '<td style="padding:10px 16px;font-size:13px;color:#1f2937;font-weight:500;white-space:nowrap;">' + escapeHtml(item.full_name || '—') + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;white-space:nowrap;"><a href="mailto:' + escapeHtml(item.email || '') + '" style="color:#D24C19;text-decoration:none;">' + escapeHtml(item.email || '—') + '</a></td>' +
+                '<td style="padding:10px 16px;">' + contactInquiryTypeBadge(item.inquiry_type) + '</td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#6b7280;max-width:280px;"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(item.message || '') + '">' + escapeHtml(item.message || '') + '</span></td>' +
+                '<td style="padding:10px 16px;font-size:13px;color:#6b7280;white-space:nowrap;">' + contactInquiryDate(item.created_at) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;">' + contactInquiryStatusBadge(item.status) + '</td>' +
+                '<td style="padding:10px 16px;text-align:center;white-space:nowrap;">' +
+                    '<button type="button" onclick="openContactInquiryDetail(' + item.id + ')" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;margin-right:4px;color:#6b7280;font-size:12px;">Ver</button>' +
+                    '<button type="button" onclick="replyToContactInquiry(' + item.id + ')" style="background:none;border:1px solid #d1d5db;border-radius:4px;padding:4px 8px;cursor:pointer;color:#6b7280;font-size:12px;">Responder</button>' +
+                '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function setContactInquiryFilter(status) {
+        contactInquiryFilter = status;
+        renderContactInquiries();
+    }
+
+    function openContactInquiryDetail(id) {
+        var item = allContactInquiries.find(function(x) { return x.id === id; });
+        if (!item) return;
+
+        contactInquiryDetailId = id;
+
+        document.getElementById('ci-detail-name').textContent = item.full_name || '—';
+        document.getElementById('ci-detail-email').textContent = item.email || '—';
+        document.getElementById('ci-detail-email').href = 'mailto:' + (item.email || '');
+        document.getElementById('ci-detail-type').textContent = contactInquiryTypeLabel(item.inquiry_type);
+        document.getElementById('ci-detail-date').textContent = contactInquiryDate(item.created_at);
+        document.getElementById('ci-detail-message').textContent = item.message || '';
+        document.getElementById('ci-detail-status').value = item.status || 'new';
+
+        var msg = document.getElementById('ci-detail-msg');
+        msg.style.display = 'none';
+        msg.textContent = '';
+
+        var subject = encodeURIComponent('Respuesta a tu ' + contactInquiryTypeLabel(item.inquiry_type).toLowerCase() + ' - PideAca');
+        document.getElementById('ci-detail-reply').href = 'mailto:' + (item.email || '') + '?subject=' + subject;
+
+        document.getElementById('ci-detail-overlay').style.display = 'flex';
+    }
+
+    function closeContactInquiryDetail() {
+        document.getElementById('ci-detail-overlay').style.display = 'none';
+        contactInquiryDetailId = null;
+    }
+
+    function saveContactInquiryStatus() {
+        if (!contactInquiryDetailId) return;
+
+        var status = document.getElementById('ci-detail-status').value;
+        var btn = document.getElementById('ci-detail-save');
+        var msg = document.getElementById('ci-detail-msg');
+
+        msg.style.display = 'none';
+        msg.textContent = '';
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        fetch('{{ url("/contact-inquiries") }}/' + contactInquiryDetailId + '/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = 'Guardar estado';
+
+            if (data.errors) {
+                var firstKey = Object.keys(data.errors)[0];
+                msg.textContent = data.errors[firstKey][0];
+                msg.style.color = '#dc2626';
+                msg.style.display = 'block';
+                return;
+            }
+
+            if (!data.success) {
+                msg.textContent = data.message || 'No se pudo actualizar el estado.';
+                msg.style.color = '#dc2626';
+                msg.style.display = 'block';
+                return;
+            }
+
+            var item = allContactInquiries.find(function(x) { return x.id === contactInquiryDetailId; });
+            if (item) {
+                item.status = data.contact_inquiry ? data.contact_inquiry.status : status;
+            }
+
+            renderContactInquiries();
+            msg.textContent = data.message || 'Estado actualizado correctamente.';
+            msg.style.color = '#047857';
+            msg.style.display = 'block';
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Guardar estado';
+            msg.textContent = 'Error de conexión.';
+            msg.style.color = '#dc2626';
+            msg.style.display = 'block';
         });
     }
 

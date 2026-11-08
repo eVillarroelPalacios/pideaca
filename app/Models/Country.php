@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Country extends Model
 {
@@ -28,5 +29,10 @@ class Country extends Model
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function currency(): HasOne
+    {
+        return $this->hasOne(Currency::class);
     }
 }

@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ContactInquiryController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstadosDeLosGruposController;
 use App\Http\Controllers\GroupController;
@@ -93,6 +95,15 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name(
 Route::get('/registro/tipos', [RegisterController::class, 'types'])->name('registro.tipos');
 Route::post('/registro', [RegisterController::class, 'store'])->name('registro.store');
 
+Route::post('/contact-inquiries', [ContactInquiryController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('contact-inquiries.store');
+
+Route::middleware('page:consultas-sugerencias')->group(function () {
+    Route::get('/contact-inquiries', [ContactInquiryController::class, 'index'])->name('contact-inquiries.index');
+    Route::post('/contact-inquiries/{contactInquiry}/status', [ContactInquiryController::class, 'updateStatus'])->name('contact-inquiries.status');
+});
+
 // Compatibilidad: la vieja URL del panel redirige a la raiz para no romper
 // accesos guardados ni favoritos (se conserva la query, ej. ?section=pedidos).
 Route::get('/dashboard', function (Request $request) {
@@ -138,6 +149,14 @@ Route::middleware('page:unidades-medida')->group(function () {
     Route::post('/units-of-measure', [UnitOfMeasureController::class, 'store'])->name('units-of-measure.store');
     Route::put('/units-of-measure/{unitOfMeasure}', [UnitOfMeasureController::class, 'update'])->name('units-of-measure.update');
     Route::delete('/units-of-measure/{unitOfMeasure}', [UnitOfMeasureController::class, 'destroy'])->name('units-of-measure.destroy');
+});
+
+// Tipo de monedas (catalogo global: una moneda por pais)
+Route::middleware('page:tipo-monedas')->group(function () {
+    Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
+    Route::post('/currencies', [CurrencyController::class, 'store'])->name('currencies.store');
+    Route::put('/currencies/{currency}', [CurrencyController::class, 'update'])->name('currencies.update');
+    Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])->name('currencies.destroy');
 });
 
 Route::middleware('page:tipo-usuarios')->group(function () {

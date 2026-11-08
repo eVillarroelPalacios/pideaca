@@ -24,12 +24,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             CountriesAndRegionsSeeder::class,
+            CurrencySeeder::class,
             UsuariosPageSeeder::class,
             ServiceTypeSeeder::class,
             FastDeliverySeeder::class,
             FastDeliveryPagesSeeder::class,
             EstadosDeLosGruposPageSeeder::class,
             UnidadesMedidaPageSeeder::class,
+            MonedasPageSeeder::class,
             UnitOfMeasureSeeder::class,
             InventoryPagesSeeder::class,
             ReportesPageSeeder::class,

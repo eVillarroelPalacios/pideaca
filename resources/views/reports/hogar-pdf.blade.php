@@ -35,11 +35,11 @@
     <div class="kpi-grid">
         <div class="kpi-box" style="border-left: 4px solid #D24C19;">
             <div class="kpi-title">{{ $isPrestador ? 'Total Facturado' : 'Total Gastado' }}</div>
-            <div class="kpi-value">$ {{ number_format($totalMonto, 2, ',', '.') }}</div>
+            <div class="kpi-value">@money($totalMonto)</div>
         </div>
         <div class="kpi-box" style="border-left: 4px solid #f59e0b;">
             <div class="kpi-title">Señas en Custodia</div>
-            <div class="kpi-value">$ {{ number_format($totalSenas, 2, ',', '.') }}</div>
+            <div class="kpi-value">@money($totalSenas)</div>
         </div>
         <div class="kpi-box" style="border-left: 4px solid #10b981;">
             <div class="kpi-title">Servicios Finalizados</div>
@@ -65,6 +65,7 @@
         </thead>
         <tbody>
             @forelse($orders as $order)
+            @php($rowCurrency = \App\Support\CurrencyResolver::forOrder($order))
             <tr>
                 <td><strong>#{{ $order->id }}</strong></td>
                 <td>{{ $order->created_at?->format('d/m/Y H:i') }}</td>
@@ -73,8 +74,8 @@
                     {{ $order->order_type === 'EMERGENCY' ? 'Urgencia' : ($order->order_type === 'SCHEDULED' ? 'Cita' : 'Presupuesto') }}<br>
                     <span style="color: #64748b;">{{ $order->subGroup->description ?? 'Hogar' }}</span>
                 </td>
-                <td><strong>$ {{ number_format((float)($order->total_amount ?? 0), 2, ',', '.') }}</strong></td>
-                <td>$ {{ number_format((float)($order->deposit_amount ?? 0), 2, ',', '.') }}</td>
+                <td><strong>@money($order->total_amount ?? 0, $rowCurrency)</strong></td>
+                <td>@money($order->deposit_amount ?? 0, $rowCurrency)</td>
                 <td><span class="badge">{{ $order->status }}</span></td>
             </tr>
             @empty

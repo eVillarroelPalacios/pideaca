@@ -289,7 +289,7 @@
 </head>
 <body>
     @php
-        $money = fn ($value) => '$' . number_format((float) $value, 0, ',', '.');
+        $money = fn ($value) => \App\Support\Money::format($value);
         $rating = $stats['rating'] !== null ? number_format($stats['rating'], 1, ',', '.') : '—';
         $acceptance = $stats['acceptance'] !== null ? $stats['acceptance'] . '%' : '—';
         $listedEarnings = (float) $orders->sum('delivery_fee');

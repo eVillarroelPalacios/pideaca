@@ -176,7 +176,7 @@
         ]);
 
         html += repTable(
-            ['Producto', 'Precio', 'Costo', 'Margen $', 'Margen %', 'Semáforo', 'Recomendación'],
+            ['Producto', 'Precio', 'Costo', 'Margen ' + @json(($currency ?? \App\Support\CurrencyResolver::current())->symbol), 'Margen %', 'Semáforo', 'Recomendación'],
             (d.products || []).map(function (p) {
                 var light = lights[p.traffic_light] || lights.gray;
                 var rec = p.recommendation || {};

@@ -64,8 +64,9 @@ class SubscriptionBillingService
         }
 
         if ($gateway === 'manual') {
-            Log::info('Suscripcion #'.$payment->customer_subscription_id.': cobro de $'
-                .number_format((float) $payment->total, 2, ',', '.').' pendiente de confirmacion (gateway manual).');
+            Log::info('Suscripcion #'.$payment->customer_subscription_id.': cobro de '
+                .\App\Support\Money::format((float) $payment->total, \App\Support\CurrencyResolver::defaultCurrency())
+                .' pendiente de confirmacion (gateway manual).');
 
             return $payment;
         }

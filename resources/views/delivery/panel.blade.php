@@ -16,7 +16,7 @@
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
                 <div id="wallet-balance-box" style="background:#fff;border:1px solid #cbd5e1;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;color:#0c2a4d;">
-                    Saldo Billetera: $ <span id="wallet-balance">0.00</span>
+                    Saldo Billetera: <span id="wallet-balance">{{ \App\Support\Money::format(0) }}</span>
                 </div>
                 <a href="{{ url('/') }}" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">← Volver al Panel</a>
             </div>
@@ -32,6 +32,8 @@
     </div>
 
     <script>
+        @include('partials.fd-money-js')
+
         function loadDeliveryOrders() {
             fetch('{{ route("api.delivery.orders") }}', {
                 headers: { 'Accept': 'application/json' }
@@ -54,7 +56,7 @@
                         + '<div style="min-width:0;flex:1;">'
                         + '<div style="font-size:13px;font-weight:700;color:#0c2a4d;">Pedido #' + (o.order_number || o.id) + ' — ' + (shop.business_name || 'Comercio') + '</div>'
                         + '<div style="font-size:12px;color:#475569;margin-top:4px;"><strong>Entrega en:</strong> ' + (addr.street || '') + ' ' + (addr.number || '') + '</div>'
-                        + '<div style="font-size:12px;color:#d97706;font-weight:600;margin-top:2px;">Tarifa de envío: $ ' + Number(o.delivery_fee || 500).toFixed(2) + '</div>'
+                        + '<div style="font-size:12px;color:#d97706;font-weight:600;margin-top:2px;">Tarifa de envío: ' + fdMoney(o.delivery_fee || 500) + '</div>'
                         + '<div style="font-size:11px;color:#64748b;margin-top:2px;">Estado: ' + (o.status || '') + ' | delivery_status: ' + (o.delivery_status || '-') + ' | driver_id: ' + (o.driver_id || '-') + '</div>'
                         + '</div>'
                         + '<div style="display:flex;gap:8px;align-items:center;">'

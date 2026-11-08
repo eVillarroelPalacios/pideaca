@@ -284,10 +284,10 @@
                         <div class="drv-kpi accent">
                             <div class="drv-kpi-body">
                                 <div class="drv-kpi-label">Ganancias hoy</div>
-                                <div class="drv-kpi-value orange">${{ number_format($stats['earningsToday'], 0, ',', '.') }}
+                                <div class="drv-kpi-value orange">{{ \App\Support\Money::format($stats['earningsToday']) }}
                                     <small class="drv-kpi-delta">+{{ $stats['deliveredToday'] }} {{ $stats['deliveredToday'] === 1 ? 'viaje' : 'viajes' }}</small>
                                 </div>
-                                <div class="drv-kpi-sub">Base: ${{ number_format($stats['baseToday'], 0, ',', '.') }} | Propinas: ${{ number_format($stats['tipsToday'], 0, ',', '.') }}</div>
+                                <div class="drv-kpi-sub">Base: {{ \App\Support\Money::format($stats['baseToday']) }} | Propinas: {{ \App\Support\Money::format($stats['tipsToday']) }}</div>
                             </div>
                             <div class="drv-kpi-icon ico-earn">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -386,6 +386,7 @@
 
                     /* ── Utilidades ── */
                     function money(v) {
+                        if (window.fdMoney) return window.fdMoney(v);
                         return '$' + Number(v || 0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
                     }
                     function esc(s) {
@@ -588,7 +589,7 @@
                             +   '<div class="drv-chips">'
                             +     '<span class="drv-chip hot">' + esc(statusLabel(o.status)) + '</span>'
                             +     '<span class="drv-chip">Pago: ' + esc(o.payment_method || 'efectivo') + '</span>'
-                            +     (o.total ? '<span class="drv-chip">Total $' + Number(o.total).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</span>' : '')
+                            +     (o.total ? '<span class="drv-chip">Total ' + money(o.total) + '</span>' : '')
                             +   '</div>'
 
                             +   '<button type="button" class="drv-take" onclick="drvTakeOrder(' + o.id + ')">'
