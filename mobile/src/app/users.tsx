@@ -19,6 +19,7 @@ import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { UserSearchModal } from '@/components/UserSearchModal';
 import { colors, radius, spacing } from '@/theme';
 import type {
   AdminUserItem,
@@ -84,9 +85,6 @@ export default function UsersScreen() {
 
   // Modal de busqueda (Fase 2: Buscar Usuario de la web).
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchStatusId, setSearchStatusId] = useState<number | null>(null);
-  const [searchTypeId, setSearchTypeId] = useState<number | null>(null);
 
   // Modal de paginas por tipo (Fase 3).
   const [typePagesOpen, setTypePagesOpen] = useState(false);
@@ -591,29 +589,8 @@ export default function UsersScreen() {
     );
   }
 
-  // Fase 2: Buscar Usuario (misma idea que el modal web: texto + filtros
-  // por estado y tipo sobre los usuarios cargados).
-  const searchResults = useMemo(() => {
-    const term = searchQuery.trim().toLowerCase();
-
-    return users.filter((user) => {
-      const matchesText =
-        !term ||
-        user.name.toLowerCase().includes(term) ||
-        user.email.toLowerCase().includes(term);
-      const matchesStatus = !searchStatusId || user.status_id === searchStatusId;
-      const matchesType = !searchTypeId || user.type_user_id === searchTypeId;
-
-      return matchesText && matchesStatus && matchesType;
-    });
-  }, [users, searchQuery, searchStatusId, searchTypeId]);
-
-  function openSearch() {
-    setSearchQuery('');
-    setSearchStatusId(null);
-    setSearchTypeId(null);
-    setSearchOpen(true);
-  }
+  // Fase 2: Buscar Usuario. La UI vive en <UserSearchModal/> (FlatList de
+  // tarjetas); aca solo se abre y se gestiona la seleccion.
 
   // Fase 3: Paginas por tipo (modal web de plantilla por tipo).
   const tpSelectedType = useMemo(
@@ -758,7 +735,7 @@ export default function UsersScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Buscar usuario"
-            onPress={openSearch}
+            onPress={() => setSearchOpen(true)}
             style={styles.outlineButton}
           >
             <Text style={styles.outlineText}>🔍 Buscar Usuario</Text>
@@ -1125,102 +1102,18 @@ export default function UsersScreen() {
         </View>
       </Modal>
 
-      <Modal visible={searchOpen} transparent animationType="fade" onRequestClose={() => setSearchOpen(false)}>
-        <View style={styles.modalBackdrop}>
-          <View style={[styles.modalCard, styles.tallModal]}>
-            <Text style={styles.modalTitle}>Buscar Usuario</Text>
-            <TextField
-              label="Nombre o correo"
-              placeholder="Escribí para filtrar…"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <Text style={styles.selectorLabel}>Estado</Text>
-            <View style={styles.chipsWrap}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: searchStatusId === null }}
-                onPress={() => setSearchStatusId(null)}
-                style={[styles.chip, searchStatusId === null && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, searchStatusId === null && styles.chipTextSelected]}>Todos</Text>
-              </Pressable>
-              {statuses.map((status) => {
-                const selected = searchStatusId === status.id;
-                return (
-                  <Pressable
-                    key={status.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    onPress={() => setSearchStatusId(selected ? null : status.id)}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{status.status}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text style={styles.selectorLabel}>Tipo</Text>
-            <View style={styles.chipsWrap}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: searchTypeId === null }}
-                onPress={() => setSearchTypeId(null)}
-                style={[styles.chip, searchTypeId === null && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, searchTypeId === null && styles.chipTextSelected]}>Todos</Text>
-              </Pressable>
-              {types.map((type) => {
-                const selected = searchTypeId === type.id;
-                return (
-                  <Pressable
-                    key={type.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    onPress={() => setSearchTypeId(selected ? null : type.id)}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{type.description}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text style={styles.selectorLabel}>{searchResults.length} resultados</Text>
-            <ScrollView style={styles.resultsList}>
-              {searchResults.map((user) => (
-                <Pressable
-                  key={user.id}
-                  accessibilityRole="button"
-                  onPress={() => {
-                    setSearchOpen(false);
-                    selectUser(user);
-                  }}
-                  style={styles.resultRow}
-                >
-                  <View style={styles.userInfo}>
-                    <Text style={styles.userName}>
-                      {user.name}
-                      {user.is_principal ? ' (principal)' : ''}
-                      {user.is_inactive ? ' · Inactivo' : ''}
-                    </Text>
-                    <Text style={styles.userEmail}>{user.email}</Text>
-                  </View>
-                  <View style={styles.resultSide}>
-                    <Text style={styles.roleText}>{user.role ?? 'Usuario'}</Text>
-                  </View>
-                </Pressable>
-              ))}
-              {searchResults.length === 0 ? (
-                <Text style={styles.emptyText}>Sin resultados para esos filtros.</Text>
-              ) : null}
-            </ScrollView>
-            <View style={styles.gap} />
-            <PrimaryButton title="Cerrar" variant="ghost" onPress={() => setSearchOpen(false)} />
-          </View>
-        </View>
-      </Modal>
+      <UserSearchModal
+        visible={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        users={users}
+        statuses={statuses}
+        types={types}
+        error={null}
+        onSelect={(selected) => {
+          setSearchOpen(false);
+          selectUser(selected);
+        }}
+      />
 
       <Modal visible={typePagesOpen} transparent animationType="fade" onRequestClose={() => setTypePagesOpen(false)}>
         <View style={styles.modalBackdrop}>
@@ -1433,10 +1326,6 @@ const styles = StyleSheet.create({
     color: '#1d4ed8',
     fontSize: 12,
     fontWeight: '700',
-  },
-  resultSide: {
-    alignItems: 'flex-end',
-    gap: spacing.xs,
   },
   limitCard: {
     backgroundColor: colors.surface,
@@ -1712,17 +1601,6 @@ const styles = StyleSheet.create({
   },
   tallModal: {
     maxHeight: '88%',
-  },
-  resultsList: {
-    maxHeight: 320,
-  },
-  resultRow: {
-    alignItems: 'center',
-    borderBottomColor: colors.border,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
   },
   modalTitle: {
     color: colors.text,

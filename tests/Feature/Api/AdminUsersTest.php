@@ -172,6 +172,19 @@ class AdminUsersTest extends TestCase
             ->assertJsonValidationErrors('password');
     }
 
+    public function test_admin_without_param_lists_everyone(): void
+    {
+        $admin = $this->makeUser('Admin');
+        $outsider = $this->makeUser('Cliente');
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/mobile/v1/admin-users')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $admin->id])
+            ->assertJsonFragment(['id' => $outsider->id])
+            ->assertJsonPath('managed_user', null);
+    }
+
     public function test_admin_lists_everyone_and_manages_outsiders(): void
     {
         $admin = $this->makeUser('Admin');

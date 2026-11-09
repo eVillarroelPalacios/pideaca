@@ -53,14 +53,22 @@ class AdminUsersController extends Controller
 
         // Cuenta efectiva: la gestionada si el Admin la pide con
         // `managed_user_id` (igual que umManagedEmail en la web), si no la
-        // propia. El Admin ve todos los usuarios (igual que el index web).
+        // propia. Sin parametro el Admin ve todos los usuarios (igual que
+        // el index web); con parametro se lista esa cuenta.
         $scope = $this->resolveManagedScope($request, $actor);
 
         if ($scope instanceof JsonResponse) {
             return $scope;
         }
 
-        $users = $actor->isAdmin() && $scope === null ? $this->allUsers() : $this->accountUsers($scope);
+        $managedParam = $request->query('managed_user_id');
+
+        if ($actor->isAdmin() && ($managedParam === null || $managedParam === '')) {
+            $users = $this->allUsers();
+        } else {
+            $users = $this->accountUsers($scope);
+        }
+
         $ownAccount = $this->accountUsers($scope);
         $secondaryCount = max(0, $ownAccount->count() - 1);
 
