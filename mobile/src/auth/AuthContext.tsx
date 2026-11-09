@@ -10,6 +10,7 @@ import {
 
 import { api } from '@/api/client';
 import { clearToken, loadToken, saveToken } from '@/lib/tokenStore';
+import { registerPushToken, unregisterPushToken } from '@/lib/notifications';
 import type { RegisterPayload, User } from '@/types/api';
 
 type AuthContextValue = {
@@ -66,16 +67,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await api.login(email.trim(), password);
     await saveToken(response.token);
     setUser(response.user);
+    // No bloquea el login: si falla el permiso, la app sigue igual.
+    void registerPushToken();
   }, []);
 
   const signUp = useCallback(async (payload: RegisterPayload) => {
     const response = await api.register(payload);
     await saveToken(response.token);
     setUser(response.user);
+    void registerPushToken();
   }, []);
 
   const signOut = useCallback(async () => {
     try {
+      await unregisterPushToken();
       await api.logout();
     } catch {
       // Si el token ya no vale, igual cerramos la sesión local.

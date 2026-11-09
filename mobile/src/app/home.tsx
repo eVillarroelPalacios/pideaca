@@ -1,5 +1,5 @@
-import { Redirect } from 'expo-router';
-import { useState } from 'react';
+import { Link, Redirect, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ApiError } from '@/api/client';
+import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -45,6 +45,29 @@ export default function HomeScreen() {
   const { user, isLoading, signOut, deleteAccount, refresh } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Contador de avisos sin leer: se actualiza cada vez que volvés al inicio.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      api
+        .notifications({ per_page: 1 })
+        .then((response) => {
+          if (active) {
+            setUnreadCount(response.meta.unread_count);
+          }
+        })
+        .catch(() => {
+          // Sin conexión no hay contador; la pantalla igual funciona.
+        });
+
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   if (isLoading) {
     return <LoadingScreen message="Cargando tu cuenta…" />;
@@ -53,6 +76,8 @@ export default function HomeScreen() {
   if (!user) {
     return <Redirect href="/login" />;
   }
+
+  const showProviderCard = user.has_provider;
 
   const badge = roleColors(user.role);
   const firstName = user.name.split(' ')[0] ?? user.name;
@@ -118,6 +143,58 @@ export default function HomeScreen() {
         <Text style={styles.greeting}>Hola, {firstName} 👋</Text>
         <Text style={styles.subtitle}>Esta es tu cuenta en la app móvil.</Text>
 
+        <Link href="/providers" asChild>
+          <Pressable accessibilityRole="button" style={styles.exploreCard}>
+            <View>
+              <Text style={styles.exploreTitle}>🔧 Explorar prestadores</Text>
+              <Text style={styles.exploreText}>
+                Urgencias, citas y presupuestos cerca tuyo.
+              </Text>
+            </View>
+            <Text style={styles.exploreArrow}>›</Text>
+          </Pressable>
+        </Link>
+
+        {showProviderCard ? (
+          <Link href="/provider-orders" asChild>
+            <Pressable accessibilityRole="button" style={styles.providerCard}>
+              <View>
+                <Text style={styles.providerTitle}>🏪 Mi comercio</Text>
+                <Text style={styles.providerText}>
+                  Pool de trabajos, propuestas y cierres.
+                </Text>
+              </View>
+              <Text style={styles.exploreArrow}>›</Text>
+            </Pressable>
+          </Link>
+        ) : null}
+
+        <Link href="/requests" asChild>
+          <Pressable accessibilityRole="button" style={styles.requestsCard}>
+            <View>
+              <Text style={styles.requestsTitle}>📋 Mis solicitudes</Text>
+              <Text style={styles.requestsText}>
+                Seguí tus urgencias, citas y presupuestos.
+              </Text>
+            </View>
+            <Text style={styles.exploreArrow}>›</Text>
+          </Pressable>
+        </Link>
+
+        <Link href="/notifications" asChild>
+          <Pressable accessibilityRole="button" style={styles.requestsCard}>
+            <View style={styles.notificationRow}>
+              <Text style={styles.requestsTitle}>🔔 Avisos</Text>
+              {unreadCount > 0 ? (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadText}>{unreadCount}</Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={styles.exploreArrow}>›</Text>
+          </Pressable>
+        </Link>
+
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials(user.name)}</Text>
@@ -161,8 +238,8 @@ export default function HomeScreen() {
         <View style={styles.tipCard}>
           <Text style={styles.tipTitle}>Próximo paso</Text>
           <Text style={styles.tipText}>
-            Esta pantalla es el punto de partida. A medida que agreguemos endpoints al API
-            (prestadores, pedidos, pagos), los vamos sumando acá.
+            Si tenés un comercio asociado, entrás al panel del prestador desde
+            Mi comercio.
           </Text>
         </View>
 
@@ -239,6 +316,104 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 15,
     marginBottom: spacing.xl,
+  },
+  exploreCard: {
+    alignItems: 'center',
+    backgroundColor: colors.brand,
+    borderRadius: radius.lg,
+    elevation: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+    padding: spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+  },
+  exploreTitle: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  exploreText: {
+    color: '#ffedd5',
+    fontSize: 14,
+  },
+  exploreArrow: {
+    color: colors.surface,
+    fontSize: 32,
+    fontWeight: '300',
+  },
+  requestsCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    elevation: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+    padding: spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+  },
+  requestsTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  requestsText: {
+    color: colors.muted,
+    fontSize: 14,
+  },
+  notificationRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  unreadBadge: {
+    alignItems: 'center',
+    backgroundColor: colors.danger,
+    borderRadius: radius.pill,
+    justifyContent: 'center',
+    minWidth: 24,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  unreadText: {
+    color: colors.surface,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  providerCard: {
+    alignItems: 'center',
+    backgroundColor: colors.text,
+    borderRadius: radius.lg,
+    elevation: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+    padding: spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+  },
+  providerTitle: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  providerText: {
+    color: '#cbd5e1',
+    fontSize: 14,
   },
   profileCard: {
     alignItems: 'center',
