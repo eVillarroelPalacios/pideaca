@@ -28,6 +28,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::modulos': '/modules',
     // Administrar: paginas del sistema.
     'administrar::paginas': '/pages',
+    // Administrar: sub grupos del catalogo.
+    'administrar::sub-grupos': '/subgroups',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

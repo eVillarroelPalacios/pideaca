@@ -486,6 +486,43 @@ export type PageResponse = {
   page: PageItem;
 };
 
+export type SubGroupOption = {
+  id: number;
+  description: string;
+};
+
+export type SubGroupItem = {
+  id: number;
+  description: string;
+  group_id: number;
+  group: SubGroupOption | null;
+  providers_count: number;
+  can_delete: boolean;
+};
+
+export type SubGroupsResponse = {
+  success: boolean;
+  data: SubGroupItem[];
+  filters: {
+    groups: SubGroupOption[];
+  };
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type SubGroupPayload = {
+  description: string;
+  group_id: number;
+};
+
+export type SubGroupResponse = {
+  success: boolean;
+  message: string;
+  subgroup: SubGroupItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;

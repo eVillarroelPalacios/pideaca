@@ -48,6 +48,9 @@ import type {
   ServiceOrdersResponse,
   ServiceSubgroupsResponse,
   SimpleResponse,
+  SubGroupPayload,
+  SubGroupResponse,
+  SubGroupsResponse,
   ToggleSubgroupResponse,
   TrustedDriverCandidate,
   TrustedDriversResponse,
@@ -606,6 +609,30 @@ export const api = {
 
   deletePage(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/pages/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  subgroups(): Promise<SubGroupsResponse> {
+    return request<SubGroupsResponse>('/subgroups');
+  },
+
+  createSubgroup(payload: SubGroupPayload): Promise<SubGroupResponse> {
+    return request<SubGroupResponse>('/subgroups', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateSubgroup(id: number, payload: SubGroupPayload): Promise<SubGroupResponse> {
+    return request<SubGroupResponse>(`/subgroups/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteSubgroup(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/subgroups/${id}`, {
       method: 'DELETE',
     });
   },
