@@ -6,6 +6,8 @@ import type {
   ContactInquiriesResponse,
   ContactInquiryResponse,
   ContactInquiryStatus,
+  GroupStatusResponse,
+  GroupStatusesResponse,
   MenuResponse,
   MeResponse,
   NotificationResponse,
@@ -453,6 +455,30 @@ export const api = {
     return request<UpdateContactInquiryStatusResponse>(`/contact-inquiries/${id}/status`, {
       method: 'POST',
       body: { status },
+    });
+  },
+
+  groupStatuses(): Promise<GroupStatusesResponse> {
+    return request<GroupStatusesResponse>('/group-statuses');
+  },
+
+  createGroupStatus(description: string): Promise<GroupStatusResponse> {
+    return request<GroupStatusResponse>('/group-statuses', {
+      method: 'POST',
+      body: { description },
+    });
+  },
+
+  updateGroupStatus(id: number, description: string): Promise<GroupStatusResponse> {
+    return request<GroupStatusResponse>(`/group-statuses/${id}`, {
+      method: 'PUT',
+      body: { description },
+    });
+  },
+
+  deleteGroupStatus(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/group-statuses/${id}`, {
+      method: 'DELETE',
     });
   },
 };

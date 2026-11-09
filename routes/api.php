@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
+use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
 use App\Http\Controllers\Api\V1\PushController;
@@ -47,6 +48,11 @@ Route::prefix('mobile/v1')->group(function () {
             ->middleware('throttle:30,1');
         Route::get('/contact-inquiries/{contactInquiry}', [ContactInquiriesController::class, 'show']);
         Route::post('/contact-inquiries/{contactInquiry}/status', [ContactInquiriesController::class, 'updateStatus']);
+        Route::get('/group-statuses', [GroupStatusesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/group-statuses', [GroupStatusesController::class, 'store']);
+        Route::put('/group-statuses/{groupStatus}', [GroupStatusesController::class, 'update']);
+        Route::delete('/group-statuses/{groupStatus}', [GroupStatusesController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

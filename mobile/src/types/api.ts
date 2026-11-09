@@ -338,3 +338,25 @@ export type UpdateContactInquiryStatusResponse = {
   message: string;
   contact_inquiry: ContactInquiry;
 };
+
+export type GroupStatusItem = {
+  id: number;
+  description: string;
+  groups_count: number;
+  can_delete: boolean;
+};
+
+export type GroupStatusesResponse = {
+  success: boolean;
+  data: GroupStatusItem[];
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type GroupStatusResponse = {
+  success: boolean;
+  message: string;
+  group_status: GroupStatusItem;
+};
