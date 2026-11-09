@@ -2,6 +2,7 @@ import { API_BASE_URL, API_TIMEOUT_MS } from '@/config';
 import { loadToken } from '@/lib/tokenStore';
 import type {
   AuthResponse,
+  MenuResponse,
   MeResponse,
   NotificationResponse,
   NotificationsResponse,
@@ -289,6 +290,10 @@ export const api = {
       method: 'DELETE',
       body: { token },
     });
+  },
+
+  menu(): Promise<MenuResponse> {
+    return request<MenuResponse>('/menu');
   },
 
   providerOrders(params: ServiceOrdersParams & { mine?: boolean } = {}): Promise<ProviderOrdersResponse> {

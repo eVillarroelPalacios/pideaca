@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
+use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
 use App\Http\Controllers\Api\V1\PushController;
 use App\Http\Controllers\Api\V1\ServiceOrdersController;
@@ -39,6 +40,8 @@ Route::prefix('mobile/v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/menu', [MenuController::class, 'index'])
+            ->middleware('throttle:30,1');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

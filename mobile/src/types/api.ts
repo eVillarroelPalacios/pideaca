@@ -263,6 +263,26 @@ export type NotificationsResponse = {
   meta: PaginationMeta & { unread_count: number };
 };
 
+export type MenuPage = {
+  id: number;
+  description: string;
+  url: string | null;
+};
+
+export type MenuModule = {
+  id: number;
+  description: string;
+  pages: MenuPage[];
+};
+
+export type MenuResponse = {
+  success: boolean;
+  data: {
+    modules: MenuModule[];
+    first_page_url: string | null;
+  };
+};
+
 export type NotificationResponse = {
   success: boolean;
   data: AppNotification;

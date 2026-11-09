@@ -134,6 +134,11 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.header}>
+          <Link href="/menu" asChild>
+            <Pressable accessibilityRole="button" accessibilityLabel="Abrir menú" style={styles.menuButton}>
+              <Text style={styles.menuText}>☰</Text>
+            </Pressable>
+          </Link>
           <Text style={styles.brand}>PideAca</Text>
           <Pressable accessibilityRole="button" onPress={signOut} style={styles.logout}>
             <Text style={styles.logoutText}>Salir</Text>
@@ -291,6 +296,21 @@ const styles = StyleSheet.create({
   brand: {
     color: colors.brand,
     fontSize: 20,
+    fontWeight: '800',
+  },
+  menuButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 38,
+    justifyContent: 'center',
+    width: 38,
+  },
+  menuText: {
+    color: colors.text,
+    fontSize: 18,
     fontWeight: '800',
   },
   logout: {
