@@ -32,6 +32,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::sub-grupos': '/subgroups',
     // Administrar: tipos de monedas (una por pais).
     'administrar::tipo-monedas': '/currencies',
+    // Administrar: tipos de usuario.
+    'administrar::tipo-usuarios': '/type-users',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

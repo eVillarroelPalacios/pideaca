@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
 use App\Http\Controllers\Api\V1\SubGroupsController;
+use App\Http\Controllers\Api\V1\TypeUsersController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
@@ -93,6 +94,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/currencies', [CurrenciesController::class, 'store']);
         Route::put('/currencies/{currency}', [CurrenciesController::class, 'update']);
         Route::delete('/currencies/{currency}', [CurrenciesController::class, 'destroy']);
+        Route::get('/type-users', [TypeUsersController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/type-users', [TypeUsersController::class, 'store']);
+        Route::put('/type-users/{typeUser}', [TypeUsersController::class, 'update']);
+        Route::delete('/type-users/{typeUser}', [TypeUsersController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

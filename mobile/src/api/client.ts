@@ -59,6 +59,9 @@ import type {
   TrustedDriversResponse,
   TrustedDriversSettingsResponse,
   TypesResponse,
+  TypeUserPayload,
+  TypeUserResponse,
+  TypeUsersResponse,
   UpdateContactInquiryStatusResponse,
   UserStatusResponse,
   UserStatusesResponse,
@@ -660,6 +663,30 @@ export const api = {
 
   deleteCurrency(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/currencies/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  typeUsers(): Promise<TypeUsersResponse> {
+    return request<TypeUsersResponse>('/type-users');
+  },
+
+  createTypeUser(payload: TypeUserPayload): Promise<TypeUserResponse> {
+    return request<TypeUserResponse>('/type-users', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateTypeUser(id: number, payload: TypeUserPayload): Promise<TypeUserResponse> {
+    return request<TypeUserResponse>(`/type-users/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteTypeUser(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/type-users/${id}`, {
       method: 'DELETE',
     });
   },

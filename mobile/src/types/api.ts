@@ -580,6 +580,32 @@ export type CurrencyResponse = {
   currency: CurrencyItem;
 };
 
+export type TypeUserItem = {
+  id: number;
+  description: string;
+  users_count: number;
+  can_delete: boolean;
+};
+
+export type TypeUsersResponse = {
+  success: boolean;
+  data: TypeUserItem[];
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type TypeUserPayload = {
+  description: string;
+};
+
+export type TypeUserResponse = {
+  success: boolean;
+  message: string;
+  type_user: TypeUserItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;
