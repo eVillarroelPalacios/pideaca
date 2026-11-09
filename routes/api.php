@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
+use App\Http\Controllers\Api\V1\CurrenciesController;
 use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\MenuController;
@@ -87,6 +88,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/subgroups', [SubGroupsController::class, 'store']);
         Route::put('/subgroups/{subgroup}', [SubGroupsController::class, 'update']);
         Route::delete('/subgroups/{subgroup}', [SubGroupsController::class, 'destroy']);
+        Route::get('/currencies', [CurrenciesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/currencies', [CurrenciesController::class, 'store']);
+        Route::put('/currencies/{currency}', [CurrenciesController::class, 'update']);
+        Route::delete('/currencies/{currency}', [CurrenciesController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

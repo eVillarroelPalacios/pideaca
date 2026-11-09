@@ -10,6 +10,9 @@ import type {
   ContactInquiryResponse,
   ContactInquiryStatus,
   CountriesResponse,
+  CurrencyPayload,
+  CurrencyResponse,
+  CurrenciesResponse,
   GroupStatusResponse,
   GroupStatusesResponse,
   GroupPayload,
@@ -633,6 +636,30 @@ export const api = {
 
   deleteSubgroup(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/subgroups/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  currencies(): Promise<CurrenciesResponse> {
+    return request<CurrenciesResponse>('/currencies');
+  },
+
+  createCurrency(payload: CurrencyPayload): Promise<CurrencyResponse> {
+    return request<CurrencyResponse>('/currencies', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateCurrency(id: number, payload: CurrencyPayload): Promise<CurrencyResponse> {
+    return request<CurrencyResponse>(`/currencies/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteCurrency(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/currencies/${id}`, {
       method: 'DELETE',
     });
   },

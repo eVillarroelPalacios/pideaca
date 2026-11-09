@@ -523,6 +523,63 @@ export type SubGroupResponse = {
   subgroup: SubGroupItem;
 };
 
+export type CurrencyCountryOption = {
+  id: number;
+  iso_code: string;
+  name: string;
+};
+
+export type CurrencyItem = {
+  id: number;
+  country_id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  symbol_position: 'before' | 'after';
+  symbol_space: boolean;
+  decimals: number;
+  decimal_separator: string;
+  thousand_separator: string;
+  locale: string;
+  is_active: boolean;
+  country: CurrencyCountryOption | null;
+  is_default: boolean;
+  can_delete: boolean;
+};
+
+export type CurrenciesResponse = {
+  success: boolean;
+  data: CurrencyItem[];
+  filters: {
+    countries: CurrencyCountryOption[];
+  };
+  summary: {
+    total: number;
+    active: number;
+    default_code: string;
+  };
+};
+
+export type CurrencyPayload = {
+  country_id: number;
+  code: string;
+  name: string;
+  symbol: string;
+  symbol_position: 'before' | 'after';
+  symbol_space?: boolean;
+  decimals: number;
+  decimal_separator: string;
+  thousand_separator: string;
+  locale: string;
+  is_active?: boolean;
+};
+
+export type CurrencyResponse = {
+  success: boolean;
+  message: string;
+  currency: CurrencyItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;
