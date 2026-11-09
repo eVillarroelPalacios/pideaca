@@ -4,6 +4,12 @@ import type {
   AccountUserResponse,
   AccountUsersResponse,
   AddressPayload,
+  AdminUserAddressPayload,
+  AdminUserCreatePayload,
+  AdminUserPageResponse,
+  AdminUserResponse,
+  AdminUsersResponse,
+  AdminUserUpdatePayload,
   AuthResponse,
   ContactInquiriesParams,
   ContactInquiriesResponse,
@@ -715,6 +721,61 @@ export const api = {
   deleteUnitOfMeasure(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/units-of-measure/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  // Gestion de Usuarios: mismos paneles y reglas que la seccion web.
+  adminUsers(): Promise<AdminUsersResponse> {
+    return request<AdminUsersResponse>('/admin-users');
+  },
+
+  createAdminUser(payload: AdminUserCreatePayload): Promise<AdminUserResponse> {
+    return request<AdminUserResponse>('/admin-users', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateAdminUser(id: number, payload: AdminUserUpdatePayload): Promise<AdminUserResponse> {
+    return request<AdminUserResponse>(`/admin-users/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteAdminUser(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/admin-users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  attachAdminUserPage(userId: number, pageId: number): Promise<AdminUserPageResponse> {
+    return request<AdminUserPageResponse>(`/admin-users/${userId}/pages/${pageId}`, {
+      method: 'POST',
+    });
+  },
+
+  detachAdminUserPage(userId: number, pageId: number): Promise<AdminUserPageResponse> {
+    return request<AdminUserPageResponse>(`/admin-users/${userId}/pages/${pageId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  createAdminUserAddress(userId: number, payload: AdminUserAddressPayload): Promise<AdminUserResponse> {
+    return request<AdminUserResponse>(`/admin-users/${userId}/addresses`, {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateAdminUserAddress(
+    userId: number,
+    addressId: number,
+    payload: AdminUserAddressPayload,
+  ): Promise<AdminUserResponse> {
+    return request<AdminUserResponse>(`/admin-users/${userId}/addresses/${addressId}`, {
+      method: 'PUT',
+      body: payload,
     });
   },
 

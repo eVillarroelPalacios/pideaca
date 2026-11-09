@@ -36,6 +36,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::tipo-usuarios': '/type-users',
     // Administrar: unidades de medida globales.
     'administrar::unidades-medida': '/units-of-measure',
+    // Administrar: gestion de usuarios de la cuenta.
+    'administrar::usuarios': '/users',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

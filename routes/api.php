@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\AdminUsersController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
 use App\Http\Controllers\Api\V1\CurrenciesController;
@@ -105,6 +106,17 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/units-of-measure', [UnitsOfMeasureController::class, 'store']);
         Route::put('/units-of-measure/{unitOfMeasure}', [UnitsOfMeasureController::class, 'update']);
         Route::delete('/units-of-measure/{unitOfMeasure}', [UnitsOfMeasureController::class, 'destroy']);
+
+        // Gestion de Usuarios: mismos paneles y reglas que la seccion web.
+        Route::get('/admin-users', [AdminUsersController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/admin-users', [AdminUsersController::class, 'store']);
+        Route::put('/admin-users/{user}', [AdminUsersController::class, 'update']);
+        Route::delete('/admin-users/{user}', [AdminUsersController::class, 'destroy']);
+        Route::post('/admin-users/{user}/pages/{page}', [AdminUsersController::class, 'attachPage']);
+        Route::delete('/admin-users/{user}/pages/{page}', [AdminUsersController::class, 'detachPage']);
+        Route::post('/admin-users/{user}/addresses', [AdminUsersController::class, 'storeAddress']);
+        Route::put('/admin-users/{user}/addresses/{address}', [AdminUsersController::class, 'updateAddress']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

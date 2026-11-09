@@ -640,6 +640,109 @@ export type UnitOfMeasureResponse = {
   unit: UnitOfMeasureItem;
 };
 
+export type AdminUserAddress = {
+  id: number;
+  country_id: number | null;
+  province_id: number | null;
+  street: string | null;
+  number: string | null;
+};
+
+export type AdminUserPageItem = {
+  id: number;
+  description: string;
+  url: string | null;
+  module?: string | null;
+};
+
+export type AdminUserModule = {
+  id: number;
+  description: string;
+  pages: {
+    id: number;
+    description: string;
+    url: string | null;
+    module_id: number;
+  }[];
+};
+
+export type AdminUserItem = {
+  id: number;
+  name: string;
+  email: string;
+  role: string | null;
+  status: string | null;
+  status_id: number | null;
+  type_user_id: number | null;
+  principal_role: string | null;
+  is_principal: boolean;
+  is_self: boolean;
+  is_inactive: boolean;
+  can_edit: boolean;
+  page_ids: number[];
+  pages: AdminUserPageItem[];
+  primary_address: AdminUserAddress | null;
+};
+
+export type AdminUsersResponse = {
+  success: boolean;
+  account_email: string;
+  actor: {
+    id: number;
+    is_admin: boolean;
+  };
+  data: AdminUserItem[];
+  catalog: {
+    modules: AdminUserModule[];
+  };
+  filters: {
+    user_statuses: {
+      id: number;
+      status: string;
+    }[];
+  };
+  limits: {
+    max_secondary: number;
+    secondary_count: number;
+    can_add: boolean;
+  };
+};
+
+export type AdminUserCreatePayload = {
+  name: string;
+  password: string;
+  password_confirmation: string;
+  user_status_id?: number | null;
+};
+
+export type AdminUserUpdatePayload = {
+  name: string;
+  email: string;
+  user_status_id?: number | null;
+  type_user_id?: number | null;
+};
+
+export type AdminUserResponse = {
+  success: boolean;
+  message: string;
+  user: AdminUserItem;
+};
+
+export type AdminUserPageResponse = {
+  success: boolean;
+  message: string;
+  page_id: number;
+  cascaded: boolean;
+  user: AdminUserItem;
+};
+
+export type AdminUserAddressPayload = {
+  country_id: number;
+  province_id?: number | null;
+  street?: string | null;
+  number?: string | null;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;
