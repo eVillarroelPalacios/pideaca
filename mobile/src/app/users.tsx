@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { useManaged } from '@/auth/ManagedContext';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -35,6 +36,7 @@ type FieldErrors = {
 };
 
 export default function UsersScreen() {
+  const { managed, enter: enterManaged, exit: exitManaged } = useManaged();
   const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [modules, setModules] = useState<AdminUserModule[]>([]);
   const [statuses, setStatuses] = useState<{ id: number; status: string }[]>([]);
@@ -100,7 +102,7 @@ export default function UsersScreen() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.adminUsers();
+      const response = await api.adminUsers(managed?.id ?? null);
 
       setUsers(response.data);
       setModules(response.catalog.modules);
@@ -117,9 +119,10 @@ export default function UsersScreen() {
           : 'No pudimos cargar los usuarios.',
       );
     }
-  }, []);
+  }, [managed?.id]);
 
-  // Se recarga al entrar y al volver de otra pantalla.
+  // Se recarga al entrar, al volver de otra pantalla y al cambiar de
+  // cuenta gestionada.
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -134,7 +137,7 @@ export default function UsersScreen() {
       return () => {
         active = false;
       };
-    }, [fetchUsers]),
+    }, [fetchUsers, managed?.id]),
   );
 
   async function handleRefresh() {
@@ -507,6 +510,33 @@ export default function UsersScreen() {
     }
   }
 
+  // Fase 4: modo managed del Admin (igual que umSetManagedUser en la web).
+  async function handleEnterManaged(user: AdminUserItem) {
+    await enterManaged({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+    setSelectedUserId(null);
+    setOriginalPages([]);
+    setDraftPages([]);
+    setSelectedModuleId(null);
+    setPermissionsMsg(null);
+    setSearchOpen(false);
+    setNotice(`Gestionando la cuenta de ${user.name}.`);
+  }
+
+  async function handleExitManaged() {
+    await exitManaged();
+    setSelectedUserId(null);
+    setOriginalPages([]);
+    setDraftPages([]);
+    setSelectedModuleId(null);
+    setPermissionsMsg(null);
+    setNotice('Volviste a tu cuenta.');
+  }
+
   // Inactivar.
   function confirmInactivate(user: AdminUserItem) {    if (user.is_principal) {
       Alert.alert(
@@ -743,6 +773,26 @@ export default function UsersScreen() {
           </View>
         ) : null}
 
+        {managed ? (
+          <View style={styles.managedCard}>
+            <View style={styles.managedInfo}>
+              <Text style={styles.managedTitle}>Gestionando cuenta de {managed.name}</Text>
+              <Text style={styles.managedSub}>
+                {managed.email}
+                {managed.role ? ` · ${managed.role}` : ''}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Salir de la cuenta gestionada"
+              onPress={() => void handleExitManaged()}
+              style={styles.managedExit}
+            >
+              <Text style={styles.managedExitText}>Salir</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         <View style={styles.limitCard}>
           <View style={styles.limitInfo}>
             <Text style={styles.limitTitle}>Usuarios de la cuenta</Text>
@@ -829,6 +879,16 @@ export default function UsersScreen() {
                           style={[styles.iconButton, styles.deleteButton]}
                         >
                           <Text style={[styles.iconText, styles.deleteText]}>🗑</Text>
+                        </Pressable>
+                      ) : null}
+                      {actorIsAdmin && !user.is_self ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Gestionar cuenta"
+                          onPress={() => void handleEnterManaged(user)}
+                          style={styles.iconButton}
+                        >
+                          <Text style={styles.iconText}>⇄</Text>
                         </Pressable>
                       ) : null}
                     </View>
@@ -1149,7 +1209,19 @@ export default function UsersScreen() {
                     </Text>
                     <Text style={styles.userEmail}>{user.email}</Text>
                   </View>
-                  <Text style={styles.roleText}>{user.role ?? 'Usuario'}</Text>
+                  <View style={styles.resultSide}>
+                    <Text style={styles.roleText}>{user.role ?? 'Usuario'}</Text>
+                    {actorIsAdmin && !user.is_self ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Gestionar cuenta"
+                        onPress={() => void handleEnterManaged(user)}
+                        style={styles.manageLink}
+                      >
+                        <Text style={styles.manageLinkText}>Gestionar ⇄</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                 </Pressable>
               ))}
               {searchResults.length === 0 ? (
@@ -1334,6 +1406,57 @@ const styles = StyleSheet.create({
   noticeText: {
     color: colors.success,
     fontSize: 14,
+  },
+  managedCard: {
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  managedInfo: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+  managedTitle: {
+    color: '#1d4ed8',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  managedSub: {
+    color: '#1d4ed8',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  managedExit: {
+    backgroundColor: colors.surface,
+    borderColor: '#bfdbfe',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  managedExitText: {
+    color: '#1d4ed8',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  resultSide: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
+  },
+  manageLink: {
+    paddingVertical: 4,
+  },
+  manageLinkText: {
+    color: colors.brandDark,
+    fontSize: 12,
+    fontWeight: '700',
   },
   limitCard: {
     backgroundColor: colors.surface,

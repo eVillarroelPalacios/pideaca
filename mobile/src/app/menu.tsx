@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
+import { useManaged } from '@/auth/ManagedContext';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { menuModuleIcon, menuRouteFor } from '@/lib/menuRoutes';
@@ -30,6 +31,7 @@ function initials(name: string): string {
 
 export default function MenuScreen() {
   const { user, signOut } = useAuth();
+  const { managed, exit: exitManaged } = useManaged();
   const [modules, setModules] = useState<MenuModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,8 +40,9 @@ export default function MenuScreen() {
   useEffect(() => {
     let active = true;
 
+    setLoading(true);
     api
-      .menu()
+      .menu(managed?.id ?? null)
       .then((response) => {
         if (active) {
           setModules(response.data.modules);
@@ -64,13 +67,13 @@ export default function MenuScreen() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [managed?.id]);
 
   async function handleRefresh() {
     setRefreshing(true);
 
     try {
-      const response = await api.menu();
+      const response = await api.menu(managed?.id ?? null);
       setModules(response.data.modules);
       setError(null);
     } catch (caught) {
@@ -119,6 +122,26 @@ export default function MenuScreen() {
         }
       >
         <ErrorBanner message={error} />
+
+        {managed ? (
+          <View style={styles.managedCard}>
+            <View style={styles.managedInfo}>
+              <Text style={styles.managedTitle}>Gestionando a {managed.name}</Text>
+              <Text style={styles.managedSub}>
+                {managed.email}
+                {managed.role ? ` · ${managed.role}` : ''}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Salir de la cuenta gestionada"
+              onPress={() => void exitManaged()}
+              style={styles.managedExit}
+            >
+              <Text style={styles.managedExitText}>Salir</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {user ? (
           <View style={styles.profileCard}>
@@ -217,6 +240,45 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  managedCard: {
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  managedInfo: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+  managedTitle: {
+    color: '#1d4ed8',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  managedSub: {
+    color: '#1d4ed8',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  managedExit: {
+    backgroundColor: colors.surface,
+    borderColor: '#bfdbfe',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  managedExitText: {
+    color: '#1d4ed8',
+    fontSize: 12,
+    fontWeight: '700',
   },
   profileCard: {
     alignItems: 'center',

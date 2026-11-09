@@ -10,6 +10,7 @@ import {
 
 import { api } from '@/api/client';
 import { clearToken, loadToken, saveToken } from '@/lib/tokenStore';
+import { clearManaged } from '@/lib/managedStore';
 import { registerPushToken, unregisterPushToken } from '@/lib/notifications';
 import type { RegisterPayload, User } from '@/types/api';
 
@@ -87,12 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     await clearToken();
+    await clearManaged();
     setUser(null);
   }, []);
 
   const deleteAccount = useCallback(async () => {
     await api.deleteAccount();
     await clearToken();
+    await clearManaged();
     setUser(null);
   }, []);
 

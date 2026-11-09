@@ -20,7 +20,15 @@ class MenuController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user()->loadMissing(['status', 'typeUser']);
+        $actor = $request->user()->loadMissing(['status', 'typeUser']);
+
+        // El Admin puede ver el menu de otra cuenta (modo gestionado de la
+        // web: navbar filtrado por las paginas del usuario gestionado).
+        $user = $this->resolveManagedUser($request, $actor);
+
+        if ($user instanceof JsonResponse) {
+            return $user;
+        }
 
         // Candidatos del menú: ÚNICAMENTE páginas asignadas directo al
         // usuario (paridad estricta con el navbar web).
@@ -65,6 +73,11 @@ class MenuController extends Controller
 
         return response()->json([
             'success' => true,
+            'managed_user' => (int) $user->id === (int) $actor->id ? null : [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'data' => [
                 'modules' => $modules->map(function ($module) {
                     return [
@@ -82,5 +95,37 @@ class MenuController extends Controller
                 'first_page_url' => $firstPageUrl,
             ],
         ]);
+    }
+
+    /**
+     * Usuario efectivo del menu: el gestionado si el Admin lo pide con
+     * `managed_user_id`, si no el propio actor. Devuelve la respuesta de
+     * error (403/404) cuando corresponde.
+     */
+    private function resolveManagedUser(Request $request, $actor)
+    {
+        $managedId = $request->query('managed_user_id');
+
+        if ($managedId === null || $managedId === '') {
+            return $actor;
+        }
+
+        if (! $actor->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo un administrador puede gestionar otra cuenta.',
+            ], 403);
+        }
+
+        $managed = \App\Models\User::find($managedId);
+
+        if (! $managed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no encontrado.',
+            ], 404);
+        }
+
+        return $managed->loadMissing(['status', 'typeUser']);
     }
 }

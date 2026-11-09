@@ -46,15 +46,27 @@ class AdminUsersController extends Controller
 
         $actor = $request->user();
 
-        // El Admin ve todos los usuarios (igual que el index web) para poder
-        // buscar y gestionar cualquiera; el resto solo su propia cuenta.
-        $users = $actor->isAdmin() ? $this->allUsers() : $this->accountUsers($actor);
-        $ownAccount = $this->accountUsers($actor);
+        // Cuenta efectiva: la gestionada si el Admin la pide con
+        // `managed_user_id` (igual que umManagedEmail en la web), si no la
+        // propia. El Admin ve todos los usuarios (igual que el index web).
+        $scope = $this->resolveManagedScope($request, $actor);
+
+        if ($scope instanceof JsonResponse) {
+            return $scope;
+        }
+
+        $users = $actor->isAdmin() && $scope === null ? $this->allUsers() : $this->accountUsers($scope);
+        $ownAccount = $this->accountUsers($scope);
         $secondaryCount = max(0, $ownAccount->count() - 1);
 
         return response()->json([
             'success' => true,
-            'account_email' => strtolower(trim((string) $actor->email)),
+            'account_email' => strtolower(trim((string) $scope->email)),
+            'managed_user' => (int) $scope->id === (int) $actor->id ? null : [
+                'id' => $scope->id,
+                'name' => $scope->name,
+                'email' => $scope->email,
+            ],
             'actor' => [
                 'id' => $actor->id,
                 'is_admin' => $actor->isAdmin(),
@@ -100,9 +112,17 @@ class AdminUsersController extends Controller
         }
 
         $actor = $request->user();
-        $principal = $this->accountPrincipal($actor) ?? $actor;
 
-        $accountTotal = User::whereRaw('LOWER(email) = ?', [strtolower(trim((string) $actor->email))])->count();
+        // La creacion respeta la cuenta efectiva (gestionada o propia).
+        $scope = $this->resolveManagedScope($request, $actor);
+
+        if ($scope instanceof JsonResponse) {
+            return $scope;
+        }
+
+        $principal = $this->accountPrincipal($scope) ?? $scope;
+
+        $accountTotal = User::whereRaw('LOWER(email) = ?', [strtolower(trim((string) $scope->email))])->count();
 
         if ($accountTotal > 0 && ($accountTotal - 1) >= self::MAX_SECONDARIES) {
             return response()->json([
@@ -493,6 +513,38 @@ class AdminUsersController extends Controller
             ->whereRaw('LOWER(email) = ?', [strtolower(trim((string) $actor->email))])
             ->orderBy('id')
             ->get();
+    }
+
+    /**
+     * Cuenta efectiva del listado: el usuario gestionado si el Admin lo pide
+     * con `managed_user_id` (igual que umManagedEmail en la web), si no el
+     * propio actor. Devuelve la respuesta de error (403/404) si corresponde.
+     */
+    private function resolveManagedScope(Request $request, User $actor)
+    {
+        $managedId = $request->query('managed_user_id');
+
+        if ($managedId === null || $managedId === '') {
+            return $actor;
+        }
+
+        if (! $actor->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo un administrador puede gestionar otra cuenta.',
+            ], 403);
+        }
+
+        $managed = User::find($managedId);
+
+        if (! $managed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no encontrado.',
+            ], 404);
+        }
+
+        return $managed;
     }
 
     private function allUsers(): Collection

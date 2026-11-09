@@ -277,6 +277,11 @@ export type MenuModule = {
 
 export type MenuResponse = {
   success: boolean;
+  managed_user: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
   data: {
     modules: MenuModule[];
     first_page_url: string | null;
@@ -687,6 +692,11 @@ export type AdminUserItem = {
 export type AdminUsersResponse = {
   success: boolean;
   account_email: string;
+  managed_user: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
   actor: {
     id: number;
     is_admin: boolean;

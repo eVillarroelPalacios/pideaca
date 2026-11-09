@@ -353,8 +353,9 @@ export const api = {
     });
   },
 
-  menu(): Promise<MenuResponse> {
-    return request<MenuResponse>('/menu');
+  menu(managedUserId?: number | null): Promise<MenuResponse> {
+    const suffix = managedUserId ? `?managed_user_id=${managedUserId}` : '';
+    return request<MenuResponse>(`/menu${suffix}`);
   },
 
   providerOrders(params: ServiceOrdersParams & { mine?: boolean } = {}): Promise<ProviderOrdersResponse> {
@@ -763,8 +764,9 @@ export const api = {
   },
 
   // Gestion de Usuarios: mismos paneles y reglas que la seccion web.
-  adminUsers(): Promise<AdminUsersResponse> {
-    return request<AdminUsersResponse>('/admin-users');
+  adminUsers(managedUserId?: number | null): Promise<AdminUsersResponse> {
+    const suffix = managedUserId ? `?managed_user_id=${managedUserId}` : '';
+    return request<AdminUsersResponse>(`/admin-users${suffix}`);
   },
 
   createAdminUser(payload: AdminUserCreatePayload): Promise<AdminUserResponse> {
