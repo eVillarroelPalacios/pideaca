@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ModulesController;
+use App\Http\Controllers\Api\V1\PagesController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
@@ -75,6 +76,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/modules', [ModulesController::class, 'store']);
         Route::put('/modules/{module}', [ModulesController::class, 'update']);
         Route::delete('/modules/{module}', [ModulesController::class, 'destroy']);
+        Route::get('/pages', [PagesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/pages', [PagesController::class, 'store']);
+        Route::put('/pages/{page}', [PagesController::class, 'update']);
+        Route::delete('/pages/{page}', [PagesController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

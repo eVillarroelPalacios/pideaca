@@ -447,6 +447,45 @@ export type ModuleResponse = {
   module: ModuleItem;
 };
 
+export type PageModuleOption = {
+  id: number;
+  description: string;
+};
+
+export type PageItem = {
+  id: number;
+  description: string;
+  url: string | null;
+  module_id: number;
+  module: PageModuleOption | null;
+  users_count: number;
+  can_delete: boolean;
+};
+
+export type PagesResponse = {
+  success: boolean;
+  data: PageItem[];
+  filters: {
+    modules: PageModuleOption[];
+  };
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type PagePayload = {
+  description: string;
+  url?: string | null;
+  module_id: number;
+};
+
+export type PageResponse = {
+  success: boolean;
+  message: string;
+  page: PageItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;

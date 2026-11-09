@@ -22,6 +22,9 @@ import type {
   ModulesResponse,
   NotificationResponse,
   NotificationsResponse,
+  PagePayload,
+  PageResponse,
+  PagesResponse,
   ProfileAddressResponse,
   ProfileImageResponse,
   ProfilePasswordResponse,
@@ -579,6 +582,30 @@ export const api = {
 
   deleteModule(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/modules/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  pages(): Promise<PagesResponse> {
+    return request<PagesResponse>('/pages');
+  },
+
+  createPage(payload: PagePayload): Promise<PageResponse> {
+    return request<PageResponse>('/pages', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updatePage(id: number, payload: PagePayload): Promise<PageResponse> {
+    return request<PageResponse>(`/pages/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deletePage(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/pages/${id}`, {
       method: 'DELETE',
     });
   },
