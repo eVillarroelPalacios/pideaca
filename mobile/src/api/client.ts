@@ -24,6 +24,8 @@ import type {
   SimpleResponse,
   TypesResponse,
   UpdateContactInquiryStatusResponse,
+  UserStatusResponse,
+  UserStatusesResponse,
 } from '@/types/api';
 
 /**
@@ -478,6 +480,30 @@ export const api = {
 
   deleteGroupStatus(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/group-statuses/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  userStatuses(): Promise<UserStatusesResponse> {
+    return request<UserStatusesResponse>('/user-statuses');
+  },
+
+  createUserStatus(status: string): Promise<UserStatusResponse> {
+    return request<UserStatusResponse>('/user-statuses', {
+      method: 'POST',
+      body: { status },
+    });
+  },
+
+  updateUserStatus(id: number, status: string): Promise<UserStatusResponse> {
+    return request<UserStatusResponse>(`/user-statuses/${id}`, {
+      method: 'PUT',
+      body: { status },
+    });
+  },
+
+  deleteUserStatus(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/user-statuses/${id}`, {
       method: 'DELETE',
     });
   },

@@ -20,6 +20,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::consultas-sugerencias': '/contact-inquiries',
     // Administrar: catalogo de estados para los grupos.
     'administrar::estados-grupos': '/group-statuses',
+    // Administrar: catalogo de estados para los usuarios.
+    'administrar::estados-usuarios': '/user-statuses',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

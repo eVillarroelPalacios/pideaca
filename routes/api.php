@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
 use App\Http\Controllers\Api\V1\PushController;
 use App\Http\Controllers\Api\V1\ServiceOrdersController;
+use App\Http\Controllers\Api\V1\UserStatusesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,6 +54,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/group-statuses', [GroupStatusesController::class, 'store']);
         Route::put('/group-statuses/{groupStatus}', [GroupStatusesController::class, 'update']);
         Route::delete('/group-statuses/{groupStatus}', [GroupStatusesController::class, 'destroy']);
+        Route::get('/user-statuses', [UserStatusesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/user-statuses', [UserStatusesController::class, 'store']);
+        Route::put('/user-statuses/{userStatus}', [UserStatusesController::class, 'update']);
+        Route::delete('/user-statuses/{userStatus}', [UserStatusesController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

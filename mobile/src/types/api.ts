@@ -360,3 +360,25 @@ export type GroupStatusResponse = {
   message: string;
   group_status: GroupStatusItem;
 };
+
+export type UserStatusItem = {
+  id: number;
+  status: string;
+  users_count: number;
+  can_delete: boolean;
+};
+
+export type UserStatusesResponse = {
+  success: boolean;
+  data: UserStatusItem[];
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type UserStatusResponse = {
+  success: boolean;
+  message: string;
+  user_status: UserStatusItem;
+};
