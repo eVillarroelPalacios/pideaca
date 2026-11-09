@@ -3,7 +3,17 @@ import { loadToken } from '@/lib/tokenStore';
 import type {
   AuthResponse,
   MeResponse,
+  NotificationResponse,
+  NotificationsResponse,
+  ProviderDetailResponse,
+  ProviderOrdersResponse,
+  ProvidersParams,
+  ProvidersResponse,
   RegisterPayload,
+  ServiceOrderResponse,
+  ServiceOrdersParams,
+  ServiceOrdersResponse,
+  ServiceSubgroupsResponse,
   SimpleResponse,
   TypesResponse,
 } from '@/types/api';
@@ -48,7 +58,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     Accept: 'application/json',
   };
 
-  if (body !== undefined) {
+  if (body !== undefined && !(body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -69,7 +79,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      // FormData (fotos) viaja como multipart; fetch pone el boundary solo.
+      body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
       signal: controller.signal,
     });
   } catch (error) {
@@ -152,5 +163,252 @@ export const api = {
 
   deleteAccount(): Promise<SimpleResponse> {
     return request<SimpleResponse>('/auth/account', { method: 'DELETE' });
+  },
+
+  providers(params: ProvidersParams = {}): Promise<ProvidersResponse> {
+    const query = new URLSearchParams();
+
+    if (params.search?.trim()) {
+      query.set('search', params.search.trim());
+    }
+
+    if (params.type) {
+      query.set('type', params.type);
+    }
+
+    if (params.favorite) {
+      query.set('favorite', '1');
+    }
+
+    if (params.per_page) {
+      query.set('per_page', String(params.per_page));
+    }
+
+    if (params.page) {
+      query.set('page', String(params.page));
+    }
+
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+    return request<ProvidersResponse>(`/providers${suffix}`);
+  },
+
+  provider(id: number): Promise<ProviderDetailResponse> {
+    return request<ProviderDetailResponse>(`/providers/${id}`);
+  },
+
+  serviceSubgroups(): Promise<ServiceSubgroupsResponse> {
+    return request<ServiceSubgroupsResponse>('/service-subgroups');
+  },
+
+  serviceOrders(params: ServiceOrdersParams = {}): Promise<ServiceOrdersResponse> {
+    const query = new URLSearchParams();
+
+    if (params.status) {
+      query.set('status', params.status);
+    }
+
+    if (params.order_type) {
+      query.set('order_type', params.order_type);
+    }
+
+    if (params.per_page) {
+      query.set('per_page', String(params.per_page));
+    }
+
+    if (params.page) {
+      query.set('page', String(params.page));
+    }
+
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+    return request<ServiceOrdersResponse>(`/service-orders${suffix}`);
+  },
+
+  serviceOrder(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}`);
+  },
+
+  createEmergency(form: FormData): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>('/service-orders/emergency', {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  createScheduled(payload: Record<string, unknown>): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>('/service-orders/scheduled', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  createQuote(form: FormData): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>('/service-orders/quote', {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  cancelServiceOrder(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/cancel`, {
+      method: 'POST',
+    });
+  },
+
+  acceptQuote(id: number, quoteId?: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/accept-quote`, {
+      method: 'POST',
+      body: quoteId ? { quote: quoteId } : {},
+    });
+  },
+
+  rejectQuote(id: number, quoteId?: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/reject-quote`, {
+      method: 'POST',
+      body: quoteId ? { quote: quoteId } : {},
+    });
+  },
+
+  rateServiceOrder(id: number, stars: number, comment?: string): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/rate`, {
+      method: 'POST',
+      body: { stars, ...(comment?.trim() ? { comment: comment.trim() } : {}) },
+    });
+  },
+
+  registerPushToken(token: string, platform: 'android' | 'ios'): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/push-tokens', {
+      method: 'POST',
+      body: { token, platform },
+    });
+  },
+
+  unregisterPushToken(token: string): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/push-tokens', {
+      method: 'DELETE',
+      body: { token },
+    });
+  },
+
+  providerOrders(params: ServiceOrdersParams & { mine?: boolean } = {}): Promise<ProviderOrdersResponse> {
+    const query = new URLSearchParams();
+
+    if (params.status) {
+      query.set('status', params.status);
+    }
+
+    if (params.order_type) {
+      query.set('order_type', params.order_type);
+    }
+
+    if (params.per_page) {
+      query.set('per_page', String(params.per_page));
+    }
+
+    if (params.page) {
+      query.set('page', String(params.page));
+    }
+
+    if (params.mine) {
+      query.set('mine', '1');
+    }
+
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+    return request<ProviderOrdersResponse>(`/provider/orders${suffix}`);
+  },
+
+  providerOrder(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${id}`);
+  },
+
+  acceptProviderOrder(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${id}/accept`, {
+      method: 'POST',
+    });
+  },
+
+  dispatchProviderOrder(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${id}/dispatch`, {
+      method: 'POST',
+    });
+  },
+
+  estimateProviderOrder(id: number, additionalCost: number, details?: string): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${id}/estimate`, {
+      method: 'POST',
+      body: {
+        additional_cost: additionalCost,
+        ...(details?.trim() ? { details: details.trim() } : {}),
+      },
+    });
+  },
+
+  proposeProviderOrder(
+    id: number,
+    proposedPrice: number,
+    estimatedTime: string,
+    details?: string,
+  ): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${id}/propose`, {
+      method: 'POST',
+      body: {
+        proposed_price: proposedPrice,
+        estimated_time: estimatedTime,
+        ...(details?.trim() ? { details: details.trim() } : {}),
+      },
+    });
+  },
+
+  completeProviderOrder(orderId: number, form: FormData): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/provider/orders/${orderId}/complete`, {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  approveEstimate(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/approve-estimate`, {
+      method: 'POST',
+    });
+  },
+
+  confirmRelease(id: number): Promise<ServiceOrderResponse> {
+    return request<ServiceOrderResponse>(`/service-orders/${id}/confirm-release`, {
+      method: 'POST',
+    });
+  },
+
+  notifications(params: { per_page?: number; page?: number; unread_only?: boolean } = {}): Promise<NotificationsResponse> {
+    const query = new URLSearchParams();
+
+    if (params.per_page) {
+      query.set('per_page', String(params.per_page));
+    }
+
+    if (params.page) {
+      query.set('page', String(params.page));
+    }
+
+    if (params.unread_only) {
+      query.set('unread_only', '1');
+    }
+
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+    return request<NotificationsResponse>(`/notifications${suffix}`);
+  },
+
+  markNotificationAsRead(id: number): Promise<NotificationResponse> {
+    return request<NotificationResponse>(`/notifications/${id}/read`, {
+      method: 'POST',
+    });
+  },
+
+  markAllNotificationsAsRead(): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/notifications/read-all', {
+      method: 'POST',
+    });
   },
 };

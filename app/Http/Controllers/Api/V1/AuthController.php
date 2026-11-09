@@ -214,6 +214,7 @@ class AuthController extends Controller
             'role' => $user->typeUser?->description,
             'is_admin' => $user->isAdmin(),
             'is_driver' => $user->isDriver(),
+            'has_provider' => $user->provider()->exists(),
             'status' => $user->status?->status,
             'vehicle_type' => $user->vehicle_type,
             'vehicle_plate' => $user->vehicle_plate,

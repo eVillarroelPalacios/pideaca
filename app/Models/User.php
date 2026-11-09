@@ -251,4 +251,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProviderDriver::class);
     }
+
+    public function pushTokens()
+    {
+        return $this->hasMany(PushToken::class);
+    }
+
+    public function userNotifications()
+    {
+        return $this->hasMany(UserNotification::class)->latest();
+    }
 }

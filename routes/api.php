@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CatalogController;
+use App\Http\Controllers\Api\V1\ProviderOrdersController;
+use App\Http\Controllers\Api\V1\PushController;
+use App\Http\Controllers\Api\V1\ServiceOrdersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,5 +41,44 @@ Route::prefix('mobile/v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
+
+        Route::get('/providers', [CatalogController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::get('/providers/{provider}', [CatalogController::class, 'show'])
+            ->middleware('throttle:30,1');
+
+        Route::get('/service-subgroups', [ServiceOrdersController::class, 'subgroups'])
+            ->middleware('throttle:30,1');
+        Route::get('/service-orders', [ServiceOrdersController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::get('/service-orders/{serviceOrder}', [ServiceOrdersController::class, 'show']);
+        Route::post('/service-orders/emergency', [ServiceOrdersController::class, 'storeEmergency']);
+        Route::post('/service-orders/scheduled', [ServiceOrdersController::class, 'storeScheduled']);
+        Route::post('/service-orders/quote', [ServiceOrdersController::class, 'storeQuote']);
+        Route::post('/service-orders/{serviceOrder}/cancel', [ServiceOrdersController::class, 'cancel']);
+        Route::post('/service-orders/{serviceOrder}/accept-quote', [ServiceOrdersController::class, 'acceptQuote']);
+        Route::post('/service-orders/{serviceOrder}/reject-quote', [ServiceOrdersController::class, 'rejectQuote']);
+        Route::post('/service-orders/{serviceOrder}/rate', [ServiceOrdersController::class, 'rate']);
+        Route::post('/service-orders/{serviceOrder}/approve-estimate', [ServiceOrdersController::class, 'approveEstimate']);
+        Route::post('/service-orders/{serviceOrder}/confirm-release', [ServiceOrdersController::class, 'confirmRelease']);
+
+        Route::prefix('provider')->group(function () {
+            Route::get('/orders', [ProviderOrdersController::class, 'index'])
+                ->middleware('throttle:30,1');
+            Route::get('/orders/{serviceOrder}', [ProviderOrdersController::class, 'show']);
+            Route::post('/orders/{serviceOrder}/accept', [ProviderOrdersController::class, 'accept']);
+            Route::post('/orders/{serviceOrder}/dispatch', [ProviderOrdersController::class, 'dispatch']);
+            Route::post('/orders/{serviceOrder}/estimate', [ProviderOrdersController::class, 'estimate']);
+            Route::post('/orders/{serviceOrder}/propose', [ProviderOrdersController::class, 'propose']);
+            Route::post('/orders/{serviceOrder}/complete', [ProviderOrdersController::class, 'complete']);
+        });
+
+        Route::post('/push-tokens', [PushController::class, 'storeToken'])
+            ->middleware('throttle:30,1');
+        Route::delete('/push-tokens', [PushController::class, 'destroyToken']);
+        Route::get('/notifications', [PushController::class, 'index'])
+            ->middleware('throttle:60,1');
+        Route::post('/notifications/{notification}/read', [PushController::class, 'markAsRead']);
+        Route::post('/notifications/read-all', [PushController::class, 'markAllAsRead']);
     });
 });
