@@ -287,3 +287,54 @@ export type NotificationResponse = {
   success: boolean;
   data: AppNotification;
 };
+
+export type ContactInquiryStatus = 'new' | 'in_progress' | 'resolved';
+
+export type ContactInquiryType = 'consulta' | 'sugerencia' | 'reclamo';
+
+export type ContactInquiry = {
+  id: number;
+  full_name: string;
+  email: string;
+  inquiry_type: ContactInquiryType | string;
+  message: string;
+  status: ContactInquiryStatus | string;
+  created_at: string | null;
+};
+
+export type ContactInquiryCounts = {
+  all: number;
+  new: number;
+  in_progress: number;
+  resolved: number;
+};
+
+export type ContactInquiriesParams = {
+  status?: ContactInquiryStatus | 'all';
+  per_page?: number;
+  page?: number;
+};
+
+export type ContactInquiriesResponse = {
+  success: boolean;
+  data: ContactInquiry[];
+  meta: PaginationMeta;
+  counts: ContactInquiryCounts;
+  filters: {
+    statuses: ContactInquiryStatus[];
+  };
+};
+
+export type ContactInquiryResponse = {
+  success: boolean;
+  data: {
+    contact_inquiry: ContactInquiry;
+    statuses: ContactInquiryStatus[];
+  };
+};
+
+export type UpdateContactInquiryStatusResponse = {
+  success: boolean;
+  message: string;
+  contact_inquiry: ContactInquiry;
+};

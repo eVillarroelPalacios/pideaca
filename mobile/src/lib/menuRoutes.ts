@@ -16,6 +16,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
   const routes: Record<string, string> = {
     // Mi Perfil vive en el home de la app.
     'administrar::perfil': '/home',
+    // Administrar: consultas del formulario de contacto.
+    'administrar::consultas-sugerencias': '/contact-inquiries',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

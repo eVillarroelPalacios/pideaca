@@ -2,6 +2,10 @@ import { API_BASE_URL, API_TIMEOUT_MS } from '@/config';
 import { loadToken } from '@/lib/tokenStore';
 import type {
   AuthResponse,
+  ContactInquiriesParams,
+  ContactInquiriesResponse,
+  ContactInquiryResponse,
+  ContactInquiryStatus,
   MenuResponse,
   MeResponse,
   NotificationResponse,
@@ -17,6 +21,7 @@ import type {
   ServiceSubgroupsResponse,
   SimpleResponse,
   TypesResponse,
+  UpdateContactInquiryStatusResponse,
 } from '@/types/api';
 
 /**
@@ -414,6 +419,40 @@ export const api = {
   markAllNotificationsAsRead(): Promise<SimpleResponse> {
     return request<SimpleResponse>('/notifications/read-all', {
       method: 'POST',
+    });
+  },
+
+  contactInquiries(params: ContactInquiriesParams = {}): Promise<ContactInquiriesResponse> {
+    const query = new URLSearchParams();
+
+    if (params.status && params.status !== 'all') {
+      query.set('status', params.status);
+    }
+
+    if (params.per_page) {
+      query.set('per_page', String(params.per_page));
+    }
+
+    if (params.page) {
+      query.set('page', String(params.page));
+    }
+
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+
+    return request<ContactInquiriesResponse>(`/contact-inquiries${suffix}`);
+  },
+
+  contactInquiry(id: number): Promise<ContactInquiryResponse> {
+    return request<ContactInquiryResponse>(`/contact-inquiries/${id}`);
+  },
+
+  updateContactInquiryStatus(
+    id: number,
+    status: ContactInquiryStatus,
+  ): Promise<UpdateContactInquiryStatusResponse> {
+    return request<UpdateContactInquiryStatusResponse>(`/contact-inquiries/${id}/status`, {
+      method: 'POST',
+      body: { status },
     });
   },
 };
