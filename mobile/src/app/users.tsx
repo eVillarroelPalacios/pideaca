@@ -41,7 +41,6 @@ export default function UsersScreen() {
   const [modules, setModules] = useState<AdminUserModule[]>([]);
   const [statuses, setStatuses] = useState<{ id: number; status: string }[]>([]);
   const [types, setTypes] = useState<{ id: number; description: string }[]>([]);
-  const [limits, setLimits] = useState({ max_secondary: 3, secondary_count: 0, can_add: true });
   const [accountEmail, setAccountEmail] = useState('');
   const [actorIsAdmin, setActorIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -102,13 +101,16 @@ export default function UsersScreen() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.adminUsers(managed?.id ?? null);
+      // Sin parametro: el Admin recibe TODOS los usuarios (igual que el
+      // index web) y el resto su cuenta. El alcance a la cuenta gestionada
+      // se aplica en cliente filtrando por email, como hace la web con
+      // allUsers/getUserManagementUsers: asi la busqueda siempre ve todo.
+      const response = await api.adminUsers();
 
       setUsers(response.data);
       setModules(response.catalog.modules);
       setStatuses(response.filters.user_statuses);
       setTypes(response.filters.types);
-      setLimits(response.limits);
       setAccountEmail(response.account_email);
       setActorIsAdmin(response.actor.is_admin);
       setError(null);
@@ -151,19 +153,24 @@ export default function UsersScreen() {
     [users, selectedUserId],
   );
 
-  // La lista principal muestra la cuenta propia (igual que la web); la
-  // busqueda puede alcanzar a todos los cargados (el Admin ve todo).
+  // La lista principal muestra la cuenta efectiva (gestionada si el Admin
+  // activo el modo managed, si no la propia), igual que la web filtra
+  // allUsers por email. La busqueda usa `users` completo.
+  const effectiveEmail = (managed?.email ?? accountEmail).trim().toLowerCase();
   const accountUsers = useMemo(() => {
-    const email = accountEmail.trim().toLowerCase();
-
-    if (!email) {
+    if (!effectiveEmail) {
       return users;
     }
 
-    const scoped = users.filter((u) => u.email.toLowerCase() === email);
+    const scoped = users.filter((u) => u.email.toLowerCase() === effectiveEmail);
 
     return scoped.length > 0 ? scoped : users;
-  }, [users, accountEmail]);
+  }, [users, effectiveEmail]);
+
+  // Limites calculados sobre la cuenta en pantalla (igual que la web cuenta
+  // secundarios sobre la lista filtrada).
+  const secondaryCount = Math.max(0, accountUsers.length - 1);
+  const canAdd = secondaryCount < 3;
 
   const selectedModule = useMemo(
     () => modules.find((m) => m.id === selectedModuleId) ?? null,
@@ -319,7 +326,7 @@ export default function UsersScreen() {
 
   // Alta.
   function openCreate() {
-    if (!limits.can_add) {
+    if (!canAdd) {
       Alert.alert(
         'Límite alcanzado',
         'Ya alcanzaste el límite de usuarios adicionales para esta cuenta.',
@@ -357,11 +364,16 @@ export default function UsersScreen() {
     setCreateErrors({});
 
     try {
-      const response = await api.createAdminUser({
-        name,
-        password: createPassword,
-        password_confirmation: createPasswordConfirm,
-      });
+      // En modo managed el alta va a la cuenta gestionada (igual que la web
+      // usa el email managed para el nuevo usuario).
+      const response = await api.createAdminUser(
+        {
+          name,
+          password: createPassword,
+          password_confirmation: createPasswordConfirm,
+        },
+        managed?.id ?? null,
+      );
 
       setCreateOpen(false);
       setNotice(response.message);
@@ -707,11 +719,8 @@ export default function UsersScreen() {
     return <LoadingScreen message="Cargando usuarios…" />;
   }
 
-  const progressPct = Math.min(
-    100,
-    Math.round((limits.secondary_count / Math.max(1, limits.max_secondary)) * 100),
-  );
-  const atLimit = !limits.can_add;
+  const progressPct = Math.min(100, Math.round((secondaryCount / 3) * 100));
+  const atLimit = !canAdd;
   const readOnlyPermissions = selectedUser
     ? selectedUser.is_principal && !actorIsAdmin
     : false;
@@ -796,7 +805,7 @@ export default function UsersScreen() {
           <View style={styles.limitInfo}>
             <Text style={styles.limitTitle}>Usuarios de la cuenta</Text>
             <Text style={styles.limitCount}>
-              {limits.secondary_count} de {limits.max_secondary} creados
+              {secondaryCount} de 3 creados
             </Text>
             <Text style={styles.limitHint}>
               {atLimit
@@ -992,7 +1001,7 @@ export default function UsersScreen() {
             <Text style={styles.modalTitle}>Nuevo Usuario</Text>
             <Text style={styles.cardSub}>Comparte el correo de la cuenta y hereda el rol del titular.</Text>
             <TextField label="Nombre" placeholder="Nombre y apellido" value={createName} onChangeText={setCreateName} error={createErrors.name} />
-            <TextField label="Correo" value={accountEmail} editable={false} />
+            <TextField label="Correo" value={managed?.email ?? accountEmail} editable={false} />
             <TextField label="Contraseña" value={createPassword} onChangeText={setCreatePassword} secureTextEntry error={createErrors.password} />
             <TextField
               label="Confirmar contraseña"

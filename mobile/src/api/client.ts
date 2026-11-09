@@ -769,8 +769,9 @@ export const api = {
     return request<AdminUsersResponse>(`/admin-users${suffix}`);
   },
 
-  createAdminUser(payload: AdminUserCreatePayload): Promise<AdminUserResponse> {
-    return request<AdminUserResponse>('/admin-users', {
+  createAdminUser(payload: AdminUserCreatePayload, managedUserId?: number | null): Promise<AdminUserResponse> {
+    const suffix = managedUserId ? `?managed_user_id=${managedUserId}` : '';
+    return request<AdminUserResponse>(`/admin-users${suffix}`, {
       method: 'POST',
       body: payload,
     });
