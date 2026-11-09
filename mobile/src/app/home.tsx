@@ -2,6 +2,7 @@ import { Link, Redirect, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
+  Image,
   Modal,
   Pressable,
   RefreshControl,
@@ -1006,7 +1007,15 @@ export default function HomeScreen() {
             <Text style={styles.menuText}>☰</Text>
           </Pressable>
         </Link>
-        <Text style={styles.brand}>Mi Perfil</Text>
+        <View style={styles.brandWrap}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.brandLogo}
+            resizeMode="contain"
+            accessibilityLabel="PideAca"
+          />
+          <Text style={styles.brand}>Mi Perfil</Text>
+        </View>
         <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.logout}>
           <Text style={styles.logoutText}>Salir</Text>
         </Pressable>
@@ -1581,6 +1590,15 @@ const styles = StyleSheet.create({
     color: colors.brand,
     fontSize: 20,
     fontWeight: '800',
+  },
+  brandWrap: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  brandLogo: {
+    height: 36,
+    width: 44,
   },
   logout: {
     backgroundColor: colors.surface,

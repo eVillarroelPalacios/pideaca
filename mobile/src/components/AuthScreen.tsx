@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -34,9 +35,12 @@ export function AuthScreen({ title, subtitle, children, footer }: Props) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.hero}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>PideAca</Text>
-            </View>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+              accessibilityLabel="PideAca"
+            />
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.subtitle}>{subtitle}</Text>
           </View>
@@ -67,18 +71,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   logo: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.brand,
-    borderRadius: radius.pill,
+    height: 96,
     marginBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  logoText: {
-    color: colors.surface,
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    width: 118,
   },
   title: {
     color: colors.text,
