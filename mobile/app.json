@@ -25,7 +25,21 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PideAca necesita acceder a tus fotos para adjuntarlas a tus solicitudes de servicio.",
+          "cameraPermission": "PideAca necesita acceder a tu cámara para fotografiar el problema en tus solicitudes."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "PideAca usa tu ubicación para enviarle al prestador dónde estás cuando pedís una urgencia."
+        }
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
