@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
+import { useManaged } from '@/auth/ManagedContext';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -115,6 +116,9 @@ function initials(name: string): string {
 
 export default function HomeScreen() {
   const { user, isLoading, signOut, deleteAccount, refresh } = useAuth();
+  const { managed, exit: exitManaged } = useManaged();
+  // Modo managed de la web: el Admin opera el Mi Perfil del gestionado.
+  const managedId = managed?.id ?? null;
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -206,7 +210,15 @@ export default function HomeScreen() {
     if (!flags) {
       return PANEL_META.filter((p) => p.key === 'cuenta');
     }
+    // La web gestionada no tiene repartidores, vehiculo ni usuarios en el
+    // perfil (esas pantallas son propias): se ocultan en modo managed.
+    const hiddenInManaged: PanelKey[] = managedId
+      ? ['repartidores', 'vehiculo', 'usuarios']
+      : [];
     return PANEL_META.filter((p) => {
+      if (hiddenInManaged.includes(p.key)) {
+        return false;
+      }
       if (p.key === 'cuenta') {
         return true;
       }
@@ -224,7 +236,7 @@ export default function HomeScreen() {
       }
       return flags.can_configure_business;
     });
-  }, [profile]);
+  }, [profile, managedId]);
 
   const syncForms = useCallback((data: ProfileResponse) => {
     const provider = data.provider;
@@ -250,7 +262,7 @@ export default function HomeScreen() {
   }, []);
 
   const fetchAll = useCallback(async () => {
-    const data = await api.profile();
+    const data = managedId ? await api.adminUserProfile(managedId) : await api.profile();
     setProfile(data);
     syncForms(data);
     setPanel((current) => {
@@ -264,26 +276,36 @@ export default function HomeScreen() {
     // Secundarios: cada bloque se intenta y se ignora el 403.
     if (data.flags.can_configure_business) {
       try {
-        const res = await api.profileServices();
+        const res = managedId
+          ? await api.adminUserServices(managedId)
+          : await api.profileServices();
         setServices(res.services);
       } catch {
         // Sin servicios o sin permiso: se muestra lo del panel principal.
       }
       try {
-        setSubgroups(await api.profileSubgroups());
+        setSubgroups(
+          managedId ? await api.adminUserSubgroups(managedId) : await api.profileSubgroups(),
+        );
       } catch {
         setSubgroups(null);
       }
       if (data.flags.can_see_service_types) {
         try {
-          setServiceTypes(await api.profileServiceTypes());
+          setServiceTypes(
+            managedId
+              ? await api.adminUserServiceTypes(managedId)
+              : await api.profileServiceTypes(),
+          );
         } catch {
           setServiceTypes(null);
         }
       } else {
         setServiceTypes(null);
       }
-      if (data.flags.can_see_trusted_drivers) {
+      // Repartidores de confianza no tiene endpoint gestionado en la web:
+      // el panel se oculta en modo managed.
+      if (data.flags.can_see_trusted_drivers && !managedId) {
         try {
           setTrusted(await api.trustedDrivers());
         } catch {
@@ -320,7 +342,9 @@ export default function HomeScreen() {
       setRegions([]);
     }
 
-    if (data.flags.can_manage_users) {
+    // El panel de usuarios de Mi Perfil es de la cuenta propia: en modo
+    // managed se gestiona desde la pantalla Usuarios.
+    if (data.flags.can_manage_users && !managedId) {
       try {
         const users = await api.profileUsers();
         setAccount(users);
@@ -333,7 +357,7 @@ export default function HomeScreen() {
     }
 
     return data;
-  }, [syncForms]);
+  }, [syncForms, managedId]);
 
   const load = useCallback(
     async (withSpinner: boolean) => {
@@ -408,7 +432,7 @@ export default function HomeScreen() {
     }
     setNotice(null);
     try {
-      const response = await api.updateProvider({
+      const payload = {
         business_name: businessName.trim() || profile.provider?.business_name || 'Mi negocio',
         description: businessDescription.trim() ? businessDescription.trim() : null,
         phone: businessPhone.trim() ? businessPhone.trim() : null,
@@ -416,7 +440,10 @@ export default function HomeScreen() {
         zone: businessZone.trim() ? businessZone.trim() : null,
         promo: businessPromo.trim() ? businessPromo.trim() : null,
         hours,
-      });
+      };
+      const response = managedId
+        ? await api.updateAdminUserProvider(managedId, payload)
+        : await api.updateProvider(payload);
       setProfile((current) => (current ? { ...current, provider: response.provider } : current));
       setServices(response.provider.services ?? []);
       showNotice(successMessage);
@@ -500,15 +527,21 @@ export default function HomeScreen() {
     setServiceError(null);
     try {
       const payload = { name, description: serviceDescription.trim() };
-      const response = editingService
-        ? await api.updateProfileService(editingService.id, payload)
-        : await api.createProfileService(payload);
+      const response = managedId
+        ? editingService
+          ? await api.updateAdminUserService(managedId, editingService.id, payload)
+          : await api.createAdminUserService(managedId, payload)
+        : editingService
+          ? await api.updateProfileService(editingService.id, payload)
+          : await api.createProfileService(payload);
       setServiceModalOpen(false);
       setEditingService(null);
       setServiceName('');
       setServiceDescription('');
       showNotice(response.message);
-      const res = await api.profileServices();
+      const res = managedId
+        ? await api.adminUserServices(managedId)
+        : await api.profileServices();
       setServices(res.services);
     } catch (caught) {
       setServiceError(caught instanceof ApiError ? caught.message : 'No pudimos guardar el servicio.');
@@ -526,9 +559,15 @@ export default function HomeScreen() {
         onPress: () =>
           void (async () => {
             try {
-              await api.deleteProfileService(item.id);
+              if (managedId) {
+                await api.deleteAdminUserService(managedId, item.id);
+              } else {
+                await api.deleteProfileService(item.id);
+              }
               showNotice('Servicio eliminado correctamente.');
-              const res = await api.profileServices();
+              const res = managedId
+                ? await api.adminUserServices(managedId)
+                : await api.profileServices();
               setServices(res.services);
             } catch (caught) {
               Alert.alert(
@@ -562,7 +601,9 @@ export default function HomeScreen() {
   async function toggleSubgroup(id: number) {
     setTogglingCategory(id);
     try {
-      const res = await api.toggleProfileSubgroup(id);
+      const res = managedId
+        ? await api.toggleAdminUserSubgroup(managedId, id)
+        : await api.toggleProfileSubgroup(id);
       setSubgroups((current) => (current ? { ...current, selected: res.selected } : current));
       showNotice(res.message);
     } catch (caught) {
@@ -575,7 +616,9 @@ export default function HomeScreen() {
   async function toggleServiceType(id: number) {
     setTogglingCategory(id);
     try {
-      const res = await api.toggleProfileServiceType(id);
+      const res = managedId
+        ? await api.toggleAdminUserServiceType(managedId, id)
+        : await api.toggleProfileServiceType(id);
       setServiceTypes((current) => (current ? { ...current, selected: res.selected } : current));
       showNotice(res.message);
     } catch (caught) {
@@ -670,7 +713,9 @@ export default function HomeScreen() {
     try {
       const form = new FormData();
       appendPhoto(form, 'image', photo);
-      const res = await api.uploadProfileImage(form);
+      const res = managedId
+        ? await api.uploadAdminUserImage(managedId, form)
+        : await api.uploadProfileImage(form);
       setProfile((current) => {
         if (!current || !current.provider) {
           return current;
@@ -697,7 +742,9 @@ export default function HomeScreen() {
         onPress: () =>
           void (async () => {
             try {
-              const res = await api.deleteProfileImage(id);
+              const res = managedId
+                ? await api.deleteAdminUserImage(managedId, id)
+                : await api.deleteProfileImage(id);
               setProfile((current) => {
                 if (!current || !current.provider) {
                   return current;
@@ -741,6 +788,24 @@ export default function HomeScreen() {
     setSavingAddress(true);
     setAddressError(null);
     try {
+      if (managedId) {
+        // En modo managed la direccion se guarda por los endpoints de
+        // administracion del usuario, igual que en la web.
+        const addressPayload = {
+          country_id: countryId,
+          province_id: provinceId,
+          street: street.trim() ? street.trim() : null,
+          number: addressNumber.trim() ? addressNumber.trim() : null,
+        };
+        const res = profile?.address?.id
+          ? await api.updateAdminUserAddress(managedId, profile.address.id, addressPayload)
+          : await api.createAdminUserAddress(managedId, addressPayload);
+        const data = await api.adminUserProfile(managedId);
+        setProfile(data);
+        syncForms(data);
+        showNotice(res.message);
+        return;
+      }
       const res = await api.saveAddress({
         country_id: countryId,
         province_id: provinceId,
@@ -904,10 +969,17 @@ export default function HomeScreen() {
     setSavingProfile(true);
     setProfileError(null);
     try {
-      const res = await api.updateProfile(value);
+      const res = managedId
+        ? await api.updateAdminUser(managedId, {
+            name: value,
+            email: profile?.user.email ?? '',
+          })
+        : await api.updateProfile(value);
       setProfile((current) => (current ? { ...current, user: { ...current.user, name: res.user.name } } : current));
       showNotice(res.message);
-      await refresh();
+      if (!managedId) {
+        await refresh();
+      }
     } catch (caught) {
       setProfileError(caught instanceof ApiError ? caught.message : 'No pudimos guardar.');
     } finally {
@@ -927,10 +999,17 @@ export default function HomeScreen() {
     setSavingPassword(true);
     setPasswordError(null);
     try {
-      const res = await api.updateProfilePassword({
-        password: newPassword,
-        password_confirmation: confirmPassword,
-      });
+      const res = managedId
+        ? await api.updateAdminUser(managedId, {
+            name: profile?.user.name ?? '',
+            email: profile?.user.email ?? '',
+            password: newPassword,
+            password_confirmation: confirmPassword,
+          })
+        : await api.updateProfilePassword({
+            password: newPassword,
+            password_confirmation: confirmPassword,
+          });
       setNewPassword('');
       setConfirmPassword('');
       showNotice(res.message);
@@ -1020,6 +1099,23 @@ export default function HomeScreen() {
           <Text style={styles.logoutText}>Salir</Text>
         </Pressable>
       </View>
+
+      {managed ? (
+        <View style={styles.managedBanner}>
+          <Text style={styles.managedText}>
+            Editando perfil de {managed.name}
+            {managed.role ? ` · ${managed.role}` : ''}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Salir del perfil gestionado"
+            onPress={() => void exitManaged()}
+            style={styles.managedExit}
+          >
+            <Text style={styles.managedExitText}>Salir</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -1176,12 +1272,16 @@ export default function HomeScreen() {
                     <Pressable accessibilityRole="button" onPress={() => openEditService(item)} style={styles.actionButton}>
                       <Text style={styles.actionText}>Editar</Text>
                     </Pressable>
-                    <Pressable accessibilityRole="button" onPress={() => moveService(item, -1)} style={styles.actionButton}>
-                      <Text style={styles.actionText}>↑</Text>
-                    </Pressable>
-                    <Pressable accessibilityRole="button" onPress={() => moveService(item, 1)} style={styles.actionButton}>
-                      <Text style={styles.actionText}>↓</Text>
-                    </Pressable>
+                    {!managedId ? (
+                      <Pressable accessibilityRole="button" onPress={() => moveService(item, -1)} style={styles.actionButton}>
+                        <Text style={styles.actionText}>↑</Text>
+                      </Pressable>
+                    ) : null}
+                    {!managedId ? (
+                      <Pressable accessibilityRole="button" onPress={() => moveService(item, 1)} style={styles.actionButton}>
+                        <Text style={styles.actionText}>↓</Text>
+                      </Pressable>
+                    ) : null}
                     <Pressable accessibilityRole="button" onPress={() => confirmDeleteService(item)} style={[styles.actionButton, styles.deleteButton]}>
                       <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
                     </Pressable>
@@ -1192,7 +1292,7 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {activePanel === 'repartidores' && flags?.can_see_trusted_drivers ? (
+        {activePanel === 'repartidores' && flags?.can_see_trusted_drivers && !managedId ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>🛵 Repartidores de confianza</Text>
             <Text style={styles.cardSub}>
@@ -1380,7 +1480,7 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {activePanel === 'usuarios' && flags?.can_manage_users ? (
+        {activePanel === 'usuarios' && flags?.can_manage_users && !managedId ? (
           <View style={styles.card}>
             <View style={styles.rowHeader}>
               <Text style={styles.cardTitle}>👥 Usuarios de la cuenta</Text>
@@ -1466,7 +1566,7 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {activePanel === 'vehiculo' && flags?.is_repartidor ? (
+        {activePanel === 'vehiculo' && flags?.is_repartidor && !managedId ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>🚗 Mi Vehículo</Text>
             <Text style={styles.cardSub}>Se usa para asignarte los pedidos.</Text>
@@ -1510,18 +1610,20 @@ export default function HomeScreen() {
               <TextField label="Confirmar nueva contraseña" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry error={passwordError} />
               <PrimaryButton title="Guardar contraseña" onPress={() => void handleSavePassword()} loading={savingPassword} />
             </View>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>⚠️ Zona de peligro</Text>
-              <TextField label="ID de cuenta" value={String(user.id)} editable={false} />
-              <Pressable
-                accessibilityRole="button"
-                disabled={deleting}
-                onPress={confirmDeleteAccount}
-                style={styles.deleteAccount}
-              >
-                <Text style={styles.deleteText}>{deleting ? 'Desactivando cuenta…' : 'Eliminar mi cuenta'}</Text>
-              </Pressable>
-            </View>
+            {!managedId ? (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>⚠️ Zona de peligro</Text>
+                <TextField label="ID de cuenta" value={String(user.id)} editable={false} />
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={deleting}
+                  onPress={confirmDeleteAccount}
+                  style={styles.deleteAccount}
+                >
+                  <Text style={styles.deleteText}>{deleting ? 'Desactivando cuenta…' : 'Eliminar mi cuenta'}</Text>
+                </Pressable>
+              </View>
+            ) : null}
           </View>
         ) : null}
       </ScrollView>
@@ -1612,6 +1714,36 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     fontWeight: '600',
+  },
+  managedBanner: {
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderBottomColor: '#bfdbfe',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  managedText: {
+    color: '#1d4ed8',
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    paddingRight: spacing.md,
+  },
+  managedExit: {
+    backgroundColor: colors.surface,
+    borderColor: '#bfdbfe',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+  },
+  managedExitText: {
+    color: '#1d4ed8',
+    fontSize: 12,
+    fontWeight: '700',
   },
   content: {
     padding: spacing.lg,

@@ -801,6 +801,85 @@ export const api = {
     });
   },
 
+  // Perfil del usuario gestionado (modo managed de la web): mismo formato
+  // que los endpoints de /profile pero operando sobre el gestionado.
+  adminUserProfile(userId: number): Promise<ProfileResponse> {
+    return request<ProfileResponse>(`/admin-users/${userId}/profile`);
+  },
+
+  updateAdminUserProvider(userId: number, payload: ProviderPayload): Promise<ProfileProviderResponse> {
+    return request<ProfileProviderResponse>(`/admin-users/${userId}/provider`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  adminUserServices(userId: number): Promise<ProfileServicesResponse> {
+    return request<ProfileServicesResponse>(`/admin-users/${userId}/services`);
+  },
+
+  createAdminUserService(
+    userId: number,
+    payload: { name: string; description?: string },
+  ): Promise<ProfileServiceResponse> {
+    return request<ProfileServiceResponse>(`/admin-users/${userId}/services`, {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateAdminUserService(
+    userId: number,
+    serviceId: number,
+    payload: { name: string; description?: string },
+  ): Promise<ProfileServiceResponse> {
+    return request<ProfileServiceResponse>(`/admin-users/${userId}/services/${serviceId}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteAdminUserService(userId: number, serviceId: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/admin-users/${userId}/services/${serviceId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  uploadAdminUserImage(userId: number, form: FormData): Promise<ProfileImageResponse> {
+    return request<ProfileImageResponse>(`/admin-users/${userId}/images`, {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  deleteAdminUserImage(userId: number, imageId: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/admin-users/${userId}/images/${imageId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  adminUserSubgroups(userId: number): Promise<ProfileSubgroupsResponse> {
+    return request<ProfileSubgroupsResponse>(`/admin-users/${userId}/subgroups`);
+  },
+
+  toggleAdminUserSubgroup(userId: number, subgroupId: number): Promise<ToggleSubgroupResponse> {
+    return request<ToggleSubgroupResponse>(`/admin-users/${userId}/subgroups/toggle`, {
+      method: 'POST',
+      body: { subgroup_id: subgroupId },
+    });
+  },
+
+  adminUserServiceTypes(userId: number): Promise<ProfileServiceTypesResponse> {
+    return request<ProfileServiceTypesResponse>(`/admin-users/${userId}/service-types`);
+  },
+
+  toggleAdminUserServiceType(userId: number, serviceTypeId: number): Promise<ToggleSubgroupResponse> {
+    return request<ToggleSubgroupResponse>(`/admin-users/${userId}/service-types/toggle`, {
+      method: 'POST',
+      body: { service_type_id: serviceTypeId },
+    });
+  },
+
   createAdminUserAddress(userId: number, payload: AdminUserAddressPayload): Promise<AdminUserResponse> {
     return request<AdminUserResponse>(`/admin-users/${userId}/addresses`, {
       method: 'POST',

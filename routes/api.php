@@ -123,6 +123,24 @@ Route::prefix('mobile/v1')->group(function () {
         Route::delete('/admin-users/{user}/pages/{page}', [AdminUsersController::class, 'detachPage']);
         Route::post('/admin-users/{user}/addresses', [AdminUsersController::class, 'storeAddress']);
         Route::put('/admin-users/{user}/addresses/{address}', [AdminUsersController::class, 'updateAddress']);
+
+        // Perfil del usuario gestionado (modo managed de la web).
+        Route::get('/admin-users/{user}/profile', [AdminUsersController::class, 'profile'])
+            ->middleware('throttle:30,1');
+        Route::put('/admin-users/{user}/provider', [AdminUsersController::class, 'updateProvider']);
+        Route::get('/admin-users/{user}/services', [AdminUsersController::class, 'services'])
+            ->middleware('throttle:30,1');
+        Route::post('/admin-users/{user}/services', [AdminUsersController::class, 'storeService']);
+        Route::put('/admin-users/{user}/services/{service}', [AdminUsersController::class, 'updateService']);
+        Route::delete('/admin-users/{user}/services/{service}', [AdminUsersController::class, 'destroyService']);
+        Route::post('/admin-users/{user}/images', [AdminUsersController::class, 'storeImage']);
+        Route::delete('/admin-users/{user}/images/{image}', [AdminUsersController::class, 'destroyImage']);
+        Route::get('/admin-users/{user}/subgroups', [AdminUsersController::class, 'subgroups'])
+            ->middleware('throttle:30,1');
+        Route::post('/admin-users/{user}/subgroups/toggle', [AdminUsersController::class, 'toggleSubgroup']);
+        Route::get('/admin-users/{user}/service-types', [AdminUsersController::class, 'serviceTypes'])
+            ->middleware('throttle:30,1');
+        Route::post('/admin-users/{user}/service-types/toggle', [AdminUsersController::class, 'toggleServiceType']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

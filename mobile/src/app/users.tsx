@@ -171,6 +171,21 @@ export default function UsersScreen() {
   );
 
   function selectUser(user: AdminUserItem) {
+    // Igual que la web: el Admin opera sobre el usuario elegido (modo
+    // managed); al tocarse a si mismo sale del modo gestionado.
+    if (actorIsAdmin && !user.is_self && (!managed || managed.id !== user.id)) {
+      void enterManaged({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
+      setNotice(`Gestionando la cuenta de ${user.name}.`);
+    } else if (actorIsAdmin && user.is_self && managed) {
+      void exitManaged();
+      setNotice('Volviste a tu cuenta.');
+    }
+
     setSelectedUserId(user.id);
     setOriginalPages(user.page_ids);
     setDraftPages(user.page_ids);
@@ -510,23 +525,7 @@ export default function UsersScreen() {
     }
   }
 
-  // Fase 4: modo managed del Admin (igual que umSetManagedUser en la web).
-  async function handleEnterManaged(user: AdminUserItem) {
-    await enterManaged({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
-    setSelectedUserId(null);
-    setOriginalPages([]);
-    setDraftPages([]);
-    setSelectedModuleId(null);
-    setPermissionsMsg(null);
-    setSearchOpen(false);
-    setNotice(`Gestionando la cuenta de ${user.name}.`);
-  }
-
+  // Fase 4: salir del modo managed (banner "Gestionando cuenta de...").
   async function handleExitManaged() {
     await exitManaged();
     setSelectedUserId(null);
@@ -881,16 +880,6 @@ export default function UsersScreen() {
                           <Text style={[styles.iconText, styles.deleteText]}>🗑</Text>
                         </Pressable>
                       ) : null}
-                      {actorIsAdmin && !user.is_self ? (
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel="Gestionar cuenta"
-                          onPress={() => void handleEnterManaged(user)}
-                          style={styles.iconButton}
-                        >
-                          <Text style={styles.iconText}>⇄</Text>
-                        </Pressable>
-                      ) : null}
                     </View>
                   </View>
                 </Pressable>
@@ -1211,16 +1200,6 @@ export default function UsersScreen() {
                   </View>
                   <View style={styles.resultSide}>
                     <Text style={styles.roleText}>{user.role ?? 'Usuario'}</Text>
-                    {actorIsAdmin && !user.is_self ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Gestionar cuenta"
-                        onPress={() => void handleEnterManaged(user)}
-                        style={styles.manageLink}
-                      >
-                        <Text style={styles.manageLinkText}>Gestionar ⇄</Text>
-                      </Pressable>
-                    ) : null}
                   </View>
                 </Pressable>
               ))}
@@ -1449,14 +1428,6 @@ const styles = StyleSheet.create({
   resultSide: {
     alignItems: 'flex-end',
     gap: spacing.xs,
-  },
-  manageLink: {
-    paddingVertical: 4,
-  },
-  manageLinkText: {
-    color: colors.brandDark,
-    fontSize: 12,
-    fontWeight: '700',
   },
   limitCard: {
     backgroundColor: colors.surface,
