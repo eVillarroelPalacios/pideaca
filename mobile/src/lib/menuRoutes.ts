@@ -24,6 +24,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::estados-usuarios': '/user-statuses',
     // Administrar: grupos del catalogo.
     'administrar::grupos': '/groups',
+    // Administrar: modulos del sistema.
+    'administrar::modulos': '/modules',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

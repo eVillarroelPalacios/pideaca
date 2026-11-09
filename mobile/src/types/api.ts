@@ -419,6 +419,34 @@ export type GroupResponse = {
   group: GroupItem;
 };
 
+export type ModuleItem = {
+  id: number;
+  description: string;
+  icon: string | null;
+  pages_count: number;
+  can_delete: boolean;
+};
+
+export type ModulesResponse = {
+  success: boolean;
+  data: ModuleItem[];
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type ModulePayload = {
+  description: string;
+  icon?: string | null;
+};
+
+export type ModuleResponse = {
+  success: boolean;
+  message: string;
+  module: ModuleItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;

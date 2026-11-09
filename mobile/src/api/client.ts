@@ -17,6 +17,9 @@ import type {
   GroupsResponse,
   MenuResponse,
   MeResponse,
+  ModulePayload,
+  ModuleResponse,
+  ModulesResponse,
   NotificationResponse,
   NotificationsResponse,
   ProfileAddressResponse,
@@ -552,6 +555,30 @@ export const api = {
 
   deleteGroup(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/groups/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  modules(): Promise<ModulesResponse> {
+    return request<ModulesResponse>('/modules');
+  },
+
+  createModule(payload: ModulePayload): Promise<ModuleResponse> {
+    return request<ModuleResponse>('/modules', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateModule(id: number, payload: ModulePayload): Promise<ModuleResponse> {
+    return request<ModuleResponse>(`/modules/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteModule(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/modules/${id}`, {
       method: 'DELETE',
     });
   },
