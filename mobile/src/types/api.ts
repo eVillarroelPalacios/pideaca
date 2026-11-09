@@ -382,3 +382,39 @@ export type UserStatusResponse = {
   message: string;
   user_status: UserStatusItem;
 };
+
+export type GroupStatusOption = {
+  id: number;
+  description: string;
+};
+
+export type GroupItem = {
+  id: number;
+  description: string;
+  icon: string | null;
+  group_status_id: number | null;
+  group_status: GroupStatusOption | null;
+  subgroups_count: number;
+  can_delete: boolean;
+};
+
+export type GroupsResponse = {
+  success: boolean;
+  data: GroupItem[];
+  filters: {
+    group_statuses: GroupStatusOption[];
+    default_group_status_id: number | null;
+  };
+};
+
+export type GroupPayload = {
+  description: string;
+  icon?: string | null;
+  group_status_id?: number | null;
+};
+
+export type GroupResponse = {
+  success: boolean;
+  message: string;
+  group: GroupItem;
+};

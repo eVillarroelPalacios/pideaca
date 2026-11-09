@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
 use App\Http\Controllers\Api\V1\GroupStatusesController;
+use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
 use App\Http\Controllers\Api\V1\PushController;
@@ -59,6 +60,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/user-statuses', [UserStatusesController::class, 'store']);
         Route::put('/user-statuses/{userStatus}', [UserStatusesController::class, 'update']);
         Route::delete('/user-statuses/{userStatus}', [UserStatusesController::class, 'destroy']);
+        Route::get('/groups', [GroupsController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/groups', [GroupsController::class, 'store']);
+        Route::put('/groups/{group}', [GroupsController::class, 'update']);
+        Route::delete('/groups/{group}', [GroupsController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

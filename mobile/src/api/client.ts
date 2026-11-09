@@ -8,6 +8,9 @@ import type {
   ContactInquiryStatus,
   GroupStatusResponse,
   GroupStatusesResponse,
+  GroupPayload,
+  GroupResponse,
+  GroupsResponse,
   MenuResponse,
   MeResponse,
   NotificationResponse,
@@ -504,6 +507,30 @@ export const api = {
 
   deleteUserStatus(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/user-statuses/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  groups(): Promise<GroupsResponse> {
+    return request<GroupsResponse>('/groups');
+  },
+
+  createGroup(payload: GroupPayload): Promise<GroupResponse> {
+    return request<GroupResponse>('/groups', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateGroup(id: number, payload: GroupPayload): Promise<GroupResponse> {
+    return request<GroupResponse>(`/groups/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteGroup(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/groups/${id}`, {
       method: 'DELETE',
     });
   },
