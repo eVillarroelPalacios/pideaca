@@ -34,6 +34,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::tipo-monedas': '/currencies',
     // Administrar: tipos de usuario.
     'administrar::tipo-usuarios': '/type-users',
+    // Administrar: unidades de medida globales.
+    'administrar::unidades-medida': '/units-of-measure',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

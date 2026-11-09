@@ -62,6 +62,9 @@ import type {
   TypeUserPayload,
   TypeUserResponse,
   TypeUsersResponse,
+  UnitOfMeasurePayload,
+  UnitOfMeasureResponse,
+  UnitsOfMeasureResponse,
   UpdateContactInquiryStatusResponse,
   UserStatusResponse,
   UserStatusesResponse,
@@ -687,6 +690,30 @@ export const api = {
 
   deleteTypeUser(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/type-users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  unitsOfMeasure(): Promise<UnitsOfMeasureResponse> {
+    return request<UnitsOfMeasureResponse>('/units-of-measure');
+  },
+
+  createUnitOfMeasure(payload: UnitOfMeasurePayload): Promise<UnitOfMeasureResponse> {
+    return request<UnitOfMeasureResponse>('/units-of-measure', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateUnitOfMeasure(id: number, payload: UnitOfMeasurePayload): Promise<UnitOfMeasureResponse> {
+    return request<UnitOfMeasureResponse>(`/units-of-measure/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteUnitOfMeasure(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/units-of-measure/${id}`, {
       method: 'DELETE',
     });
   },

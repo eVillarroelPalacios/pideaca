@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
 use App\Http\Controllers\Api\V1\SubGroupsController;
 use App\Http\Controllers\Api\V1\TypeUsersController;
+use App\Http\Controllers\Api\V1\UnitsOfMeasureController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
@@ -99,6 +100,11 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/type-users', [TypeUsersController::class, 'store']);
         Route::put('/type-users/{typeUser}', [TypeUsersController::class, 'update']);
         Route::delete('/type-users/{typeUser}', [TypeUsersController::class, 'destroy']);
+        Route::get('/units-of-measure', [UnitsOfMeasureController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/units-of-measure', [UnitsOfMeasureController::class, 'store']);
+        Route::put('/units-of-measure/{unitOfMeasure}', [UnitsOfMeasureController::class, 'update']);
+        Route::delete('/units-of-measure/{unitOfMeasure}', [UnitsOfMeasureController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 

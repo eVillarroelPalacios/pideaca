@@ -606,6 +606,40 @@ export type TypeUserResponse = {
   type_user: TypeUserItem;
 };
 
+export type UnitOfMeasureItem = {
+  id: number;
+  name: string;
+  symbol: string;
+  base_conversion_factor: number;
+  is_integer_only: boolean;
+  products_count: number;
+  supplies_count: number;
+  inventory_movements_count: number;
+  can_delete: boolean;
+};
+
+export type UnitsOfMeasureResponse = {
+  success: boolean;
+  data: UnitOfMeasureItem[];
+  summary: {
+    total: number;
+    in_use: number;
+  };
+};
+
+export type UnitOfMeasurePayload = {
+  name: string;
+  symbol: string;
+  base_conversion_factor: number;
+  is_integer_only?: boolean;
+};
+
+export type UnitOfMeasureResponse = {
+  success: boolean;
+  message: string;
+  unit: UnitOfMeasureItem;
+};
+
 export type ProfileUserPayload = {
   id: number;
   name: string;
