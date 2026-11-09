@@ -65,6 +65,10 @@ import type {
   TrustedDriversResponse,
   TrustedDriversSettingsResponse,
   TypesResponse,
+  TypeUserBulkPagesResponse,
+  TypeUserPageRefResponse,
+  TypeUserPagesDataResponse,
+  TypeUserUpdatePagesResponse,
   TypeUserPayload,
   TypeUserResponse,
   TypeUsersResponse,
@@ -696,6 +700,40 @@ export const api = {
 
   deleteTypeUser(id: number): Promise<SimpleResponse> {
     return request<SimpleResponse>(`/type-users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  typeUserPagesData(): Promise<TypeUserPagesDataResponse> {
+    return request<TypeUserPagesDataResponse>('/type-users/pages-data');
+  },
+
+  updateTypeUserPages(typeId: number, pageIds: number[]): Promise<TypeUserUpdatePagesResponse> {
+    return request<TypeUserUpdatePagesResponse>(`/type-users/${typeId}/pages`, {
+      method: 'PUT',
+      body: { page_ids: pageIds },
+    });
+  },
+
+  bulkTypeUserPages(
+    typeId: number,
+    pageIds: number[],
+    action: 'attach' | 'detach',
+  ): Promise<TypeUserBulkPagesResponse> {
+    return request<TypeUserBulkPagesResponse>(`/type-users/${typeId}/pages/bulk`, {
+      method: 'POST',
+      body: { page_ids: pageIds, action },
+    });
+  },
+
+  attachTypeUserPage(typeId: number, pageId: number): Promise<TypeUserPageRefResponse> {
+    return request<TypeUserPageRefResponse>(`/type-users/${typeId}/pages/${pageId}`, {
+      method: 'POST',
+    });
+  },
+
+  detachTypeUserPage(typeId: number, pageId: number): Promise<TypeUserPageRefResponse> {
+    return request<TypeUserPageRefResponse>(`/type-users/${typeId}/pages/${pageId}`, {
       method: 'DELETE',
     });
   },

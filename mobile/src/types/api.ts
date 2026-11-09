@@ -700,6 +700,10 @@ export type AdminUsersResponse = {
       id: number;
       status: string;
     }[];
+    types: {
+      id: number;
+      description: string;
+    }[];
   };
   limits: {
     max_secondary: number;
@@ -720,6 +724,8 @@ export type AdminUserUpdatePayload = {
   email: string;
   user_status_id?: number | null;
   type_user_id?: number | null;
+  password?: string;
+  password_confirmation?: string;
 };
 
 export type AdminUserResponse = {
@@ -741,6 +747,46 @@ export type AdminUserAddressPayload = {
   province_id?: number | null;
   street?: string | null;
   number?: string | null;
+};
+
+export type TypeUserPagesType = {
+  id: number;
+  description: string;
+  users_count: number;
+  assigned_page_ids: number[];
+};
+
+export type TypeUserPagesPage = {
+  id: number;
+  description: string;
+  url: string | null;
+  module_id: number;
+  module: string | null;
+};
+
+export type TypeUserPagesDataResponse = {
+  success: boolean;
+  types: TypeUserPagesType[];
+  pages: TypeUserPagesPage[];
+};
+
+export type TypeUserUpdatePagesResponse = {
+  success: boolean;
+  message: string;
+  users_count: number;
+};
+
+export type TypeUserBulkPagesResponse = {
+  success: boolean;
+  message: string;
+  action: string;
+  count?: number;
+};
+
+export type TypeUserPageRefResponse = {
+  success: boolean;
+  message: string;
+  page_id: number;
 };
 
 export type ProfileUserPayload = {

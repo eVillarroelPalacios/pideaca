@@ -101,6 +101,12 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/type-users', [TypeUsersController::class, 'store']);
         Route::put('/type-users/{typeUser}', [TypeUsersController::class, 'update']);
         Route::delete('/type-users/{typeUser}', [TypeUsersController::class, 'destroy']);
+        Route::get('/type-users/pages-data', [TypeUsersController::class, 'pagesData'])
+            ->middleware('throttle:30,1');
+        Route::put('/type-users/{typeUser}/pages', [TypeUsersController::class, 'updatePages']);
+        Route::post('/type-users/{typeUser}/pages/bulk', [TypeUsersController::class, 'bulkPages']);
+        Route::post('/type-users/{typeUser}/pages/{page}', [TypeUsersController::class, 'attachPage']);
+        Route::delete('/type-users/{typeUser}/pages/{page}', [TypeUsersController::class, 'detachPage']);
         Route::get('/units-of-measure', [UnitsOfMeasureController::class, 'index'])
             ->middleware('throttle:30,1');
         Route::post('/units-of-measure', [UnitsOfMeasureController::class, 'store']);

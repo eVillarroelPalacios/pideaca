@@ -127,6 +127,77 @@ class AdminUsersTest extends TestCase
         $this->assertSame($inactivo->id, $secondary->fresh()->user_status_id);
     }
 
+    public function test_update_can_change_the_password(): void
+    {
+        $admin = $this->makeUser('Admin');
+        $secondary = $this->makeSecondary($admin, 'Ayudante');
+        $oldHash = $secondary->password;
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson('/api/mobile/v1/admin-users/'.$secondary->id, [
+                'name' => $secondary->name,
+                'email' => $secondary->email,
+                'password' => 'nueva-clave-123',
+                'password_confirmation' => 'nueva-clave-123',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertNotSame($oldHash, $secondary->fresh()->password);
+    }
+
+    public function test_update_rejects_a_short_or_mismatched_password(): void
+    {
+        $admin = $this->makeUser('Admin');
+        $secondary = $this->makeSecondary($admin, 'Ayudante');
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson('/api/mobile/v1/admin-users/'.$secondary->id, [
+                'name' => $secondary->name,
+                'email' => $secondary->email,
+                'password' => 'corta',
+                'password_confirmation' => 'corta',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('password');
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson('/api/mobile/v1/admin-users/'.$secondary->id, [
+                'name' => $secondary->name,
+                'email' => $secondary->email,
+                'password' => 'nueva-clave-123',
+                'password_confirmation' => 'otra-clave-456',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('password');
+    }
+
+    public function test_admin_lists_everyone_and_manages_outsiders(): void
+    {
+        $admin = $this->makeUser('Admin');
+        $outsider = $this->makeUser('Cliente');
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/mobile/v1/admin-users')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $outsider->id])
+            ->assertJsonPath('filters.types.0.description', 'Admin');
+
+        // El Admin edita e inactiva usuarios fuera de su cuenta.
+        $this->actingAs($admin, 'sanctum')
+            ->putJson('/api/mobile/v1/admin-users/'.$outsider->id, [
+                'name' => 'Cliente Editado',
+                'email' => $outsider->email,
+            ])
+            ->assertOk()
+            ->assertJsonPath('user.name', 'Cliente Editado');
+
+        $this->actingAs($admin, 'sanctum')
+            ->deleteJson('/api/mobile/v1/admin-users/'.$outsider->id)
+            ->assertOk()
+            ->assertJsonPath('message', 'Usuario inactivado correctamente.');
+    }
+
     public function test_a_secondary_cannot_touch_the_principal(): void
     {
         $principal = $this->makeUser('Prestador');

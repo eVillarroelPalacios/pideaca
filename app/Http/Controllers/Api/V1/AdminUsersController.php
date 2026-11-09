@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Module;
 use App\Models\Page;
+use App\Models\TypeUser;
 use App\Models\User;
 use App\Models\UserStatus;
 use Illuminate\Http\JsonResponse;
@@ -19,11 +20,11 @@ use Illuminate\Support\Facades\Hash;
  * Gestion de usuarios de la cuenta para la app movil.
  *
  * Espeja la seccion "usuarios" (Gestion de Usuarios) del panel web sin
- * tocarla: mismo alcance (usuarios que comparten el email de la cuenta),
- * mismas reglas (maximo 3 secundarios, el secundario hereda rol y paginas
- * del principal, inactivar quita paginas, no podes inactivarte a vos mismo)
- * y mismo permiso (pagina usuarios). El Admin opera sin bloqueos sobre el
- * principal, igual que en la web.
+ * tocarla: mismo alcance (la cuenta propia; el Admin ve todos los usuarios
+ * igual que el index web), mismas reglas (maximo 3 secundarios, el
+ * secundario hereda rol y paginas del principal, inactivar quita paginas,
+ * no podes inactivarte a vos mismo) y mismo permiso (pagina usuarios). El
+ * Admin opera sin bloqueos de cuenta ni de principal, igual que en la web.
  */
 class AdminUsersController extends Controller
 {
@@ -32,9 +33,10 @@ class AdminUsersController extends Controller
     private const MAX_SECONDARIES = 3;
 
     /**
-     * Usuarios de la cuenta con su estado, rol, direccion principal y
-     * paginas, mas el catalogo de modulos/paginas que el actor puede
-     * asignar y los limites de creacion.
+     * Usuarios con su estado, rol, direccion principal y paginas (toda la
+     * plataforma para el Admin, la cuenta propia para el resto), mas el
+     * catalogo de modulos/paginas que el actor puede asignar, los tipos y
+     * estados para los filtros, y los limites de creacion.
      */
     public function index(Request $request): JsonResponse
     {
@@ -43,8 +45,12 @@ class AdminUsersController extends Controller
         }
 
         $actor = $request->user();
-        $users = $this->accountUsers($actor);
-        $secondaryCount = max(0, $users->count() - 1);
+
+        // El Admin ve todos los usuarios (igual que el index web) para poder
+        // buscar y gestionar cualquiera; el resto solo su propia cuenta.
+        $users = $actor->isAdmin() ? $this->allUsers() : $this->accountUsers($actor);
+        $ownAccount = $this->accountUsers($actor);
+        $secondaryCount = max(0, $ownAccount->count() - 1);
 
         return response()->json([
             'success' => true,
@@ -64,6 +70,14 @@ class AdminUsersController extends Controller
                     ->map(fn (UserStatus $status) => [
                         'id' => $status->id,
                         'status' => $status->status,
+                    ])
+                    ->values()
+                    ->all(),
+                'types' => TypeUser::orderBy('description')
+                    ->get(['id', 'description'])
+                    ->map(fn (TypeUser $type) => [
+                        'id' => $type->id,
+                        'description' => $type->description,
                     ])
                     ->values()
                     ->all(),
@@ -162,12 +176,15 @@ class AdminUsersController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'user_status_id' => ['nullable', 'integer', 'exists:user_statuses,id'],
             'type_user_id' => ['nullable', 'integer', 'exists:type_users,id'],
         ], [
             'name.required' => 'Ingresá el nombre del usuario.',
             'email.required' => 'Ingresá el email del usuario.',
             'email.email' => 'Ingresá un email válido.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_status_id.exists' => 'El estado seleccionado no existe.',
             'type_user_id.exists' => 'El rol seleccionado no existe.',
         ]);
@@ -175,9 +192,14 @@ class AdminUsersController extends Controller
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'user_status_id' => $data['user_status_id'],
-            'type_user_id' => $data['type_user_id'],
+            'user_status_id' => $data['user_status_id'] ?? null,
+            'type_user_id' => $data['type_user_id'] ?? null,
         ]);
+
+        if (! empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+            $user->save();
+        }
 
         return response()->json([
             'success' => true,
@@ -401,6 +423,11 @@ class AdminUsersController extends Controller
 
     private function denyUnlessAccountUser(User $actor, User $target): ?JsonResponse
     {
+        // El Admin gestiona cualquier usuario, igual que en la web.
+        if ($actor->isAdmin()) {
+            return null;
+        }
+
         if (in_array((int) $target->id, array_map('intval', $this->accountUserIds($actor)), true)) {
             return null;
         }
@@ -465,6 +492,13 @@ class AdminUsersController extends Controller
         return User::with(['status', 'typeUser', 'pages.module', 'addresses', 'primaryAddress'])
             ->whereRaw('LOWER(email) = ?', [strtolower(trim((string) $actor->email))])
             ->orderBy('id')
+            ->get();
+    }
+
+    private function allUsers(): Collection
+    {
+        return User::with(['status', 'typeUser', 'pages.module', 'addresses', 'primaryAddress'])
+            ->orderBy('name')
             ->get();
     }
 

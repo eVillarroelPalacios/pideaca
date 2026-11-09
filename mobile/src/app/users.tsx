@@ -19,7 +19,12 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { colors, radius, spacing } from '@/theme';
-import type { AdminUserItem, AdminUserModule } from '@/types/api';
+import type {
+  AdminUserItem,
+  AdminUserModule,
+  TypeUserPagesPage,
+  TypeUserPagesType,
+} from '@/types/api';
 
 type FieldErrors = {
   name?: string;
@@ -33,6 +38,7 @@ export default function UsersScreen() {
   const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [modules, setModules] = useState<AdminUserModule[]>([]);
   const [statuses, setStatuses] = useState<{ id: number; status: string }[]>([]);
+  const [types, setTypes] = useState<{ id: number; description: string }[]>([]);
   const [limits, setLimits] = useState({ max_secondary: 3, secondary_count: 0, can_add: true });
   const [accountEmail, setAccountEmail] = useState('');
   const [actorIsAdmin, setActorIsAdmin] = useState(false);
@@ -63,6 +69,8 @@ export default function UsersScreen() {
   const [editName, setEditName] = useState('');
   const [editStatusId, setEditStatusId] = useState<number | null>(null);
   const [editRole, setEditRole] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editPasswordConfirm, setEditPasswordConfirm] = useState('');
   const [countries, setCountries] = useState<{ id: number; name: string }[]>([]);
   const [regions, setRegions] = useState<{ id: number; name: string }[]>([]);
   const [editCountryId, setEditCountryId] = useState<number | null>(null);
@@ -73,6 +81,23 @@ export default function UsersScreen() {
   const [editErrors, setEditErrors] = useState<FieldErrors>({});
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // Modal de busqueda (Fase 2: Buscar Usuario de la web).
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchStatusId, setSearchStatusId] = useState<number | null>(null);
+  const [searchTypeId, setSearchTypeId] = useState<number | null>(null);
+
+  // Modal de paginas por tipo (Fase 3).
+  const [typePagesOpen, setTypePagesOpen] = useState(false);
+  const [typePagesLoading, setTypePagesLoading] = useState(false);
+  const [tpTypes, setTpTypes] = useState<TypeUserPagesType[]>([]);
+  const [tpPages, setTpPages] = useState<TypeUserPagesPage[]>([]);
+  const [tpSelectedTypeId, setTpSelectedTypeId] = useState<number | null>(null);
+  const [tpDraftPages, setTpDraftPages] = useState<number[]>([]);
+  const [tpSelectedModuleId, setTpSelectedModuleId] = useState<number | null>(null);
+  const [tpSaving, setTpSaving] = useState(false);
+  const [tpMsg, setTpMsg] = useState<string | null>(null);
+
   const fetchUsers = useCallback(async () => {
     try {
       const response = await api.adminUsers();
@@ -80,6 +105,7 @@ export default function UsersScreen() {
       setUsers(response.data);
       setModules(response.catalog.modules);
       setStatuses(response.filters.user_statuses);
+      setTypes(response.filters.types);
       setLimits(response.limits);
       setAccountEmail(response.account_email);
       setActorIsAdmin(response.actor.is_admin);
@@ -122,6 +148,20 @@ export default function UsersScreen() {
     [users, selectedUserId],
   );
 
+  // La lista principal muestra la cuenta propia (igual que la web); la
+  // busqueda puede alcanzar a todos los cargados (el Admin ve todo).
+  const accountUsers = useMemo(() => {
+    const email = accountEmail.trim().toLowerCase();
+
+    if (!email) {
+      return users;
+    }
+
+    const scoped = users.filter((u) => u.email.toLowerCase() === email);
+
+    return scoped.length > 0 ? scoped : users;
+  }, [users, accountEmail]);
+
   const selectedModule = useMemo(
     () => modules.find((m) => m.id === selectedModuleId) ?? null,
     [modules, selectedModuleId],
@@ -138,6 +178,55 @@ export default function UsersScreen() {
       modulesWithSelection[0]?.id ?? modules[0]?.id ?? null,
     );
     setPermissionsMsg(null);
+
+    // Igual que la web: si esta inactivo se ofrece activarlo.
+    if (user.is_inactive) {
+      Alert.alert(
+        'Usuario inactivo',
+        `¿El usuario ${user.name} está inactivo. ¿Querés activarlo?`,
+        [
+          { text: 'Ahora no', style: 'cancel' },
+          {
+            text: 'Activar',
+            onPress: () => void activateUser(user),
+          },
+        ],
+      );
+    }
+  }
+
+  function activeStatusId(): number | null {
+    const active = statuses.find(
+      (s) => /activ/i.test(s.status) && !/inactiv/i.test(s.status),
+    );
+
+    return active?.id ?? null;
+  }
+
+  async function activateUser(user: AdminUserItem) {
+    const statusId = activeStatusId();
+
+    if (!statusId) {
+      setNotice('No hay un estado activo disponible.');
+      return;
+    }
+
+    try {
+      const response = await api.updateAdminUser(user.id, {
+        name: user.name,
+        email: user.email,
+        user_status_id: statusId,
+        type_user_id: user.type_user_id,
+      });
+
+      setNotice(response.message);
+      await fetchUsers();
+    } catch (caught) {
+      Alert.alert(
+        'No pudimos activar',
+        caught instanceof ApiError ? caught.message : 'Intentá de nuevo.',
+      );
+    }
   }
 
   function cancelPermissions() {
@@ -293,6 +382,8 @@ export default function UsersScreen() {
     setEditName(user.name);
     setEditStatusId(user.status_id);
     setEditRole(user.principal_role ?? user.role ?? 'Usuario');
+    setEditPassword('');
+    setEditPasswordConfirm('');
     setEditErrors({});
     setNotice(null);
 
@@ -351,6 +442,16 @@ export default function UsersScreen() {
       return;
     }
 
+    if (editPassword && editPassword.length < 8) {
+      setEditErrors({ password: 'La contraseña debe tener al menos 8 caracteres.' });
+      return;
+    }
+
+    if (editPassword && editPassword !== editPasswordConfirm) {
+      setEditErrors({ password_confirmation: 'Las contraseñas no coinciden.' });
+      return;
+    }
+
     setSavingEdit(true);
     setEditErrors({});
 
@@ -360,6 +461,9 @@ export default function UsersScreen() {
         email: user.email,
         user_status_id: editStatusId,
         type_user_id: user.type_user_id,
+        ...(editPassword
+          ? { password: editPassword, password_confirmation: editPasswordConfirm }
+          : {}),
       });
 
       // La direccion se guarda junto con los datos, igual que en la web.
@@ -386,10 +490,14 @@ export default function UsersScreen() {
         setEditErrors({
           name: caught.errors?.name?.[0],
           email: caught.errors?.email?.[0],
+          password: caught.errors?.password?.[0],
+          password_confirmation: caught.errors?.password_confirmation?.[0],
           general: caught.message,
         });
         setEditErrors((current) =>
-          current.name || current.email ? { ...current, general: undefined } : current,
+          current.name || current.email || current.password || current.password_confirmation
+            ? { ...current, general: undefined }
+            : current,
         );
       } else {
         setEditErrors({ general: 'No pudimos guardar los datos.' });
@@ -400,8 +508,7 @@ export default function UsersScreen() {
   }
 
   // Inactivar.
-  function confirmInactivate(user: AdminUserItem) {
-    if (user.is_principal) {
+  function confirmInactivate(user: AdminUserItem) {    if (user.is_principal) {
       Alert.alert(
         'No se puede eliminar',
         'No podés eliminar al usuario principal de la cuenta.',
@@ -441,6 +548,130 @@ export default function UsersScreen() {
         },
       ],
     );
+  }
+
+  // Fase 2: Buscar Usuario (misma idea que el modal web: texto + filtros
+  // por estado y tipo sobre los usuarios cargados).
+  const searchResults = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+
+    return users.filter((user) => {
+      const matchesText =
+        !term ||
+        user.name.toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term);
+      const matchesStatus = !searchStatusId || user.status_id === searchStatusId;
+      const matchesType = !searchTypeId || user.type_user_id === searchTypeId;
+
+      return matchesText && matchesStatus && matchesType;
+    });
+  }, [users, searchQuery, searchStatusId, searchTypeId]);
+
+  function openSearch() {
+    setSearchQuery('');
+    setSearchStatusId(null);
+    setSearchTypeId(null);
+    setSearchOpen(true);
+  }
+
+  // Fase 3: Paginas por tipo (modal web de plantilla por tipo).
+  const tpSelectedType = useMemo(
+    () => tpTypes.find((t) => t.id === tpSelectedTypeId) ?? null,
+    [tpTypes, tpSelectedTypeId],
+  );
+
+  const tpModuleIds = useMemo(() => {
+    const ids: number[] = [];
+    const seen = new Set<number>();
+
+    for (const page of tpPages) {
+      if (!seen.has(page.module_id)) {
+        seen.add(page.module_id);
+        ids.push(page.module_id);
+      }
+    }
+
+    return ids;
+  }, [tpPages]);
+
+  const tpModuleName = useCallback(
+    (moduleId: number) => {
+      const page = tpPages.find((p) => p.module_id === moduleId);
+
+      return page?.module ?? `Módulo ${moduleId}`;
+    },
+    [tpPages],
+  );
+
+  const tpVisiblePages = useMemo(
+    () =>
+      tpSelectedModuleId === null
+        ? tpPages
+        : tpPages.filter((p) => p.module_id === tpSelectedModuleId),
+    [tpPages, tpSelectedModuleId],
+  );
+
+  async function openTypePages() {
+    setTypePagesOpen(true);
+    setTypePagesLoading(true);
+    setTpMsg(null);
+
+    try {
+      const response = await api.typeUserPagesData();
+
+      setTpTypes(response.types);
+      setTpPages(response.pages);
+      setTpSelectedTypeId(response.types[0]?.id ?? null);
+      setTpDraftPages(response.types[0]?.assigned_page_ids ?? []);
+      setTpSelectedModuleId(null);
+    } catch (caught) {
+      setTpMsg(
+        caught instanceof ApiError ? caught.message : 'No pudimos cargar los tipos.',
+      );
+    } finally {
+      setTypePagesLoading(false);
+    }
+  }
+
+  function selectTpType(typeId: number) {
+    setTpSelectedTypeId(typeId);
+    setTpDraftPages(tpTypes.find((t) => t.id === typeId)?.assigned_page_ids ?? []);
+    setTpMsg(null);
+  }
+
+  function toggleTpPage(pageId: number, value: boolean) {
+    setTpDraftPages((current) =>
+      value ? [...current, pageId] : current.filter((id) => id !== pageId),
+    );
+  }
+
+  async function saveTypePages() {
+    if (tpSelectedTypeId === null || tpSaving) {
+      return;
+    }
+
+    setTpSaving(true);
+    setTpMsg('Guardando cambios…');
+
+    try {
+      const response = await api.updateTypeUserPages(tpSelectedTypeId, tpDraftPages);
+
+      setTpMsg(response.message);
+      const refreshed = await api.typeUserPagesData();
+
+      setTpTypes(refreshed.types);
+      setTpPages(refreshed.pages);
+      setTpDraftPages(
+        refreshed.types.find((t) => t.id === tpSelectedTypeId)?.assigned_page_ids ?? [],
+      );
+      await fetchUsers();
+    } catch (caught) {
+      setTpMsg(
+        caught instanceof ApiError ? caught.message : 'No pudimos guardar.',
+      );
+    } finally {
+      setTpSaving(false);
+    }
   }
 
   if (loading && users.length === 0) {
@@ -485,6 +716,25 @@ export default function UsersScreen() {
           Administrá los usuarios de tu cuenta y asigná permisos de páginas.
         </Text>
 
+        <View style={styles.headActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Buscar usuario"
+            onPress={openSearch}
+            style={styles.outlineButton}
+          >
+            <Text style={styles.outlineText}>🔍 Buscar Usuario</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Páginas por tipo"
+            onPress={() => void openTypePages()}
+            style={styles.outlineButton}
+          >
+            <Text style={styles.outlineText}>🧩 Páginas por tipo</Text>
+          </Pressable>
+        </View>
+
         <ErrorBanner message={error} />
 
         {notice ? (
@@ -522,14 +772,14 @@ export default function UsersScreen() {
               <Text style={styles.cardSub}>Seleccioná un usuario para editar sus permisos.</Text>
             </View>
             <View style={styles.countBadge}>
-              <Text style={styles.countText}>{users.length}</Text>
+              <Text style={styles.countText}>{accountUsers.length}</Text>
             </View>
           </View>
 
-          {users.length === 0 ? (
+          {accountUsers.length === 0 ? (
             <Text style={styles.emptyText}>No hay usuarios creados en esta cuenta.</Text>
           ) : (
-            users.map((user) => {
+            accountUsers.map((user) => {
               const selected = selectedUserId === user.id;
               return (
                 <Pressable
@@ -774,13 +1024,238 @@ export default function UsersScreen() {
               </View>
               <Text style={styles.selectorLabel}>Rol de la cuenta principal</Text>
               <Text style={styles.cardSub}>{editRole} · El rol lo define el usuario principal de la cuenta.</Text>
+              <TextField
+                label="Nueva contraseña (opcional)"
+                value={editPassword}
+                onChangeText={setEditPassword}
+                secureTextEntry
+                error={editErrors.password}
+              />
+              <TextField
+                label="Confirmar (si cambiás)"
+                value={editPasswordConfirm}
+                onChangeText={setEditPasswordConfirm}
+                secureTextEntry
+                error={editErrors.password_confirmation}
+              />
               {editErrors.general ? <Text style={styles.fieldError}>{editErrors.general}</Text> : null}
               <View style={styles.gap} />
               <PrimaryButton title="Guardar Cambios" onPress={() => void handleSaveEdit()} loading={savingEdit} />
               <View style={styles.gap} />
               <PrimaryButton title="Cancelar" variant="ghost" onPress={() => setEditOpen(false)} disabled={savingEdit} />
+              {(() => {
+                const target = users.find((u) => u.id === editUserId);
+                if (!target || target.is_principal || target.is_self) {
+                  return null;
+                }
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={savingEdit}
+                    onPress={() => {
+                      setEditOpen(false);
+                      confirmInactivate(target);
+                    }}
+                    style={styles.dangerLink}
+                  >
+                    <Text style={styles.dangerLinkText}>Inactivar usuario</Text>
+                  </Pressable>
+                );
+              })()}
             </View>
           </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal visible={searchOpen} transparent animationType="fade" onRequestClose={() => setSearchOpen(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, styles.tallModal]}>
+            <Text style={styles.modalTitle}>Buscar Usuario</Text>
+            <TextField
+              label="Nombre o correo"
+              placeholder="Escribí para filtrar…"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <Text style={styles.selectorLabel}>Estado</Text>
+            <View style={styles.chipsWrap}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: searchStatusId === null }}
+                onPress={() => setSearchStatusId(null)}
+                style={[styles.chip, searchStatusId === null && styles.chipSelected]}
+              >
+                <Text style={[styles.chipText, searchStatusId === null && styles.chipTextSelected]}>Todos</Text>
+              </Pressable>
+              {statuses.map((status) => {
+                const selected = searchStatusId === status.id;
+                return (
+                  <Pressable
+                    key={status.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setSearchStatusId(selected ? null : status.id)}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                  >
+                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{status.status}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.selectorLabel}>Tipo</Text>
+            <View style={styles.chipsWrap}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: searchTypeId === null }}
+                onPress={() => setSearchTypeId(null)}
+                style={[styles.chip, searchTypeId === null && styles.chipSelected]}
+              >
+                <Text style={[styles.chipText, searchTypeId === null && styles.chipTextSelected]}>Todos</Text>
+              </Pressable>
+              {types.map((type) => {
+                const selected = searchTypeId === type.id;
+                return (
+                  <Pressable
+                    key={type.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setSearchTypeId(selected ? null : type.id)}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                  >
+                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{type.description}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.selectorLabel}>{searchResults.length} resultados</Text>
+            <ScrollView style={styles.resultsList}>
+              {searchResults.map((user) => (
+                <Pressable
+                  key={user.id}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setSearchOpen(false);
+                    selectUser(user);
+                  }}
+                  style={styles.resultRow}
+                >
+                  <View style={styles.userInfo}>
+                    <Text style={styles.userName}>
+                      {user.name}
+                      {user.is_principal ? ' (principal)' : ''}
+                      {user.is_inactive ? ' · Inactivo' : ''}
+                    </Text>
+                    <Text style={styles.userEmail}>{user.email}</Text>
+                  </View>
+                  <Text style={styles.roleText}>{user.role ?? 'Usuario'}</Text>
+                </Pressable>
+              ))}
+              {searchResults.length === 0 ? (
+                <Text style={styles.emptyText}>Sin resultados para esos filtros.</Text>
+              ) : null}
+            </ScrollView>
+            <View style={styles.gap} />
+            <PrimaryButton title="Cerrar" variant="ghost" onPress={() => setSearchOpen(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={typePagesOpen} transparent animationType="fade" onRequestClose={() => setTypePagesOpen(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, styles.tallModal]}>
+            <Text style={styles.modalTitle}>Páginas por tipo</Text>
+            {typePagesLoading ? (
+              <Text style={styles.emptyText}>Cargando tipos…</Text>
+            ) : (
+              <ScrollView>
+                <Text style={styles.selectorLabel}>Tipo de usuario</Text>
+                <View style={styles.chipsWrap}>
+                  {tpTypes.map((type) => {
+                    const selected = tpSelectedTypeId === type.id;
+                    return (
+                      <Pressable
+                        key={type.id}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => selectTpType(type.id)}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                      >
+                        <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                          {type.description} ({type.users_count})
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {tpSelectedType ? (
+                  <Text style={styles.cardSub}>
+                    {tpSelectedType.users_count} usuario(s) con este tipo. Al guardar, las páginas
+                    seleccionadas se aplican a todos ellos.
+                  </Text>
+                ) : null}
+                <Text style={styles.selectorLabel}>Módulo</Text>
+                <View style={styles.chipsWrap}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: tpSelectedModuleId === null }}
+                    onPress={() => setTpSelectedModuleId(null)}
+                    style={[styles.chip, tpSelectedModuleId === null && styles.chipSelected]}
+                  >
+                    <Text style={[styles.chipText, tpSelectedModuleId === null && styles.chipTextSelected]}>
+                      Todos
+                    </Text>
+                  </Pressable>
+                  {tpModuleIds.map((moduleId) => {
+                    const selected = tpSelectedModuleId === moduleId;
+                    return (
+                      <Pressable
+                        key={moduleId}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => setTpSelectedModuleId(selected ? null : moduleId)}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                      >
+                        <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                          {tpModuleName(moduleId)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {tpVisiblePages.map((page) => {
+                  const checked = tpDraftPages.includes(page.id);
+                  return (
+                    <View key={page.id} style={styles.pageRow}>
+                      <View style={styles.pageInfo}>
+                        <Text style={styles.serviceName}>{page.description}</Text>
+                        {page.url ? <Text style={styles.serviceDescription}>{page.url}</Text> : null}
+                      </View>
+                      <Switch value={checked} onValueChange={(value) => toggleTpPage(page.id, value)} />
+                    </View>
+                  );
+                })}
+                {tpVisiblePages.length === 0 ? (
+                  <Text style={styles.emptyText}>
+                    {tpSelectedTypeId === null
+                      ? 'Seleccioná un tipo de usuario.'
+                      : 'No hay páginas para este módulo.'}
+                  </Text>
+                ) : null}
+                {tpMsg ? <Text style={styles.permMsg}>{tpMsg}</Text> : null}
+              </ScrollView>
+            )}
+            <View style={styles.gap} />
+            <PrimaryButton
+              title="Guardar"
+              onPress={() => void saveTypePages()}
+              loading={tpSaving}
+              disabled={tpSelectedTypeId === null}
+            />
+            <View style={styles.gap} />
+            <PrimaryButton title="Cerrar" variant="ghost" onPress={() => setTypePagesOpen(false)} disabled={tpSaving} />
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
@@ -824,7 +1299,28 @@ const styles = StyleSheet.create({
   subtitle: {
     color: colors.muted,
     fontSize: 13,
+    marginBottom: spacing.sm,
+  },
+  headActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginBottom: spacing.md,
+  },
+  outlineButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.brand,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  outlineText: {
+    color: colors.brandDark,
+    fontSize: 12,
+    fontWeight: '700',
   },
   notice: {
     backgroundColor: colors.successSoft,
@@ -1079,6 +1575,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: spacing.sm,
   },
+  dangerLink: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  dangerLinkText: {
+    color: colors.danger,
+    fontSize: 14,
+    fontWeight: '700',
+  },
   gap: {
     height: spacing.sm,
   },
@@ -1100,6 +1606,20 @@ const styles = StyleSheet.create({
     maxWidth: 520,
     padding: spacing.lg,
     width: '100%',
+  },
+  tallModal: {
+    maxHeight: '88%',
+  },
+  resultsList: {
+    maxHeight: 320,
+  },
+  resultRow: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
   },
   modalTitle: {
     color: colors.text,
