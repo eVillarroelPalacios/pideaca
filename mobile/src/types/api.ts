@@ -418,3 +418,300 @@ export type GroupResponse = {
   message: string;
   group: GroupItem;
 };
+
+export type ProfileUserPayload = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: string | null;
+  status: string | null;
+  is_admin: boolean;
+  is_principal: boolean;
+  has_provider: boolean;
+  vehicle_type: string | null;
+  vehicle_plate: string | null;
+};
+
+export type ProfileFlags = {
+  role: string | null;
+  is_admin: boolean;
+  is_principal: boolean;
+  is_prestador: boolean;
+  is_cliente: boolean;
+  is_repartidor: boolean;
+  can_configure_business: boolean;
+  can_see_address: boolean;
+  can_manage_users: boolean;
+  can_see_trusted_drivers: boolean;
+  can_see_service_types: boolean;
+  initial_panel: string;
+};
+
+export type ProfileServiceRow = {
+  id: number;
+  name: string;
+  description: string | null;
+  sort_order: number | null;
+};
+
+export type ProfileImageRow = {
+  id: number;
+  image_path: string;
+  image_type: string | null;
+  is_primary: boolean;
+  sort_order: number | null;
+  url: string | null;
+};
+
+export type ProfileProvider = {
+  id: number;
+  business_name: string;
+  description: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  zone: string | null;
+  promo: string | null;
+  hours: Record<string, { open?: boolean; shifts?: { from: string; to: string }[] }> | null;
+  is_active: boolean;
+  trusted_drivers_enabled: boolean;
+  category_id: number | null;
+  category: { id: number; description: string } | null;
+  services: ProfileServiceRow[];
+  images: ProfileImageRow[];
+  subgroup_ids: number[];
+  service_type_ids: number[];
+};
+
+export type ProfileAddress = {
+  id: number;
+  country_id: number | null;
+  province_id: number | null;
+  street: string | null;
+  number: string | null;
+  floor_apartment: string | null;
+  postal_code: string | null;
+  notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  is_primary: boolean;
+  country: { id: number; name: string } | null;
+  province: { id: number; name: string } | null;
+};
+
+export type VehicleOption = {
+  value: string;
+  label: string;
+};
+
+export type ProfileResponse = {
+  success: boolean;
+  user: ProfileUserPayload;
+  flags: ProfileFlags;
+  provider: ProfileProvider | null;
+  address: ProfileAddress | null;
+  address_shared: boolean;
+  vehicle_types: VehicleOption[];
+  default_vehicle_type: string;
+};
+
+export type ProfileUserResponse = {
+  success: boolean;
+  message: string;
+  user: ProfileUserPayload;
+};
+
+export type ProfilePasswordResponse = {
+  success: boolean;
+  message: string;
+};
+
+export type ProfileProviderResponse = {
+  success: boolean;
+  message: string;
+  provider: ProfileProvider;
+};
+
+export type ProfileVehicleResponse = {
+  success: boolean;
+  message: string;
+  vehicle_type: string | null;
+  vehicle_plate: string | null;
+  label: string;
+};
+
+export type ProfileImageResponse = {
+  success: boolean;
+  message: string;
+  image: ProfileImageRow;
+};
+
+export type ProfileAddressResponse = {
+  success: boolean;
+  message?: string;
+  address: ProfileAddress | null;
+  shared: boolean;
+};
+
+export type CountryOption = {
+  id: number;
+  iso_code: string;
+  name: string;
+};
+
+export type CountriesResponse = {
+  success: boolean;
+  data: CountryOption[];
+};
+
+export type RegionOption = {
+  id: number;
+  name: string;
+  type: string | null;
+};
+
+export type RegionsResponse = {
+  success: boolean;
+  data: RegionOption[];
+};
+
+export type ProfileServicesResponse = {
+  success: boolean;
+  services: ProfileServiceRow[];
+};
+
+export type ProfileServiceResponse = {
+  success: boolean;
+  message: string;
+  service: ProfileServiceRow;
+};
+
+export type ProfileSubgroupsResponse = {
+  success: boolean;
+  groups: {
+    id: number;
+    description: string;
+    subgroups: { id: number; description: string; group_id: number }[];
+  }[];
+  selected: number[];
+};
+
+export type ToggleSubgroupResponse = {
+  success: boolean;
+  message: string;
+  selected: number[];
+};
+
+export type ServiceTypeOption = {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+};
+
+export type ProfileServiceTypesResponse = {
+  success: boolean;
+  service_types: ServiceTypeOption[];
+  selected: number[];
+};
+
+export type TrustedDriverRow = {
+  id: number;
+  user_id: number;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  vehicle: string | null;
+  vehicle_label: string | null;
+  vehicle_plate: string | null;
+  status: string;
+};
+
+export type TrustedDriverCandidate = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  vehicle: string | null;
+  vehicle_label: string | null;
+  vehicle_plate: string | null;
+};
+
+export type TrustedDriversResponse = {
+  success: boolean;
+  provider: { id: number; business_name: string; trusted_drivers_enabled: boolean };
+  drivers: TrustedDriverRow[];
+  candidates: TrustedDriverCandidate[];
+};
+
+export type TrustedDriversSettingsResponse = {
+  success: boolean;
+  message: string;
+  provider: { id: number; business_name?: string; trusted_drivers_enabled: boolean };
+};
+
+export type AccountPageRef = {
+  id: number;
+  description: string;
+  url: string | null;
+  module?: string | null;
+  module_id?: number;
+};
+
+export type AccountUserRow = {
+  id: number;
+  name: string;
+  email: string;
+  role: string | null;
+  status: string | null;
+  status_id: number | null;
+  is_principal: boolean;
+  is_self: boolean;
+  can_edit: boolean;
+  page_ids: number[];
+  pages: AccountPageRef[];
+};
+
+export type AccountCatalogModule = {
+  id: number;
+  description: string;
+  pages: AccountPageRef[];
+};
+
+export type AccountUsersResponse = {
+  success: boolean;
+  data: AccountUserRow[];
+  catalog: { modules: AccountCatalogModule[] };
+  filters: { user_statuses: { id: number; status: string }[] };
+  limits: { max_secondary: number; secondary_count: number; can_add: boolean };
+};
+
+export type AccountUserResponse = {
+  success: boolean;
+  message: string;
+  user: AccountUserRow;
+  page_id?: number;
+  cascaded?: boolean;
+};
+
+export type ProviderPayload = {
+  business_name: string;
+  description?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  zone?: string | null;
+  promo?: string | null;
+  hours?: Record<string, unknown> | null;
+};
+
+export type AddressPayload = {
+  country_id: number;
+  province_id?: number | null;
+  street?: string | null;
+  number?: string | null;
+  floor_apartment?: string | null;
+  postal_code?: string | null;
+  notes?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};

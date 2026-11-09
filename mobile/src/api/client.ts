@@ -1,11 +1,15 @@
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/config';
 import { loadToken } from '@/lib/tokenStore';
 import type {
+  AccountUserResponse,
+  AccountUsersResponse,
+  AddressPayload,
   AuthResponse,
   ContactInquiriesParams,
   ContactInquiriesResponse,
   ContactInquiryResponse,
   ContactInquiryStatus,
+  CountriesResponse,
   GroupStatusResponse,
   GroupStatusesResponse,
   GroupPayload,
@@ -15,16 +19,33 @@ import type {
   MeResponse,
   NotificationResponse,
   NotificationsResponse,
+  ProfileAddressResponse,
+  ProfileImageResponse,
+  ProfilePasswordResponse,
+  ProfileProviderResponse,
+  ProfileResponse,
+  ProfileServiceResponse,
+  ProfileServiceTypesResponse,
+  ProfileServicesResponse,
+  ProfileSubgroupsResponse,
+  ProfileUserResponse,
+  ProfileVehicleResponse,
   ProviderDetailResponse,
   ProviderOrdersResponse,
+  ProviderPayload,
   ProvidersParams,
   ProvidersResponse,
+  RegionsResponse,
   RegisterPayload,
   ServiceOrderResponse,
   ServiceOrdersParams,
   ServiceOrdersResponse,
   ServiceSubgroupsResponse,
   SimpleResponse,
+  ToggleSubgroupResponse,
+  TrustedDriverCandidate,
+  TrustedDriversResponse,
+  TrustedDriversSettingsResponse,
   TypesResponse,
   UpdateContactInquiryStatusResponse,
   UserStatusResponse,
@@ -534,4 +555,206 @@ export const api = {
       method: 'DELETE',
     });
   },
+
+  // Mi Perfil: mismos paneles y reglas que el dashboard web.
+  profile(): Promise<ProfileResponse> {
+    return request<ProfileResponse>('/profile');
+  },
+
+  updateProfile(name: string): Promise<ProfileUserResponse> {
+    return request<ProfileUserResponse>('/profile', {
+      method: 'PUT',
+      body: { name },
+    });
+  },
+
+  updateProfilePassword(payload: {
+    current_password?: string;
+    password: string;
+    password_confirmation: string;
+  }): Promise<ProfilePasswordResponse> {
+    return request<ProfilePasswordResponse>('/profile/password', {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  updateProvider(payload: ProviderPayload): Promise<ProfileProviderResponse> {
+    return request<ProfileProviderResponse>('/profile/provider', {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  updateVehicle(vehicle_type: string, vehicle_plate?: string): Promise<ProfileVehicleResponse> {
+    return request<ProfileVehicleResponse>('/profile/vehicle', {
+      method: 'PATCH',
+      body: { vehicle_type, vehicle_plate: vehicle_plate ?? null },
+    });
+  },
+
+  uploadProfileImage(form: FormData): Promise<ProfileImageResponse> {
+    return request<ProfileImageResponse>('/profile/images', {
+      method: 'POST',
+      body: form,
+    });
+  },
+
+  deleteProfileImage(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/profile/images/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  profileAddress(): Promise<ProfileAddressResponse> {
+    return request<ProfileAddressResponse>('/profile/address');
+  },
+
+  saveAddress(payload: AddressPayload): Promise<ProfileAddressResponse> {
+    return request<ProfileAddressResponse>('/profile/address', {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  profileCountries(): Promise<CountriesResponse> {
+    return request<CountriesResponse>('/profile/countries');
+  },
+
+  profileRegions(countryId: number): Promise<RegionsResponse> {
+    return request<RegionsResponse>(`/profile/regions?country_id=${countryId}`);
+  },
+
+  profileServices(): Promise<ProfileServicesResponse> {
+    return request<ProfileServicesResponse>('/profile/services');
+  },
+
+  createProfileService(payload: { name: string; description?: string }): Promise<ProfileServiceResponse> {
+    return request<ProfileServiceResponse>('/profile/services', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateProfileService(
+    id: number,
+    payload: { name: string; description?: string },
+  ): Promise<ProfileServiceResponse> {
+    return request<ProfileServiceResponse>(`/profile/services/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteProfileService(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/profile/services/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  reorderProfileServices(order: number[]): Promise<ProfileServicesResponse> {
+    return request<ProfileServicesResponse>('/profile/services/reorder', {
+      method: 'PUT',
+      body: { order },
+    });
+  },
+
+  profileSubgroups(): Promise<ProfileSubgroupsResponse> {
+    return request<ProfileSubgroupsResponse>('/profile/subgroups');
+  },
+
+  toggleProfileSubgroup(subgroupId: number): Promise<ToggleSubgroupResponse> {
+    return request<ToggleSubgroupResponse>('/profile/subgroups/toggle', {
+      method: 'POST',
+      body: { subgroup_id: subgroupId },
+    });
+  },
+
+  profileServiceTypes(): Promise<ProfileServiceTypesResponse> {
+    return request<ProfileServiceTypesResponse>('/profile/service-types');
+  },
+
+  toggleProfileServiceType(serviceTypeId: number): Promise<ToggleSubgroupResponse> {
+    return request<ToggleSubgroupResponse>('/profile/service-types/toggle', {
+      method: 'POST',
+      body: { service_type_id: serviceTypeId },
+    });
+  },
+
+  trustedDrivers(): Promise<TrustedDriversResponse> {
+    return request<TrustedDriversResponse>('/profile/trusted-drivers');
+  },
+
+  updateTrustedDriversSettings(enabled: boolean): Promise<TrustedDriversSettingsResponse> {
+    return request<TrustedDriversSettingsResponse>('/profile/trusted-drivers/settings', {
+      method: 'PUT',
+      body: { enabled },
+    });
+  },
+
+  addTrustedDriver(userId: number): Promise<TrustedDriversResponse> {
+    return request<TrustedDriversResponse>('/profile/trusted-drivers', {
+      method: 'POST',
+      body: { user_id: userId },
+    });
+  },
+
+  removeTrustedDriver(id: number, disableMode = false): Promise<TrustedDriversResponse> {
+    const suffix = disableMode ? '?disable_mode=1' : '';
+
+    return request<TrustedDriversResponse>(`/profile/trusted-drivers/${id}${suffix}`, {
+      method: 'DELETE',
+    });
+  },
+
+  profileUsers(): Promise<AccountUsersResponse> {
+    return request<AccountUsersResponse>('/profile/users');
+  },
+
+  createProfileUser(payload: {
+    name: string;
+    password: string;
+    password_confirmation: string;
+    user_status_id?: number | null;
+  }): Promise<AccountUserResponse> {
+    return request<AccountUserResponse>('/profile/users', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  updateProfileUser(
+    id: number,
+    payload: {
+      name: string;
+      password?: string;
+      password_confirmation?: string;
+      user_status_id?: number | null;
+    },
+  ): Promise<AccountUserResponse> {
+    return request<AccountUserResponse>(`/profile/users/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  deleteProfileUser(id: number): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/profile/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  attachProfileUserPage(userId: number, pageId: number): Promise<AccountUserResponse> {
+    return request<AccountUserResponse>(`/profile/users/${userId}/pages/${pageId}`, {
+      method: 'POST',
+    });
+  },
+
+  detachProfileUserPage(userId: number, pageId: number): Promise<AccountUserResponse> {
+    return request<AccountUserResponse>(`/profile/users/${userId}/pages/${pageId}`, {
+      method: 'DELETE',
+    });
+  },
 };
+
+export type { TrustedDriverCandidate };

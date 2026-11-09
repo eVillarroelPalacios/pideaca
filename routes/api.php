@@ -6,6 +6,10 @@ use App\Http\Controllers\Api\V1\ContactInquiriesController;
 use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\MenuController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\ProfileDriversController;
+use App\Http\Controllers\Api\V1\ProfileServicesController;
+use App\Http\Controllers\Api\V1\ProfileUsersController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
 use App\Http\Controllers\Api\V1\PushController;
 use App\Http\Controllers\Api\V1\ServiceOrdersController;
@@ -67,6 +71,49 @@ Route::prefix('mobile/v1')->group(function () {
         Route::delete('/groups/{group}', [GroupsController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
+
+        // Mi Perfil: mismos paneles y reglas que el dashboard web.
+        Route::get('/profile', [ProfileController::class, 'show'])
+            ->middleware('throttle:30,1');
+        Route::put('/profile', [ProfileController::class, 'update']);
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
+        Route::put('/profile/provider', [ProfileController::class, 'updateProvider']);
+        Route::patch('/profile/vehicle', [ProfileController::class, 'updateVehicle']);
+        Route::post('/profile/images', [ProfileController::class, 'storeImage']);
+        Route::delete('/profile/images/{image}', [ProfileController::class, 'destroyImage']);
+        Route::get('/profile/address', [ProfileController::class, 'address']);
+        Route::put('/profile/address', [ProfileController::class, 'saveAddress']);
+        Route::get('/profile/countries', [ProfileController::class, 'countries'])
+            ->middleware('throttle:30,1');
+        Route::get('/profile/regions', [ProfileController::class, 'regions'])
+            ->middleware('throttle:30,1');
+
+        Route::get('/profile/services', [ProfileServicesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/profile/services', [ProfileServicesController::class, 'store']);
+        Route::put('/profile/services/reorder', [ProfileServicesController::class, 'reorder']);
+        Route::put('/profile/services/{service}', [ProfileServicesController::class, 'update']);
+        Route::delete('/profile/services/{service}', [ProfileServicesController::class, 'destroy']);
+        Route::get('/profile/subgroups', [ProfileServicesController::class, 'subgroups'])
+            ->middleware('throttle:30,1');
+        Route::post('/profile/subgroups/toggle', [ProfileServicesController::class, 'toggleSubgroup']);
+        Route::get('/profile/service-types', [ProfileServicesController::class, 'serviceTypes'])
+            ->middleware('throttle:30,1');
+        Route::post('/profile/service-types/toggle', [ProfileServicesController::class, 'toggleServiceType']);
+
+        Route::get('/profile/trusted-drivers', [ProfileDriversController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::put('/profile/trusted-drivers/settings', [ProfileDriversController::class, 'updateSettings']);
+        Route::post('/profile/trusted-drivers', [ProfileDriversController::class, 'store']);
+        Route::delete('/profile/trusted-drivers/{driver}', [ProfileDriversController::class, 'destroy']);
+
+        Route::get('/profile/users', [ProfileUsersController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/profile/users', [ProfileUsersController::class, 'store']);
+        Route::put('/profile/users/{user}', [ProfileUsersController::class, 'update']);
+        Route::delete('/profile/users/{user}', [ProfileUsersController::class, 'destroy']);
+        Route::post('/profile/users/{user}/pages/{page}', [ProfileUsersController::class, 'attachPage']);
+        Route::delete('/profile/users/{user}/pages/{page}', [ProfileUsersController::class, 'detachPage']);
 
         Route::get('/providers', [CatalogController::class, 'index'])
             ->middleware('throttle:30,1');
