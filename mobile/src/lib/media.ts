@@ -5,6 +5,13 @@ export type LocalPhoto = {
   uri: string;
   name: string;
   mimeType: string;
+  size?: number | null;
+};
+
+export type LocalAudio = {
+  uri: string;
+  name: string;
+  mimeType: string;
 };
 
 function toLocalPhoto(asset: ImagePicker.ImagePickerAsset, fallbackName: string): LocalPhoto {
@@ -14,6 +21,7 @@ function toLocalPhoto(asset: ImagePicker.ImagePickerAsset, fallbackName: string)
     uri: asset.uri,
     name,
     mimeType: asset.mimeType ?? 'image/jpeg',
+    size: asset.fileSize ?? null,
   };
 }
 
@@ -91,6 +99,15 @@ export function appendPhoto(form: FormData, field: string, photo: LocalPhoto): v
     uri: photo.uri,
     name: photo.name,
     type: photo.mimeType,
+  } as unknown as Blob);
+}
+
+/** Agrega una nota de voz al FormData para subirla al API. */
+export function appendAudio(form: FormData, field: string, audio: LocalAudio): void {
+  form.append(field, {
+    uri: audio.uri,
+    name: audio.name,
+    type: audio.mimeType,
   } as unknown as Blob);
 }
 

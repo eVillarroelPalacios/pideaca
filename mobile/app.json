@@ -39,7 +39,15 @@
           "locationWhenInUsePermission": "PideAca usa tu ubicación para enviarle al prestador dónde estás cuando pedís una urgencia."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "PideAca necesita acceder a tu micrófono para grabar una nota de voz con el detalle de la urgencia.",
+          "enableBackgroundPlayback": false
+        }
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

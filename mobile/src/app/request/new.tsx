@@ -1,6 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import {
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioRecorder,
+  useAudioRecorderState,
+} from 'expo-audio';
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -17,15 +25,17 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { ProviderAdCard } from '@/components/ProviderAdCard';
 import { TextField } from '@/components/TextField';
 import {
+  appendAudio,
   appendPhoto,
   getCurrentCoords,
   pickMultipleImages,
   pickSingleImage,
   takePhoto,
+  type LocalAudio,
   type LocalPhoto,
 } from '@/lib/media';
 import { colors, radius, spacing } from '@/theme';
-import type { ProviderCard, ServiceSubgroup } from '@/types/api';
+import type { ProviderCard, ProviderDetail, ServiceSubgroup } from '@/types/api';
 
 type OrderType = 'EMERGENCY' | 'SCHEDULED' | 'QUOTE';
 
@@ -49,7 +59,58 @@ const PAYMENT_METHODS = [
   { code: 'mercado_pago', label: 'Mercado Pago' },
 ];
 
+/** Medios de pago rápidos para la tarifa base de la urgencia (estilo web). */
+const EMERGENCY_PAYMENT_METHODS = [
+  { code: 'mercado_pago', label: 'Mercado Pago', icon: 'MP', mp: true },
+  { code: 'tarjeta', label: 'Tarjeta', icon: '💳', mp: false },
+  { code: 'efectivo', label: 'Efectivo', icon: '💵', mp: false },
+];
+
+/** Opciones rápidas de urgencia: un toque completa la descripción. */
+const PROBLEM_CHIPS = [
+  { key: 'agua', label: '💧 Pérdida de agua', problem: 'Pérdida de agua' },
+  { key: 'inundacion', label: '🌊 Inundación', problem: 'Inundación' },
+  { key: 'luz', label: '💡 Sin luz', problem: 'Sin luz' },
+  { key: 'gas', label: '🔥 Pérdida de gas', problem: 'Pérdida de gas' },
+  { key: 'otro', label: '📦 Otro', problem: '' },
+];
+
 const MAX_QUOTE_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
+const MAX_AUDIO_SECONDS = 120;
+
+/** El azul oscuro de las acciones secundarias de la web. */
+const NAVY = '#0c2a4d';
+
+type SelectedProvider = ProviderCard &
+  Partial<Pick<ProviderDetail, 'emergency_count'>>;
+
+/** Extensión/MIME del archivo temporal que devuelve expo-audio. */
+function toLocalAudio(uri: string): LocalAudio {
+  const raw = uri.split('?')[0].split('.').pop()?.toLowerCase() ?? '';
+  const ext = ['mp3', 'm4a', 'ogg', 'oga', 'webm', 'wav', 'aac'].includes(raw)
+    ? raw
+    : 'm4a';
+
+  return {
+    uri,
+    name: `audio_${Date.now()}.${ext}`,
+    mimeType: ext === 'oga' ? 'audio/ogg' : `audio/${ext}`,
+  };
+}
+
+function formatDuration(millis: number): string {
+  const total = Math.max(0, Math.floor(millis / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatSize(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function NewRequestScreen() {
   const { providerId, service } = useLocalSearchParams<{
@@ -75,7 +136,7 @@ export default function NewRequestScreen() {
   const [subgroups, setSubgroups] = useState<ServiceSubgroup[]>([]);
   const [loadingSubgroups, setLoadingSubgroups] = useState(true);
   const [subgroupId, setSubgroupId] = useState<number | null>(null);
-  const [provider, setProvider] = useState<ProviderCard | null>(null);
+  const [provider, setProvider] = useState<SelectedProvider | null>(null);
 
   // Buscador y tarjetas de prestador (opcional).
   const [providerSearch, setProviderSearch] = useState('');
@@ -93,11 +154,20 @@ export default function NewRequestScreen() {
   // Urgencia.
   const [photo, setPhoto] = useState<LocalPhoto | null>(null);
   const [photoSource, setPhotoSource] = useState<'gallery' | 'camera' | null>(null);
+  const [problemChip, setProblemChip] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [paymentMethod, setPaymentMethod] = useState('mercado_pago');
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [audio, setAudio] = useState<LocalAudio | null>(null);
+  const [audioSize, setAudioSize] = useState<number | null>(null);
+  const [audioBusy, setAudioBusy] = useState(false);
+  const addressPrefilled = useRef(false);
+  const audioTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(audioRecorder, 500);
 
   // Cita.
   const [date, setDate] = useState('');
@@ -164,6 +234,55 @@ export default function NewRequestScreen() {
       active = false;
     };
   }, [hasRequestedProvider, requestedProviderId]);
+
+  // Igual que la web: al entrar a una urgencia se precarga la dirección
+  // principal del perfil (solo si el usuario todavía no escribió nada).
+  useEffect(() => {
+    if (orderType !== 'EMERGENCY' || addressPrefilled.current) {
+      return;
+    }
+
+    addressPrefilled.current = true;
+    let active = true;
+
+    api
+      .profileAddress()
+      .then((response) => {
+        if (!active || !response.address) {
+          return;
+        }
+
+        const primary = response.address;
+        const formatted = [
+          primary.street,
+          primary.number,
+          primary.floor_apartment,
+        ]
+          .filter((part) => part && String(part).trim().length > 0)
+          .join(' ');
+
+        if (formatted) {
+          setAddress((current) => (current.trim() ? current : formatted));
+        }
+      })
+      .catch(() => {
+        // Sin dirección guardada se puede escribir a mano igual.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [orderType]);
+
+  // Al detenerse la grabación se guarda la nota de voz para adjuntarla al
+  // enviar la urgencia.
+  useEffect(() => {
+    return () => {
+      if (audioTimer.current) {
+        clearTimeout(audioTimer.current);
+      }
+    };
+  }, []);
 
   // Buscador de prestadores con debounce.
   useEffect(() => {
@@ -271,6 +390,19 @@ export default function NewRequestScreen() {
     // El rubro tiene prioridad al enviar: se limpia al elegir prestador.
     setSubgroupId(null);
 
+    // La tarjeta no trae las urgencias atendidas: se completan con el detalle
+    // para replicar la cabecera de la web (★ 5.0 (1 urgencia)).
+    api
+      .provider(item.id)
+      .then((response) => {
+        setProvider((current) =>
+          current && current.id === item.id ? response.data : current,
+        );
+      })
+      .catch(() => {
+        // Sin detalle la cabecera usa los datos de la tarjeta.
+      });
+
     if (serviceCode) {
       if (serviceCode !== orderType) {
         setLoadingProviders(true);
@@ -367,8 +499,107 @@ export default function NewRequestScreen() {
     const picked = from === 'camera' ? await takePhoto() : await pickSingleImage();
     setPhotoSource(null);
 
-    if (picked) {
-      setPhoto(picked);
+    if (!picked) {
+      return;
+    }
+
+    if (picked.size && picked.size > MAX_PHOTO_BYTES) {
+      setError(
+        `La foto pesa ${formatSize(picked.size)} y el máximo es 5 MB. Elegí una más liviana.`,
+      );
+      return;
+    }
+
+    setError(null);
+    setPhoto(picked);
+  }
+
+  function chooseEmergencyPhoto() {
+    Alert.alert(
+      'Foto del problema',
+      'Adjuntá una foto de la urgencia (máximo 5 MB).',
+      [
+        { text: 'Cámara', onPress: () => void pickEmergencyPhoto('camera') },
+        { text: 'Galería', onPress: () => void pickEmergencyPhoto('gallery') },
+        { text: 'Cancelar', style: 'cancel' },
+      ],
+    );
+  }
+
+  async function finishRecording() {
+    if (audioTimer.current) {
+      clearTimeout(audioTimer.current);
+      audioTimer.current = null;
+    }
+
+    setAudioBusy(true);
+
+    try {
+      await audioRecorder.stop();
+      const status = audioRecorder.getStatus();
+      const uri = audioRecorder.uri ?? status.url;
+
+      if (!uri) {
+        setError('No pudimos guardar el audio. Intentá de nuevo.');
+        return;
+      }
+
+      if (status.fileSize > MAX_AUDIO_BYTES) {
+        setAudio(null);
+        setAudioSize(null);
+        setError('El audio supera los 8 MB. Grabá una nota más corta.');
+        return;
+      }
+
+      setAudio(toLocalAudio(uri));
+      setAudioSize(status.fileSize || null);
+    } catch {
+      setError('No pudimos guardar el audio. Intentá de nuevo.');
+    } finally {
+      setAudioBusy(false);
+    }
+  }
+
+  async function toggleRecording() {
+    if (audioBusy) {
+      return;
+    }
+
+    if (recorderState.isRecording) {
+      await finishRecording();
+      return;
+    }
+
+    setAudioBusy(true);
+
+    try {
+      setError(null);
+
+      const permission = await AudioModule.requestRecordingPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert(
+          'Micrófono',
+          'Necesitamos permiso para grabar una nota de voz. Podés habilitarlo en los ajustes del teléfono.',
+        );
+        return;
+      }
+
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
+      });
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
+
+      // Tope de duración: 2 minutos mantienen el archivo por debajo de 8 MB.
+      audioTimer.current = setTimeout(() => {
+        void finishRecording();
+      }, MAX_AUDIO_SECONDS * 1000);
+    } catch {
+      setError('No pudimos grabar el audio. Intentá de nuevo.');
+    } finally {
+      setAudioBusy(false);
     }
   }
 
@@ -382,6 +613,18 @@ export default function NewRequestScreen() {
     } else {
       setError('No pudimos obtener tu ubicación. Podés escribir la dirección igual.');
     }
+  }
+
+  function handleProblemChip(chip: (typeof PROBLEM_CHIPS)[number]) {
+    // Tocar el chip activo lo apaga y limpia la descripción, igual que la web.
+    if (problemChip === chip.key) {
+      setProblemChip(null);
+      setDescription('');
+      return;
+    }
+
+    setProblemChip(chip.key);
+    setDescription(chip.problem);
   }
 
   async function addQuotePhotos() {
@@ -438,6 +681,14 @@ export default function NewRequestScreen() {
           return;
         }
 
+        if (!description.trim()) {
+          setError(
+            'Contanos qué pasa: tocá una opción rápida o escribí una descripción del problema.',
+          );
+          setSubmitting(false);
+          return;
+        }
+
         const form = new FormData();
         if ('sub_group_id' in target) {
           form.append('sub_group_id', String(target.sub_group_id));
@@ -445,6 +696,9 @@ export default function NewRequestScreen() {
           form.append('provider_id', String(target.provider_id));
         }
         appendPhoto(form, 'photo', photo);
+        if (audio) {
+          appendAudio(form, 'audio', audio);
+        }
         if (description.trim()) {
           form.append('description', description.trim());
         }
@@ -542,6 +796,23 @@ export default function NewRequestScreen() {
     }
   }
 
+  const emergencyProvider = orderType === 'EMERGENCY' ? provider : null;
+  const emergencyCount = provider?.emergency_count ?? 0;
+  const providerScore = Number(provider?.rating ?? 0);
+  const providerRubro = provider?.subgroups?.[0]?.description ?? 'Servicios del hogar';
+  const providerMeta = provider
+    ? `${providerRubro}${provider.zone ? ` · ${provider.zone}` : ''}`
+    : '';
+  const emergencyServiceLabel =
+    provider?.service_types.find((type) => type.code === 'EMERGENCY')?.name ??
+    'Urgencias 24/7';
+  const baseFee = provider?.base_visit_fee ?? null;
+  const hasBaseFee = baseFee !== null && Number(baseFee) > 0;
+  const baseFeeLabel = hasBaseFee
+    ? `$${Number(baseFee).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
+    : 'A convenir';
+  const emergencyHasContent = Boolean(description.trim());
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -562,35 +833,39 @@ export default function NewRequestScreen() {
       >
         <ErrorBanner message={error} />
 
-        <Text style={styles.label}>¿Qué necesitás?</Text>
-        {serviceLocked && orderType ? (
-          <View style={[styles.typeCard, styles.typeCardSelected]}>
-            <Text style={styles.typeTitle}>
-              {ORDER_TYPES.find((type) => type.code === orderType)?.title ?? orderType}
-            </Text>
-            <Text style={styles.typeHint}>
-              Elegido desde la tarjeta del prestador.
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.typeList}>
-            {ORDER_TYPES.map((type) => {
-              const selected = orderType === type.code;
+        {emergencyProvider ? null : (
+          <>
+            <Text style={styles.label}>¿Qué necesitás?</Text>
+            {serviceLocked && orderType ? (
+              <View style={[styles.typeCard, styles.typeCardSelected]}>
+                <Text style={styles.typeTitle}>
+                  {ORDER_TYPES.find((type) => type.code === orderType)?.title ?? orderType}
+                </Text>
+                <Text style={styles.typeHint}>
+                  Elegido desde la tarjeta del prestador.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.typeList}>
+                {ORDER_TYPES.map((type) => {
+                  const selected = orderType === type.code;
 
-              return (
-                <Pressable
-                  key={type.code}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  onPress={() => handleOrderType(type.code)}
-                  style={[styles.typeCard, selected && styles.typeCardSelected]}
-                >
-                  <Text style={styles.typeTitle}>{type.title}</Text>
-                  <Text style={styles.typeHint}>{type.hint}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+                  return (
+                    <Pressable
+                      key={type.code}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      onPress={() => handleOrderType(type.code)}
+                      style={[styles.typeCard, selected && styles.typeCardSelected]}
+                    >
+                      <Text style={styles.typeTitle}>{type.title}</Text>
+                      <Text style={styles.typeHint}>{type.hint}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+          </>
         )}
 
         {orderType ? (
@@ -623,9 +898,11 @@ export default function NewRequestScreen() {
               )
             ) : null}
 
-            <Text style={styles.label}>
-              {providerLocked ? 'Prestador' : 'Prestador (opcional)'}
-            </Text>
+            {emergencyProvider ? null : (
+              <>
+                <Text style={styles.label}>
+                  {providerLocked ? 'Prestador' : 'Prestador (opcional)'}
+                </Text>
             {provider ? (
               <View style={styles.providerPicked}>
                 <Text style={styles.providerPickedText} numberOfLines={1}>
@@ -733,90 +1010,384 @@ export default function NewRequestScreen() {
                   </Pressable>
                 ) : null}
               </>
+                )}
+              </>
             )}
 
             {orderType === 'EMERGENCY' ? (
               <>
-                <Text style={styles.label}>Foto del problema *</Text>
-                {photo ? (
-                  <View style={styles.photoPreview}>
-                    <Image source={{ uri: photo.uri }} style={styles.photo} />
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => setPhoto(null)}
-                      style={styles.photoRemove}
-                    >
-                      <Text style={styles.providerRemoveText}>Cambiar</Text>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <View style={styles.photoButtons}>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={photoSource !== null}
-                      onPress={() => void pickEmergencyPhoto('camera')}
-                      style={styles.photoButton}
-                    >
-                      <Text style={styles.photoButtonText}>
-                        {photoSource === 'camera' ? 'Abriendo…' : '📷 Cámara'}
+                {emergencyProvider ? (
+                  <View style={styles.providerHeader}>
+                    <View style={styles.providerHeaderTop}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Cambiar de prestador"
+                        onPress={() =>
+                          providerLocked ? router.back() : setProvider(null)
+                        }
+                        style={styles.providerBack}
+                      >
+                        <Text style={styles.providerBackText}>←</Text>
+                      </Pressable>
+
+                      <View style={styles.providerAvatar}>
+                        <Text style={styles.providerAvatarText}>
+                          {(emergencyProvider.business_name || '?')
+                            .charAt(0)
+                            .toUpperCase()}
+                        </Text>
+                      </View>
+
+                      <View style={styles.providerHeaderInfo}>
+                        <View style={styles.providerNameRow}>
+                          <Text style={styles.providerName} numberOfLines={1}>
+                            {emergencyProvider.business_name}
+                          </Text>
+                          {emergencyProvider.is_verified ? (
+                            <View style={styles.verifiedBadge}>
+                              <Text style={styles.verifiedText}>✓ Verificado</Text>
+                            </View>
+                          ) : null}
+                        </View>
+
+                        <Text style={styles.providerMeta} numberOfLines={1}>
+                          {providerMeta}
+                        </Text>
+
+                        <View style={styles.providerBadges}>
+                          <Text style={styles.providerRating}>
+                            {providerScore > 0
+                              ? `★ ${providerScore.toFixed(1)}`
+                              : '★ Nuevo'}
+                            {emergencyCount > 0 ? (
+                              <Text style={styles.providerRatingCount}>
+                                {` (${emergencyCount} urgencia${
+                                  emergencyCount === 1 ? '' : 's'
+                                })`}
+                              </Text>
+                            ) : null}
+                          </Text>
+
+                          <View
+                            style={[
+                              styles.statusBadge,
+                              emergencyProvider.is_available_now
+                                ? styles.statusBadgeOpen
+                                : styles.statusBadgeClosed,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.statusText,
+                                emergencyProvider.is_available_now
+                                  ? styles.statusTextOpen
+                                  : styles.statusTextClosed,
+                              ]}
+                            >
+                              {emergencyProvider.is_available_now
+                                ? '🟢 Disponible Ahora'
+                                : `🟡 ${emergencyProvider.availability_label}`}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+
+                    <View style={styles.providerServiceRow}>
+                      <Text style={styles.providerService}>
+                        {emergencyServiceLabel}
                       </Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={photoSource !== null}
-                      onPress={() => void pickEmergencyPhoto('gallery')}
-                      style={styles.photoButton}
-                    >
-                      <Text style={styles.photoButtonText}>
-                        {photoSource === 'gallery' ? 'Abriendo…' : '🖼️ Galería'}
+                      <Text style={styles.providerServiceNote}>
+                        El precio lo define el profesional
                       </Text>
-                    </Pressable>
+                    </View>
                   </View>
-                )}
-                {fieldErrors.photo?.[0] ? (
-                  <Text style={styles.fieldError}>{fieldErrors.photo[0]}</Text>
                 ) : null}
+
+                {emergencyProvider ? (
+                  <View style={styles.feeCard}>
+                    <View style={styles.feeIcon}>
+                      <Text style={styles.feeIconText}>🔔</Text>
+                    </View>
+                    <View style={styles.feeBody}>
+                      <Text style={styles.feeTitle}>
+                        TARIFA BASE POR URGENCIA / VISITA
+                      </Text>
+                      <Text
+                        style={[
+                          styles.feeAmount,
+                          !hasBaseFee && styles.feeAmountPending,
+                        ]}
+                      >
+                        {baseFeeLabel}
+                      </Text>
+                      <Text style={styles.feeNote}>
+                        {hasBaseFee
+                          ? 'Se abona al confirmar el trabajo. El profesional puede ajustar el monto final en el lugar.'
+                          : 'El profesional confirma el monto de la visita antes de empezar.'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                <Text style={styles.sectionTitle}>CONTANOS EL PROBLEMA</Text>
+
+                <View style={styles.chips}>
+                  {PROBLEM_CHIPS.map((chip) => {
+                    const selected = problemChip === chip.key;
+
+                    return (
+                      <Pressable
+                        key={chip.key}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => handleProblemChip(chip)}
+                        style={[styles.chip, selected && styles.chipSelected]}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            selected && styles.chipTextSelected,
+                          ]}
+                        >
+                          {chip.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
 
                 <TextField
                   label="Descripción (opcional)"
                   value={description}
-                  onChangeText={setDescription}
-                  placeholder="¿Qué pasó?"
+                  onChangeText={(value) => {
+                    setDescription(value);
+
+                    // Escribir a mano suelta el chip activo, como en la web.
+                    if (problemChip) {
+                      setProblemChip(null);
+                    }
+                  }}
+                  placeholder="Ej: Pérdida de gas bajo la bacha de la cocina"
                   multiline
                   numberOfLines={3}
+                  maxLength={1000}
+                  error={fieldErrors.description?.[0] ?? null}
                 />
 
                 <TextField
-                  label="Dirección (opcional)"
+                  label="Dirección donde te urge (opcional)"
                   value={address}
                   onChangeText={setAddress}
-                  placeholder="Calle y número"
+                  placeholder="Calle, número, piso/depto"
+                  maxLength={500}
+                  error={fieldErrors.address?.[0] ?? null}
                 />
 
                 <Pressable
                   accessibilityRole="button"
                   disabled={locating}
                   onPress={() => void handleLocate()}
-                  style={styles.ghostButton}
+                  style={[
+                    styles.locateButton,
+                    locating && styles.locateButtonDisabled,
+                  ]}
                 >
-                  <Text style={styles.ghostButtonText}>
+                  <Text style={styles.locateButtonText}>
                     {locating
                       ? 'Obteniendo ubicación…'
-                      : coords
-                        ? `📍 Ubicación lista (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`
-                        : '📍 Usar mi ubicación actual'}
+                      : '📍 Usar mi ubicación actual'}
                   </Text>
                 </Pressable>
+                {coords ? (
+                  <Text style={styles.locateStatus}>
+                    ✅ Ubicación lista ({coords.latitude.toFixed(4)},{' '}
+                    {coords.longitude.toFixed(4)})
+                  </Text>
+                ) : null}
 
-                <ComboField
-                  label="Medio de pago"
-                  value={paymentMethod}
-                  options={PAYMENT_METHODS.map((method) => ({
-                    value: method.code,
-                    label: method.label,
-                  }))}
-                  onChange={setPaymentMethod}
-                />
+                <View style={styles.mediaRow}>
+                  <View style={styles.mediaCol}>
+                    <Text style={styles.mediaLabel}>
+                      Foto del problema (obligatoria, máx 5 MB)
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={photoSource !== null}
+                      onPress={chooseEmergencyPhoto}
+                      style={[
+                        styles.mediaButton,
+                        photo ? styles.mediaButtonReady : null,
+                      ]}
+                    >
+                      <View style={styles.mediaIcon}>
+                        <Text style={styles.mediaIconText}>📷</Text>
+                      </View>
+                      <Text style={styles.mediaButtonText}>
+                        {photoSource
+                          ? 'Abriendo…'
+                          : photo
+                            ? 'Cambiar Foto'
+                            : 'Tomar / Subir Foto'}
+                      </Text>
+                    </Pressable>
+
+                    {photo ? (
+                      <View style={styles.mediaInfo}>
+                        <Image
+                          source={{ uri: photo.uri }}
+                          style={styles.mediaThumb}
+                        />
+                        <View style={styles.mediaInfoBody}>
+                          <Text style={styles.mediaInfoText} numberOfLines={1}>
+                            {photo.name}
+                          </Text>
+                          {photo.size ? (
+                            <Text style={styles.mediaInfoSize}>
+                              {formatSize(photo.size)}
+                            </Text>
+                          ) : null}
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => setPhoto(null)}
+                          >
+                            <Text style={styles.mediaRemove}>Quitar</Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : null}
+
+                    {fieldErrors.photo?.[0] ? (
+                      <Text style={styles.fieldError}>
+                        {fieldErrors.photo[0]}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.mediaCol}>
+                    <Text style={styles.mediaLabel}>
+                      Audio (opcional, máx 8 MB)
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={audioBusy || Boolean(audio)}
+                      onPress={() => void toggleRecording()}
+                      style={[
+                        styles.mediaButton,
+                        recorderState.isRecording
+                          ? styles.mediaButtonRecording
+                          : null,
+                        audio ? styles.mediaButtonReady : null,
+                      ]}
+                    >
+                      <View style={styles.mediaIcon}>
+                        <Text style={styles.mediaIconText}>
+                          {recorderState.isRecording ? '⏹️' : '🎙️'}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[
+                          styles.mediaButtonText,
+                          recorderState.isRecording
+                            ? styles.mediaButtonTextRecording
+                            : null,
+                        ]}
+                      >
+                        {audioBusy
+                          ? 'Procesando…'
+                          : recorderState.isRecording
+                            ? `Detener ${formatDuration(
+                                recorderState.durationMillis,
+                              )}`
+                            : audio
+                              ? 'Audio listo'
+                              : 'Grabar Audio'}
+                      </Text>
+                    </Pressable>
+
+                    {recorderState.isRecording ? (
+                      <Text style={styles.recordingHint}>
+                        Grabando… máximo 2 minutos.
+                      </Text>
+                    ) : null}
+
+                    {audio ? (
+                      <View style={styles.mediaInfo}>
+                        <View style={styles.mediaInfoBody}>
+                          <Text style={styles.mediaInfoText} numberOfLines={1}>
+                            {audio.name}
+                          </Text>
+                          {audioSize ? (
+                            <Text style={styles.mediaInfoSize}>
+                              {formatSize(audioSize)}
+                            </Text>
+                          ) : null}
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => {
+                              setAudio(null);
+                              setAudioSize(null);
+                            }}
+                          >
+                            <Text style={styles.mediaRemove}>Quitar</Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+
+                <View style={styles.paymentBlock}>
+                  <Text style={styles.mediaLabel}>
+                    Medio de pago de la tarifa base
+                  </Text>
+                  <View style={styles.paymentRow}>
+                    {EMERGENCY_PAYMENT_METHODS.map((method) => {
+                      const selected = paymentMethod === method.code;
+
+                      return (
+                        <Pressable
+                          key={method.code}
+                          accessibilityRole="radio"
+                          accessibilityState={{ selected }}
+                          onPress={() => setPaymentMethod(method.code)}
+                          style={[
+                            styles.paymentChip,
+                            selected && styles.paymentChipSelected,
+                          ]}
+                        >
+                          {method.mp ? (
+                            <View style={styles.mpBadge}>
+                              <Text style={styles.mpBadgeText}>MP</Text>
+                            </View>
+                          ) : (
+                            <Text style={styles.paymentIcon}>
+                              {method.icon}
+                            </Text>
+                          )}
+                          <Text
+                            style={[
+                              styles.paymentText,
+                              selected && styles.paymentTextSelected,
+                            ]}
+                          >
+                            {method.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  <Text style={styles.paymentHelp}>
+                    Se aplica a la tarifa base de la visita. Podés cambiarlo al
+                    confirmar el trabajo.
+                  </Text>
+                </View>
+
+                {emergencyProvider && !emergencyHasContent ? (
+                  <Text style={styles.hint}>
+                    Elegí una opción rápida o escribí qué está pasando.
+                  </Text>
+                ) : null}
               </>
             ) : null}
 
@@ -977,11 +1548,24 @@ export default function NewRequestScreen() {
 
             <View style={styles.submit}>
               <PrimaryButton
-                title="Enviar solicitud"
+                title={
+                  orderType === 'EMERGENCY'
+                    ? '🚨 Solicitar urgencia ahora'
+                    : 'Enviar solicitud'
+                }
                 onPress={handleSubmit}
                 loading={submitting}
-                disabled={submitting || (providerLocked && !provider)}
+                disabled={
+                  submitting ||
+                  (providerLocked && !provider) ||
+                  (orderType === 'EMERGENCY' && !photo)
+                }
               />
+              {orderType === 'EMERGENCY' ? (
+                <Text style={styles.submitHint}>
+                  Respuesta estimada: menos de 3 minutos.
+                </Text>
+              ) : null}
             </View>
           </>
         ) : null}
@@ -1163,51 +1747,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  photoButtons: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  photoButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flex: 1,
-    paddingVertical: spacing.lg,
-  },
-  photoButtonText: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  photoPreview: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  photo: {
-    borderRadius: radius.md,
-    height: 140,
-    width: 140,
-  },
-  photoRemove: {
-    padding: spacing.md,
-  },
-  ghostButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-  ghostButtonText: {
-    color: colors.brandDark,
-    fontSize: 14,
-    fontWeight: '700',
-  },
   row: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -1250,5 +1789,377 @@ const styles = StyleSheet.create({
   },
   submit: {
     marginTop: spacing.xl,
+  },
+  submitHint: {
+    color: colors.muted,
+    fontSize: 11,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  providerHeader: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginTop: spacing.sm,
+    padding: spacing.md,
+  },
+  providerHeaderTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  providerBack: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+  },
+  providerBackText: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  providerAvatar: {
+    alignItems: 'center',
+    backgroundColor: '#fff1eb',
+    borderRadius: radius.pill,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  providerAvatarText: {
+    color: '#D24C19',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  providerHeaderInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  providerNameRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  providerName: {
+    color: '#0f172a',
+    flexShrink: 1,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  verifiedBadge: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  verifiedText: {
+    color: '#1d4ed8',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  providerMeta: {
+    color: '#64748b',
+    fontSize: 12,
+    marginTop: 3,
+  },
+  providerBadges: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: 6,
+  },
+  providerRating: {
+    color: '#0f172a',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  providerRatingCount: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  statusBadge: {
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  statusBadgeOpen: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#a7f3d0',
+  },
+  statusBadgeClosed: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  statusTextOpen: {
+    color: '#047857',
+  },
+  statusTextClosed: {
+    color: '#b45309',
+  },
+  providerServiceRow: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  providerService: {
+    color: '#D24C19',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  providerServiceNote: {
+    color: '#6b7280',
+    flexShrink: 1,
+    fontSize: 11,
+    textAlign: 'right',
+  },
+  feeCard: {
+    alignItems: 'flex-start',
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+    borderLeftColor: '#D24C19',
+    borderLeftWidth: 4,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  feeIcon: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#fed7aa',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  feeIconText: {
+    fontSize: 14,
+  },
+  feeBody: {
+    flex: 1,
+  },
+  feeTitle: {
+    color: '#9a3412',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  feeAmount: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  feeAmountPending: {
+    color: '#b45309',
+  },
+  feeNote: {
+    color: '#9a3412',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  sectionTitle: {
+    color: '#94a3b8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  locateButton: {
+    alignItems: 'center',
+    backgroundColor: NAVY,
+    borderRadius: radius.sm,
+    marginBottom: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  locateButtonDisabled: {
+    opacity: 0.6,
+  },
+  locateButtonText: {
+    color: colors.surface,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  locateStatus: {
+    color: '#047857',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+  mediaRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  mediaCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mediaLabel: {
+    color: '#6b7280',
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  mediaButton: {
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderColor: '#cbd5e1',
+    borderRadius: radius.sm,
+    borderStyle: 'dashed',
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  mediaButtonReady: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+    borderStyle: 'solid',
+  },
+  mediaButtonRecording: {
+    backgroundColor: '#fef2f2',
+    borderColor: colors.danger,
+    borderStyle: 'solid',
+  },
+  mediaIcon: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#fed7aa',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  mediaIconText: {
+    fontSize: 15,
+  },
+  mediaButtonText: {
+    color: NAVY,
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  mediaButtonTextRecording: {
+    color: colors.danger,
+  },
+  mediaInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  mediaThumb: {
+    borderRadius: radius.sm,
+    height: 44,
+    width: 44,
+  },
+  mediaInfoBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  mediaInfoText: {
+    color: '#047857',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  mediaInfoSize: {
+    color: '#64748b',
+    fontSize: 11,
+  },
+  mediaRemove: {
+    color: colors.danger,
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  recordingHint: {
+    color: colors.danger,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  paymentBlock: {
+    borderTopColor: '#eef2f7',
+    borderTopWidth: 1,
+    marginTop: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  paymentRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  paymentChip: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  paymentChipSelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  mpBadge: {
+    alignItems: 'center',
+    backgroundColor: '#00b6ea',
+    borderRadius: 4,
+    height: 19,
+    justifyContent: 'center',
+    width: 19,
+  },
+  mpBadgeText: {
+    color: colors.surface,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  paymentIcon: {
+    fontSize: 14,
+  },
+  paymentText: {
+    color: '#374151',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  paymentTextSelected: {
+    color: '#D24C19',
+  },
+  paymentHelp: {
+    color: '#6b7280',
+    fontSize: 11,
+    marginTop: spacing.sm,
   },
 });
