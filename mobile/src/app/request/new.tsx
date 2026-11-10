@@ -565,7 +565,7 @@ export default function NewRequestScreen() {
       return;
     }
 
-    if (recorderState.isRecording) {
+    if (recorderState.isRecording || audioRecorder.isRecording) {
       await finishRecording();
       return;
     }
@@ -2013,11 +2013,13 @@ const styles = StyleSheet.create({
   },
   mediaRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
     marginTop: spacing.md,
   },
   mediaCol: {
-    flex: 1,
+    flexBasis: 140,
+    flexGrow: 1,
     minWidth: 0,
   },
   mediaLabel: {
