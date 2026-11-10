@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -196,35 +197,20 @@ export default function RequestsScreen() {
         />
       </View>
 
-      <View style={styles.filters}>
-        <Pressable
-          accessibilityRole="radio"
-          accessibilityState={{ selected: statusFilter === null }}
-          onPress={() => handleStatusFilter(null)}
-          style={[styles.chip, statusFilter === null && styles.chipSelected]}
-        >
-          <Text style={[styles.chipText, statusFilter === null && styles.chipTextSelected]}>
-            Todas
-          </Text>
-        </Pressable>
-
-        {statuses.map((status) => {
-          const selected = statusFilter === status;
-
-          return (
-            <Pressable
-              key={status}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => handleStatusFilter(status)}
-              style={[styles.chip, selected && styles.chipSelected]}
-            >
-              <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                {status.charAt(0) + status.slice(1).toLowerCase()}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.filterBlock}>
+        <ComboField
+          label="Estado"
+          value={statusFilter}
+          options={statuses.map((status) => ({
+            value: status,
+            label: status.charAt(0) + status.slice(1).toLowerCase(),
+          }))}
+          onChange={handleStatusFilter}
+          allowEmpty
+          emptyLabel="Todos los estados"
+          onClear={() => handleStatusFilter(null)}
+          searchPlaceholder="Buscar estado…"
+        />
       </View>
 
       <View style={styles.filters}>
@@ -365,6 +351,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
+  },
+  filterBlock: {
+    paddingHorizontal: spacing.lg,
   },
   chip: {
     backgroundColor: colors.surface,

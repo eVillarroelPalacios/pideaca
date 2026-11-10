@@ -18,6 +18,7 @@ import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { useManaged } from '@/auth/ManagedContext';
 import { AccountSidebar } from '@/components/AccountSidebar';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -1401,43 +1402,31 @@ export default function HomeScreen() {
             {readOnlyAddress && !sharedAddress ? (
               <Text style={styles.cardSub}>Solo el titular puede editar la dirección.</Text>
             ) : null}
-            <Text style={styles.sectionLabel}>País</Text>
-            <View style={styles.chipsWrap}>
-              {countries.map((country) => {
-                const selected = countryId === country.id;
-                return (
-                  <Pressable
-                    key={country.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    disabled={readOnlyAddress}
-                    onPress={() => void handleCountryChange(country.id)}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{country.name}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text style={styles.sectionLabel}>Provincia / Región</Text>
-            <View style={styles.chipsWrap}>
-              {regions.map((region) => {
-                const selected = provinceId === region.id;
-                return (
-                  <Pressable
-                    key={region.id}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    disabled={readOnlyAddress}
-                    onPress={() => setProvinceId(region.id)}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{region.name}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            {regions.length === 0 ? <Text style={styles.emptyText}>Seleccioná un país para ver sus regiones.</Text> : null}
+            <ComboField
+              label="País"
+              value={countryId}
+              options={countries.map((country) => ({
+                value: country.id,
+                label: country.name,
+              }))}
+              onChange={(id) => void handleCountryChange(id)}
+              disabled={readOnlyAddress}
+            />
+            <ComboField
+              label="Provincia / Región"
+              value={provinceId}
+              options={regions.map((region) => ({
+                value: region.id,
+                label: region.name,
+              }))}
+              onChange={setProvinceId}
+              placeholder={
+                regions.length === 0
+                  ? 'Seleccioná un país para ver sus regiones'
+                  : 'Seleccioná una provincia'
+              }
+              disabled={readOnlyAddress || regions.length === 0}
+            />
             <TextField label="Calle" placeholder="Av. San Martín" value={street} onChangeText={setStreet} editable={!readOnlyAddress} />
             <TextField label="Número" placeholder="1234" value={addressNumber} onChangeText={setAddressNumber} editable={!readOnlyAddress} />
             <TextField label="Piso / Depto" placeholder="3B" value={floor} onChangeText={setFloor} editable={!readOnlyAddress} />
@@ -1540,22 +1529,16 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>🚗 Mi Vehículo</Text>
             <Text style={styles.cardSub}>Se usa para asignarte los pedidos.</Text>
-            <View style={styles.chipsWrap}>
-              {(profile?.vehicle_types ?? []).map((option) => {
-                const selected = vehicleType === option.value;
-                return (
-                  <Pressable
-                    key={option.value}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    onPress={() => setVehicleType(option.value)}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{option.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <ComboField
+              label="Tipo de vehículo"
+              value={vehicleType || null}
+              options={(profile?.vehicle_types ?? []).map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              onChange={setVehicleType}
+              placeholder="Seleccioná un tipo de vehículo"
+            />
             <TextField label="Patente / Placa (opcional)" placeholder="Ej: AB123CD" value={vehiclePlate} onChangeText={setVehiclePlate} maxLength={20} autoCapitalize="characters" />
             {vehicleError ? <Text style={styles.fieldError}>{vehicleError}</Text> : null}
             <PrimaryButton title="Guardar vehículo" onPress={() => void handleSaveVehicle()} loading={savingVehicle} />

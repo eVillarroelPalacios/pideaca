@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -260,35 +261,18 @@ export default function SubGroupsScreen() {
           autoCorrect={false}
         />
 
-        <Text style={styles.selectorLabel}>Filtrar por grupo</Text>
-        <View style={styles.chips}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: groupFilter === null }}
-            onPress={() => setGroupFilter(null)}
-            style={[styles.chip, groupFilter === null && styles.chipSelected]}
-          >
-            <Text style={[styles.chipText, groupFilter === null && styles.chipTextSelected]}>
-              Todos
-            </Text>
-          </Pressable>
-          {groupOptions.map((option) => {
-            const selected = groupFilter === option.id;
-            return (
-              <Pressable
-                key={option.id}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                onPress={() => setGroupFilter(selected ? null : option.id)}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {option.description}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <ComboField
+          label="Filtrar por grupo"
+          value={groupFilter}
+          options={groupOptions.map((option) => ({
+            value: option.id,
+            label: option.description,
+          }))}
+          onChange={setGroupFilter}
+          allowEmpty
+          emptyLabel="Todos"
+          onClear={() => setGroupFilter(null)}
+        />
 
         <FlatList
           data={visible}
@@ -385,31 +369,22 @@ export default function SubGroupsScreen() {
                 error={fieldErrors.description}
               />
 
-              <Text style={styles.selectorLabel}>Grupo</Text>
-              <View style={styles.chips}>
-                {groupOptions.map((option) => {
-                  const selected = groupId === option.id;
-                  return (
-                    <Pressable
-                      key={option.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setGroupId(option.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                        {option.description}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {groupOptions.length === 0 ? (
-                <Text style={styles.hint}>No hay grupos disponibles.</Text>
-              ) : null}
-              {fieldErrors.group_id ? (
-                <Text style={styles.fieldError}>{fieldErrors.group_id}</Text>
-              ) : null}
+              <ComboField
+                label="Grupo"
+                value={groupId}
+                options={groupOptions.map((option) => ({
+                  value: option.id,
+                  label: option.description,
+                }))}
+                onChange={setGroupId}
+                placeholder={
+                  groupOptions.length === 0
+                    ? 'No hay grupos disponibles'
+                    : 'Seleccioná un grupo'
+                }
+                disabled={groupOptions.length === 0}
+                error={fieldErrors.group_id}
+              />
 
               <View style={styles.buttonGap} />
               <PrimaryButton

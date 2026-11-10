@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -268,35 +269,18 @@ export default function PagesScreen() {
           autoCorrect={false}
         />
 
-        <Text style={styles.selectorLabel}>Filtrar por módulo</Text>
-        <View style={styles.chips}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: moduleFilter === null }}
-            onPress={() => setModuleFilter(null)}
-            style={[styles.chip, moduleFilter === null && styles.chipSelected]}
-          >
-            <Text style={[styles.chipText, moduleFilter === null && styles.chipTextSelected]}>
-              Todos
-            </Text>
-          </Pressable>
-          {moduleOptions.map((option) => {
-            const selected = moduleFilter === option.id;
-            return (
-              <Pressable
-                key={option.id}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                onPress={() => setModuleFilter(selected ? null : option.id)}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {option.description}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <ComboField
+          label="Filtrar por módulo"
+          value={moduleFilter}
+          options={moduleOptions.map((option) => ({
+            value: option.id,
+            label: option.description,
+          }))}
+          onChange={setModuleFilter}
+          allowEmpty
+          emptyLabel="Todos"
+          onClear={() => setModuleFilter(null)}
+        />
 
         <FlatList
           data={visible}
@@ -394,31 +378,22 @@ export default function PagesScreen() {
                 error={fieldErrors.description}
               />
 
-              <Text style={styles.selectorLabel}>Módulo</Text>
-              <View style={styles.chips}>
-                {moduleOptions.map((option) => {
-                  const selected = moduleId === option.id;
-                  return (
-                    <Pressable
-                      key={option.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setModuleId(option.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                        {option.description}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {moduleOptions.length === 0 ? (
-                <Text style={styles.hint}>No hay módulos disponibles.</Text>
-              ) : null}
-              {fieldErrors.module_id ? (
-                <Text style={styles.fieldError}>{fieldErrors.module_id}</Text>
-              ) : null}
+              <ComboField
+                label="Módulo"
+                value={moduleId}
+                options={moduleOptions.map((option) => ({
+                  value: option.id,
+                  label: option.description,
+                }))}
+                onChange={setModuleId}
+                placeholder={
+                  moduleOptions.length === 0
+                    ? 'No hay módulos disponibles'
+                    : 'Seleccioná un módulo'
+                }
+                disabled={moduleOptions.length === 0}
+                error={fieldErrors.module_id}
+              />
 
               <TextField
                 label="URL"

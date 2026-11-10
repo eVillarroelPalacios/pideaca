@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
@@ -381,40 +382,31 @@ export default function NewRequestScreen() {
 
         {orderType ? (
           <>
-            <Text style={styles.label}>Rubro</Text>
             {loadingSubgroups ? (
               <Text style={styles.hint}>Cargando rubros…</Text>
             ) : (
-              <View style={styles.chips}>
-                {subgroups.map((subgroup) => {
-                  const selected = subgroupId === subgroup.id;
-
-                  return (
-                    <Pressable
-                      key={subgroup.id}
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected }}
-                      onPress={() =>
-                        setSubgroupId(selected ? null : subgroup.id)
-                      }
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text
-                        style={[styles.chipText, selected && styles.chipTextSelected]}
-                      >
-                        {subgroup.description}
-                        {subgroup.providers_count > 0
-                          ? ` (${subgroup.providers_count})`
-                          : ''}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <ComboField
+                label="Rubro"
+                value={subgroupId}
+                options={subgroups.map((subgroup) => ({
+                  value: subgroup.id,
+                  label: subgroup.description,
+                  hint:
+                    subgroup.providers_count > 0
+                      ? `${subgroup.providers_count} prestador(es)`
+                      : undefined,
+                }))}
+                onChange={setSubgroupId}
+                placeholder={
+                  subgroups.length === 0
+                    ? 'No hay rubros disponibles'
+                    : 'Seleccioná un rubro'
+                }
+                disabled={subgroups.length === 0}
+                error={fieldErrors.sub_group_id?.[0] ?? null}
+                searchPlaceholder="Buscar rubro…"
+              />
             )}
-            {fieldErrors.sub_group_id?.[0] ? (
-              <Text style={styles.fieldError}>{fieldErrors.sub_group_id[0]}</Text>
-            ) : null}
 
             <Text style={styles.label}>Prestador (opcional)</Text>
             {provider ? (
@@ -546,31 +538,15 @@ export default function NewRequestScreen() {
                   </Text>
                 </Pressable>
 
-                <Text style={styles.label}>Medio de pago</Text>
-                <View style={styles.chips}>
-                  {PAYMENT_METHODS.map((method) => {
-                    const selected = paymentMethod === method.code;
-
-                    return (
-                      <Pressable
-                        key={method.code}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        onPress={() => setPaymentMethod(method.code)}
-                        style={[styles.chip, selected && styles.chipSelected]}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            selected && styles.chipTextSelected,
-                          ]}
-                        >
-                          {method.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <ComboField
+                  label="Medio de pago"
+                  value={paymentMethod}
+                  options={PAYMENT_METHODS.map((method) => ({
+                    value: method.code,
+                    label: method.label,
+                  }))}
+                  onChange={setPaymentMethod}
+                />
               </>
             ) : null}
 
@@ -606,102 +582,35 @@ export default function NewRequestScreen() {
                   <Text style={styles.fieldError}>{fieldErrors.scheduled_at[0]}</Text>
                 ) : null}
 
-                <Text style={styles.label}>¿Dónde?</Text>
-                <View style={styles.chips}>
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: fulfillment === 'AT_HOME' }}
-                    onPress={() => setFulfillment('AT_HOME')}
-                    style={[styles.chip, fulfillment === 'AT_HOME' && styles.chipSelected]}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        fulfillment === 'AT_HOME' && styles.chipTextSelected,
-                      ]}
-                    >
-                      🏠 A domicilio
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: fulfillment === 'AT_MERCHANT_LOCATION' }}
-                    onPress={() => setFulfillment('AT_MERCHANT_LOCATION')}
-                    style={[
-                      styles.chip,
-                      fulfillment === 'AT_MERCHANT_LOCATION' && styles.chipSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        fulfillment === 'AT_MERCHANT_LOCATION' && styles.chipTextSelected,
-                      ]}
-                    >
-                      🏪 En el local
-                    </Text>
-                  </Pressable>
-                </View>
+                <ComboField
+                  label="¿Dónde?"
+                  value={fulfillment}
+                  options={[
+                    { value: 'AT_HOME', label: '🏠 A domicilio' },
+                    { value: 'AT_MERCHANT_LOCATION', label: '🏪 En el local' },
+                  ]}
+                  onChange={setFulfillment}
+                />
 
-                <Text style={styles.label}>Pago</Text>
-                <View style={styles.chips}>
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: paymentMode === 'DEPOSIT' }}
-                    onPress={() => setPaymentMode('DEPOSIT')}
-                    style={[styles.chip, paymentMode === 'DEPOSIT' && styles.chipSelected]}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        paymentMode === 'DEPOSIT' && styles.chipTextSelected,
-                      ]}
-                    >
-                      Seña
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: paymentMode === 'FULL' }}
-                    onPress={() => setPaymentMode('FULL')}
-                    style={[styles.chip, paymentMode === 'FULL' && styles.chipSelected]}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        paymentMode === 'FULL' && styles.chipTextSelected,
-                      ]}
-                    >
-                      Total
-                    </Text>
-                  </Pressable>
-                </View>
+                <ComboField
+                  label="Pago"
+                  value={paymentMode}
+                  options={[
+                    { value: 'DEPOSIT', label: 'Seña' },
+                    { value: 'FULL', label: 'Total' },
+                  ]}
+                  onChange={setPaymentMode}
+                />
 
-                <Text style={styles.label}>Medio de pago</Text>
-                <View style={styles.chips}>
-                  {PAYMENT_METHODS.map((method) => {
-                    const selected = scheduledPaymentMethod === method.label;
-
-                    return (
-                      <Pressable
-                        key={method.code}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        onPress={() => setScheduledPaymentMethod(method.label)}
-                        style={[styles.chip, selected && styles.chipSelected]}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            selected && styles.chipTextSelected,
-                          ]}
-                        >
-                          {method.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <ComboField
+                  label="Medio de pago"
+                  value={scheduledPaymentMethod}
+                  options={PAYMENT_METHODS.map((method) => ({
+                    value: method.label,
+                    label: method.label,
+                  }))}
+                  onChange={setScheduledPaymentMethod}
+                />
 
                 <TextField
                   label="Notas (opcional)"
@@ -737,37 +646,16 @@ export default function NewRequestScreen() {
                   </View>
                 </View>
 
-                <Text style={styles.label}>Recordatorio</Text>
-                <View style={styles.chips}>
-                  {(
-                    [
-                      { code: 'none', label: 'Sin recordatorio' },
-                      { code: 'whatsapp', label: 'WhatsApp' },
-                      { code: 'email', label: 'Email' },
-                    ] as const
-                  ).map((option) => {
-                    const selected = reminder === option.code;
-
-                    return (
-                      <Pressable
-                        key={option.code}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        onPress={() => setReminder(option.code)}
-                        style={[styles.chip, selected && styles.chipSelected]}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            selected && styles.chipTextSelected,
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <ComboField
+                  label="Recordatorio"
+                  value={reminder}
+                  options={[
+                    { value: 'none', label: 'Sin recordatorio' },
+                    { value: 'whatsapp', label: 'WhatsApp' },
+                    { value: 'email', label: 'Email' },
+                  ]}
+                  onChange={setReminder}
+                />
               </>
             ) : null}
 

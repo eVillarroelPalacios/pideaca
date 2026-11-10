@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -361,32 +362,22 @@ export default function GroupsScreen() {
                 error={fieldErrors.description}
               />
 
-              <Text style={styles.selectorLabel}>Estado</Text>
-              <View style={styles.chips}>
-                {statusOptions.map((option) => {
-                  const selected = statusId === option.id;
-
-                  return (
-                    <Pressable
-                      key={option.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setStatusId(option.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                        {option.description}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {statusOptions.length === 0 ? (
-                <Text style={styles.hint}>No hay estados disponibles.</Text>
-              ) : null}
-              {fieldErrors.group_status_id ? (
-                <Text style={styles.fieldError}>{fieldErrors.group_status_id}</Text>
-              ) : null}
+              <ComboField
+                label="Estado"
+                value={statusId}
+                options={statusOptions.map((option) => ({
+                  value: option.id,
+                  label: option.description,
+                }))}
+                onChange={setStatusId}
+                placeholder={
+                  statusOptions.length === 0
+                    ? 'No hay estados disponibles'
+                    : 'Seleccioná un estado'
+                }
+                disabled={statusOptions.length === 0}
+                error={fieldErrors.group_status_id}
+              />
 
               <TextField
                 label="Icono (SVG)"

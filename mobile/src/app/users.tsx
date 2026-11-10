@@ -17,6 +17,7 @@ import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { useManaged } from '@/auth/ManagedContext';
 import { AccountSidebar } from '@/components/AccountSidebar';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -1002,29 +1003,22 @@ export default function UsersScreen() {
                 </Text>
               )}
 
-              <Text style={styles.selectorLabel}>Módulos</Text>
-              <View style={styles.chipsWrap}>
-                {modules.map((module) => {
-                  const count = module.pages.filter((pg) => draftPages.includes(pg.id)).length;
-                  const selected = selectedModuleId === module.id;
-                  return (
-                    <Pressable
-                      key={module.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setSelectedModuleId(module.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                        {module.description} · {count}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {modules.length === 0 ? (
-                <Text style={styles.emptyText}>No hay módulos disponibles para asignar.</Text>
-              ) : null}
+              <ComboField
+                label="Módulos"
+                value={selectedModuleId}
+                options={modules.map((module) => ({
+                  value: module.id,
+                  label: module.description,
+                  hint: `${module.pages.filter((pg) => draftPages.includes(pg.id)).length} páginas seleccionadas`,
+                }))}
+                onChange={setSelectedModuleId}
+                placeholder={
+                  modules.length === 0
+                    ? 'No hay módulos disponibles'
+                    : 'Seleccioná un módulo'
+                }
+                disabled={modules.length === 0}
+              />
 
               <Text style={styles.selectorLabel}>
                 Páginas permitidas · {draftPages.length} seleccionadas
@@ -1097,60 +1091,41 @@ export default function UsersScreen() {
               <Text style={styles.modalTitle}>Editar Datos del Usuario</Text>
               <TextField label="Nombre" placeholder="Nombre completo" value={editName} onChangeText={setEditName} error={editErrors.name} />
               <TextField label="Email" value={users.find((u) => u.id === editUserId)?.email ?? ''} editable={false} />
-              <Text style={styles.selectorLabel}>País</Text>
-              <View style={styles.chipsWrap}>
-                {countries.map((country) => {
-                  const selected = editCountryId === country.id;
-                  return (
-                    <Pressable
-                      key={country.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => void handleCountryChange(country.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{country.name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <Text style={styles.selectorLabel}>Provincia / Región</Text>
-              <View style={styles.chipsWrap}>
-                {regions.map((region) => {
-                  const selected = editProvinceId === region.id;
-                  return (
-                    <Pressable
-                      key={region.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setEditProvinceId(region.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{region.name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {regions.length === 0 ? <Text style={styles.emptyText}>Seleccioná un país para ver sus regiones.</Text> : null}
+              <ComboField
+                label="País"
+                value={editCountryId}
+                options={countries.map((country) => ({
+                  value: country.id,
+                  label: country.name,
+                }))}
+                onChange={(countryId) => void handleCountryChange(countryId)}
+              />
+              <ComboField
+                label="Provincia / Región"
+                value={editProvinceId}
+                options={regions.map((region) => ({
+                  value: region.id,
+                  label: region.name,
+                }))}
+                onChange={setEditProvinceId}
+                placeholder={
+                  regions.length === 0
+                    ? 'Seleccioná un país para ver sus regiones'
+                    : 'Seleccioná una provincia'
+                }
+                disabled={regions.length === 0}
+              />
               <TextField label="Calle" placeholder="Av. San Martín" value={editStreet} onChangeText={setEditStreet} />
               <TextField label="Número" placeholder="1234" value={editNumber} onChangeText={setEditNumber} />
-              <Text style={styles.selectorLabel}>Estado</Text>
-              <View style={styles.chipsWrap}>
-                {statuses.map((status) => {
-                  const selected = editStatusId === status.id;
-                  return (
-                    <Pressable
-                      key={status.id}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => setEditStatusId(status.id)}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                    >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{status.status}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <ComboField
+                label="Estado"
+                value={editStatusId}
+                options={statuses.map((status) => ({
+                  value: status.id,
+                  label: status.status,
+                }))}
+                onChange={setEditStatusId}
+              />
               <Text style={styles.selectorLabel}>Rol de la cuenta principal</Text>
               <Text style={styles.cardSub}>{editRole} · El rol lo define el usuario principal de la cuenta.</Text>
               <TextField
@@ -1217,60 +1192,35 @@ export default function UsersScreen() {
               <Text style={styles.emptyText}>Cargando tipos…</Text>
             ) : (
               <ScrollView>
-                <Text style={styles.selectorLabel}>Tipo de usuario</Text>
-                <View style={styles.chipsWrap}>
-                  {tpTypes.map((type) => {
-                    const selected = tpSelectedTypeId === type.id;
-                    return (
-                      <Pressable
-                        key={type.id}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected }}
-                        onPress={() => selectTpType(type.id)}
-                        style={[styles.chip, selected && styles.chipSelected]}
-                      >
-                        <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                          {type.description} ({type.users_count})
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <ComboField
+                  label="Tipo de usuario"
+                  value={tpSelectedTypeId}
+                  options={tpTypes.map((type) => ({
+                    value: type.id,
+                    label: type.description,
+                    hint: `${type.users_count} usuario(s)`,
+                  }))}
+                  onChange={selectTpType}
+                  placeholder="Seleccioná un tipo de usuario"
+                />
                 {tpSelectedType ? (
                   <Text style={styles.cardSub}>
                     {tpSelectedType.users_count} usuario(s) con este tipo. Al guardar, las páginas
                     seleccionadas se aplican a todos ellos.
                   </Text>
                 ) : null}
-                <Text style={styles.selectorLabel}>Módulo</Text>
-                <View style={styles.chipsWrap}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: tpSelectedModuleId === null }}
-                    onPress={() => setTpSelectedModuleId(null)}
-                    style={[styles.chip, tpSelectedModuleId === null && styles.chipSelected]}
-                  >
-                    <Text style={[styles.chipText, tpSelectedModuleId === null && styles.chipTextSelected]}>
-                      Todos
-                    </Text>
-                  </Pressable>
-                  {tpModuleIds.map((moduleId) => {
-                    const selected = tpSelectedModuleId === moduleId;
-                    return (
-                      <Pressable
-                        key={moduleId}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected }}
-                        onPress={() => setTpSelectedModuleId(selected ? null : moduleId)}
-                        style={[styles.chip, selected && styles.chipSelected]}
-                      >
-                        <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                          {tpModuleName(moduleId)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <ComboField
+                  label="Módulo"
+                  value={tpSelectedModuleId}
+                  options={tpModuleIds.map((moduleId) => ({
+                    value: moduleId,
+                    label: tpModuleName(moduleId),
+                  }))}
+                  onChange={setTpSelectedModuleId}
+                  allowEmpty
+                  emptyLabel="Todos"
+                  onClear={() => setTpSelectedModuleId(null)}
+                />
                 {tpVisiblePages.map((page) => {
                   const checked = tpDraftPages.includes(page.id);
                   return (

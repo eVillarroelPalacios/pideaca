@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -461,31 +462,23 @@ export default function CurrenciesScreen() {
               keyExtractor={(row) => row.key}
               renderItem={() => (
                 <View style={styles.modalBody}>
-                  <Text style={styles.selectorLabel}>País</Text>
-                  <View style={styles.chips}>
-                    {countryOptions.map((option) => {
-                      const selected = countryId === option.id;
-                      return (
-                        <Pressable
-                          key={option.id}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => setCountryId(option.id)}
-                          style={[styles.chip, selected && styles.chipSelected]}
-                        >
-                          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                            {option.name}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                  {countryOptions.length === 0 ? (
-                    <Text style={styles.hint}>No hay países disponibles.</Text>
-                  ) : null}
-                  {fieldErrors.country_id ? (
-                    <Text style={styles.fieldError}>{fieldErrors.country_id}</Text>
-                  ) : null}
+                  <ComboField
+                    label="País"
+                    value={countryId}
+                    options={countryOptions.map((option) => ({
+                      value: option.id,
+                      label: option.name,
+                    }))}
+                    onChange={setCountryId}
+                    placeholder={
+                      countryOptions.length === 0
+                        ? 'No hay países disponibles'
+                        : 'Seleccioná un país'
+                    }
+                    disabled={countryOptions.length === 0}
+                    error={fieldErrors.country_id}
+                    searchPlaceholder="Buscar país…"
+                  />
 
                   <TextField
                     label="Código ISO"
@@ -516,96 +509,55 @@ export default function CurrenciesScreen() {
                     error={fieldErrors.symbol}
                   />
 
-                  <Text style={styles.selectorLabel}>Posición del símbolo</Text>
-                  <View style={styles.chips}>
-                    {(
-                      [
-                        { value: 'before', label: 'Antes del monto' },
-                        { value: 'after', label: 'Después del monto' },
-                      ] as const
-                    ).map((option) => {
-                      const selected = position === option.value;
-                      return (
-                        <Pressable
-                          key={option.value}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => setPosition(option.value)}
-                          style={[styles.chip, selected && styles.chipSelected]}
-                        >
-                          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                            {option.label}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <ComboField
+                    label="Posición del símbolo"
+                    value={position}
+                    options={[
+                      { value: 'before', label: 'Antes del monto' },
+                      { value: 'after', label: 'Después del monto' },
+                    ]}
+                    onChange={setPosition}
+                    error={fieldErrors.symbol_position}
+                  />
 
                   <View style={styles.switchRow}>
                     <Text style={styles.switchLabel}>Espacio entre símbolo y monto</Text>
                     <Switch value={space} onValueChange={setSpace} />
                   </View>
 
-                  <Text style={styles.selectorLabel}>Decimales</Text>
-                  <View style={styles.chips}>
-                    {[0, 1, 2, 3, 4].map((value) => {
-                      const selected = decimals === value;
-                      return (
-                        <Pressable
-                          key={value}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => setDecimals(value)}
-                          style={[styles.chip, selected && styles.chipSelected]}
-                        >
-                          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                            {value}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <ComboField
+                    label="Decimales"
+                    value={decimals}
+                    options={[0, 1, 2, 3, 4].map((value) => ({
+                      value,
+                      label: String(value),
+                    }))}
+                    onChange={setDecimals}
+                    error={fieldErrors.decimals}
+                  />
 
-                  <Text style={styles.selectorLabel}>Separador decimal</Text>
-                  <View style={styles.chips}>
-                    {[',', '.'].map((value) => {
-                      const selected = decimalSep === value;
-                      return (
-                        <Pressable
-                          key={value}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => setDecimalSep(value)}
-                          style={[styles.chip, selected && styles.chipSelected]}
-                        >
-                          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                            {value === ',' ? 'Coma ( , )' : 'Punto ( . )'}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <ComboField
+                    label="Separador decimal"
+                    value={decimalSep}
+                    options={[
+                      { value: ',', label: 'Coma ( , )' },
+                      { value: '.', label: 'Punto ( . )' },
+                    ]}
+                    onChange={setDecimalSep}
+                    error={fieldErrors.decimal_separator}
+                  />
 
-                  <Text style={styles.selectorLabel}>Separador de miles</Text>
-                  <View style={styles.chips}>
-                    {['.', ',', ' '].map((value) => {
-                      const selected = thousandSep === value;
-                      const label = value === '.' ? 'Punto ( . )' : value === ',' ? 'Coma ( , )' : 'Espacio';
-                      return (
-                        <Pressable
-                          key={value || 'space'}
-                          accessibilityRole="button"
-                          accessibilityState={{ selected }}
-                          onPress={() => setThousandSep(value)}
-                          style={[styles.chip, selected && styles.chipSelected]}
-                        >
-                          <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                            {label}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <ComboField
+                    label="Separador de miles"
+                    value={thousandSep}
+                    options={[
+                      { value: '.', label: 'Punto ( . )' },
+                      { value: ',', label: 'Coma ( , )' },
+                      { value: ' ', label: 'Espacio' },
+                    ]}
+                    onChange={setThousandSep}
+                    error={fieldErrors.thousand_separator}
+                  />
 
                   <TextField
                     label="Locale"

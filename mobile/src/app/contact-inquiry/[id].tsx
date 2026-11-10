@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -253,30 +254,15 @@ export default function ContactInquiryDetailScreen() {
                 Cambiá el estado para marcar cómo va la respuesta a esta consulta.
               </Text>
 
-              <View style={styles.statusRow}>
-                {INQUIRY_STATUS_OPTIONS.map((option) => {
-                  const active = selectedStatus === option.value;
-
-                  return (
-                    <Pressable
-                      key={option.value}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: active }}
-                      onPress={() => setSelectedStatus(option.value)}
-                      style={[styles.statusOption, active && styles.statusOptionActive]}
-                    >
-                      <Text
-                        style={[
-                          styles.statusOptionText,
-                          active && styles.statusOptionTextActive,
-                        ]}
-                      >
-                        {option.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <ComboField
+                label="Nuevo estado"
+                value={selectedStatus}
+                options={INQUIRY_STATUS_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: option.label,
+                }))}
+                onChange={setSelectedStatus}
+              />
 
               {feedback ? (
                 <Text

@@ -2,7 +2,6 @@ import { Link, Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -11,6 +10,7 @@ import {
 import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { AuthScreen } from '@/components/AuthScreen';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -158,40 +158,27 @@ export default function RegisterScreen() {
         textContentType="emailAddress"
       />
 
-      <View style={styles.typesWrapper}>
-        <Text style={styles.typesLabel}>Tipo de cuenta</Text>
-
-        {loadingTypes ? (
+      {loadingTypes ? (
+        <View style={styles.typesWrapper}>
+          <Text style={styles.typesLabel}>Tipo de cuenta</Text>
           <View style={styles.typesLoading}>
             <ActivityIndicator color={colors.brand} />
             <Text style={styles.typesLoadingText}>Cargando opciones…</Text>
           </View>
-        ) : (
-          <View style={styles.typesList}>
-            {types.map((type) => {
-              const selected = type.id === selectedTypeId;
-
-              return (
-                <Pressable
-                  key={type.id}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  onPress={() => setSelectedTypeId(type.id)}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                >
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                    {type.description}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-
-        {fieldErrors.type_user_id?.[0] ? (
-          <Text style={styles.fieldError}>{fieldErrors.type_user_id[0]}</Text>
-        ) : null}
-      </View>
+        </View>
+      ) : (
+        <ComboField
+          label="Tipo de cuenta"
+          value={selectedTypeId}
+          options={types.map((type) => ({
+            value: type.id,
+            label: type.description,
+          }))}
+          onChange={setSelectedTypeId}
+          placeholder="Seleccioná un tipo de cuenta"
+          error={fieldErrors.type_user_id?.[0] ?? null}
+        />
+      )}
 
       <TextField
         label="Contraseña"

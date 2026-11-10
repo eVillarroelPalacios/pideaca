@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
@@ -81,44 +82,6 @@ export function UserSearchModal({
     onClose();
   }
 
-  function renderChips<T extends { id: number }>(
-    options: T[],
-    selectedId: number | null,
-    onPick: (id: number | null) => void,
-    labelOf: (option: T) => string,
-  ) {
-    return (
-      <View style={styles.chipsWrap}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: selectedId === null }}
-          onPress={() => onPick(null)}
-          style={[styles.chip, selectedId === null && styles.chipSelected]}
-        >
-          <Text style={[styles.chipText, selectedId === null && styles.chipTextSelected]}>
-            Todos
-          </Text>
-        </Pressable>
-        {options.map((option) => {
-          const selected = selectedId === option.id;
-          return (
-            <Pressable
-              key={option.id}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              onPress={() => onPick(selected ? null : option.id)}
-              style={[styles.chip, selected && styles.chipSelected]}
-            >
-              <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                {labelOf(option)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    );
-  }
-
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <View style={styles.backdrop}>
@@ -145,11 +108,31 @@ export function UserSearchModal({
             returnKeyType="search"
           />
 
-          <Text style={styles.selectorLabel}>Estado</Text>
-          {renderChips(statuses, statusId, setStatusId, (s) => s.status)}
+          <ComboField
+            label="Estado"
+            value={statusId}
+            options={statuses.map((status) => ({
+              value: status.id,
+              label: status.status,
+            }))}
+            onChange={setStatusId}
+            allowEmpty
+            emptyLabel="Todos"
+            onClear={() => setStatusId(null)}
+          />
 
-          <Text style={styles.selectorLabel}>Tipo</Text>
-          {renderChips(types, typeId, setTypeId, (t) => t.description)}
+          <ComboField
+            label="Tipo"
+            value={typeId}
+            options={types.map((type) => ({
+              value: type.id,
+              label: type.description,
+            }))}
+            onChange={setTypeId}
+            allowEmpty
+            emptyLabel="Todos"
+            onClear={() => setTypeId(null)}
+          />
 
           <Text style={styles.selectorLabel}>{results.length} resultados</Text>
 
