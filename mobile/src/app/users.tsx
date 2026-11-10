@@ -14,16 +14,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
+import { useAuth } from '@/auth/AuthContext';
 import { useManaged } from '@/auth/ManagedContext';
+import { AccountSidebar } from '@/components/AccountSidebar';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { UserSearchModal } from '@/components/UserSearchModal';
+import type { PanelKey } from '@/lib/profilePanels';
 import { colors, radius, spacing } from '@/theme';
 import type {
   AdminUserItem,
   AdminUserModule,
+  ProfileResponse,
   TypeUserPagesPage,
   TypeUserPagesType,
 } from '@/types/api';
@@ -37,7 +41,11 @@ type FieldErrors = {
 };
 
 export default function UsersScreen() {
+  const { user: authUser } = useAuth();
   const { managed, enter: enterManaged, exit: exitManaged } = useManaged();
+  // Dependencia estable para memoizaciones: el objeto managed cambia de
+  // identidad y React Compiler no puede preservar las deps por propiedad.
+  const managedId = managed?.id ?? null;
   const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [modules, setModules] = useState<AdminUserModule[]>([]);
   const [statuses, setStatuses] = useState<{ id: number; status: string }[]>([]);
@@ -86,6 +94,13 @@ export default function UsersScreen() {
   // Modal de busqueda (Fase 2: Buscar Usuario de la web).
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Sidebar de cuenta (solo Admin, igual que la web): perfil efectivo para
+  // la cabecera y las secciones habilitadas por tipo/permisos.
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarProfile, setSidebarProfile] = useState<ProfileResponse | null>(null);
+  const [sidebarLoading, setSidebarLoading] = useState(false);
+  const [sidebarError, setSidebarError] = useState<string | null>(null);
+
   // Modal de paginas por tipo (Fase 3).
   const [typePagesOpen, setTypePagesOpen] = useState(false);
   const [typePagesLoading, setTypePagesLoading] = useState(false);
@@ -119,7 +134,7 @@ export default function UsersScreen() {
           : 'No pudimos cargar los usuarios.',
       );
     }
-  }, [managed?.id]);
+  }, []);
 
   // Se recarga al entrar, al volver de otra pantalla y al cambiar de
   // cuenta gestionada.
@@ -137,12 +152,46 @@ export default function UsersScreen() {
       return () => {
         active = false;
       };
-    }, [fetchUsers, managed?.id]),
+    }, [fetchUsers, managedId]),
+  );
+
+  // Perfil efectivo para el sidebar. Solo el Admin lo ve, igual que la web
+  // acopla el sidebar de Mi Perfil en Gestión de Usuarios.
+  const loadSidebarProfile = useCallback(async () => {
+    if (!actorIsAdmin) {
+      setSidebarProfile(null);
+      setSidebarError(null);
+      return;
+    }
+
+    setSidebarLoading(true);
+    try {
+      const profile = managedId
+        ? await api.adminUserProfile(managedId)
+        : await api.profile();
+      setSidebarProfile(profile);
+      setSidebarError(null);
+    } catch (caught) {
+      setSidebarError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos cargar las secciones de la cuenta.',
+      );
+    } finally {
+      setSidebarLoading(false);
+    }
+  }, [actorIsAdmin, managedId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadSidebarProfile();
+    }, [loadSidebarProfile]),
   );
 
   async function handleRefresh() {
     setRefreshing(true);
     await fetchUsers();
+    await loadSidebarProfile();
     setRefreshing(false);
   }
 
@@ -150,6 +199,40 @@ export default function UsersScreen() {
     () => users.find((u) => u.id === selectedUserId) ?? null,
     [users, selectedUserId],
   );
+
+  const sidebarUser = useMemo(() => {
+    if (sidebarProfile?.user) {
+      return sidebarProfile.user;
+    }
+    if (managed) {
+      return {
+        name: managed.name,
+        email: managed.email,
+        role: managed.role ?? null,
+        status: null,
+        is_principal: null,
+      };
+    }
+    if (authUser) {
+      return {
+        name: authUser.name,
+        email: authUser.email,
+        role: authUser.role,
+        status: authUser.status,
+        is_principal: null,
+      };
+    }
+    return null;
+  }, [sidebarProfile, managed, authUser]);
+
+  function handleSidebarSelect(panel: PanelKey) {
+    // Ya estamos en Gestión de Usuarios (este sidebar es solo para Admin).
+    if (panel === 'usuarios') {
+      return;
+    }
+
+    router.push({ pathname: '/home', params: { panel } });
+  }
 
   // La lista principal muestra la cuenta efectiva (gestionada si el Admin
   // activo el modo managed, si no la propia), igual que la web filtra
@@ -370,7 +453,7 @@ export default function UsersScreen() {
           password: createPassword,
           password_confirmation: createPasswordConfirm,
         },
-        managed?.id ?? null,
+        managedId,
       );
 
       setCreateOpen(false);
@@ -713,7 +796,18 @@ export default function UsersScreen() {
           <Text style={styles.backText}>‹ Atrás</Text>
         </Pressable>
         <Text style={styles.title}>Usuarios</Text>
-        <View style={styles.addButton} />
+        {actorIsAdmin ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Abrir secciones de la cuenta"
+            onPress={() => setSidebarOpen(true)}
+            style={styles.sidebarButton}
+          >
+            <Text style={styles.sidebarButtonText}>☰</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.addButton} />
+        )}
       </View>
 
       <ScrollView
@@ -1211,6 +1305,23 @@ export default function UsersScreen() {
           </View>
         </View>
       </Modal>
+
+      {actorIsAdmin ? (
+        <AccountSidebar
+          visible={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          user={sidebarUser}
+          flags={sidebarProfile?.flags ?? null}
+          managedId={managedId}
+          managed={managed}
+          activePanel="usuarios"
+          onSelectPanel={handleSidebarSelect}
+          onExitManaged={() => void handleExitManaged()}
+          keepUsersInManaged
+          loading={sidebarLoading}
+          error={sidebarError}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -1244,6 +1355,21 @@ const styles = StyleSheet.create({
   },
   addButton: {
     minWidth: 70,
+  },
+  sidebarButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 38,
+    justifyContent: 'center',
+    width: 38,
+  },
+  sidebarButtonText: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: '800',
   },
   content: {
     padding: spacing.lg,

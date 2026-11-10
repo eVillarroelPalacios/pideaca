@@ -1,4 +1,4 @@
-import { Link, Redirect, useFocusEffect } from 'expo-router';
+import { Link, Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -17,11 +17,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { useManaged } from '@/auth/ManagedContext';
+import { AccountSidebar } from '@/components/AccountSidebar';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { appendPhoto, pickSingleImage } from '@/lib/media';
+import { PANEL_META, visiblePanels, type PanelKey } from '@/lib/profilePanels';
 import { colors, radius, spacing } from '@/theme';
 import type {
   AccountUsersResponse,
@@ -32,31 +34,6 @@ import type {
   ProfileSubgroupsResponse,
   TrustedDriversResponse,
 } from '@/types/api';
-
-type PanelKey =
-  | 'negocio'
-  | 'horarios'
-  | 'servicios'
-  | 'repartidores'
-  | 'imagenes'
-  | 'categorias'
-  | 'direccion'
-  | 'usuarios'
-  | 'vehiculo'
-  | 'cuenta';
-
-const PANEL_META: { key: PanelKey; label: string; icon: string }[] = [
-  { key: 'negocio', label: 'Negocio', icon: '🏪' },
-  { key: 'horarios', label: 'Horarios', icon: '🕒' },
-  { key: 'servicios', label: 'Servicios', icon: '🧰' },
-  { key: 'repartidores', label: 'Repartidores', icon: '🛵' },
-  { key: 'imagenes', label: 'Publicidad', icon: '🖼️' },
-  { key: 'categorias', label: 'Categorías', icon: '🏷️' },
-  { key: 'direccion', label: 'Dirección', icon: '📍' },
-  { key: 'usuarios', label: 'Usuarios', icon: '👥' },
-  { key: 'vehiculo', label: 'Vehículo', icon: '🚗' },
-  { key: 'cuenta', label: 'Contraseñas', icon: '🔐' },
-];
 
 const DAYS = [
   { key: 'mon', label: 'Lun' },
@@ -125,7 +102,9 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [panel, setPanel] = useState<PanelKey | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const params = useLocalSearchParams<{ panel?: string }>();
 
   // Negocio.
   const [businessName, setBusinessName] = useState('');
@@ -203,40 +182,28 @@ export default function HomeScreen() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  const activePanel: PanelKey = panel ?? 'cuenta';
+  // Mismas secciones que el sidebar de la web, filtradas por rol/permisos
+  // del usuario efectivo (el gestionado si hay modo managed).
+  const panels = useMemo(
+    () => visiblePanels(profile?.flags, managedId),
+    [profile, managedId],
+  );
 
-  const visiblePanels = useMemo(() => {
-    const flags = profile?.flags;
-    if (!flags) {
-      return PANEL_META.filter((p) => p.key === 'cuenta');
-    }
-    // La web gestionada no tiene repartidores, vehiculo ni usuarios en el
-    // perfil (esas pantallas son propias): se ocultan en modo managed.
-    const hiddenInManaged: PanelKey[] = managedId
-      ? ['repartidores', 'vehiculo', 'usuarios']
-      : [];
-    return PANEL_META.filter((p) => {
-      if (hiddenInManaged.includes(p.key)) {
-        return false;
-      }
-      if (p.key === 'cuenta') {
-        return true;
-      }
-      if (p.key === 'vehiculo') {
-        return flags.is_repartidor;
-      }
-      if (p.key === 'direccion') {
-        return flags.can_see_address;
-      }
-      if (p.key === 'usuarios') {
-        return flags.can_manage_users;
-      }
-      if (p.key === 'repartidores') {
-        return flags.can_see_trusted_drivers;
-      }
-      return flags.can_configure_business;
-    });
-  }, [profile, managedId]);
+  // Panel pedido desde el sidebar de Usuarios (`/home?panel=direccion`).
+  // Se usa mientras el parámetro esté presente; al elegir otra sección se
+  // limpia el parámetro y manda la selección manual.
+  const requestedPanel =
+    typeof params.panel === 'string' && params.panel.length > 0
+      ? params.panel
+      : null;
+  const requested = useMemo(
+    () =>
+      requestedPanel
+        ? panels.find((item) => item.key === requestedPanel) ?? null
+        : null,
+    [panels, requestedPanel],
+  );
+  const activePanel: PanelKey = requested?.key ?? panel ?? 'cuenta';
 
   const syncForms = useCallback((data: ProfileResponse) => {
     const provider = data.provider;
@@ -1078,6 +1045,22 @@ export default function HomeScreen() {
   const readOnlyAddress = sharedAddress || !flags?.is_principal;
   const canConfigureBusiness = flags?.can_configure_business ?? false;
 
+  function handlePanelSelect(key: PanelKey) {
+    // Igual que `showProfilePanel` de la web: el Admin gestiona usuarios en
+    // la pantalla dedicada; el resto ve el panel de usuarios de Mi Perfil.
+    if (key === 'usuarios' && flags?.is_admin) {
+      router.push('/users');
+      return;
+    }
+
+    setPanel(key);
+    // Si veníamos de `/home?panel=...`, la selección manual manda desde ahora.
+    if (requestedPanel) {
+      router.setParams({ panel: '' });
+    }
+    setNotice(null);
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -1136,7 +1119,12 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        <View style={styles.profileCard}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir secciones de la cuenta"
+          onPress={() => setSidebarOpen(true)}
+          style={styles.profileCard}
+        >
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials(profile?.user.name ?? user.name)}</Text>
           </View>
@@ -1163,29 +1151,11 @@ export default function HomeScreen() {
               )}
             </View>
           </View>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          {visiblePanels.map((item) => {
-            const selected = activePanel === item.key;
-            return (
-              <Pressable
-                key={item.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                onPress={() => {
-                  setPanel(item.key);
-                  setNotice(null);
-                }}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {item.icon} {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+          <View style={styles.profileSectionHint}>
+            <Text style={styles.profileSectionHintText}>Secciones</Text>
+            <Text style={styles.profileChevron}>›</Text>
+          </View>
+        </Pressable>
 
         {activePanel === 'negocio' && canConfigureBusiness ? (
           <View style={styles.card}>
@@ -1657,6 +1627,26 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      <AccountSidebar
+        visible={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        user={profile?.user ?? (user ? {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+          is_principal: flags?.is_principal ?? null,
+        } : null)}
+        flags={flags}
+        managedId={managedId}
+        managed={managed}
+        activePanel={activePanel}
+        onSelectPanel={handlePanelSelect}
+        onExitManaged={() => void exitManaged()}
+        loading={loading}
+        error={error}
+      />
     </SafeAreaView>
   );
 }
@@ -1826,9 +1816,20 @@ const styles = StyleSheet.create({
   principalText: {
     color: colors.success,
   },
-  chips: {
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
+  profileSectionHint: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  profileSectionHintText: {
+    color: colors.brandDark,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  profileChevron: {
+    color: colors.brandDark,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   chipsWrap: {
     flexDirection: 'row',
