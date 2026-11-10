@@ -1,3 +1,4 @@
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   AudioModule,
@@ -77,8 +78,293 @@ const PROBLEM_CHIPS = [
 
 const MAX_QUOTE_PHOTOS = 5;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_QUOTE_VIDEO_BYTES = 20 * 1024 * 1024;
 const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
 const MAX_AUDIO_SECONDS = 120;
+
+/** Mismos formatos de video que valida el backend del presupuesto. */
+const QUOTE_VIDEO_TYPES = [
+  'video/mp4',
+  'video/x-m4v',
+  'video/webm',
+  'video/quicktime',
+];
+
+/** Configuración del formulario de presupuesto según el rubro (web). */
+type QuoteQuestionOption = { value: string; label: string };
+type QuoteQuestion = {
+  id: string;
+  label: string;
+  default?: string;
+  options: QuoteQuestionOption[];
+};
+type QuoteConfig = {
+  slug: 'generic' | 'plomeria' | 'electricidad' | 'pintura';
+  label: string;
+  icon: string;
+  quickTags: string[];
+  questions: QuoteQuestion[];
+  placeholders: { details: string; photos: string };
+};
+
+const QUOTE_QUESTIONS = {
+  propertyType: (defaultValue: string): QuoteQuestion => ({
+    id: 'property_type',
+    label: '¿Dónde hay que hacer el trabajo?',
+    default: defaultValue,
+    options: [
+      { value: 'casa', label: 'Casa' },
+      { value: 'departamento', label: 'Departamento' },
+      { value: 'local', label: 'Local / Comercio' },
+      { value: 'otro', label: 'Otro' },
+    ],
+  }),
+  urgency: (defaultValue = 'esta_semana'): QuoteQuestion => ({
+    id: 'urgency',
+    label: '¿Qué tan urgente es?',
+    default: defaultValue,
+    options: [
+      { value: 'ahora', label: 'Es una emergencia ahora' },
+      { value: 'hoy', label: 'Hoy o mañana' },
+      { value: 'esta_semana', label: 'Esta semana' },
+      { value: 'sin_apuro', label: 'Sin apuro' },
+    ],
+  }),
+  materials: (
+    defaultValue: string,
+    label = '¿Quién provee los materiales?',
+  ): QuoteQuestion => ({
+    id: 'materials',
+    label,
+    default: defaultValue,
+    options: [
+      { value: 'profesional', label: 'Los provee el profesional' },
+      { value: 'cliente', label: 'Los compro yo' },
+      { value: 'combinar', label: 'Lo vemos juntos' },
+    ],
+  }),
+  surface: (): QuoteQuestion => ({
+    id: 'surface',
+    label: '¿Qué superficie aproximada?',
+    default: 'un_ambiente',
+    options: [
+      { value: 'un_ambiente', label: 'Un ambiente' },
+      { value: 'dos_tres', label: '2 a 3 ambientes' },
+      { value: 'toda_la_casa', label: 'Toda la casa' },
+      { value: 'exterior', label: 'Exterior / fachada' },
+    ],
+  }),
+};
+
+const QUOTE_FALLBACK_CONFIG: QuoteConfig = {
+  slug: 'generic',
+  label: 'Servicios del hogar',
+  icon: '🏠',
+  quickTags: [
+    'Necesito una visita para evaluar el trabajo',
+    'Es un trabajo urgente',
+    'Quiero comparar precios antes de decidir',
+    'Tengo fotos del problema',
+  ],
+  questions: [
+    QUOTE_QUESTIONS.propertyType('casa'),
+    QUOTE_QUESTIONS.materials('profesional'),
+  ],
+  placeholders: {
+    details:
+      'Ej: Contame qué necesitás, hace cuánto pasa y cualquier detalle que ayude a cotizar.',
+    photos: 'Subí fotos del problema, lugar o material (1 a 5).',
+  },
+};
+
+const QUOTE_CONFIGS: Record<QuoteConfig['slug'], QuoteConfig> = {
+  generic: QUOTE_FALLBACK_CONFIG,
+  plomeria: {
+    slug: 'plomeria',
+    label: 'Plomería y Gas',
+    icon: '🚿',
+    quickTags: [
+      'Pérdida / filtración de agua',
+      'Destapación de cañería',
+      'Termotanque o calefón',
+      'Instalación de grifería',
+      'Cambio de caño',
+      'Sin agua caliente',
+    ],
+    questions: [
+      QUOTE_QUESTIONS.propertyType('casa'),
+      QUOTE_QUESTIONS.urgency(),
+      QUOTE_QUESTIONS.materials('profesional'),
+    ],
+    placeholders: {
+      details:
+        'Ej: Pérdida debajo de la bacha de la cocina, gotea desde ayer y ya cerré la llave de paso.',
+      photos: 'Subí fotos de la pérdida, cañería o equipo (1 a 5).',
+    },
+  },
+  electricidad: {
+    slug: 'electricidad',
+    label: 'Electricidad',
+    icon: '⚡',
+    quickTags: [
+      'Salta la térmica / disyuntor',
+      'Corto circuito',
+      'Instalación de enchufes o tomas',
+      'Colocación de luminarias',
+      'Renovación de tablero',
+      'Sin luz en un ambiente',
+    ],
+    questions: [
+      QUOTE_QUESTIONS.propertyType('departamento'),
+      QUOTE_QUESTIONS.urgency(),
+      QUOTE_QUESTIONS.materials('profesional'),
+    ],
+    placeholders: {
+      details:
+        'Ej: Al encender el aire acondicionado salta la térmica del tablero principal.',
+      photos: 'Subí fotos del tablero, toma o sector afectado (1 a 5).',
+    },
+  },
+  pintura: {
+    slug: 'pintura',
+    label: 'Pintura',
+    icon: '🎨',
+    quickTags: [
+      'Pintar un ambiente',
+      'Pintar toda la casa',
+      'Reparar humedad / goteras',
+      'Enduido y lijado',
+      'Pintura exterior / fachada',
+      'Colocar durlock',
+    ],
+    questions: [
+      QUOTE_QUESTIONS.propertyType('departamento'),
+      QUOTE_QUESTIONS.surface(),
+      QUOTE_QUESTIONS.materials('cliente', '¿Quién provee la pintura y materiales?'),
+    ],
+    placeholders: {
+      details:
+        'Ej: Quiero pintar un living-comedor de 20 m², las paredes están en buen estado.',
+      photos: 'Subí fotos de las paredes / ambiente a pintar (1 a 5).',
+    },
+  },
+};
+
+const QUOTE_KEYWORDS: Record<'plomeria' | 'electricidad' | 'pintura', string[]> = {
+  plomeria: [
+    'plom', 'agua', 'gas', 'destap', 'cano', 'canilla', 'termotanque', 'calefon',
+  ],
+  electricidad: [
+    'elect', 'luz', 'cable', 'tablero', 'disyunt', 'enchufe', 'luminaria',
+    'cortocircuito',
+  ],
+  pintura: ['pint', 'yeso', 'durlock', 'empapel', 'latex', 'revoque'],
+};
+
+/** Resuelve el rubro por keywords normalizadas, igual que la web. */
+function quoteSlugForText(value: string | null | undefined): QuoteConfig['slug'] {
+  const text = (value ?? '')
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const slugs: ('plomeria' | 'electricidad' | 'pintura')[] = [
+    'plomeria',
+    'electricidad',
+    'pintura',
+  ];
+
+  for (const slug of slugs) {
+    if (QUOTE_KEYWORDS[slug].some((word) => text.includes(word))) {
+      return slug;
+    }
+  }
+
+  return 'generic';
+}
+
+function quoteConfigForText(value: string | null | undefined): QuoteConfig {
+  return QUOTE_CONFIGS[quoteSlugForText(value)];
+}
+
+/** Respuestas por defecto del rubro, sembradas como en la web. */
+function seedQuoteAnswers(
+  config: QuoteConfig,
+): Record<string, QuoteQuestionOption> {
+  const seeded: Record<string, QuoteQuestionOption> = {};
+
+  config.questions.forEach((question) => {
+    if (question.default === undefined) {
+      return;
+    }
+
+    seeded[question.id] = {
+      value: question.default,
+      label:
+        question.options.find((option) => option.value === question.default)
+          ?.label ?? question.default,
+    };
+  });
+
+  return seeded;
+}
+
+type QuoteAvailabilityMode = 'asap' | 'manana' | 'ventana';
+type QuoteAvailability = {
+  mode: QuoteAvailabilityMode;
+  label: string;
+  window: { from: string; to: string } | null;
+};
+
+const QUOTE_AVAILABILITY_OPTIONS: { mode: QuoteAvailabilityMode; label: string }[] = [
+  { mode: 'asap', label: '⚡ Lo antes posible' },
+  { mode: 'manana', label: '🗓️ Mañana' },
+  { mode: 'ventana', label: '🕒 Franja horaria' },
+];
+
+const QUOTE_WINDOW_OPTIONS = [
+  { value: 'manana|08:00|12:00', label: '🌅 Mañana (08:00 a 12:00)', from: '08:00', to: '12:00' },
+  { value: 'tarde|12:00|18:00', label: '☀️ Tarde (12:00 a 18:00)', from: '12:00', to: '18:00' },
+  { value: 'noche|18:00|21:00', label: '🌙 Noche (18:00 a 21:00)', from: '18:00', to: '21:00' },
+];
+
+type QuoteQuality = {
+  score: number;
+  label: 'Bajo' | 'Medio' | 'Alto';
+  hint: string;
+  bg: string;
+  fg: string;
+  border: string;
+  fill: string;
+};
+
+/** Estado completo del formulario de presupuesto (se reinicia por rubro). */
+type QuoteFormState = {
+  key: string;
+  details: string;
+  manualText: string;
+  tags: string[];
+  answers: Record<string, QuoteQuestionOption>;
+  availability: QuoteAvailability | null;
+  window: string;
+  photos: LocalPhoto[];
+  video: LocalPhoto | null;
+};
+
+function createQuoteForm(config: QuoteConfig, key: string): QuoteFormState {
+  return {
+    key,
+    details: '',
+    manualText: '',
+    tags: [],
+    answers: seedQuoteAnswers(config),
+    availability: null,
+    window: QUOTE_WINDOW_OPTIONS[0].value,
+    photos: [],
+    video: null,
+  };
+}
 
 /** El azul oscuro de las acciones secundarias de la web. */
 const NAVY = '#0c2a4d';
@@ -354,9 +640,7 @@ export default function NewRequestScreen() {
   const [addressNeighborhood, setAddressNeighborhood] = useState('');
   const [reminder, setReminder] = useState<'whatsapp' | 'email'>('whatsapp');
 
-  // Presupuesto.
-  const [details, setDetails] = useState('');
-  const [quotePhotos, setQuotePhotos] = useState<LocalPhoto[]>([]);
+  // Presupuesto: el estado se inicializa al resolver el rubro (más abajo).
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [error, setError] = useState<string | null>(null);
@@ -542,6 +826,43 @@ export default function NewRequestScreen() {
       active = false;
     };
   }, [orderType, debouncedSearch, providerTab, providerLocked]);
+
+  // Rubro del presupuesto: primero el subgrupo del prestador elegido.
+  const quoteRubroText =
+    provider?.subgroups?.[0]?.description ??
+    subgroups.find((item) => item.id === subgroupId)?.description ??
+    '';
+  const quoteConfig = useMemo(
+    () => quoteConfigForText(quoteRubroText),
+    [quoteRubroText],
+  );
+
+  // Identidad del formulario: al cambiar rubro o prestador se vuelve a los
+  // valores por defecto sin necesidad de un effect de reseteo.
+  const quoteFormKey = `${quoteConfig.slug}:${provider?.id ?? 0}:${
+    subgroupId ?? 0
+  }`;
+  // El formulario completo se guarda en un solo objeto para reiniciarlo
+  // cuando cambia el rubro o el prestador.
+  const [quoteFormState, setQuoteFormState] = useState<QuoteFormState>(() =>
+    createQuoteForm(quoteConfig, quoteFormKey),
+  );
+  const quoteForm =
+    quoteFormState.key === quoteFormKey
+      ? quoteFormState
+      : createQuoteForm(quoteConfig, quoteFormKey);
+
+  const details = quoteForm.details;
+  const quoteTags = quoteForm.tags;
+  const quoteAnswers = quoteForm.answers;
+  const quoteAvailability = quoteForm.availability;
+  const quoteWindow = quoteForm.window;
+  const quotePhotos = quoteForm.photos;
+  const quoteVideo = quoteForm.video;
+
+  function patchQuoteForm(patch: Partial<Omit<QuoteFormState, 'key'>>) {
+    setQuoteFormState({ ...quoteForm, ...patch });
+  }
 
   function primeScheduledForm() {
     setDate('');
@@ -823,6 +1144,61 @@ export default function NewRequestScreen() {
     setDescription(chip.problem);
   }
 
+  // Detecta la parte escrita a mano para no pisarla al togglear atajos.
+  function handleQuoteDetails(value: string) {
+    const chips = quoteTags.join('\n');
+    const manualText =
+      chips && value.startsWith(chips)
+        ? value.slice(chips.length).replace(/^\n/, '')
+        : value;
+
+    patchQuoteForm({ details: value, manualText });
+  }
+
+  // Atajos multi-selección: vuelcan sus frases al detalle (como la web).
+  function toggleQuoteTag(tag: string) {
+    const next = quoteTags.includes(tag)
+      ? quoteTags.filter((item) => item !== tag)
+      : [...quoteTags, tag];
+
+    const manual = quoteForm.manualText;
+    const nextDetails = next.length
+      ? next.join('\n') + (manual ? `\n${manual}` : '')
+      : manual;
+
+    patchQuoteForm({ tags: next, details: nextDetails });
+  }
+
+  function pickQuoteAnswer(
+    question: QuoteQuestion,
+    option: QuoteQuestionOption,
+  ) {
+    patchQuoteForm({
+      answers: { ...quoteAnswers, [question.id]: option },
+    });
+  }
+
+  function pickQuoteAvailability(mode: QuoteAvailabilityMode) {
+    const option = QUOTE_AVAILABILITY_OPTIONS.find((item) => item.mode === mode);
+    patchQuoteForm({
+      availability: { mode, label: option?.label ?? mode, window: null },
+    });
+  }
+
+  function handleQuoteWindow(value: string) {
+    const option = QUOTE_WINDOW_OPTIONS.find((item) => item.value === value);
+    const availability =
+      quoteAvailability?.mode === 'ventana'
+        ? {
+            mode: 'ventana' as const,
+            label: `Franja horaria: ${option?.label ?? value}`,
+            window: option ? { from: option.from, to: option.to } : null,
+          }
+        : quoteAvailability;
+
+    patchQuoteForm({ window: value, availability });
+  }
+
   async function addQuotePhotos() {
     const remaining = MAX_QUOTE_PHOTOS - quotePhotos.length;
 
@@ -831,7 +1207,89 @@ export default function NewRequestScreen() {
     }
 
     const picked = await pickMultipleImages(remaining);
-    setQuotePhotos((current) => [...current, ...picked].slice(0, MAX_QUOTE_PHOTOS));
+    const accepted = picked.filter(
+      (item) => !item.size || item.size <= MAX_PHOTO_BYTES,
+    );
+
+    patchQuoteForm({
+      photos: [...quotePhotos, ...accepted].slice(0, MAX_QUOTE_PHOTOS),
+    });
+
+    if (accepted.length < picked.length) {
+      setError('Alguna foto supera los 5 MB. Elegí una más liviana.');
+    }
+  }
+
+  async function pickQuoteVideo() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(
+        'Galería',
+        'Necesitamos permiso para elegir un video. Podés habilitarlo en los ajustes del teléfono.',
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      allowsMultipleSelection: false,
+      quality: 1,
+    });
+
+    if (result.canceled || result.assets.length === 0) {
+      return;
+    }
+
+    const asset = result.assets[0];
+    const name = asset.fileName ?? `video_${Date.now()}.mp4`;
+    const extension = name.split('.').pop()?.toLowerCase() ?? '';
+    const fallbackMime =
+      extension === 'webm'
+        ? 'video/webm'
+        : extension === 'mov' || extension === 'qt'
+          ? 'video/quicktime'
+          : extension === 'm4v'
+            ? 'video/x-m4v'
+            : 'video/mp4';
+    const mimeType = asset.mimeType ?? fallbackMime;
+    const allowedExtension = ['mp4', 'm4v', 'webm', 'mov', 'qt'].includes(
+      extension,
+    );
+
+    if (!QUOTE_VIDEO_TYPES.includes(mimeType) && !allowedExtension) {
+      setError('El video debe ser MP4, WEBM o MOV.');
+      return;
+    }
+
+    if (asset.fileSize && asset.fileSize > MAX_QUOTE_VIDEO_BYTES) {
+      setError('El video supera los 20 MB. Elegí uno más liviano.');
+      return;
+    }
+
+    setError(null);
+    patchQuoteForm({
+      video: {
+        uri: asset.uri,
+        name,
+        mimeType,
+        size: asset.fileSize ?? null,
+      },
+    });
+  }
+
+  function openQuotePicker() {
+    const canAddPhoto = quotePhotos.length < MAX_QUOTE_PHOTOS;
+
+    Alert.alert('Fotos y video', 'Elegí qué querés adjuntar.', [
+      ...(canAddPhoto
+        ? [{ text: 'Fotos', onPress: () => void addQuotePhotos() }]
+        : []),
+      ...(!quoteVideo
+        ? [{ text: 'Video', onPress: () => void pickQuoteVideo() }]
+        : []),
+      { text: 'Cancelar', style: 'cancel' as const },
+    ]);
   }
 
   async function handleSubmit() {
@@ -967,6 +1425,9 @@ export default function NewRequestScreen() {
         }
         form.append('details', details.trim());
         quotePhotos.forEach((item) => appendPhoto(form, 'photos[]', item));
+        if (quoteVideo) {
+          appendPhoto(form, 'video', quoteVideo);
+        }
 
         const response = await api.createQuote(form);
         orderId = response.data.order.id;
@@ -989,10 +1450,14 @@ export default function NewRequestScreen() {
   }
 
   const emergencyProvider = orderType === 'EMERGENCY' ? provider : null;
-  // La cabecera del prestador se comparte entre urgencias y citas: la web
-  // esconde el selector cuando el pedido va directo a un profesional.
+  // La cabecera del prestador se comparte entre urgencias, citas y
+  // presupuestos: la web esconde el selector cuando el pedido va directo a
+  // un profesional.
   const headerProvider =
-    provider && (orderType === 'EMERGENCY' || orderType === 'SCHEDULED')
+    provider &&
+    (orderType === 'EMERGENCY' ||
+      orderType === 'SCHEDULED' ||
+      orderType === 'QUOTE')
       ? provider
       : null;
   const emergencyCount = provider?.emergency_count ?? 0;
@@ -1003,7 +1468,11 @@ export default function NewRequestScreen() {
     : '';
   const headerServiceLabel = headerProvider
     ? headerProvider.service_types.find((type) => type.code === orderType)?.name ??
-      (orderType === 'EMERGENCY' ? 'Urgencias 24/7' : 'Cita programada')
+      (orderType === 'EMERGENCY'
+        ? 'Urgencias 24/7'
+        : orderType === 'SCHEDULED'
+          ? 'Cita programada'
+          : 'Presupuesto')
     : '';
   const baseFee = provider?.base_visit_fee ?? null;
   const hasBaseFee = baseFee !== null && Number(baseFee) > 0;
@@ -1011,6 +1480,74 @@ export default function NewRequestScreen() {
     ? `$${Number(baseFee).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
     : 'A convenir';
   const emergencyHasContent = Boolean(description.trim());
+
+  // Resumen visible de atajos + respuestas, como en la web.
+  const quoteSummaryRows = useMemo(() => {
+    const rows: string[] = [];
+
+    if (quoteTags.length) {
+      rows.push(quoteTags.join(' · '));
+    }
+
+    Object.values(quoteAnswers).forEach((answer) => {
+      if (answer?.label) {
+        rows.push(answer.label);
+      }
+    });
+
+    return rows;
+  }, [quoteTags, quoteAnswers]);
+
+  // Nivel de detalle (calidad) de la solicitud, con los mismos puntos que la web.
+  const quoteQuality = useMemo<QuoteQuality>(() => {
+    const length = details.trim().length;
+    let score = 0;
+
+    if (length >= 30) score += 20;
+    if (length >= 120) score += 15;
+    if (quoteTags.length) score += 15;
+    if (Object.keys(quoteAnswers).length) score += 15;
+    if (quotePhotos.length >= 1) score += 15;
+    if (quotePhotos.length >= 3) score += 10;
+    if (quoteVideo) score += 5;
+    if (quoteAvailability) score += 5;
+
+    score = Math.min(100, score);
+
+    if (score >= 70) {
+      return {
+        score,
+        label: 'Alto',
+        hint: 'Excelente. Tu solicitud tiene el detalle que necesitan los prestadores.',
+        bg: '#ecfdf5',
+        fg: '#047857',
+        border: '#a7f3d0',
+        fill: '#047857',
+      };
+    }
+
+    if (score >= 40) {
+      return {
+        score,
+        label: 'Medio',
+        hint: 'Buen comienzo. Una foto más o describir mejor el trabajo ayuda al prestador.',
+        bg: '#eff6ff',
+        fg: '#1d4ed8',
+        border: '#bfdbfe',
+        fill: '#1d4ed8',
+      };
+    }
+
+    return {
+      score,
+      label: 'Bajo',
+      hint: 'Sumá detalles, fotos y atajos para recibir presupuestos más precisos.',
+      bg: '#fffbeb',
+      fg: '#b45309',
+      border: '#fed7aa',
+      fill: '#b45309',
+    };
+  }, [details, quoteTags, quoteAnswers, quotePhotos, quoteVideo, quoteAvailability]);
 
   // Calendario de la cita: 14 días, con navegación semanal (igual que la web).
   const scheduledDays = useMemo(
@@ -1351,31 +1888,33 @@ export default function NewRequestScreen() {
                   </View>
                 </View>
 
-                <View style={styles.feeCard}>
-                  <View style={styles.feeIcon}>
-                    <Text style={styles.feeIconText}>🔔</Text>
+                {orderType !== 'QUOTE' ? (
+                  <View style={styles.feeCard}>
+                    <View style={styles.feeIcon}>
+                      <Text style={styles.feeIconText}>🔔</Text>
+                    </View>
+                    <View style={styles.feeBody}>
+                      <Text style={styles.feeTitle}>
+                        {orderType === 'EMERGENCY'
+                          ? 'TARIFA BASE POR URGENCIA / VISITA'
+                          : 'TARIFA BASE POR VISITA'}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.feeAmount,
+                          !hasBaseFee && styles.feeAmountPending,
+                        ]}
+                      >
+                        {baseFeeLabel}
+                      </Text>
+                      <Text style={styles.feeNote}>
+                        {hasBaseFee
+                          ? 'Se abona al confirmar el trabajo. El profesional puede ajustar el monto final en el lugar.'
+                          : 'El profesional confirma el monto de la visita antes de empezar.'}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.feeBody}>
-                    <Text style={styles.feeTitle}>
-                      {orderType === 'EMERGENCY'
-                        ? 'TARIFA BASE POR URGENCIA / VISITA'
-                        : 'TARIFA BASE POR VISITA'}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.feeAmount,
-                        !hasBaseFee && styles.feeAmountPending,
-                      ]}
-                    >
-                      {baseFeeLabel}
-                    </Text>
-                    <Text style={styles.feeNote}>
-                      {hasBaseFee
-                        ? 'Se abona al confirmar el trabajo. El profesional puede ajustar el monto final en el lugar.'
-                        : 'El profesional confirma el monto de la visita antes de empezar.'}
-                    </Text>
-                  </View>
-                </View>
+                ) : null}
               </>
             ) : null}
 
@@ -1963,47 +2502,285 @@ export default function NewRequestScreen() {
 
             {orderType === 'QUOTE' ? (
               <>
-                <TextField
-                  label="¿Qué trabajo necesitás? *"
-                  value={details}
-                  onChangeText={setDetails}
-                  placeholder="Describí el trabajo lo más completo posible"
-                  multiline
-                  numberOfLines={4}
-                />
-                {fieldErrors.details?.[0] ? (
-                  <Text style={styles.fieldError}>{fieldErrors.details[0]}</Text>
+                <View style={styles.quoteContext}>
+                  <View style={styles.quoteContextIcon}>
+                    <Text style={styles.quoteContextIconText}>
+                      {quoteConfig.icon}
+                    </Text>
+                  </View>
+                  <View style={styles.quoteContextBody}>
+                    <Text style={styles.quoteContextKicker}>RUBRO DETECTADO</Text>
+                    <Text style={styles.quoteContextLabel}>
+                      {quoteConfig.label}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.quoteFieldLabel}>
+                  Atajos rápidos{' '}
+                  <Text style={styles.quoteFieldHint}>
+                    (tocá los que apliquen)
+                  </Text>
+                </Text>
+                <View style={styles.quoteChips}>
+                  {quoteConfig.quickTags.map((tag) => {
+                    const selected = quoteTags.includes(tag);
+
+                    return (
+                      <Pressable
+                        key={tag}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        onPress={() => toggleQuoteTag(tag)}
+                        style={[
+                          styles.quoteTag,
+                          selected && styles.quoteTagSelected,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.quoteTagText,
+                            selected && styles.quoteTagTextSelected,
+                          ]}
+                        >
+                          {tag}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {quoteConfig.questions.map((question) => (
+                  <View key={question.id} style={styles.quoteQuestion}>
+                    <Text style={styles.quoteFieldLabel}>
+                      {question.label}
+                    </Text>
+                    <View style={styles.quoteOptions}>
+                      {question.options.map((option) => {
+                        const selected =
+                          quoteAnswers[question.id]?.value === option.value;
+
+                        return (
+                          <Pressable
+                            key={option.value}
+                            accessibilityRole="radio"
+                            accessibilityState={{ selected }}
+                            onPress={() => pickQuoteAnswer(question, option)}
+                            style={[
+                              styles.quoteOption,
+                              selected && styles.quoteOptionSelected,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.quoteOptionText,
+                                selected && styles.quoteOptionTextSelected,
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
+
+                <Text style={styles.quoteFieldLabel}>
+                  ¿Cuándo necesitás el trabajo?
+                </Text>
+                <View style={styles.quoteOptions}>
+                  {QUOTE_AVAILABILITY_OPTIONS.map((option) => {
+                    const selected = quoteAvailability?.mode === option.mode;
+
+                    return (
+                      <Pressable
+                        key={option.mode}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected }}
+                        onPress={() => pickQuoteAvailability(option.mode)}
+                        style={[
+                          styles.quoteAvailability,
+                          selected && styles.quoteAvailabilitySelected,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.quoteAvailabilityText,
+                            selected && styles.quoteAvailabilityTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {quoteAvailability?.mode === 'ventana' ? (
+                  <View style={styles.quoteWindow}>
+                    <ComboField
+                      label="Franja horaria"
+                      value={quoteWindow}
+                      options={QUOTE_WINDOW_OPTIONS.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      }))}
+                      onChange={handleQuoteWindow}
+                      title="Elegí la franja horaria"
+                    />
+                  </View>
                 ) : null}
 
-                <Text style={styles.label}>
-                  Fotos ({quotePhotos.length}/{MAX_QUOTE_PHOTOS}) *
-                </Text>
-                <View style={styles.quotePhotos}>
-                  {quotePhotos.map((item, index) => (
-                    <Pressable
-                      key={`${item.uri}-${index}`}
-                      accessibilityRole="button"
-                      onPress={() =>
-                        setQuotePhotos((current) =>
-                          current.filter((_, i) => i !== index),
-                        )
-                      }
+                <View style={styles.quoteQuality}>
+                  <View style={styles.quoteQualityTop}>
+                    <Text style={styles.quoteQualityTitle}>
+                      Nivel de detalle de tu solicitud
+                    </Text>
+                    <View
+                      style={[
+                        styles.quoteQualityBadge,
+                        {
+                          backgroundColor: quoteQuality.bg,
+                          borderColor: quoteQuality.border,
+                        },
+                      ]}
                     >
-                      <Image source={{ uri: item.uri }} style={styles.thumb} />
-                      <Text style={styles.thumbRemove}>Quitar</Text>
-                    </Pressable>
-                  ))}
-
-                  {quotePhotos.length < MAX_QUOTE_PHOTOS ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => void addQuotePhotos()}
-                      style={styles.thumbAdd}
-                    >
-                      <Text style={styles.thumbAddText}>+ Agregar</Text>
-                    </Pressable>
-                  ) : null}
+                      <Text
+                        style={[
+                          styles.quoteQualityBadgeText,
+                          { color: quoteQuality.fg },
+                        ]}
+                      >
+                        {quoteQuality.label}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.quoteQualityTrack}>
+                    <View
+                      style={[
+                        styles.quoteQualityFill,
+                        {
+                          backgroundColor: quoteQuality.fill,
+                          width: `${quoteQuality.score}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.quoteQualityHint}>
+                    {quoteQuality.hint}
+                  </Text>
                 </View>
+
+                <TextField
+                  label="Detalles del trabajo (obligatorio, máx 2000)"
+                  value={details}
+                  onChangeText={handleQuoteDetails}
+                  placeholder={quoteConfig.placeholders.details}
+                  multiline
+                  numberOfLines={4}
+                  maxLength={2000}
+                  style={styles.quoteDetailsInput}
+                  error={fieldErrors.details?.[0] ?? null}
+                />
+
+                {quoteSummaryRows.length ? (
+                  <View style={styles.quoteSummary}>
+                    <Text style={styles.quoteSummaryTitle}>
+                      RESUMEN DE TU PEDIDO
+                    </Text>
+                    {quoteSummaryRows.map((row) => (
+                      <Text key={row} style={styles.quoteSummaryRow}>
+                        • {row}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+
+                <Text style={styles.quoteFieldLabel}>Fotos y video</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Tocá para seleccionar fotos y video"
+                  onPress={openQuotePicker}
+                  style={styles.quoteDropzone}
+                >
+                  <View style={styles.quoteDropzoneIcon}>
+                    <Text style={styles.quoteDropzoneIconText}>⬆</Text>
+                  </View>
+                  <Text style={styles.quoteDropzoneTitle}>
+                    Tocá para seleccionar fotos y video
+                  </Text>
+                  <Text style={styles.quoteDropzoneSub}>
+                    Fotos {quotePhotos.length}/{MAX_QUOTE_PHOTOS} · Video{' '}
+                    {quoteVideo ? '1/1' : '0/1'} · tocá para agregar más
+                  </Text>
+                </Pressable>
+
+                {quotePhotos.length ? (
+                  <View style={styles.quoteThumbs}>
+                    {quotePhotos.map((item, index) => (
+                      <View
+                        key={`${item.uri}-${index}`}
+                        style={styles.quoteThumbWrap}
+                      >
+                        <Image
+                          source={{ uri: item.uri }}
+                          style={styles.quoteThumb}
+                        />
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Quitar foto"
+                          onPress={() =>
+                            patchQuoteForm({
+                              photos: quotePhotos.filter(
+                                (_, i) => i !== index,
+                              ),
+                            })
+                          }
+                          style={styles.quoteThumbRemove}
+                        >
+                          <Text style={styles.quoteThumbRemoveText}>✕</Text>
+                        </Pressable>
+                      </View>
+                    ))}
+
+                    {quotePhotos.length < MAX_QUOTE_PHOTOS ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Agregar más fotos"
+                        onPress={() => void addQuotePhotos()}
+                        style={styles.quoteThumbAdd}
+                      >
+                        <Text style={styles.quoteThumbAddText}>+</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {quoteVideo ? (
+                  <View style={styles.quoteVideo}>
+                    <View style={styles.quoteVideoBox}>
+                      <Text style={styles.quoteVideoBoxText}>🎬</Text>
+                    </View>
+                    <View style={styles.quoteVideoBody}>
+                      <Text style={styles.quoteVideoName} numberOfLines={1}>
+                        {quoteVideo.name}
+                      </Text>
+                      <Text style={styles.quoteVideoSize}>
+                        {quoteVideo.size ? formatSize(quoteVideo.size) : 'Video'}{' '}
+                        · Video
+                      </Text>
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Quitar video"
+                      onPress={() => patchQuoteForm({ video: null })}
+                      style={styles.quoteVideoRemove}
+                    >
+                      <Text style={styles.quoteVideoRemoveText}>Quitar</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </>
             ) : null}
 
@@ -2014,14 +2791,15 @@ export default function NewRequestScreen() {
                     ? '🚨 Solicitar urgencia ahora'
                     : orderType === 'SCHEDULED'
                       ? '🗓️ Reservar cita y pagar seña'
-                      : 'Enviar solicitud'
+                      : '📄 Enviar Solicitud de Presupuesto'
                 }
                 onPress={handleSubmit}
                 loading={submitting}
                 disabled={
                   submitting ||
                   (providerLocked && !provider) ||
-                  (orderType === 'EMERGENCY' && !photo)
+                  (orderType === 'EMERGENCY' && !photo) ||
+                  (orderType === 'QUOTE' && !details.trim())
                 }
               />
               {orderType === 'EMERGENCY' ? (
@@ -2217,37 +2995,341 @@ const styles = StyleSheet.create({
   half: {
     flex: 1,
   },
-  quotePhotos: {
+  quoteContext: {
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+    borderRadius: radius.sm,
+    borderWidth: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  thumb: {
-    borderRadius: radius.md,
-    height: 100,
-    width: 100,
-  },
-  thumbRemove: {
-    color: colors.danger,
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  thumbAdd: {
+  quoteContextIcon: {
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderStyle: 'dashed',
+    borderColor: '#fed7aa',
+    borderRadius: radius.pill,
     borderWidth: 1,
-    height: 100,
+    height: 36,
     justifyContent: 'center',
-    width: 100,
+    width: 36,
   },
-  thumbAddText: {
-    color: colors.brandDark,
+  quoteContextIconText: {
+    fontSize: 17,
+  },
+  quoteContextBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  quoteContextKicker: {
+    color: '#9a3412',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  quoteContextLabel: {
+    color: '#0f172a',
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 1,
+  },
+  quoteFieldLabel: {
+    color: '#6b7280',
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  quoteFieldHint: {
+    color: '#94a3b8',
+    fontWeight: '400',
+  },
+  quoteChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  quoteTag: {
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 7,
+  },
+  quoteTagSelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  quoteTagText: {
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  quoteTagTextSelected: {
+    color: '#D24C19',
+  },
+  quoteQuestion: {
+    marginTop: spacing.lg,
+  },
+  quoteOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  quoteOption: {
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: 6,
+    borderWidth: 1.5,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  quoteOptionSelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  quoteOptionText: {
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  quoteOptionTextSelected: {
+    color: '#D24C19',
+  },
+  quoteAvailability: {
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 9,
+  },
+  quoteAvailabilitySelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  quoteAvailabilityText: {
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  quoteAvailabilityTextSelected: {
+    color: '#D24C19',
+  },
+  quoteWindow: {
+    marginTop: spacing.sm,
+  },
+  quoteQuality: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  quoteQualityTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  quoteQualityTitle: {
+    color: '#0c2a4d',
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  quoteQualityBadge: {
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  quoteQualityBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  quoteQualityTrack: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: radius.pill,
+    height: 7,
+    marginTop: 7,
+    overflow: 'hidden',
+  },
+  quoteQualityFill: {
+    borderRadius: radius.pill,
+    height: '100%',
+  },
+  quoteQualityHint: {
+    color: '#6b7280',
+    fontSize: 11,
+    marginTop: 7,
+  },
+  quoteDetailsInput: {
+    minHeight: 110,
+    textAlignVertical: 'top',
+  },
+  quoteSummary: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  quoteSummaryTitle: {
+    color: '#94a3b8',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    marginBottom: 3,
+  },
+  quoteSummaryRow: {
+    color: '#374151',
+    fontSize: 12,
+    marginTop: 1,
+  },
+  quoteDropzone: {
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderColor: '#cbd5e1',
+    borderRadius: radius.sm,
+    borderStyle: 'dashed',
+    borderWidth: 1.5,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+  },
+  quoteDropzoneIcon: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#fed7aa',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 46,
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+    width: 46,
+  },
+  quoteDropzoneIconText: {
+    color: '#D24C19',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  quoteDropzoneTitle: {
+    color: '#0c2a4d',
     fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  quoteDropzoneSub: {
+    color: '#6b7280',
+    fontSize: 11,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  quoteThumbs: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  quoteThumbWrap: {
+    height: 84,
+    width: 84,
+  },
+  quoteThumb: {
+    borderColor: '#e5e7eb',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: '100%',
+    width: '100%',
+  },
+  quoteThumbRemove: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(15,23,42,0.72)',
+    borderRadius: radius.pill,
+    height: 22,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 3,
+    top: 3,
+    width: 22,
+  },
+  quoteThumbRemoveText: {
+    color: colors.surface,
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 13,
+  },
+  quoteThumbAdd: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#cbd5e1',
+    borderRadius: radius.sm,
+    borderStyle: 'dashed',
+    borderWidth: 1.5,
+    height: 84,
+    justifyContent: 'center',
+    width: 84,
+  },
+  quoteThumbAddText: {
+    color: '#D24C19',
+    fontSize: 24,
+    fontWeight: '400',
+  },
+  quoteVideo: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#e5e7eb',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.sm,
+  },
+  quoteVideoBox: {
+    alignItems: 'center',
+    backgroundColor: '#0c2a4d',
+    borderRadius: 6,
+    height: 64,
+    justifyContent: 'center',
+    width: 64,
+  },
+  quoteVideoBoxText: {
+    fontSize: 24,
+  },
+  quoteVideoBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  quoteVideoName: {
+    color: '#0f172a',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  quoteVideoSize: {
+    color: '#6b7280',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  quoteVideoRemove: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  quoteVideoRemoveText: {
+    color: '#b91c1c',
+    fontSize: 12,
     fontWeight: '700',
   },
   submit: {
