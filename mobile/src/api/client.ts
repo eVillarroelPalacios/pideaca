@@ -61,6 +61,7 @@ import type {
   SubGroupResponse,
   SubGroupsResponse,
   ToggleSubgroupResponse,
+  ToggleProviderFavoriteResponse,
   TrustedDriverCandidate,
   TrustedDriversResponse,
   TrustedDriversSettingsResponse,
@@ -257,6 +258,12 @@ export const api = {
 
   provider(id: number): Promise<ProviderDetailResponse> {
     return request<ProviderDetailResponse>(`/providers/${id}`);
+  },
+
+  toggleProviderFavorite(id: number): Promise<ToggleProviderFavoriteResponse> {
+    return request<ToggleProviderFavoriteResponse>(`/providers/${id}/favorite`, {
+      method: 'POST',
+    });
   },
 
   serviceSubgroups(): Promise<ServiceSubgroupsResponse> {

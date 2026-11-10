@@ -105,6 +105,65 @@ class CatalogTest extends TestCase
             ->assertJsonPath('data.0.is_favorite', true);
     }
 
+    public function test_index_reports_total_and_favorite_counters(): void
+    {
+        $client = $this->makeClient();
+        $this->makeServiceGroup();
+
+        $favorite = $this->makeProvider('Plomero Juan', isActive: true, inServiceGroup: true);
+        $this->makeProvider('Electricista Ana', isActive: true, inServiceGroup: true);
+        Favorite::create(['user_id' => $client->id, 'provider_id' => $favorite->id]);
+
+        $this->actingAs($client, 'sanctum')
+            ->getJson('/api/mobile/v1/providers')
+            ->assertOk()
+            ->assertJsonPath('meta.total_count', 2)
+            ->assertJsonPath('meta.favorites_count', 1);
+    }
+
+    public function test_toggles_a_provider_favorite(): void
+    {
+        $client = $this->makeClient();
+        $this->makeServiceGroup();
+
+        $provider = $this->makeProvider('Plomero Juan', isActive: true, inServiceGroup: true);
+
+        $this->actingAs($client, 'sanctum')
+            ->postJson('/api/mobile/v1/providers/'.$provider->id.'/favorite')
+            ->assertOk()
+            ->assertJsonPath('is_favorite', true)
+            ->assertJsonPath('favorites_count', 1);
+
+        $this->assertDatabaseHas('favorites', [
+            'user_id' => $client->id,
+            'provider_id' => $provider->id,
+        ]);
+
+        $this->actingAs($client, 'sanctum')
+            ->postJson('/api/mobile/v1/providers/'.$provider->id.'/favorite')
+            ->assertOk()
+            ->assertJsonPath('is_favorite', false)
+            ->assertJsonPath('favorites_count', 0);
+
+        $this->assertDatabaseMissing('favorites', [
+            'user_id' => $client->id,
+            'provider_id' => $provider->id,
+        ]);
+    }
+
+    public function test_cannot_favorite_a_hidden_provider(): void
+    {
+        $client = $this->makeClient();
+        $this->makeServiceGroup();
+
+        $paused = $this->makeProvider('Plomero Pausado', isActive: false, inServiceGroup: true);
+
+        $this->actingAs($client, 'sanctum')
+            ->postJson('/api/mobile/v1/providers/'.$paused->id.'/favorite')
+            ->assertStatus(404)
+            ->assertJson(['success' => false, 'code' => 'PROVIDER_NOT_FOUND']);
+    }
+
     public function test_rejects_invalid_search_params(): void
     {
         $client = $this->makeClient();

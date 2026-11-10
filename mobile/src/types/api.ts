@@ -109,6 +109,10 @@ export type PaginationMeta = {
   last_page: number;
   per_page: number;
   total: number;
+  /** Total con los filtros aplicados, antes del tab de favoritos. */
+  total_count?: number;
+  /** Favoritos del usuario con los filtros aplicados. */
+  favorites_count?: number;
 };
 
 export type ProvidersResponse = {
@@ -120,6 +124,12 @@ export type ProvidersResponse = {
 export type ProviderDetailResponse = {
   success: boolean;
   data: ProviderDetail;
+};
+
+export type ToggleProviderFavoriteResponse = {
+  success: boolean;
+  is_favorite: boolean;
+  favorites_count: number;
 };
 
 export type ProvidersParams = {

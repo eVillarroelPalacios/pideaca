@@ -191,6 +191,8 @@ Route::prefix('mobile/v1')->group(function () {
             ->middleware('throttle:30,1');
         Route::get('/providers/{provider}', [CatalogController::class, 'show'])
             ->middleware('throttle:30,1');
+        Route::post('/providers/{provider}/favorite', [CatalogController::class, 'toggleFavorite'])
+            ->middleware('throttle:60,1');
 
         Route::get('/service-subgroups', [ServiceOrdersController::class, 'subgroups'])
             ->middleware('throttle:30,1');

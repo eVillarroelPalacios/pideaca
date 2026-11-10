@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError, api } from '@/api/client';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { ProviderAdCard } from '@/components/ProviderAdCard';
 import { colors, radius, spacing } from '@/theme';
 import type { ProviderCard, ProvidersParams } from '@/types/api';
 
@@ -28,20 +29,14 @@ const TYPE_FILTERS: { code: TypeFilter; label: string }[] = [
 
 const PAGE_SIZE = 15;
 
-function ratingText(provider: ProviderCard): string {
-  if (provider.rating === null) {
-    return 'Sin calificar';
-  }
-
-  return `★ ${provider.rating.toFixed(1)} (${provider.ratings_count})`;
-}
-
 export default function ProvidersScreen() {
   const [providers, setProviders] = useState<ProviderCard[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [favoriteBusyId, setFavoriteBusyId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -83,6 +78,7 @@ export default function ProvidersScreen() {
         setPage(response.meta.current_page);
         setLastPage(response.meta.last_page);
         setTotal(response.meta.total);
+        setFavoritesCount(response.meta.favorites_count ?? 0);
         setError(null);
       } catch (caught) {
         setError(
@@ -113,6 +109,7 @@ export default function ProvidersScreen() {
         setPage(response.meta.current_page);
         setLastPage(response.meta.last_page);
         setTotal(response.meta.total);
+        setFavoritesCount(response.meta.favorites_count ?? 0);
         setError(null);
       })
       .catch((caught: unknown) => {
@@ -185,6 +182,46 @@ export default function ProvidersScreen() {
     setLoadingMore(false);
   }
 
+  async function handleToggleFavorite(provider: ProviderCard) {
+    if (favoriteBusyId !== null) {
+      return;
+    }
+
+    setFavoriteBusyId(provider.id);
+
+    try {
+      const response = await api.toggleProviderFavorite(provider.id);
+
+      setProviders((current) =>
+        favoritesOnly && !response.is_favorite
+          ? current.filter((item) => item.id !== provider.id)
+          : current.map((item) =>
+              item.id === provider.id
+                ? { ...item, is_favorite: response.is_favorite }
+                : item,
+            ),
+      );
+
+      setFavoritesCount((current) =>
+        // El chip cuenta los favoritos del filtro actual, no el total global
+        // que devuelve el endpoint.
+        Math.max(0, current + (response.is_favorite ? 1 : -1)),
+      );
+
+      if (favoritesOnly && !response.is_favorite) {
+        setTotal((current) => Math.max(0, current - 1));
+      }
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos actualizar tus favoritos.',
+      );
+    } finally {
+      setFavoriteBusyId(null);
+    }
+  }
+
   if (loading) {
     return <LoadingScreen message="Buscando prestadores…" />;
   }
@@ -240,7 +277,7 @@ export default function ProvidersScreen() {
           style={[styles.chip, favoritesOnly && styles.chipSelected]}
         >
           <Text style={[styles.chipText, favoritesOnly && styles.chipTextSelected]}>
-            ♥ Favoritos
+            ★ Favoritos{favoritesCount > 0 ? ` (${favoritesCount})` : ''}
           </Text>
         </Pressable>
       </View>
@@ -278,65 +315,17 @@ export default function ProvidersScreen() {
             </Text>
           }
           renderItem={({ item }) => (
-            <Pressable
-              accessibilityRole="button"
+            <ProviderAdCard
+              provider={item}
               onPress={() =>
                 router.push({
                   pathname: '/provider/[id]',
                   params: { id: String(item.id) },
                 })
               }
-              style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardName} numberOfLines={1}>
-                  {item.is_verified ? '✓ ' : ''}
-                  {item.business_name}
-                </Text>
-                <View
-                  style={[
-                    styles.availability,
-                    item.is_available_now
-                      ? styles.availabilityOpen
-                      : styles.availabilityClosed,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.availabilityText,
-                      item.is_available_now
-                        ? styles.availabilityTextOpen
-                        : styles.availabilityTextClosed,
-                    ]}
-                  >
-                    {item.is_available_now ? 'Abierto' : 'Cerrado'}
-                  </Text>
-                </View>
-              </View>
-
-              {item.description ? (
-                <Text style={styles.cardDescription} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              ) : null}
-
-              <Text style={styles.cardMeta}>
-                {ratingText(item)}
-                {item.zone ? ` · ${item.zone}` : ''}
-              </Text>
-
-              {item.subgroups.length > 0 ? (
-                <Text style={styles.cardTags} numberOfLines={1}>
-                  {item.subgroups.map((sub) => sub.description).join(' · ')}
-                </Text>
-              ) : null}
-
-              {item.promo ? (
-                <Text style={styles.cardPromo} numberOfLines={1}>
-                  🎁 {item.promo}
-                </Text>
-              ) : null}
-            </Pressable>
+              onToggleFavorite={() => void handleToggleFavorite(item)}
+              favoriteBusy={favoriteBusyId === item.id}
+            />
           )}
         />
       </View>
@@ -417,73 +406,6 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: spacing.xxl,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-    padding: spacing.lg,
-  },
-  cardPressed: {
-    opacity: 0.7,
-  },
-  cardHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  cardName: {
-    color: colors.text,
-    flex: 1,
-    fontSize: 17,
-    fontWeight: '700',
-    marginRight: spacing.sm,
-  },
-  availability: {
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-  },
-  availabilityOpen: {
-    backgroundColor: colors.successSoft,
-  },
-  availabilityClosed: {
-    backgroundColor: colors.background,
-  },
-  availabilityText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  availabilityTextOpen: {
-    color: colors.success,
-  },
-  availabilityTextClosed: {
-    color: colors.muted,
-  },
-  cardDescription: {
-    color: colors.muted,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: spacing.xs,
-  },
-  cardMeta: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  cardTags: {
-    color: colors.brandDark,
-    fontSize: 13,
-    marginBottom: spacing.xs,
-  },
-  cardPromo: {
-    color: colors.brandDark,
-    fontSize: 13,
-    fontWeight: '600',
   },
   empty: {
     alignItems: 'center',

@@ -46,4 +46,26 @@ function resolveApiBaseUrl(): string {
 }
 
 export const API_BASE_URL = resolveApiBaseUrl();
+
+/**
+ * Origen para los archivos estáticos (imágenes de publicidad, banners).
+ *
+ * Las URLs que devuelve el API apuntan a APP_URL, que en XAMPP es
+ * http://localhost/pideaca. En el emulador/celular ese host no existe, así
+ * que se reemplaza solo el origen por el del API. Se puede sobreescribir con
+ * EXPO_PUBLIC_ASSET_URL si las imágenes viven en otro servidor/CDN.
+ */
+function resolveAssetBaseUrl(): string {
+  const explicit = process.env.EXPO_PUBLIC_ASSET_URL;
+
+  if (explicit && explicit.trim().length > 0) {
+    return explicit.trim().replace(/\/+$/, '');
+  }
+
+  const match = API_BASE_URL.match(/^(https?:\/\/[^/]+)/i);
+
+  return match ? match[1] : API_BASE_URL.replace(/\/+$/, '');
+}
+
+export const ASSET_BASE_URL = resolveAssetBaseUrl();
 export { API_TIMEOUT_MS };

@@ -15,6 +15,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { RatingModal } from '@/components/RatingModal';
 import { colors, radius, spacing } from '@/theme';
 import type { ServiceOrderItem, ServiceOrderType } from '@/types/api';
 
@@ -77,6 +78,9 @@ export default function ProviderOrdersScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ratingOrder, setRatingOrder] = useState<ServiceOrderItem | null>(null);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingError, setRatingError] = useState<string | null>(null);
 
   const fetchPage = useCallback(
     async (nextPage: number, replace: boolean) => {
@@ -196,6 +200,39 @@ export default function ProviderOrdersScreen() {
     setLoadingMore(true);
     await fetchPage(page + 1, false);
     setLoadingMore(false);
+  }
+
+  function openRating(order: ServiceOrderItem) {
+    setRatingError(null);
+    setRatingOrder(order);
+  }
+
+  async function handleRate(stars: number, comment: string) {
+    if (!ratingOrder) {
+      return;
+    }
+
+    setRatingSubmitting(true);
+    setRatingError(null);
+
+    try {
+      const response = await api.rateServiceOrder(ratingOrder.id, stars, comment);
+
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === ratingOrder.id ? response.data.order : order,
+        ),
+      );
+      setRatingOrder(null);
+    } catch (caught) {
+      setRatingError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos guardar la calificación.',
+      );
+    } finally {
+      setRatingSubmitting(false);
+    }
   }
 
   if (loading) {
@@ -381,11 +418,48 @@ export default function ProviderOrdersScreen() {
                   {item.address ?? item.description ?? ''}
                   {formatDate(item.created_at) ? ` · ${formatDate(item.created_at)}` : ''}
                 </Text>
+
+                {item.status === 'COMPLETED' ? (
+                  item.provider_rated ? (
+                    <Text style={styles.ratedLine}>
+                      ★ Ya calificaste al cliente
+                      {item.provider_rating
+                        ? ` (${item.provider_rating.stars}/5)`
+                        : ''}
+                    </Text>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        openRating(item);
+                      }}
+                      style={styles.rateButton}
+                    >
+                      <Text style={styles.rateButtonText}>★ Calificar cliente</Text>
+                    </Pressable>
+                  )
+                ) : null}
               </Pressable>
             );
           }}
         />
       </View>
+
+      <RatingModal
+        key={ratingOrder?.id ?? 'closed'}
+        visible={ratingOrder !== null}
+        title="Calificar al cliente"
+        subtitle={ratingOrder ? `Solicitud #${ratingOrder.id}` : null}
+        submitting={ratingSubmitting}
+        error={ratingError}
+        onClose={() => {
+          if (!ratingSubmitting) {
+            setRatingOrder(null);
+          }
+        }}
+        onSubmit={handleRate}
+      />
     </SafeAreaView>
   );
 }
@@ -515,6 +589,24 @@ const styles = StyleSheet.create({
   cardMeta: {
     color: colors.muted,
     fontSize: 13,
+  },
+  rateButton: {
+    alignItems: 'center',
+    backgroundColor: colors.brand,
+    borderRadius: radius.md,
+    marginTop: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  rateButtonText: {
+    color: colors.surface,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  ratedLine: {
+    color: colors.success,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: spacing.md,
   },
   empty: {
     alignItems: 'center',

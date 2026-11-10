@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -14,6 +14,7 @@ import { ApiError, api } from '@/api/client';
 import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { ProviderAdCard } from '@/components/ProviderAdCard';
 import { TextField } from '@/components/TextField';
 import {
   appendPhoto,
@@ -52,10 +53,18 @@ export default function NewRequestScreen() {
   const [subgroupId, setSubgroupId] = useState<number | null>(null);
   const [provider, setProvider] = useState<ProviderCard | null>(null);
 
-  // Buscador de prestador (opcional).
+  // Buscador y tarjetas de prestador (opcional).
   const [providerSearch, setProviderSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [providerTab, setProviderTab] = useState<'favorites' | 'all'>('all');
   const [providerResults, setProviderResults] = useState<ProviderCard[]>([]);
-  const [searchingProviders, setSearchingProviders] = useState(false);
+  const [providersPage, setProvidersPage] = useState(1);
+  const [providersLastPage, setProvidersLastPage] = useState(1);
+  const [providersCounts, setProvidersCounts] = useState({ all: 0, favorites: 0 });
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [loadingMoreProviders, setLoadingMoreProviders] = useState(false);
+  const [favoriteBusyId, setFavoriteBusyId] = useState<number | null>(null);
+  const defaultTabApplied = useRef(false);
 
   // Urgencia.
   const [photo, setPhoto] = useState<LocalPhoto | null>(null);
@@ -131,25 +140,193 @@ export default function NewRequestScreen() {
     };
   }, [providerId]);
 
-  // Buscador de prestadores con debounce. Si el texto es muy corto no se
-  // busca; los resultados viejos se limpian en el onChangeText (evento).
+  // Buscador de prestadores con debounce.
   useEffect(() => {
-    if (providerSearch.trim().length < 2) {
+    if (!orderType) {
+      return;
+    }
+
+    const next = providerSearch.trim();
+
+    if (next === debouncedSearch) {
       return;
     }
 
     const timer = setTimeout(() => {
-      setSearchingProviders(true);
-
-      api
-        .providers({ search: providerSearch.trim(), per_page: 8 })
-        .then((response) => setProviderResults(response.data))
-        .catch(() => setProviderResults([]))
-        .finally(() => setSearchingProviders(false));
-    }, 500);
+      setLoadingProviders(true);
+      setDebouncedSearch(next);
+    }, 400);
 
     return () => clearTimeout(timer);
-  }, [providerSearch]);
+  }, [providerSearch, debouncedSearch, orderType]);
+
+  // Tarjetas de prestadores filtradas por tipo de pedido y pestaña.
+  useEffect(() => {
+    if (!orderType) {
+      return;
+    }
+
+    let active = true;
+
+    api
+      .providers({
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        type: orderType,
+        favorite: providerTab === 'favorites',
+        per_page: 8,
+        page: 1,
+      })
+      .then((response) => {
+        if (!active) {
+          return;
+        }
+
+        const favorites = response.meta.favorites_count ?? 0;
+        setProvidersCounts({
+          all: response.meta.total_count ?? response.meta.total,
+          favorites,
+        });
+
+        // Igual que la web: si tenés favoritos, arranca en esa pestaña.
+        if (
+          !defaultTabApplied.current &&
+          providerTab === 'all' &&
+          debouncedSearch === '' &&
+          favorites > 0
+        ) {
+          defaultTabApplied.current = true;
+          setLoadingProviders(true);
+          setProviderTab('favorites');
+          return;
+        }
+
+        defaultTabApplied.current = true;
+        setProviderResults(response.data);
+        setProvidersPage(response.meta.current_page);
+        setProvidersLastPage(response.meta.last_page);
+        setError(null);
+      })
+      .catch(() => {
+        if (active) {
+          setProviderResults([]);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingProviders(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [orderType, debouncedSearch, providerTab]);
+
+  function handleOrderType(code: OrderType) {
+    setOrderType(code);
+    setLoadingProviders(true);
+
+    // Si el prestador elegido no ofrece este servicio, se vuelve al pool.
+    if (provider && !provider.service_types.some((type) => type.code === code)) {
+      setProvider(null);
+    }
+  }
+
+  function handleProviderTab(tab: 'favorites' | 'all') {
+    if (providerTab === tab) {
+      return;
+    }
+
+    setLoadingProviders(true);
+    setProviderTab(tab);
+  }
+
+  function pickProvider(item: ProviderCard, serviceCode?: string) {
+    setProvider(item);
+    // El rubro tiene prioridad al enviar: se limpia al elegir prestador.
+    setSubgroupId(null);
+
+    if (serviceCode) {
+      if (serviceCode !== orderType) {
+        setLoadingProviders(true);
+      }
+
+      setOrderType(serviceCode as OrderType);
+    }
+
+    setProviderSearch('');
+  }
+
+  async function toggleProviderFavorite(item: ProviderCard) {
+    if (favoriteBusyId !== null) {
+      return;
+    }
+
+    setFavoriteBusyId(item.id);
+
+    try {
+      const response = await api.toggleProviderFavorite(item.id);
+
+      setProviderResults((current) =>
+        providerTab === 'favorites' && !response.is_favorite
+          ? current.filter((provider) => provider.id !== item.id)
+          : current.map((provider) =>
+              provider.id === item.id
+                ? { ...provider, is_favorite: response.is_favorite }
+                : provider,
+            ),
+      );
+      setProvider((current) =>
+        current && current.id === item.id
+          ? { ...current, is_favorite: response.is_favorite }
+          : current,
+      );
+      setProvidersCounts((current) => ({
+        ...current,
+        // El badge cuenta los favoritos del filtro actual, no el total
+        // global que devuelve el endpoint.
+        favorites: Math.max(0, current.favorites + (response.is_favorite ? 1 : -1)),
+      }));
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos actualizar tus favoritos.',
+      );
+    } finally {
+      setFavoriteBusyId(null);
+    }
+  }
+
+  async function loadMoreProviders() {
+    if (!orderType || loadingMoreProviders || providersPage >= providersLastPage) {
+      return;
+    }
+
+    setLoadingMoreProviders(true);
+
+    try {
+      const response = await api.providers({
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        type: orderType,
+        favorite: providerTab === 'favorites',
+        per_page: 8,
+        page: providersPage + 1,
+      });
+
+      setProviderResults((current) => [...current, ...response.data]);
+      setProvidersPage(response.meta.current_page);
+      setProvidersLastPage(response.meta.last_page);
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos cargar más prestadores.',
+      );
+    } finally {
+      setLoadingMoreProviders(false);
+    }
+  }
 
   function requireTarget(): boolean {
     if (!subgroupId && !provider) {
@@ -370,7 +547,7 @@ export default function NewRequestScreen() {
                 key={type.code}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
-                onPress={() => setOrderType(type.code)}
+                onPress={() => handleOrderType(type.code)}
                 style={[styles.typeCard, selected && styles.typeCardSelected]}
               >
                 <Text style={styles.typeTitle}>{type.title}</Text>
@@ -430,38 +607,87 @@ export default function NewRequestScreen() {
                 <TextField
                   label=""
                   value={providerSearch}
-                  onChangeText={(text) => {
-                    setProviderSearch(text);
-
-                    if (text.trim().length < 2) {
-                      setProviderResults([]);
-                    }
-                  }}
+                  onChangeText={setProviderSearch}
                   placeholder="Buscar prestador por nombre…"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-                {searchingProviders ? (
-                  <Text style={styles.hint}>Buscando…</Text>
+
+                <View style={styles.providerTabs}>
+                  <Pressable
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: providerTab === 'favorites' }}
+                    onPress={() => handleProviderTab('favorites')}
+                    style={[styles.providerTab, providerTab === 'favorites' && styles.providerTabActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.providerTabText,
+                        providerTab === 'favorites' && styles.providerTabTextActive,
+                      ]}
+                    >
+                      ★ Favoritos
+                    </Text>
+                    <View style={styles.providerTabBadge}>
+                      <Text style={styles.providerTabBadgeText}>
+                        {providersCounts.favorites}
+                      </Text>
+                    </View>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: providerTab === 'all' }}
+                    onPress={() => handleProviderTab('all')}
+                    style={[styles.providerTab, providerTab === 'all' && styles.providerTabActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.providerTabText,
+                        providerTab === 'all' && styles.providerTabTextActive,
+                      ]}
+                    >
+                      Todos
+                    </Text>
+                    <View style={styles.providerTabBadge}>
+                      <Text style={styles.providerTabBadgeText}>{providersCounts.all}</Text>
+                    </View>
+                  </Pressable>
+                </View>
+
+                {loadingProviders ? (
+                  <Text style={styles.hint}>Cargando prestadores…</Text>
+                ) : providerResults.length === 0 ? (
+                  <Text style={styles.hint}>
+                    {providerTab === 'favorites'
+                      ? 'Todavía no tenés prestadores favoritos para este servicio.'
+                      : 'No encontramos prestadores para este servicio.'}
+                  </Text>
                 ) : (
                   providerResults.map((item) => (
-                    <Pressable
+                    <ProviderAdCard
                       key={item.id}
-                      accessibilityRole="button"
-                      onPress={() => {
-                        setProvider(item);
-                        setProviderSearch('');
-                        setProviderResults([]);
-                      }}
-                      style={styles.providerRow}
-                    >
-                      <Text style={styles.providerRowText} numberOfLines={1}>
-                        {item.business_name}
-                        {item.zone ? ` · ${item.zone}` : ''}
-                      </Text>
-                    </Pressable>
+                      provider={item}
+                      onPress={() => pickProvider(item)}
+                      onSelectService={(code) => pickProvider(item, code)}
+                      onToggleFavorite={() => void toggleProviderFavorite(item)}
+                      favoriteBusy={favoriteBusyId === item.id}
+                    />
                   ))
                 )}
+
+                {!loadingProviders && providersPage < providersLastPage ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={loadingMoreProviders}
+                    onPress={() => void loadMoreProviders()}
+                    style={styles.providerMore}
+                  >
+                    <Text style={styles.providerMoreText}>
+                      {loadingMoreProviders ? 'Cargando…' : 'Ver más prestadores'}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </>
             )}
 
@@ -843,19 +1069,55 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  providerRow: {
+  providerTabs: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  providerTab: {
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    marginBottom: spacing.xs,
+    flexDirection: 'row',
+    gap: spacing.xs,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  providerTabActive: {
+    backgroundColor: colors.brandSoft,
+    borderColor: colors.brand,
+  },
+  providerTabText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  providerTabTextActive: {
+    color: colors.brandDark,
+  },
+  providerTabBadge: {
+    backgroundColor: colors.background,
+    borderRadius: radius.pill,
+    minWidth: 20,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  providerTabBadgeText: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  providerMore: {
+    alignItems: 'center',
     paddingVertical: spacing.md,
   },
-  providerRowText: {
-    color: colors.text,
+  providerMoreText: {
+    color: colors.brandDark,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   photoButtons: {
     flexDirection: 'row',

@@ -50,7 +50,9 @@ class CatalogController extends Controller
         $search = trim((string) ($data['search'] ?? ''));
         $favoriteIds = Favorite::where('user_id', $user->id)->pluck('provider_id');
 
-        $providers = $this->baseQuery()
+        // Los contadores de las pestañas se calculan con los filtros de
+        // búsqueda/tipo, pero antes de aplicar el filtro de favoritos.
+        $filtered = $this->baseQuery()
             ->when(! empty($data['type']), fn ($query) => $query
                 ->whereHas('serviceTypes', fn ($q) => $q->where('code', $data['type'])))
             ->when($search !== '', function ($query) use ($search) {
@@ -60,7 +62,12 @@ class CatalogController extends Controller
                         ->orWhereRaw("LOWER(COALESCE(description, '')) LIKE ?", ['%'.$lower.'%'])
                         ->orWhereRaw("LOWER(COALESCE(zone, '')) LIKE ?", ['%'.$lower.'%']);
                 });
-            })
+            });
+
+        $totalCount = (clone $filtered)->count();
+        $favoritesCount = (clone $filtered)->whereIn('id', $favoriteIds)->count();
+
+        $providers = $filtered
             ->when($request->boolean('favorite'), fn ($query) => $query->whereIn('id', $favoriteIds))
             ->with(['subgroups.group', 'serviceTypes', 'images'])
             ->orderBy('business_name')
@@ -81,6 +88,8 @@ class CatalogController extends Controller
                 'last_page' => $providers->lastPage(),
                 'per_page' => $providers->perPage(),
                 'total' => $providers->total(),
+                'total_count' => $totalCount,
+                'favorites_count' => $favoritesCount,
             ],
         ]);
     }
@@ -111,7 +120,11 @@ class CatalogController extends Controller
         return response()->json([
             'success' => true,
             'data' => array_merge(
-                $this->cardPayload($provider, collect([$provider->id]), $ratingsCount),
+                $this->cardPayload(
+                    $provider,
+                    $isFavorite ? collect([$provider->id]) : collect(),
+                    $ratingsCount
+                ),
                 [
                     'hours' => $provider->hours,
                     'eta_minutes' => $this->etaMinutes($provider),
@@ -135,6 +148,46 @@ class CatalogController extends Controller
                         ->all(),
                 ]
             ),
+        ]);
+    }
+
+    /**
+     * Agrega o quita el prestador de los favoritos del usuario logueado.
+     * Devuelve el nuevo estado para que la tarjeta se actualice en el acto.
+     */
+    public function toggleFavorite(Request $request, Provider $provider)
+    {
+        $visible = $this->baseQuery()->where('providers.id', $provider->id)->exists();
+
+        if (! $visible) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El prestador no está disponible.',
+                'code' => 'PROVIDER_NOT_FOUND',
+            ], 404);
+        }
+
+        $user = $request->user();
+
+        $existing = Favorite::where('user_id', $user->id)
+            ->where('provider_id', $provider->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            $isFavorite = false;
+        } else {
+            Favorite::create([
+                'user_id' => $user->id,
+                'provider_id' => $provider->id,
+            ]);
+            $isFavorite = true;
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_favorite' => $isFavorite,
+            'favorites_count' => Favorite::where('user_id', $user->id)->count(),
         ]);
     }
 
