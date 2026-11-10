@@ -59,6 +59,16 @@ export default function NewRequestScreen() {
 
   const initialService = Array.isArray(service) ? service[0] : service;
 
+  // Cuando se llega desde una tarjeta, el tipo y el prestador quedan fijos:
+  // no se puede cambiar el servicio ni buscar otro prestador, y el rubro
+  // deja de mostrarse porque el pedido va directo a ese prestador.
+  const requestedProviderId = Number(providerId);
+  const hasRequestedProvider =
+    Boolean(providerId) && Number.isInteger(requestedProviderId) && requestedProviderId > 0;
+  const serviceLocked = isOrderType(initialService);
+  const [providerLoadFailed, setProviderLoadFailed] = useState(false);
+  const providerLocked = hasRequestedProvider && !providerLoadFailed;
+
   const [orderType, setOrderType] = useState<OrderType | null>(
     isOrderType(initialService) ? initialService : null,
   );
@@ -131,11 +141,9 @@ export default function NewRequestScreen() {
         }
       });
 
-    const preselected = Number(providerId);
-
-    if (providerId && Number.isInteger(preselected) && preselected > 0) {
+    if (hasRequestedProvider) {
       api
-        .provider(preselected)
+        .provider(requestedProviderId)
         .then((response) => {
           if (active) {
             setProvider({
@@ -145,18 +153,21 @@ export default function NewRequestScreen() {
           }
         })
         .catch(() => {
-          // Si el prestador ya no existe, se sigue sin prestador.
+          // Si el prestador ya no existe, se libera el flujo normal.
+          if (active) {
+            setProviderLoadFailed(true);
+          }
         });
     }
 
     return () => {
       active = false;
     };
-  }, [providerId]);
+  }, [hasRequestedProvider, requestedProviderId]);
 
   // Buscador de prestadores con debounce.
   useEffect(() => {
-    if (!orderType) {
+    if (!orderType || providerLocked) {
       return;
     }
 
@@ -172,11 +183,11 @@ export default function NewRequestScreen() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [providerSearch, debouncedSearch, orderType]);
+  }, [providerSearch, debouncedSearch, orderType, providerLocked]);
 
   // Tarjetas de prestadores filtradas por tipo de pedido y pestaña.
   useEffect(() => {
-    if (!orderType) {
+    if (!orderType || providerLocked) {
       return;
     }
 
@@ -234,7 +245,7 @@ export default function NewRequestScreen() {
     return () => {
       active = false;
     };
-  }, [orderType, debouncedSearch, providerTab]);
+  }, [orderType, debouncedSearch, providerTab, providerLocked]);
 
   function handleOrderType(code: OrderType) {
     setOrderType(code);
@@ -552,67 +563,86 @@ export default function NewRequestScreen() {
         <ErrorBanner message={error} />
 
         <Text style={styles.label}>¿Qué necesitás?</Text>
-        <View style={styles.typeList}>
-          {ORDER_TYPES.map((type) => {
-            const selected = orderType === type.code;
+        {serviceLocked && orderType ? (
+          <View style={[styles.typeCard, styles.typeCardSelected]}>
+            <Text style={styles.typeTitle}>
+              {ORDER_TYPES.find((type) => type.code === orderType)?.title ?? orderType}
+            </Text>
+            <Text style={styles.typeHint}>
+              Elegido desde la tarjeta del prestador.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.typeList}>
+            {ORDER_TYPES.map((type) => {
+              const selected = orderType === type.code;
 
-            return (
-              <Pressable
-                key={type.code}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                onPress={() => handleOrderType(type.code)}
-                style={[styles.typeCard, selected && styles.typeCardSelected]}
-              >
-                <Text style={styles.typeTitle}>{type.title}</Text>
-                <Text style={styles.typeHint}>{type.hint}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+              return (
+                <Pressable
+                  key={type.code}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  onPress={() => handleOrderType(type.code)}
+                  style={[styles.typeCard, selected && styles.typeCardSelected]}
+                >
+                  <Text style={styles.typeTitle}>{type.title}</Text>
+                  <Text style={styles.typeHint}>{type.hint}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
         {orderType ? (
           <>
-            {loadingSubgroups ? (
-              <Text style={styles.hint}>Cargando rubros…</Text>
-            ) : (
-              <ComboField
-                label="Rubro"
-                value={subgroupId}
-                options={subgroups.map((subgroup) => ({
-                  value: subgroup.id,
-                  label: subgroup.description,
-                  hint:
-                    subgroup.providers_count > 0
-                      ? `${subgroup.providers_count} prestador(es)`
-                      : undefined,
-                }))}
-                onChange={setSubgroupId}
-                placeholder={
-                  subgroups.length === 0
-                    ? 'No hay rubros disponibles'
-                    : 'Seleccioná un rubro'
-                }
-                disabled={subgroups.length === 0}
-                error={fieldErrors.sub_group_id?.[0] ?? null}
-                searchPlaceholder="Buscar rubro…"
-              />
-            )}
+            {!providerLocked && !provider ? (
+              loadingSubgroups ? (
+                <Text style={styles.hint}>Cargando rubros…</Text>
+              ) : (
+                <ComboField
+                  label="Rubro"
+                  value={subgroupId}
+                  options={subgroups.map((subgroup) => ({
+                    value: subgroup.id,
+                    label: subgroup.description,
+                    hint:
+                      subgroup.providers_count > 0
+                        ? `${subgroup.providers_count} prestador(es)`
+                        : undefined,
+                  }))}
+                  onChange={setSubgroupId}
+                  placeholder={
+                    subgroups.length === 0
+                      ? 'No hay rubros disponibles'
+                      : 'Seleccioná un rubro'
+                  }
+                  disabled={subgroups.length === 0}
+                  error={fieldErrors.sub_group_id?.[0] ?? null}
+                  searchPlaceholder="Buscar rubro…"
+                />
+              )
+            ) : null}
 
-            <Text style={styles.label}>Prestador (opcional)</Text>
+            <Text style={styles.label}>
+              {providerLocked ? 'Prestador' : 'Prestador (opcional)'}
+            </Text>
             {provider ? (
               <View style={styles.providerPicked}>
                 <Text style={styles.providerPickedText} numberOfLines={1}>
                   ✓ {provider.business_name}
                 </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setProvider(null)}
-                  style={styles.providerRemove}
-                >
-                  <Text style={styles.providerRemoveText}>Quitar</Text>
-                </Pressable>
+                {!providerLocked ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setProvider(null)}
+                    style={styles.providerRemove}
+                  >
+                    <Text style={styles.providerRemoveText}>Quitar</Text>
+                  </Pressable>
+                ) : null}
               </View>
+            ) : providerLocked ? (
+              <Text style={styles.hint}>Cargando prestador…</Text>
             ) : (
               <>
                 <Text style={styles.hint}>
@@ -950,7 +980,7 @@ export default function NewRequestScreen() {
                 title="Enviar solicitud"
                 onPress={handleSubmit}
                 loading={submitting}
-                disabled={submitting}
+                disabled={submitting || (providerLocked && !provider)}
               />
             </View>
           </>
