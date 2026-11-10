@@ -1580,20 +1580,7 @@ export default function HomeScreen() {
               <TextField label="Confirmar nueva contraseña" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry error={passwordError} />
               <PrimaryButton title="Guardar contraseña" onPress={() => void handleSavePassword()} loading={savingPassword} />
             </View>
-            {!managedId ? (
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>⚠️ Zona de peligro</Text>
-                <TextField label="ID de cuenta" value={String(user.id)} editable={false} />
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={deleting}
-                  onPress={confirmDeleteAccount}
-                  style={styles.deleteAccount}
-                >
-                  <Text style={styles.deleteText}>{deleting ? 'Desactivando cuenta…' : 'Eliminar mi cuenta'}</Text>
-                </Pressable>
-              </View>
-            ) : null}
+            
           </View>
         ) : null}
       </ScrollView>

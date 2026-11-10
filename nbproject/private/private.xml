@@ -3,25 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/mi-catalogo.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/inventario.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/pedidos.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/partials/retencion.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/partials/salud-financiera.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/partials/suscripciones-comercio.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/ordenes-gestion.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes-hogar.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes-repartidor.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/reports/hogar.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/reports/hogar-pdf.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/repartidor.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/comercios.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/mis-pedidos.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/partials/mis-suscripciones.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/mis-servicios.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/estados-grupos.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/estados-usuarios.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/default.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/usuarios.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard.blade.php</file>
-            <file>file:/C:/xampp/htdocs/pideaca/resources/views/welcome.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/paginas.blade.php</file>
         </group>
     </open-files>
 </project-private>

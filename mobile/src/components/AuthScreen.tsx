@@ -13,7 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing } from '@/theme';
 
 type Props = {
-  title: string;
+  /** Título del hero; si se omite solo se muestra el logo y el subtítulo. */
+  title?: string;
   subtitle: string;
   children: ReactNode;
   footer?: ReactNode;
@@ -41,7 +42,7 @@ export function AuthScreen({ title, subtitle, children, footer }: Props) {
               resizeMode="contain"
               accessibilityLabel="PideAca"
             />
-            <Text style={styles.title}>{title}</Text>
+            {title ? <Text style={styles.title}>{title}</Text> : null}
             <Text style={styles.subtitle}>{subtitle}</Text>
           </View>
 
