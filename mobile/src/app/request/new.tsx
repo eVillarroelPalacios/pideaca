@@ -35,6 +35,13 @@ const ORDER_TYPES: { code: OrderType; title: string; hint: string }[] = [
   { code: 'QUOTE', title: '🧾 Presupuesto', hint: 'Describo el trabajo con fotos y espero propuestas.' },
 ];
 
+/** Valida el tipo que puede llegar desde una tarjeta de prestador. */
+function isOrderType(value: unknown): value is OrderType {
+  return (
+    value === 'EMERGENCY' || value === 'SCHEDULED' || value === 'QUOTE'
+  );
+}
+
 const PAYMENT_METHODS = [
   { code: 'efectivo', label: 'Efectivo' },
   { code: 'transferencia', label: 'Transferencia' },
@@ -45,9 +52,16 @@ const PAYMENT_METHODS = [
 const MAX_QUOTE_PHOTOS = 5;
 
 export default function NewRequestScreen() {
-  const { providerId } = useLocalSearchParams<{ providerId?: string }>();
+  const { providerId, service } = useLocalSearchParams<{
+    providerId?: string;
+    service?: string;
+  }>();
 
-  const [orderType, setOrderType] = useState<OrderType | null>(null);
+  const initialService = Array.isArray(service) ? service[0] : service;
+
+  const [orderType, setOrderType] = useState<OrderType | null>(
+    isOrderType(initialService) ? initialService : null,
+  );
   const [subgroups, setSubgroups] = useState<ServiceSubgroup[]>([]);
   const [loadingSubgroups, setLoadingSubgroups] = useState(true);
   const [subgroupId, setSubgroupId] = useState<number | null>(null);

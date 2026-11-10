@@ -324,6 +324,12 @@ export default function ProvidersScreen() {
                 })
               }
               onToggleFavorite={() => void handleToggleFavorite(item)}
+              onSelectService={(code) =>
+                router.push({
+                  pathname: '/request/new',
+                  params: { providerId: String(item.id), service: code },
+                })
+              }
               favoriteBusy={favoriteBusyId === item.id}
             />
           )}
