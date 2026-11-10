@@ -1729,7 +1729,7 @@ export default function NewRequestScreen() {
                   })}
                 </View>
 
-                {scheduledDays[0]?.fallback ? (
+                {selectedDay?.fallback ? (
                   <Text style={styles.calendarFallback}>
                     Este prestador todavía no publicó horarios. Te mostramos los
                     turnos estándar (09:00 a 18:00) y te confirmamos la cita al
