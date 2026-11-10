@@ -6,7 +6,7 @@ import {
   useAudioRecorder,
   useAudioRecorderState,
 } from 'expo-audio';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -52,18 +52,18 @@ function isOrderType(value: unknown): value is OrderType {
   );
 }
 
-const PAYMENT_METHODS = [
-  { code: 'efectivo', label: 'Efectivo' },
-  { code: 'transferencia', label: 'Transferencia' },
-  { code: 'tarjeta', label: 'Tarjeta' },
-  { code: 'mercado_pago', label: 'Mercado Pago' },
-];
-
 /** Medios de pago rápidos para la tarifa base de la urgencia (estilo web). */
 const EMERGENCY_PAYMENT_METHODS = [
   { code: 'mercado_pago', label: 'Mercado Pago', icon: 'MP', mp: true },
   { code: 'tarjeta', label: 'Tarjeta', icon: '💳', mp: false },
   { code: 'efectivo', label: 'Efectivo', icon: '💵', mp: false },
+];
+
+/** Medios de pago para la cita programada (mismos códigos que la web). */
+const SCHEDULED_PAYMENT_METHODS = [
+  { code: 'efectivo', label: 'Efectivo' },
+  { code: 'mercado_pago', label: 'Mercado Pago' },
+  { code: 'tarjeta', label: 'Tarjeta' },
 ];
 
 /** Opciones rápidas de urgencia: un toque completa la descripción. */
@@ -84,7 +84,7 @@ const MAX_AUDIO_SECONDS = 120;
 const NAVY = '#0c2a4d';
 
 type SelectedProvider = ProviderCard &
-  Partial<Pick<ProviderDetail, 'emergency_count'>>;
+  Partial<Pick<ProviderDetail, 'emergency_count' | 'hours'>>;
 
 /** Extensión/MIME del archivo temporal que devuelve expo-audio. */
 function toLocalAudio(uri: string): LocalAudio {
@@ -110,6 +110,178 @@ function formatDuration(millis: number): string {
 
 function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Horarios publicados por el prestador (payload "hours" del detalle). */
+type ProviderHours = Record<
+  string,
+  { open?: boolean; shifts?: { from?: string; to?: string }[] } | undefined
+>;
+
+type ScheduleDay = {
+  date: Date;
+  key: string;
+  open: boolean;
+  shifts: { from: number; to: number }[];
+  fallback: boolean;
+};
+
+const SCHEDULE_DAYS = 14;
+const SCHEDULE_FALLBACK_FROM = 9 * 60;
+const SCHEDULE_FALLBACK_TO = 18 * 60;
+const SCHEDULE_HOURS_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const SCHEDULE_WEEKDAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+const SCHEDULE_MONTH_LABELS = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+];
+
+/** "14:30" → 870 minutos. */
+function minutesOf(value: string | undefined | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const match = /^(\d{1,2}):(\d{2})/.exec(value.trim());
+
+  if (!match) {
+    return null;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function scheduleKey(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function isSameDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** Horario del prestador para un día; sin horarios publicados usa 09–18. */
+function scheduleDayHours(
+  hours: ProviderHours | null | undefined,
+  date: Date,
+): { open: boolean; shifts: { from: number; to: number }[]; fallback: boolean } {
+  if (!hours || typeof hours !== 'object' || Array.isArray(hours)) {
+    return {
+      open: true,
+      shifts: [{ from: SCHEDULE_FALLBACK_FROM, to: SCHEDULE_FALLBACK_TO }],
+      fallback: true,
+    };
+  }
+
+  const key = SCHEDULE_HOURS_KEYS[date.getDay()];
+  const day = hours[key];
+  let open = Boolean(day && day.open);
+  const shifts: { from: number; to: number }[] = [];
+
+  if (open) {
+    (day?.shifts ?? []).forEach((shift) => {
+      const from = minutesOf(shift?.from);
+      const to = minutesOf(shift?.to);
+
+      if (from !== null && to !== null && to > from) {
+        shifts.push({ from, to });
+      }
+    });
+
+    if (!shifts.length) {
+      open = false;
+    }
+  }
+
+  return { open, shifts, fallback: false };
+}
+
+/** Los 14 días del calendario de citas, igual que la web. */
+function buildScheduleDays(hours: ProviderHours | null | undefined): ScheduleDay[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Array.from({ length: SCHEDULE_DAYS }, (_, index) => {
+    const date = new Date(today.getTime());
+    date.setDate(today.getDate() + index);
+    const info = scheduleDayHours(hours, date);
+
+    return { date, key: scheduleKey(date), ...info };
+  });
+}
+
+/** Franjas de 60 min (30 si el turno es corto); hoy descarta lo ya pasado. */
+function scheduleSlotsFor(day: ScheduleDay | undefined): number[] {
+  if (!day) {
+    return [];
+  }
+
+  const now = new Date();
+  const nowMinutes = isSameDate(day.date, now)
+    ? now.getHours() * 60 + now.getMinutes()
+    : null;
+  const slots: number[] = [];
+
+  day.shifts.forEach((shift) => {
+    const length = shift.to - shift.from;
+    const step = length < 90 ? 30 : 60;
+
+    for (let start = shift.from; start + step <= shift.to; start += step) {
+      if (nowMinutes !== null && start <= nowMinutes) {
+        continue;
+      }
+
+      slots.push(start);
+    }
+  });
+
+  return slots.sort((a, b) => a - b);
+}
+
+function slotValue(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+
+  return `${String(hours).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+}
+
+function slotLabel(minutes: number): string {
+  const hours24 = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const suffix = hours24 < 12 ? 'AM' : 'PM';
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+
+  return `${String(hours12).padStart(2, '0')}:${String(rest).padStart(2, '0')} ${suffix}`;
+}
+
+function scheduleRangeLabel(days: ScheduleDay[]): string {
+  if (!days.length) {
+    return '';
+  }
+
+  const first = days[0].date;
+  const last = days[days.length - 1].date;
+
+  return `${first.getDate()} ${SCHEDULE_MONTH_LABELS[first.getMonth()]} – ${
+    last.getDate()
+  } ${SCHEDULE_MONTH_LABELS[last.getMonth()]}`;
+}
+
+function formatMoney(value: number): string {
+  return `$${value.toLocaleString('es-AR', { maximumFractionDigits: 2 })}`;
 }
 
 export default function NewRequestScreen() {
@@ -172,14 +344,15 @@ export default function NewRequestScreen() {
   // Cita.
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [weekOffset, setWeekOffset] = useState(0);
   const [fulfillment, setFulfillment] = useState<'AT_HOME' | 'AT_MERCHANT_LOCATION'>('AT_HOME');
-  const [paymentMode, setPaymentMode] = useState<'DEPOSIT' | 'FULL'>('FULL');
-  const [scheduledPaymentMethod, setScheduledPaymentMethod] = useState('Efectivo');
+  const [paymentMode, setPaymentMode] = useState<'DEPOSIT' | 'FULL'>('DEPOSIT');
+  const [scheduledPaymentMethod, setScheduledPaymentMethod] = useState('efectivo');
   const [notes, setNotes] = useState('');
   const [addressStreet, setAddressStreet] = useState('');
   const [addressUnit, setAddressUnit] = useState('');
   const [addressNeighborhood, setAddressNeighborhood] = useState('');
-  const [reminder, setReminder] = useState<'none' | 'whatsapp' | 'email'>('none');
+  const [reminder, setReminder] = useState<'whatsapp' | 'email'>('whatsapp');
 
   // Presupuesto.
   const [details, setDetails] = useState('');
@@ -220,6 +393,10 @@ export default function NewRequestScreen() {
               ...response.data,
               ratings_count: response.data.ratings_count,
             });
+
+            if (initialService === 'SCHEDULED') {
+              primeScheduledForm();
+            }
           }
         })
         .catch(() => {
@@ -366,9 +543,22 @@ export default function NewRequestScreen() {
     };
   }, [orderType, debouncedSearch, providerTab, providerLocked]);
 
+  function primeScheduledForm() {
+    setDate('');
+    setTime('');
+    setWeekOffset(0);
+    setPaymentMode('DEPOSIT');
+    setScheduledPaymentMethod('efectivo');
+    setReminder('whatsapp');
+  }
+
   function handleOrderType(code: OrderType) {
     setOrderType(code);
     setLoadingProviders(true);
+
+    if (code === 'SCHEDULED') {
+      primeScheduledForm();
+    }
 
     // Si el prestador elegido no ofrece este servicio, se vuelve al pool.
     if (provider && !provider.service_types.some((type) => type.code === code)) {
@@ -386,6 +576,8 @@ export default function NewRequestScreen() {
   }
 
   function pickProvider(item: ProviderCard, serviceCode?: string) {
+    const nextType = (serviceCode as OrderType | undefined) ?? orderType;
+
     setProvider(item);
     // El rubro tiene prioridad al enviar: se limpia al elegir prestador.
     setSubgroupId(null);
@@ -409,6 +601,10 @@ export default function NewRequestScreen() {
       }
 
       setOrderType(serviceCode as OrderType);
+    }
+
+    if (nextType === 'SCHEDULED') {
+      primeScheduledForm();
     }
 
     setProviderSearch('');
@@ -638,20 +834,6 @@ export default function NewRequestScreen() {
     setQuotePhotos((current) => [...current, ...picked].slice(0, MAX_QUOTE_PHOTOS));
   }
 
-  function scheduledAtValid(): string | null {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
-      return null;
-    }
-
-    const when = new Date(`${date}T${time}:00`);
-
-    if (Number.isNaN(when.getTime()) || when <= new Date()) {
-      return null;
-    }
-
-    return `${date} ${time}`;
-  }
-
   async function handleSubmit() {
     setError(null);
     setFieldErrors({});
@@ -714,10 +896,22 @@ export default function NewRequestScreen() {
         const response = await api.createEmergency(form);
         orderId = response.data.order.id;
       } else if (orderType === 'SCHEDULED') {
-        const scheduledAt = scheduledAtValid();
+        if (!date) {
+          setError('Elegí un día del calendario para tu cita.');
+          setSubmitting(false);
+          return;
+        }
 
-        if (!scheduledAt) {
-          setError('Ingresá una fecha (AAAA-MM-DD) y hora (HH:MM) futuras.');
+        if (!time) {
+          setError('Elegí uno de los horarios libres del día seleccionado.');
+          setSubmitting(false);
+          return;
+        }
+
+        const when = new Date(`${date}T${time}:00`);
+
+        if (Number.isNaN(when.getTime()) || when <= new Date()) {
+          setError('Elegí un día y un horario futuros para tu cita.');
           setSubmitting(false);
           return;
         }
@@ -730,7 +924,7 @@ export default function NewRequestScreen() {
 
         const payload: Record<string, unknown> = {
           ...target,
-          scheduled_at: scheduledAt,
+          scheduled_at: `${date} ${time}:00`,
           fulfillment,
           payment_method: scheduledPaymentMethod.trim(),
           payment_mode: paymentMode,
@@ -748,9 +942,7 @@ export default function NewRequestScreen() {
         if (addressNeighborhood.trim()) {
           payload.address_neighborhood = addressNeighborhood.trim();
         }
-        if (reminder !== 'none') {
-          payload.reminder_channel = reminder;
-        }
+        payload.reminder_channel = reminder;
 
         const response = await api.createScheduled(payload);
         orderId = response.data.order.id;
@@ -797,21 +989,78 @@ export default function NewRequestScreen() {
   }
 
   const emergencyProvider = orderType === 'EMERGENCY' ? provider : null;
+  // La cabecera del prestador se comparte entre urgencias y citas: la web
+  // esconde el selector cuando el pedido va directo a un profesional.
+  const headerProvider =
+    provider && (orderType === 'EMERGENCY' || orderType === 'SCHEDULED')
+      ? provider
+      : null;
   const emergencyCount = provider?.emergency_count ?? 0;
   const providerScore = Number(provider?.rating ?? 0);
   const providerRubro = provider?.subgroups?.[0]?.description ?? 'Servicios del hogar';
   const providerMeta = provider
     ? `${providerRubro}${provider.zone ? ` · ${provider.zone}` : ''}`
     : '';
-  const emergencyServiceLabel =
-    provider?.service_types.find((type) => type.code === 'EMERGENCY')?.name ??
-    'Urgencias 24/7';
+  const headerServiceLabel = headerProvider
+    ? headerProvider.service_types.find((type) => type.code === orderType)?.name ??
+      (orderType === 'EMERGENCY' ? 'Urgencias 24/7' : 'Cita programada')
+    : '';
   const baseFee = provider?.base_visit_fee ?? null;
   const hasBaseFee = baseFee !== null && Number(baseFee) > 0;
   const baseFeeLabel = hasBaseFee
     ? `$${Number(baseFee).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
     : 'A convenir';
   const emergencyHasContent = Boolean(description.trim());
+
+  // Calendario de la cita: 14 días, con navegación semanal (igual que la web).
+  const scheduledDays = useMemo(
+    () =>
+      buildScheduleDays(
+        (provider?.hours as ProviderHours | null | undefined) ?? null,
+      ),
+    [provider?.hours],
+  );
+  const visibleScheduleDays = scheduledDays.slice(weekOffset, weekOffset + 7);
+  const selectedDay = scheduledDays.find((day) => day.key === date);
+  const daySlots = scheduleSlotsFor(selectedDay);
+  const scheduleRange = scheduleRangeLabel(visibleScheduleDays);
+  const canGoPreviousWeek = weekOffset > 0;
+  const canGoNextWeek = weekOffset + 7 < SCHEDULE_DAYS;
+
+  // Desglose de la seña: sin tarifa publicada todo queda "A convenir".
+  const scheduledFee = hasBaseFee ? Number(baseFee) : null;
+  const scheduledNow =
+    scheduledFee === null
+      ? null
+      : paymentMode === 'FULL'
+        ? scheduledFee
+        : Math.round(scheduledFee * 50) / 100;
+  const scheduledRest =
+    scheduledFee === null
+      ? null
+      : paymentMode === 'FULL'
+        ? 0
+        : Math.round(scheduledFee * 50) / 100;
+  const scheduledBaseLabel =
+    scheduledFee === null ? 'A convenir' : formatMoney(scheduledFee);
+  const scheduledNowLabel =
+    scheduledNow === null ? 'A convenir' : formatMoney(scheduledNow);
+  const scheduledRestLabel =
+    scheduledRest === null ? 'A convenir' : formatMoney(scheduledRest);
+  const scheduledNowTitle =
+    scheduledFee === null
+      ? 'Monto a abonar ahora'
+      : paymentMode === 'FULL'
+        ? 'Monto a abonar ahora (Pago total)'
+        : 'Monto a abonar ahora (Seña 50%)';
+  const depositNote =
+    paymentMode === 'FULL'
+      ? 'Con pago total abonás la tarifa base completa ahora y solo se descuenta la visita.'
+      : 'La seña del 50% garantiza el turno y se descuenta del saldo final.';
+  const reminderHint =
+    reminder === 'email'
+      ? 'Te enviamos el recordatorio y la confirmación por email.'
+      : 'Te avisamos por WhatsApp cuando el profesional esté en camino.';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
@@ -833,7 +1082,7 @@ export default function NewRequestScreen() {
       >
         <ErrorBanner message={error} />
 
-        {emergencyProvider ? null : (
+        {headerProvider ? null : (
           <>
             <Text style={styles.label}>¿Qué necesitás?</Text>
             {serviceLocked && orderType ? (
@@ -898,7 +1147,7 @@ export default function NewRequestScreen() {
               )
             ) : null}
 
-            {emergencyProvider ? null : (
+            {headerProvider ? null : (
               <>
                 <Text style={styles.label}>
                   {providerLocked ? 'Prestador' : 'Prestador (opcional)'}
@@ -1014,122 +1263,124 @@ export default function NewRequestScreen() {
               </>
             )}
 
-            {orderType === 'EMERGENCY' ? (
+            {headerProvider ? (
               <>
-                {emergencyProvider ? (
-                  <View style={styles.providerHeader}>
-                    <View style={styles.providerHeaderTop}>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Cambiar de prestador"
-                        onPress={() =>
-                          providerLocked ? router.back() : setProvider(null)
-                        }
-                        style={styles.providerBack}
-                      >
-                        <Text style={styles.providerBackText}>←</Text>
-                      </Pressable>
+                <View style={styles.providerHeader}>
+                  <View style={styles.providerHeaderTop}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Cambiar de prestador"
+                      onPress={() =>
+                        providerLocked ? router.back() : setProvider(null)
+                      }
+                      style={styles.providerBack}
+                    >
+                      <Text style={styles.providerBackText}>←</Text>
+                    </Pressable>
 
-                      <View style={styles.providerAvatar}>
-                        <Text style={styles.providerAvatarText}>
-                          {(emergencyProvider.business_name || '?')
-                            .charAt(0)
-                            .toUpperCase()}
+                    <View style={styles.providerAvatar}>
+                      <Text style={styles.providerAvatarText}>
+                        {(headerProvider.business_name || '?')
+                          .charAt(0)
+                          .toUpperCase()}
+                      </Text>
+                    </View>
+
+                    <View style={styles.providerHeaderInfo}>
+                      <View style={styles.providerNameRow}>
+                        <Text style={styles.providerName} numberOfLines={1}>
+                          {headerProvider.business_name}
                         </Text>
+                        {headerProvider.is_verified ? (
+                          <View style={styles.verifiedBadge}>
+                            <Text style={styles.verifiedText}>✓ Verificado</Text>
+                          </View>
+                        ) : null}
                       </View>
 
-                      <View style={styles.providerHeaderInfo}>
-                        <View style={styles.providerNameRow}>
-                          <Text style={styles.providerName} numberOfLines={1}>
-                            {emergencyProvider.business_name}
-                          </Text>
-                          {emergencyProvider.is_verified ? (
-                            <View style={styles.verifiedBadge}>
-                              <Text style={styles.verifiedText}>✓ Verificado</Text>
-                            </View>
-                          ) : null}
-                        </View>
+                      <Text style={styles.providerMeta} numberOfLines={1}>
+                        {providerMeta}
+                      </Text>
 
-                        <Text style={styles.providerMeta} numberOfLines={1}>
-                          {providerMeta}
+                      <View style={styles.providerBadges}>
+                        <Text style={styles.providerRating}>
+                          {providerScore > 0
+                            ? `★ ${providerScore.toFixed(1)}`
+                            : '★ Nuevo'}
+                          {emergencyCount > 0 ? (
+                            <Text style={styles.providerRatingCount}>
+                              {` (${emergencyCount} urgencia${
+                                emergencyCount === 1 ? '' : 's'
+                              })`}
+                            </Text>
+                          ) : null}
                         </Text>
 
-                        <View style={styles.providerBadges}>
-                          <Text style={styles.providerRating}>
-                            {providerScore > 0
-                              ? `★ ${providerScore.toFixed(1)}`
-                              : '★ Nuevo'}
-                            {emergencyCount > 0 ? (
-                              <Text style={styles.providerRatingCount}>
-                                {` (${emergencyCount} urgencia${
-                                  emergencyCount === 1 ? '' : 's'
-                                })`}
-                              </Text>
-                            ) : null}
-                          </Text>
-
-                          <View
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            headerProvider.is_available_now
+                              ? styles.statusBadgeOpen
+                              : styles.statusBadgeClosed,
+                          ]}
+                        >
+                          <Text
                             style={[
-                              styles.statusBadge,
-                              emergencyProvider.is_available_now
-                                ? styles.statusBadgeOpen
-                                : styles.statusBadgeClosed,
+                              styles.statusText,
+                              headerProvider.is_available_now
+                                ? styles.statusTextOpen
+                                : styles.statusTextClosed,
                             ]}
                           >
-                            <Text
-                              style={[
-                                styles.statusText,
-                                emergencyProvider.is_available_now
-                                  ? styles.statusTextOpen
-                                  : styles.statusTextClosed,
-                              ]}
-                            >
-                              {emergencyProvider.is_available_now
-                                ? '🟢 Disponible Ahora'
-                                : `🟡 ${emergencyProvider.availability_label}`}
-                            </Text>
-                          </View>
+                            {headerProvider.is_available_now
+                              ? '🟢 Disponible Ahora'
+                              : `🟡 ${headerProvider.availability_label}`}
+                          </Text>
                         </View>
                       </View>
                     </View>
-
-                    <View style={styles.providerServiceRow}>
-                      <Text style={styles.providerService}>
-                        {emergencyServiceLabel}
-                      </Text>
-                      <Text style={styles.providerServiceNote}>
-                        El precio lo define el profesional
-                      </Text>
-                    </View>
                   </View>
-                ) : null}
 
-                {emergencyProvider ? (
-                  <View style={styles.feeCard}>
-                    <View style={styles.feeIcon}>
-                      <Text style={styles.feeIconText}>🔔</Text>
-                    </View>
-                    <View style={styles.feeBody}>
-                      <Text style={styles.feeTitle}>
-                        TARIFA BASE POR URGENCIA / VISITA
-                      </Text>
-                      <Text
-                        style={[
-                          styles.feeAmount,
-                          !hasBaseFee && styles.feeAmountPending,
-                        ]}
-                      >
-                        {baseFeeLabel}
-                      </Text>
-                      <Text style={styles.feeNote}>
-                        {hasBaseFee
-                          ? 'Se abona al confirmar el trabajo. El profesional puede ajustar el monto final en el lugar.'
-                          : 'El profesional confirma el monto de la visita antes de empezar.'}
-                      </Text>
-                    </View>
+                  <View style={styles.providerServiceRow}>
+                    <Text style={styles.providerService}>
+                      {headerServiceLabel}
+                    </Text>
+                    <Text style={styles.providerServiceNote}>
+                      El precio lo define el profesional
+                    </Text>
                   </View>
-                ) : null}
+                </View>
 
+                <View style={styles.feeCard}>
+                  <View style={styles.feeIcon}>
+                    <Text style={styles.feeIconText}>🔔</Text>
+                  </View>
+                  <View style={styles.feeBody}>
+                    <Text style={styles.feeTitle}>
+                      {orderType === 'EMERGENCY'
+                        ? 'TARIFA BASE POR URGENCIA / VISITA'
+                        : 'TARIFA BASE POR VISITA'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.feeAmount,
+                        !hasBaseFee && styles.feeAmountPending,
+                      ]}
+                    >
+                      {baseFeeLabel}
+                    </Text>
+                    <Text style={styles.feeNote}>
+                      {hasBaseFee
+                        ? 'Se abona al confirmar el trabajo. El profesional puede ajustar el monto final en el lugar.'
+                        : 'El profesional confirma el monto de la visita antes de empezar.'}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            ) : null}
+
+            {orderType === 'EMERGENCY' ? (
+              <>
                 <Text style={styles.sectionTitle}>CONTANOS EL PROBLEMA</Text>
 
                 <View style={styles.chips}>
@@ -1393,80 +1644,239 @@ export default function NewRequestScreen() {
 
             {orderType === 'SCHEDULED' ? (
               <>
-                <View style={styles.row}>
-                  <View style={styles.half}>
-                    <TextField
-                      label="Fecha (AAAA-MM-DD) *"
-                      value={date}
-                      onChangeText={setDate}
-                      placeholder="2026-11-20"
-                      keyboardType="numbers-and-punctuation"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      maxLength={10}
-                    />
-                  </View>
-                  <View style={styles.half}>
-                    <TextField
-                      label="Hora (HH:MM) *"
-                      value={time}
-                      onChangeText={setTime}
-                      placeholder="10:00"
-                      keyboardType="numbers-and-punctuation"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      maxLength={5}
-                    />
-                  </View>
+                <Text style={styles.sectionTitle}>ELEGÍ FECHA Y HORARIO</Text>
+
+                <Text style={styles.fieldLabel}>Elegí el día</Text>
+                <View style={styles.calendarNav}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Días anteriores"
+                    disabled={!canGoPreviousWeek}
+                    onPress={() => setWeekOffset((current) => Math.max(0, current - 7))}
+                    style={[
+                      styles.calendarNavButton,
+                      !canGoPreviousWeek && styles.calendarNavButtonDisabled,
+                    ]}
+                  >
+                    <Text style={styles.calendarNavText}>‹</Text>
+                  </Pressable>
+
+                  <Text style={styles.calendarRange}>{scheduleRange}</Text>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Días siguientes"
+                    disabled={!canGoNextWeek}
+                    onPress={() =>
+                      setWeekOffset((current) =>
+                        Math.min(SCHEDULE_DAYS - 7, current + 7),
+                      )
+                    }
+                    style={[
+                      styles.calendarNavButton,
+                      !canGoNextWeek && styles.calendarNavButtonDisabled,
+                    ]}
+                  >
+                    <Text style={styles.calendarNavText}>›</Text>
+                  </Pressable>
                 </View>
-                {fieldErrors.scheduled_at?.[0] ? (
-                  <Text style={styles.fieldError}>{fieldErrors.scheduled_at[0]}</Text>
+
+                <View style={styles.calendarGrid}>
+                  {visibleScheduleDays.map((day) => {
+                    const selected = day.key === date;
+                    const today = isSameDate(day.date, new Date());
+
+                    return (
+                      <Pressable
+                        key={day.key}
+                        accessibilityRole="button"
+                        accessibilityState={{
+                          selected,
+                          disabled: !day.open,
+                        }}
+                        disabled={!day.open}
+                        onPress={() => {
+                          setDate(day.key);
+                          setTime('');
+                        }}
+                        style={[
+                          styles.dayCard,
+                          selected && styles.dayCardSelected,
+                          !day.open && styles.dayCardClosed,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.dayWeekday,
+                            selected && styles.dayTextSelected,
+                            !day.open && styles.dayTextClosed,
+                          ]}
+                        >
+                          {SCHEDULE_WEEKDAY_LABELS[day.date.getDay()]}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.dayNumber,
+                            today && !selected && styles.dayNumberToday,
+                            selected && styles.dayTextSelected,
+                            !day.open && styles.dayTextClosed,
+                          ]}
+                        >
+                          {day.date.getDate()}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {scheduledDays[0]?.fallback ? (
+                  <Text style={styles.calendarFallback}>
+                    Este prestador todavía no publicó horarios. Te mostramos los
+                    turnos estándar (09:00 a 18:00) y te confirmamos la cita al
+                    aceptar.
+                  </Text>
                 ) : null}
 
-                <ComboField
-                  label="¿Dónde?"
-                  value={fulfillment}
-                  options={[
-                    { value: 'AT_HOME', label: '🏠 A domicilio' },
-                    { value: 'AT_MERCHANT_LOCATION', label: '🏪 En el local' },
-                  ]}
-                  onChange={setFulfillment}
-                />
+                <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
+                  Elegí el horario
+                </Text>
+                {!selectedDay ? (
+                  <Text style={styles.fieldHelp}>
+                    Primero tocá un día del calendario para ver los horarios
+                    libres.
+                  </Text>
+                ) : daySlots.length === 0 ? (
+                  <Text style={styles.slotsEmpty}>
+                    No quedan horarios libres ese día. Probá con otro día.
+                  </Text>
+                ) : (
+                  <View style={styles.slotsWrap}>
+                    {daySlots.map((minutes) => {
+                      const value = slotValue(minutes);
+                      const selected = time === value;
 
-                <ComboField
-                  label="Pago"
-                  value={paymentMode}
-                  options={[
-                    { value: 'DEPOSIT', label: 'Seña' },
-                    { value: 'FULL', label: 'Total' },
-                  ]}
-                  onChange={setPaymentMode}
-                />
+                      return (
+                        <Pressable
+                          key={value}
+                          accessibilityRole="radio"
+                          accessibilityState={{ selected }}
+                          onPress={() => setTime(value)}
+                          style={[
+                            styles.slotChip,
+                            selected && styles.slotChipSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.slotText,
+                              selected && styles.slotTextSelected,
+                            ]}
+                          >
+                            {slotLabel(minutes)}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
+                {fieldErrors.scheduled_at?.[0] ? (
+                  <Text style={styles.fieldError}>
+                    {fieldErrors.scheduled_at[0]}
+                  </Text>
+                ) : null}
 
-                <ComboField
-                  label="Medio de pago"
-                  value={scheduledPaymentMethod}
-                  options={PAYMENT_METHODS.map((method) => ({
-                    value: method.label,
-                    label: method.label,
-                  }))}
-                  onChange={setScheduledPaymentMethod}
-                />
+                <View style={styles.scheduledSelectors}>
+                  <ComboField
+                    label="Modalidad"
+                    value={fulfillment}
+                    options={[
+                      { value: 'AT_HOME', label: 'A domicilio' },
+                      {
+                        value: 'AT_MERCHANT_LOCATION',
+                        label: 'En el comercio',
+                      },
+                    ]}
+                    onChange={setFulfillment}
+                  />
+
+                  <ComboField
+                    label="Medio de pago"
+                    value={scheduledPaymentMethod}
+                    options={SCHEDULED_PAYMENT_METHODS.map((method) => ({
+                      value: method.code,
+                      label: method.label,
+                    }))}
+                    onChange={setScheduledPaymentMethod}
+                  />
+
+                  <ComboField
+                    label="Pago"
+                    value={paymentMode}
+                    options={[
+                      { value: 'DEPOSIT', label: 'Seña (50%)' },
+                      { value: 'FULL', label: 'Pago total' },
+                    ]}
+                    onChange={setPaymentMode}
+                  />
+                </View>
+
+                <View style={styles.policyCard}>
+                  <View style={styles.policyHead}>
+                    <View style={styles.policyIcon}>
+                      <Text style={styles.policyIconText}>$</Text>
+                    </View>
+                    <View style={styles.policyHeadBody}>
+                      <Text style={styles.policyTitle}>
+                        La seña del 50% garantiza el turno y se descuenta del
+                        saldo final
+                      </Text>
+                      <Text style={styles.policyText}>{depositNote}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.breakdown}>
+                    <View style={styles.breakdownRow}>
+                      <Text style={styles.breakdownLabel}>
+                        Tarifa base de visita
+                      </Text>
+                      <Text style={styles.breakdownValue}>
+                        {scheduledBaseLabel}
+                      </Text>
+                    </View>
+                    <View style={[styles.breakdownRow, styles.breakdownRowLine]}>
+                      <Text style={styles.breakdownLabel}>
+                        {scheduledNowTitle}
+                      </Text>
+                      <Text style={styles.breakdownNow}>
+                        {scheduledNowLabel}
+                      </Text>
+                    </View>
+                    <View style={[styles.breakdownRow, styles.breakdownRowLine]}>
+                      <Text style={styles.breakdownLabel}>
+                        Restante a pagar en el domicilio
+                      </Text>
+                      <Text style={styles.breakdownValue}>
+                        {scheduledRestLabel}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.cancelBanner}>
+                  <Text style={styles.cancelIcon}>🗓️</Text>
+                  <Text style={styles.cancelText}>
+                    Cancelación/Reprogramación gratuita hasta 24 hs antes
+                  </Text>
+                </View>
+
+                <Text style={styles.sectionTitle}>DATOS DE ACCESO</Text>
 
                 <TextField
-                  label="Notas (opcional)"
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder="Detalles para el prestador"
-                  multiline
-                  numberOfLines={3}
-                />
-
-                <TextField
-                  label="Calle y número (opcional)"
+                  label="Calle y número"
                   value={addressStreet}
                   onChangeText={setAddressStreet}
-                  placeholder="Calle Falsa 123"
+                  placeholder="Ej: Av. Rivadavia 1234"
+                  maxLength={150}
                 />
                 <View style={styles.row}>
                   <View style={styles.half}>
@@ -1474,29 +1884,80 @@ export default function NewRequestScreen() {
                       label="Piso / Depto"
                       value={addressUnit}
                       onChangeText={setAddressUnit}
-                      placeholder="2º B"
+                      placeholder="Ej: 4º B"
+                      maxLength={50}
                     />
                   </View>
                   <View style={styles.half}>
                     <TextField
-                      label="Barrio"
+                      label="Barrio / Zona"
                       value={addressNeighborhood}
                       onChangeText={setAddressNeighborhood}
-                      placeholder="Centro"
+                      placeholder="Ej: Caballito"
+                      maxLength={100}
                     />
                   </View>
                 </View>
 
-                <ComboField
-                  label="Recordatorio"
-                  value={reminder}
-                  options={[
-                    { value: 'none', label: 'Sin recordatorio' },
-                    { value: 'whatsapp', label: 'WhatsApp' },
-                    { value: 'email', label: 'Email' },
-                  ]}
-                  onChange={setReminder}
+                <Text style={styles.fieldLabel}>
+                  Canal de recordatorio de la cita
+                </Text>
+                <View style={styles.reminderRow}>
+                  <Pressable
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: reminder === 'whatsapp' }}
+                    onPress={() => setReminder('whatsapp')}
+                    style={[
+                      styles.reminderChip,
+                      reminder === 'whatsapp' && styles.reminderChipSelected,
+                    ]}
+                  >
+                    <Text style={styles.reminderIcon}>💬</Text>
+                    <Text
+                      style={[
+                        styles.reminderText,
+                        reminder === 'whatsapp' && styles.reminderTextSelected,
+                      ]}
+                    >
+                      WhatsApp
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: reminder === 'email' }}
+                    onPress={() => setReminder('email')}
+                    style={[
+                      styles.reminderChip,
+                      reminder === 'email' && styles.reminderChipSelected,
+                    ]}
+                  >
+                    <Text style={styles.reminderIcon}>✉️</Text>
+                    <Text
+                      style={[
+                        styles.reminderText,
+                        reminder === 'email' && styles.reminderTextSelected,
+                      ]}
+                    >
+                      Email
+                    </Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.reminderHint}>{reminderHint}</Text>
+
+                <TextField
+                  label="Notas e instrucciones de acceso (opcional)"
+                  value={notes}
+                  onChangeText={setNotes}
+                  placeholder="Ej: Instrucciones para el profesional: tocar timbre del 4B, el portón está pintado de verde, hay perro (avisar al llegar), cochera disponible."
+                  multiline
+                  numberOfLines={3}
+                  maxLength={1000}
                 />
+                <Text style={styles.fieldHelp}>
+                  Contale al profesional cómo llegar y entrar (timbre, portón,
+                  mascotas, estacionamiento).
+                </Text>
               </>
             ) : null}
 
@@ -1551,7 +2012,9 @@ export default function NewRequestScreen() {
                 title={
                   orderType === 'EMERGENCY'
                     ? '🚨 Solicitar urgencia ahora'
-                    : 'Enviar solicitud'
+                    : orderType === 'SCHEDULED'
+                      ? '🗓️ Reservar cita y pagar seña'
+                      : 'Enviar solicitud'
                 }
                 onPress={handleSubmit}
                 loading={submitting}
@@ -2163,5 +2626,288 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontSize: 11,
     marginTop: spacing.sm,
+  },
+  fieldLabel: {
+    color: '#6b7280',
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 5,
+    marginTop: spacing.md,
+  },
+  fieldLabelSpaced: {
+    marginTop: spacing.lg,
+  },
+  fieldHelp: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginBottom: spacing.sm,
+    marginTop: 5,
+  },
+  calendarNav: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  calendarNavButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: 6,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minWidth: 34,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  calendarNavButtonDisabled: {
+    opacity: 0.4,
+  },
+  calendarNavText: {
+    color: NAVY,
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+  calendarRange: {
+    color: '#64748b',
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  dayCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#e5e7eb',
+    borderRadius: 6,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minWidth: 0,
+    paddingVertical: spacing.sm,
+  },
+  dayCardSelected: {
+    backgroundColor: '#D24C19',
+    borderColor: '#D24C19',
+  },
+  dayCardClosed: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed',
+  },
+  dayWeekday: {
+    color: '#374151',
+    fontSize: 10,
+    fontWeight: '600',
+    opacity: 0.72,
+    textTransform: 'uppercase',
+  },
+  dayNumber: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+  dayNumberToday: {
+    color: '#D24C19',
+  },
+  dayTextSelected: {
+    color: '#ffffff',
+    opacity: 1,
+  },
+  dayTextClosed: {
+    color: '#cbd5e1',
+  },
+  calendarFallback: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+    borderRadius: 6,
+    borderWidth: 1,
+    color: '#b45309',
+    fontSize: 11,
+    marginTop: spacing.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  slotsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  slotsEmpty: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderRadius: 6,
+    borderWidth: 1,
+    color: '#b91c1c',
+    fontSize: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  slotChip: {
+    backgroundColor: colors.surface,
+    borderColor: '#d1d5db',
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    paddingHorizontal: 15,
+    paddingVertical: spacing.sm,
+  },
+  slotChipSelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  slotText: {
+    color: '#374151',
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  slotTextSelected: {
+    color: '#D24C19',
+  },
+  scheduledSelectors: {
+    marginTop: spacing.md,
+  },
+  policyCard: {
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+    borderLeftColor: '#D24C19',
+    borderLeftWidth: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+    padding: spacing.md,
+  },
+  policyHead: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  policyIcon: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderColor: '#fed7aa',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+  },
+  policyIconText: {
+    color: '#D24C19',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  policyHeadBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  policyTitle: {
+    color: '#9a3412',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  policyText: {
+    color: '#9a3412',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  breakdown: {
+    backgroundColor: '#ffffff',
+    borderColor: '#fed7aa',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+  },
+  breakdownRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  breakdownRowLine: {
+    borderStyle: 'dashed',
+    borderTopColor: '#fed7aa',
+    borderTopWidth: 1,
+  },
+  breakdownLabel: {
+    color: '#6b7280',
+    flexShrink: 1,
+    fontSize: 12.5,
+  },
+  breakdownValue: {
+    color: '#0f172a',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  breakdownNow: {
+    color: '#D24C19',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  cancelBanner: {
+    alignItems: 'center',
+    backgroundColor: '#ecfdf5',
+    borderColor: '#a7f3d0',
+    borderRadius: 6,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 9,
+    marginTop: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+  },
+  cancelIcon: {
+    fontSize: 15,
+  },
+  cancelText: {
+    color: '#047857',
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  reminderRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  reminderChip: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderColor: '#d1d5db',
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 15,
+    paddingVertical: spacing.sm,
+  },
+  reminderChipSelected: {
+    backgroundColor: '#fff1eb',
+    borderColor: '#D24C19',
+  },
+  reminderIcon: {
+    fontSize: 13,
+  },
+  reminderText: {
+    color: '#374151',
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  reminderTextSelected: {
+    color: '#D24C19',
+  },
+  reminderHint: {
+    color: '#6b7280',
+    fontSize: 11.5,
+    marginBottom: spacing.sm,
+    marginTop: 7,
   },
 });
