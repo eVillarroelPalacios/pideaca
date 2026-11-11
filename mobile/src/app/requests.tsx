@@ -7,7 +7,6 @@ import {
   Modal,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -233,12 +232,26 @@ export default function RequestsScreen() {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    fetchAll(false).finally(() => {
+
+    async function loadInitial() {
+      // Se espera un tick para que el estado de carga no se actualice
+      // sincrónicamente dentro del efecto.
+      await Promise.resolve();
+
+      if (!active) {
+        return;
+      }
+
+      setLoading(true);
+      await fetchAll(false);
+
       if (active) {
         setLoading(false);
       }
-    });
+    }
+
+    void loadInitial();
+
     return () => {
       active = false;
     };
@@ -621,7 +634,7 @@ export default function RequestsScreen() {
                   <Text style={styles.pageNavText}>❯</Text>
                 </Pressable>
               </View>
-            ) : null
+            ) : undefined
           }
           renderItem={({ item }) => (
             <ServiceCard
@@ -636,6 +649,7 @@ export default function RequestsScreen() {
       </View>
 
       <DatePickerModal
+        key={picker ?? 'closed'}
         visible={picker !== null}
         title={picker === 'from' ? 'Fecha desde' : 'Fecha hasta'}
         initial={picker === 'from' ? dateFrom : dateTo}
@@ -1028,18 +1042,6 @@ function DatePickerModal({
     }
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-
-  useEffect(() => {
-    if (visible) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(initial)) {
-        const [y, m] = initial.split('-').map(Number);
-        setCursor(new Date(y, m - 1, 1));
-      } else {
-        setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, initial]);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();

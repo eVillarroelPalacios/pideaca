@@ -1,7 +1,6 @@
 import { Link, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -30,7 +29,7 @@ function initials(name: string): string {
 }
 
 export default function MenuScreen() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { managed, exit: exitManaged } = useManaged();
   const [modules, setModules] = useState<MenuModule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,13 +82,6 @@ export default function MenuScreen() {
     } finally {
       setRefreshing(false);
     }
-  }
-
-  function confirmSignOut() {
-    Alert.alert('Cerrar sesión', '¿Querés salir de la app?', [
-      { text: 'Volver', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => void signOut() },
-    ]);
   }
 
   if (loading) {
@@ -196,14 +188,6 @@ export default function MenuScreen() {
             </View>
           ))
         )}
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={confirmSignOut}
-          style={styles.logoutButton}
-        >
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -392,19 +376,5 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 14,
     textAlign: 'center',
-  },
-  logoutButton: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderColor: '#fca5a5',
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    marginTop: spacing.md,
-    paddingVertical: spacing.lg,
-  },
-  logoutText: {
-    color: '#b91c1c',
-    fontSize: 15,
-    fontWeight: '700',
   },
 });

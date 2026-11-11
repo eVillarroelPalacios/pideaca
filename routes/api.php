@@ -5,8 +5,11 @@ use App\Http\Controllers\Api\V1\AdminUsersController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
 use App\Http\Controllers\Api\V1\CurrenciesController;
+use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\GroupsController;
+use App\Http\Controllers\Api\V1\MarketController;
+use App\Http\Controllers\Api\V1\MarketReportsController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
@@ -17,8 +20,19 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
 use App\Http\Controllers\Api\V1\ProfileUsersController;
+use App\Http\Controllers\Api\V1\ProviderCatalogController;
+use App\Http\Controllers\Api\V1\ProviderCategoryController;
+use App\Http\Controllers\Api\V1\ProviderDispatchController;
+use App\Http\Controllers\Api\V1\ProviderFinancialHealthController;
+use App\Http\Controllers\Api\V1\ProviderInventoryController;
+use App\Http\Controllers\Api\V1\ProviderMarketingController;
+use App\Http\Controllers\Api\V1\ProviderOptionController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
+use App\Http\Controllers\Api\V1\ProviderSubscriptionsController;
+use App\Http\Controllers\Api\V1\ProviderUnitController;
+use App\Http\Controllers\Api\V1\ProviderVariantController;
 use App\Http\Controllers\Api\V1\PushController;
+use App\Http\Controllers\Api\V1\ReportsController;
 use App\Http\Controllers\Api\V1\ServiceOrdersController;
 use App\Http\Controllers\Api\V1\UserStatusesController;
 use Illuminate\Support\Facades\Route;
@@ -194,6 +208,46 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/providers/{provider}/favorite', [CatalogController::class, 'toggleFavorite'])
             ->middleware('throttle:60,1');
 
+        // Mercado: comercios, catalogo, pedidos y suscripciones del cliente.
+        Route::prefix('market')->group(function () {
+            Route::get('/shops', [MarketController::class, 'shops'])
+                ->middleware('throttle:60,1');
+            Route::post('/shops/{provider}/favorite', [MarketController::class, 'toggleFavorite'])
+                ->middleware('throttle:60,1');
+            Route::get('/shops/{provider}/catalog', [MarketController::class, 'catalog'])
+                ->middleware('throttle:60,1');
+            Route::get('/shops/{provider}/plans', [MarketController::class, 'plans'])
+                ->middleware('throttle:30,1');
+            Route::get('/addresses', [MarketController::class, 'addresses'])
+                ->middleware('throttle:30,1');
+            Route::post('/orders', [MarketController::class, 'storeOrder']);
+            Route::get('/orders', [MarketController::class, 'myOrders'])
+                ->middleware('throttle:60,1');
+            Route::post('/orders/{order}/rate', [MarketController::class, 'rateOrder'])
+                ->middleware('throttle:30,1');
+            Route::get('/subscriptions', [MarketController::class, 'subscriptions'])
+                ->middleware('throttle:30,1');
+            Route::post('/subscriptions', [MarketController::class, 'storeSubscription']);
+            Route::patch('/subscriptions/{subscription}/status', [MarketController::class, 'updateSubscriptionStatus']);
+        });
+
+        // Reportes del Módulo Hogar (mismos filtros y KPIs que la web).
+        Route::get('/reports/hogar', [ReportsController::class, 'hogar'])
+            ->middleware('throttle:30,1');
+
+        // Reportes Comercio para el cliente de Mercado: ahorro, suscripciones,
+        // historico/habitos y resumen nutricional (espejo de /api/v1/customer).
+        Route::prefix('reports/comercio')->group(function () {
+            Route::get('/savings', [MarketReportsController::class, 'savings'])
+                ->middleware('throttle:30,1');
+            Route::get('/subscriptions', [MarketReportsController::class, 'subscriptions'])
+                ->middleware('throttle:30,1');
+            Route::get('/order-history', [MarketReportsController::class, 'orderHistory'])
+                ->middleware('throttle:30,1');
+            Route::get('/nutritional', [MarketReportsController::class, 'nutritional'])
+                ->middleware('throttle:30,1');
+        });
+
         Route::get('/service-subgroups', [ServiceOrdersController::class, 'subgroups'])
             ->middleware('throttle:30,1');
         Route::get('/service-orders', [ServiceOrdersController::class, 'index'])
@@ -209,6 +263,23 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/service-orders/{serviceOrder}/approve-estimate', [ServiceOrdersController::class, 'approveEstimate']);
         Route::post('/service-orders/{serviceOrder}/confirm-release', [ServiceOrdersController::class, 'confirmRelease']);
 
+        // Terminal Central de Repartos (Driver Pro): espejo movil del panel
+        // del repartidor web. El estado online/GPS vive en cache por usuario.
+        Route::prefix('driver')->group(function () {
+            Route::get('/stats', [DriverController::class, 'stats'])
+                ->middleware('throttle:60,1');
+            Route::get('/status', [DriverController::class, 'status'])
+                ->middleware('throttle:60,1');
+            Route::put('/status', [DriverController::class, 'updateStatus']);
+            Route::get('/orders/available', [DriverController::class, 'availableOrders'])
+                ->middleware('throttle:120,1');
+            Route::get('/orders/mine', [DriverController::class, 'myOrders'])
+                ->middleware('throttle:120,1');
+            Route::post('/orders/{order}/take', [DriverController::class, 'takeOrder']);
+            Route::post('/orders/{order}/pickup', [DriverController::class, 'markPickedUp']);
+            Route::post('/orders/{order}/confirm', [DriverController::class, 'confirmDelivery']);
+        });
+
         Route::prefix('provider')->group(function () {
             Route::get('/orders', [ProviderOrdersController::class, 'index'])
                 ->middleware('throttle:30,1');
@@ -218,6 +289,80 @@ Route::prefix('mobile/v1')->group(function () {
             Route::post('/orders/{serviceOrder}/estimate', [ProviderOrdersController::class, 'estimate']);
             Route::post('/orders/{serviceOrder}/propose', [ProviderOrdersController::class, 'propose']);
             Route::post('/orders/{serviceOrder}/complete', [ProviderOrdersController::class, 'complete']);
+
+            // Mi Catalogo: espejo movil de los paneles de gestion del comercio.
+            Route::prefix('catalog')->group(function () {
+                Route::get('/', [ProviderCatalogController::class, 'preview'])
+                    ->middleware('throttle:30,1');
+                Route::get('/products', [ProviderCatalogController::class, 'products'])
+                    ->middleware('throttle:30,1');
+                Route::post('/products', [ProviderCatalogController::class, 'storeProduct']);
+                Route::put('/products/{product}', [ProviderCatalogController::class, 'updateProduct']);
+                Route::post('/products/{product}/variants', [ProviderVariantController::class, 'store']);
+                Route::put('/variants/{variant}', [ProviderVariantController::class, 'update']);
+                Route::delete('/variants/{variant}', [ProviderVariantController::class, 'destroy']);
+                Route::post('/products/{product}/option-groups', [ProviderOptionController::class, 'storeGroup']);
+                Route::put('/option-groups/{group}', [ProviderOptionController::class, 'updateGroup']);
+                Route::delete('/option-groups/{group}', [ProviderOptionController::class, 'destroyGroup']);
+                Route::post('/option-groups/{group}/options', [ProviderOptionController::class, 'storeOption']);
+                Route::put('/options/{option}', [ProviderOptionController::class, 'updateOption']);
+                Route::delete('/options/{option}', [ProviderOptionController::class, 'destroyOption']);
+                Route::post('/categories', [ProviderCategoryController::class, 'store']);
+                Route::put('/categories/{category}', [ProviderCategoryController::class, 'update']);
+                Route::delete('/categories/{category}', [ProviderCategoryController::class, 'destroy']);
+                Route::get('/units', [ProviderUnitController::class, 'index'])
+                    ->middleware('throttle:30,1');
+            });
+
+            // Inventario: espejo movil del panel de stock del comercio.
+            Route::prefix('inventory')->group(function () {
+                Route::get('/', [ProviderInventoryController::class, 'index'])
+                    ->middleware('throttle:30,1');
+                Route::put('/settings', [ProviderInventoryController::class, 'settings']);
+                Route::put('/products/{product}', [ProviderInventoryController::class, 'updateProduct']);
+            });
+
+            // Centro de Despacho: pedidos de comida y acciones del comercio.
+            // La lista de confianza vive en /profile/trusted-drivers.
+            Route::prefix('dispatch')->group(function () {
+                Route::get('/orders', [ProviderDispatchController::class, 'index'])
+                    ->middleware('throttle:60,1');
+                Route::patch('/orders/{order}/status', [ProviderDispatchController::class, 'updateStatus']);
+                Route::post('/orders/{order}/rate', [ProviderDispatchController::class, 'rateOrder'])
+                    ->middleware('throttle:30,1');
+                Route::post('/orders/{order}/send-to-pool', [ProviderDispatchController::class, 'sendToPool']);
+            });
+
+            // Retencion: campañas automaticas de fidelizacion del comercio.
+            Route::prefix('marketing')->group(function () {
+                Route::get('/rules', [ProviderMarketingController::class, 'index'])
+                    ->middleware('throttle:30,1');
+                Route::put('/rules', [ProviderMarketingController::class, 'update']);
+            });
+
+            // Salud financiera: costos, margenes, insumos y fichas tecnicas.
+            Route::prefix('financial-health')->group(function () {
+                Route::get('/', [ProviderFinancialHealthController::class, 'index'])
+                    ->middleware('throttle:30,1');
+                Route::get('/supplies', [ProviderFinancialHealthController::class, 'supplies'])
+                    ->middleware('throttle:30,1');
+                Route::post('/supplies', [ProviderFinancialHealthController::class, 'storeSupply']);
+                Route::delete('/supplies/{supply}', [ProviderFinancialHealthController::class, 'destroySupply']);
+                Route::get('/products/{product}/recipe', [ProviderFinancialHealthController::class, 'showRecipe'])
+                    ->middleware('throttle:30,1');
+                Route::post('/products/{product}/recipe', [ProviderFinancialHealthController::class, 'storeRecipe']);
+            });
+
+            // Suscripciones del comercio: planes, MRR y cobros por confirmar.
+            Route::prefix('subscriptions')->group(function () {
+                Route::get('/revenue', [ProviderSubscriptionsController::class, 'revenue'])
+                    ->middleware('throttle:30,1');
+                Route::get('/plans', [ProviderSubscriptionsController::class, 'indexPlans'])
+                    ->middleware('throttle:30,1');
+                Route::post('/plans', [ProviderSubscriptionsController::class, 'storePlan']);
+                Route::put('/plans/{plan}', [ProviderSubscriptionsController::class, 'updatePlan']);
+                Route::put('/payments/{payment}', [ProviderSubscriptionsController::class, 'updatePayment']);
+            });
         });
 
         Route::post('/push-tokens', [PushController::class, 'storeToken'])

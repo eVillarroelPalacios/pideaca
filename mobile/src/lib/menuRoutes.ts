@@ -44,6 +44,38 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'hogar::gestionar-solicitudes': '/provider-orders',
     'hogar::ordenes-servicio': '/provider-orders',
     'hogar::ordenes-gestion': '/provider-orders',
+    // Hogar: reporte consolidado con KPIs y exportacion a PDF.
+    'hogar::reportes-hogar': '/reports-hogar',
+    // Mercado: listado de comercios con catalogo, carrito y checkout.
+    'mercado::comercios': '/comercios',
+    // Mercado: seguimiento, historial y calificacion de pedidos del cliente.
+    'mercado::mis-pedidos': '/my-orders',
+    // Mercado: suscripciones del cliente (planes automaticos).
+    'mercado::mis-suscripciones': '/subscriptions',
+    // Mercado: reportes del cliente (ahorro, suscripciones, habitos y nutricion).
+    'mercado::reportes': '/reports-comercio',
+    // Mercado: gestion del catalogo del comercio. La pagina "Catalogo"
+    // (url `mi-catalogo`) cuelga del modulo Mercado en la tabla pages.
+    'mercado::mi-catalogo': '/catalogo',
+    // Mercado: control de stock del comercio.
+    'mercado::inventario': '/inventario',
+    // Mercado: salud financiera (costos, margenes e insumos).
+    'mercado::finanzas': '/finanzas',
+    // Mercado: control de pedidos / centro de despacho del comercio.
+    'mercado::pedidos': '/pedidos',
+    // Mercado: campañas automáticas de fidelización del comercio.
+    'mercado::retencion': '/retencion',
+    // Mercado: planes, MRR y cobros por confirmar del comercio.
+    'mercado::suscripciones': '/suscripciones',
+    // Reparto: terminal central del repartidor (Driver Pro).
+    'reparto::repartidor': '/repartidor',
+    // Reparto: reportes personales del repartidor (ahorro, suscripciones,
+    // hábitos y nutrición). La url `reportes` se repite en Mercado.
+    'reparto::reportes': '/reports-repartidor',
+    // Por si la pagina se mueve al modulo "Pide aca" (Fast Delivery):
+    // se dejan las dos variantes, con y sin tilde.
+    'pide acá::mi-catalogo': '/catalogo',
+    'pide aca::mi-catalogo': '/catalogo',
   };
 
   return routes[key] ?? null;
