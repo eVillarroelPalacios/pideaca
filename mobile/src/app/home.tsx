@@ -1126,12 +1126,21 @@ export default function HomeScreen() {
           onPress={() => setSidebarOpen(true)}
           style={styles.profileCard}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials(profile?.user.name ?? user.name)}</Text>
+          <View style={styles.profileHeader}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials(profile?.user.name ?? user.name)}</Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name} numberOfLines={1}>
+                {profile?.user.name ?? user.name}
+              </Text>
+              <Text style={styles.email} numberOfLines={1}>
+                {profile?.user.email ?? user.email}
+              </Text>
+            </View>
           </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.name}>{profile?.user.name ?? user.name}</Text>
-            <Text style={styles.email}>{profile?.user.email ?? user.email}</Text>
+
+          <View style={styles.profileFooter}>
             <View style={styles.badges}>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{profile?.user.role ?? user.role ?? 'Sin rol'}</Text>
@@ -1151,10 +1160,12 @@ export default function HomeScreen() {
                 </View>
               )}
             </View>
-          </View>
-          <View style={styles.profileSectionHint}>
-            <Text style={styles.profileSectionHintText}>Secciones</Text>
-            <Text style={styles.profileChevron}>›</Text>
+            <View style={styles.profileSectionHint}>
+              <Text style={styles.profileSectionHintText} numberOfLines={1}>
+                Secciones
+              </Text>
+              <Text style={styles.profileChevron}>›</Text>
+            </View>
           </View>
         </Pressable>
 
@@ -1410,7 +1421,7 @@ export default function HomeScreen() {
                 label: country.name,
               }))}
               onChange={(id) => void handleCountryChange(id)}
-              disabled={readOnlyAddress}
+              disabled={true}
             />
             <ComboField
               label="Provincia / Región"
@@ -1723,21 +1734,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   profileCard: {
-    alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    flexDirection: 'row',
-    gap: spacing.lg,
+    gap: spacing.md,
     marginBottom: spacing.lg,
-    padding: spacing.xl,
+    padding: spacing.lg,
+  },
+  profileHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   avatar: {
     alignItems: 'center',
     backgroundColor: colors.brand,
     borderRadius: radius.pill,
-    height: 64,
+    height: 52,
     justifyContent: 'center',
-    width: 64,
+    width: 52,
   },
   avatarText: {
     color: colors.surface,
@@ -1746,6 +1760,7 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
+    minWidth: 0,
   },
   name: {
     color: colors.text,
@@ -1757,11 +1772,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
+  profileFooter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
   badges: {
     flexDirection: 'row',
+    flexShrink: 1,
     flexWrap: 'wrap',
     gap: spacing.xs,
-    marginTop: spacing.sm,
   },
   badge: {
     backgroundColor: colors.brandSoft,
@@ -1788,7 +1810,9 @@ const styles = StyleSheet.create({
   },
   profileSectionHint: {
     alignItems: 'center',
-    gap: 2,
+    flexDirection: 'row',
+    flexShrink: 0,
+    gap: 4,
   },
   profileSectionHintText: {
     color: colors.brandDark,

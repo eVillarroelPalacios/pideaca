@@ -1,14 +1,18 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,11 +41,17 @@ const PER_PAGE = 10;
 
 type TabKey = 'catalogo' | 'productos' | 'categorias' | 'unidades';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'catalogo', label: '📖 Mi catálogo' },
-  { key: 'productos', label: '📦 Productos' },
-  { key: 'categorias', label: '🏷️ Categorías' },
-  { key: 'unidades', label: '💊 Uds. de medida' },
+type CatalogSection = {
+  key: TabKey;
+  label: string;
+  icon: string;
+};
+
+const TABS: CatalogSection[] = [
+  { key: 'catalogo', label: 'Mi catálogo', icon: '📖' },
+  { key: 'productos', label: 'Productos', icon: '📦' },
+  { key: 'categorias', label: 'Categorías', icon: '🏷️' },
+  { key: 'unidades', label: 'Uds. de medida', icon: '⚖️' },
 ];
 
 function errorMessage(caught: unknown, fallback: string): string {
@@ -67,8 +77,225 @@ type PreviewEntry = {
   products: ProviderCatalogProduct[];
 };
 
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+type CatalogSidebarProps = {
+  visible: boolean;
+  onClose: () => void;
+  activeKey: TabKey;
+  onSelect: (key: TabKey) => void;
+  providerName: string;
+  providerZone: string | null;
+  isActive: boolean | null;
+  productCount: number | null;
+  categoryCount: number | null;
+};
+
+/**
+ * Drawer de secciones del catálogo. Reutiliza el diseño y la animación de
+ * `AccountSidebar`, pero con las cuatro vistas internas de esta pantalla.
+ */
+function CatalogSidebar({
+  visible,
+  onClose,
+  activeKey,
+  onSelect,
+  providerName,
+  providerZone,
+  isActive,
+  productCount,
+  categoryCount,
+}: CatalogSidebarProps) {
+  const { width } = useWindowDimensions();
+  const panelWidth = Math.min(360, Math.round(width * 0.85));
+  const [translateX] = useState(() => new Animated.Value(-panelWidth));
+  const closingRef = useRef(false);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    closingRef.current = false;
+    translateX.setValue(-panelWidth);
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [visible, panelWidth, translateX]);
+
+  function handleClose() {
+    if (closingRef.current) {
+      return;
+    }
+
+    closingRef.current = true;
+    Animated.timing(translateX, {
+      toValue: -panelWidth,
+      duration: 180,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      closingRef.current = false;
+      onClose();
+    });
+  }
+
+  function handleSelect(key: TabKey) {
+    onClose();
+    onSelect(key);
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+      statusBarTranslucent
+    >
+      <View style={styles.sidebarBackdrop}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar secciones del catálogo"
+          onPress={handleClose}
+          style={styles.sidebarBackdropTap}
+        />
+
+        <Animated.View
+          style={[
+            styles.sidebarPanel,
+            { width: panelWidth, transform: [{ translateX }] },
+          ]}
+        >
+          <SafeAreaView style={styles.sidebarSafe} edges={['top', 'bottom', 'left']}>
+            <View style={styles.sidebarHeader}>
+              <Text style={styles.sidebarTitle}>Catálogo</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar secciones"
+                onPress={handleClose}
+                style={styles.sidebarCloseButton}
+              >
+                <Text style={styles.sidebarCloseText}>✕</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView
+              contentContainerStyle={styles.sidebarScroll}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.sidebarProvider}>
+                <View style={styles.sidebarAvatar}>
+                  <Text style={styles.sidebarAvatarText}>{initials(providerName)}</Text>
+                </View>
+                <View style={styles.sidebarProviderInfo}>
+                  <Text style={styles.sidebarProviderName} numberOfLines={1}>
+                    {providerName}
+                  </Text>
+                  {providerZone ? (
+                    <Text style={styles.sidebarProviderZone} numberOfLines={1}>
+                      {providerZone}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+
+              <View style={styles.sidebarBadges}>
+                {isActive !== null ? (
+                  <View
+                    style={[
+                      styles.sidebarBadge,
+                      isActive
+                        ? styles.sidebarBadgeActive
+                        : styles.sidebarBadgePaused,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.sidebarBadgeText,
+                        isActive
+                          ? styles.sidebarBadgeTextActive
+                          : styles.sidebarBadgeTextPaused,
+                      ]}
+                    >
+                      {isActive ? 'Activo' : 'Pausado'}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {productCount !== null ? (
+                  <View style={styles.sidebarBadge}>
+                    <Text style={styles.sidebarBadgeText}>
+                      {productCount} {productCount === 1 ? 'producto' : 'productos'}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {categoryCount !== null ? (
+                  <View style={styles.sidebarBadge}>
+                    <Text style={styles.sidebarBadgeText}>
+                      {categoryCount} {categoryCount === 1 ? 'categoría' : 'categorías'}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <Text style={styles.sidebarNavTitle}>Secciones</Text>
+
+              {TABS.map((section) => {
+                const active = activeKey === section.key;
+
+                return (
+                  <Pressable
+                    key={section.key}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={section.label}
+                    onPress={() => handleSelect(section.key)}
+                    style={[
+                      styles.sidebarNavItem,
+                      active && styles.sidebarNavItemActive,
+                    ]}
+                  >
+                    <Text style={styles.sidebarNavIcon}>{section.icon}</Text>
+                    <Text
+                      style={[
+                        styles.sidebarNavLabel,
+                        active && styles.sidebarNavLabelActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {section.label}
+                    </Text>
+                    {active ? <View style={styles.sidebarActiveDot} /> : null}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+
+            <View style={styles.sidebarFooter}>
+              <PrimaryButton title="Cerrar" variant="ghost" onPress={handleClose} />
+            </View>
+          </SafeAreaView>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function CatalogoScreen() {
   const [tab, setTab] = useState<TabKey>('catalogo');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,6 +398,21 @@ export default function CatalogoScreen() {
   const providerZone = preview?.provider.zone ?? catalog?.provider.zone ?? null;
   const providerPaused =
     (preview?.provider.is_active ?? catalog?.provider.is_active) === false;
+  const providerLoaded = Boolean(preview || catalog);
+  const providerIsActive = providerLoaded ? !providerPaused : null;
+  const productCount = catalog
+    ? catalog.products.length
+    : preview
+      ? preview.categories.reduce(
+          (total, category) => total + category.products.length,
+          0,
+        )
+      : null;
+  const categoryCount = catalog
+    ? catalog.categories.length
+    : preview
+      ? preview.categories.length
+      : null;
 
   const categoryOptions = useMemo(
     () =>
@@ -371,6 +613,15 @@ export default function CatalogoScreen() {
     );
   }
 
+  function selectSection(key: TabKey) {
+    if (key === tab) {
+      return;
+    }
+
+    setLoading(true);
+    setTab(key);
+  }
+
   const refreshingControl = (
     <RefreshControl
       refreshing={refreshing}
@@ -396,42 +647,24 @@ export default function CatalogoScreen() {
         </Pressable>
 
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerText}>
             <Text style={styles.title}>Catálogo</Text>
-            <Text style={styles.subtitle}>{providerName}</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {providerName}
+            </Text>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Abrir secciones del catálogo"
+            onPress={() => setSidebarOpen(true)}
+            style={styles.sectionHint}
+          >
+            <Text style={styles.sectionHintText} numberOfLines={1}>
+              Secciones
+            </Text>
+            <Text style={styles.sectionChevron}>›</Text>
+          </Pressable>
         </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabBar}
-        >
-          {TABS.map((item) => {
-            const active = tab === item.key;
-
-            return (
-              <Pressable
-                key={item.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => {
-                  if (item.key === tab) {
-                    return;
-                  }
-
-                  setLoading(true);
-                  setTab(item.key);
-                }}
-                style={[styles.tab, active && styles.tabActive]}
-              >
-                <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
 
         <ErrorBanner message={error} />
 
@@ -1038,6 +1271,18 @@ export default function CatalogoScreen() {
           onSaved={() => void load(tab)}
         />
       ) : null}
+
+      <CatalogSidebar
+        visible={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activeKey={tab}
+        onSelect={selectSection}
+        providerName={providerName}
+        providerZone={providerZone}
+        isActive={providerIsActive}
+        productCount={productCount}
+        categoryCount={categoryCount}
+      />
     </SafeAreaView>
   );
 }
@@ -1055,8 +1300,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
     paddingBottom: spacing.md,
     paddingTop: spacing.xs,
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
   },
   backButton: {
     alignSelf: 'flex-start',
@@ -1078,31 +1331,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: spacing.xs,
   },
-  tabBar: {
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
-    paddingTop: spacing.xs,
+  sectionHint: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexShrink: 0,
+    gap: 4,
   },
-  tab: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  tabActive: {
-    backgroundColor: colors.brandSoft,
-    borderColor: colors.brand,
-  },
-  tabText: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  tabTextActive: {
+  sectionHintText: {
     color: colors.brandDark,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sectionChevron: {
+    color: colors.brandDark,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   loadingBox: {
     alignItems: 'center',
@@ -1565,5 +1809,174 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
     fontWeight: '600',
+  },
+  sidebarBackdrop: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
+    flexDirection: 'row',
+  },
+  sidebarBackdropTap: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  sidebarPanel: {
+    backgroundColor: colors.surface,
+    borderBottomRightRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    elevation: 12,
+    height: '100%',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+  },
+  sidebarSafe: {
+    flex: 1,
+  },
+  sidebarHeader: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  sidebarTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  sidebarCloseButton: {
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: radius.pill,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  sidebarCloseText: {
+    color: colors.muted,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  sidebarScroll: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  sidebarProvider: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  sidebarAvatar: {
+    alignItems: 'center',
+    backgroundColor: colors.brand,
+    borderRadius: radius.pill,
+    height: 52,
+    justifyContent: 'center',
+    width: 52,
+  },
+  sidebarAvatarText: {
+    color: colors.surface,
+    fontSize: 19,
+    fontWeight: '800',
+  },
+  sidebarProviderInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  sidebarProviderName: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  sidebarProviderZone: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  sidebarBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  sidebarBadge: {
+    backgroundColor: colors.brandSoft,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  sidebarBadgeText: {
+    color: colors.brandDark,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  sidebarBadgeActive: {
+    backgroundColor: colors.successSoft,
+  },
+  sidebarBadgeTextActive: {
+    color: colors.success,
+  },
+  sidebarBadgePaused: {
+    backgroundColor: '#fffbeb',
+  },
+  sidebarBadgeTextPaused: {
+    color: '#b45309',
+  },
+  sidebarNavTitle: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    marginBottom: spacing.sm,
+    marginTop: spacing.xl,
+    textTransform: 'uppercase',
+  },
+  sidebarNavItem: {
+    alignItems: 'center',
+    borderLeftColor: 'transparent',
+    borderLeftWidth: 3,
+    borderRadius: radius.sm,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: 2,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  sidebarNavItemActive: {
+    backgroundColor: colors.brandSoft,
+    borderLeftColor: colors.brand,
+  },
+  sidebarNavIcon: {
+    fontSize: 16,
+    width: 22,
+  },
+  sidebarNavLabel: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  sidebarNavLabelActive: {
+    color: colors.brandDark,
+    fontWeight: '800',
+  },
+  sidebarActiveDot: {
+    backgroundColor: colors.brand,
+    borderRadius: radius.pill,
+    height: 6,
+    width: 6,
+  },
+  sidebarFooter: {
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    padding: spacing.lg,
   },
 });

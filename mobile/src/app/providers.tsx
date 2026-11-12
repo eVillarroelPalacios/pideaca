@@ -20,15 +20,6 @@ import { getCurrentCoords } from '@/lib/media';
 import { colors, radius, spacing } from '@/theme';
 import type { ProviderCard, ProvidersParams } from '@/types/api';
 
-type TypeFilter = 'ALL' | 'EMERGENCY' | 'SCHEDULED' | 'QUOTE';
-
-const TYPE_FILTERS: { code: TypeFilter; label: string }[] = [
-  { code: 'ALL', label: 'Todos' },
-  { code: 'EMERGENCY', label: 'Urgencias' },
-  { code: 'SCHEDULED', label: 'Programadas' },
-  { code: 'QUOTE', label: 'Presupuesto' },
-];
-
 const PAGE_SIZE = 15;
 
 /** Azul oscuro corporativo de la cabecera del modal (igual que la web). */
@@ -68,7 +59,6 @@ export default function ProvidersScreen() {
   const [providers, setProviders] = useState<ProviderCard[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [favoriteBusyId, setFavoriteBusyId] = useState<number | null>(null);
@@ -107,10 +97,6 @@ export default function ProvidersScreen() {
       params.search = search.trim();
     }
 
-    if (typeFilter !== 'ALL') {
-      params.type = typeFilter;
-    }
-
     if (favoritesOnly) {
       params.favorite = true;
     }
@@ -143,7 +129,7 @@ export default function ProvidersScreen() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [search, typeFilter, favoritesOnly],
+    [search, favoritesOnly],
   );
 
   // Primera carga y recarga cuando cambian los filtros. La cadena de
@@ -190,7 +176,7 @@ export default function ProvidersScreen() {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, typeFilter, favoritesOnly]);
+  }, [search, favoritesOnly]);
 
   // La búsqueda espera 500 ms desde que dejás de escribir.
   function handleSearchChange(text: string) {
@@ -202,11 +188,6 @@ export default function ProvidersScreen() {
     }
 
     searchTimer.current = setTimeout(() => setSearch(text), 500);
-  }
-
-  function handleTypeFilter(code: TypeFilter) {
-    setLoading(true);
-    setTypeFilter(code);
   }
 
   function handleFavoritesToggle() {
@@ -469,26 +450,6 @@ export default function ProvidersScreen() {
             {distanceActive ? <View style={styles.filterDot} /> : null}
           </Pressable>
         </View>
-      </View>
-
-      <View style={styles.filters}>
-        {TYPE_FILTERS.map((filter) => {
-          const selected = typeFilter === filter.code;
-
-          return (
-            <Pressable
-              key={filter.code}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => handleTypeFilter(filter.code)}
-              style={[styles.chip, selected && styles.chipSelected]}
-            >
-              <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                {filter.label}
-              </Text>
-            </Pressable>
-          );
-        })}
       </View>
 
       <View style={styles.listContainer}>
@@ -868,33 +829,6 @@ const styles = StyleSheet.create({
     right: -4,
     top: -4,
     width: 12,
-  },
-  filters: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  chip: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  chipSelected: {
-    backgroundColor: colors.brandSoft,
-    borderColor: colors.brand,
-  },
-  chipText: {
-    color: colors.muted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  chipTextSelected: {
-    color: colors.brandDark,
   },
   listContainer: {
     flex: 1,

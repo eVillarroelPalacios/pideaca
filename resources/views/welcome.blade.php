@@ -461,18 +461,18 @@
                                 </div>
                             </div>
                             <div class="contacto-form">
-                                <form id="contacto-form" onsubmit="submitContactInquiry(event)">
+                                <form id="contacto-form" novalidate onsubmit="submitContactInquiry(event)">
                                     <div style="margin-bottom:12px;">
                                         <label for="contact-full-name">Nombre completo</label>
-                                        <input type="text" id="contact-full-name" name="full_name" maxlength="255" placeholder="Tu nombre y apellido" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')">
+                                        <input type="text" id="contact-full-name" name="full_name" maxlength="255" placeholder="Tu nombre y apellido">
                                     </div>
                                     <div style="margin-bottom:12px;">
                                         <label for="contact-email">Correo electrónico</label>
-                                        <input type="email" id="contact-email" name="email" maxlength="255" placeholder="tu@correo.com" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')">
+                                        <input type="email" id="contact-email" name="email" maxlength="255" placeholder="tu@correo.com">
                                     </div>
                                     <div style="margin-bottom:12px;">
                                         <label for="contact-inquiry-type">Tipo de consulta</label>
-                                        <select id="contact-inquiry-type" name="inquiry_type" required oninvalid="this.setCustomValidity('Por favor, selecciona una opción.')" onchange="this.setCustomValidity('')">
+                                        <select id="contact-inquiry-type" name="inquiry_type">
                                             <option value="">Seleccioná una opción</option>
                                             <option value="consulta">Consulta</option>
                                             <option value="sugerencia">Sugerencia</option>
@@ -481,9 +481,9 @@
                                     </div>
                                     <div style="margin-bottom:12px;">
                                         <label for="contact-message">Mensaje</label>
-                                        <textarea id="contact-message" name="message" rows="5" maxlength="5000" placeholder="Contanos en qué podemos ayudarte" required oninvalid="this.setCustomValidity('Por favor, completa este campo.')" oninput="this.setCustomValidity('')"></textarea>
+                                        <textarea id="contact-message" name="message" rows="5" maxlength="5000" placeholder="Contanos en qué podemos ayudarte"></textarea>
                                     </div>
-                                    <div id="contacto-msg" class="contacto-msg" role="status" aria-live="polite"></div>
+                                    <div id="contacto-msg" role="status" aria-live="polite" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
                                     <button type="submit" id="contacto-submit" style="width:100%;margin-top:12px;padding:11px;background:#D24C19;color:#ffffff;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Enviar Mensaje</button>
                                 </form>
                             </div>
@@ -677,25 +677,6 @@
     .contacto-form textarea {
         min-height: 110px;
         resize: vertical;
-    }
-    .contacto-msg {
-        display: none;
-        font-size: 12.5px;
-        line-height: 1.4;
-        padding: 9px 12px;
-        border-radius: 4px;
-    }
-    .contacto-msg.is-success {
-        display: block;
-        color: #047857;
-        background: #ecfdf5;
-        border: 1px solid #a7f3d0;
-    }
-    .contacto-msg.is-error {
-        display: block;
-        color: #b91c1c;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
     }
     @media (max-width: 768px) {
         .contacto-grid {
@@ -1181,27 +1162,87 @@
         });
     }
 
+    function showContactError(field, text) {
+        const message = document.getElementById('contacto-msg');
+        if (message) {
+            message.style.display = 'block';
+            message.style.color = '#dc2626';
+            message.style.background = '#fef2f2';
+            message.style.border = '1px solid #fecaca';
+            message.textContent = text;
+        }
+        if (field && typeof field.focus === 'function') {
+            field.focus();
+        }
+    }
+
+    function clearContactError() {
+        const message = document.getElementById('contacto-msg');
+        if (!message) {
+            return;
+        }
+        message.style.display = 'none';
+        message.textContent = '';
+    }
+
+    ['contact-full-name', 'contact-email', 'contact-inquiry-type', 'contact-message'].forEach(function (id) {
+        const field = document.getElementById(id);
+        if (!field) {
+            return;
+        }
+        field.addEventListener('input', clearContactError);
+        field.addEventListener('change', clearContactError);
+    });
+
     async function submitContactInquiry(event) {
         event.preventDefault();
 
         const form = event.currentTarget;
         const button = document.getElementById('contacto-submit');
         const message = document.getElementById('contacto-msg');
-        const payload = {
-            full_name: form.full_name.value.trim(),
-            email: form.email.value.trim(),
-            inquiry_type: form.inquiry_type.value,
-            message: form.message.value.trim()
-        };
+        const fullNameInput = document.getElementById('contact-full-name');
+        const emailInput = document.getElementById('contact-email');
+        const inquiryTypeInput = document.getElementById('contact-inquiry-type');
+        const messageInput = document.getElementById('contact-message');
+        const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+        const email = emailInput ? emailInput.value.trim() : '';
+        const inquiryType = inquiryTypeInput ? inquiryTypeInput.value : '';
+        const body = messageInput ? messageInput.value.trim() : '';
 
-        message.className = 'contacto-msg';
-        message.textContent = '';
+        clearContactError();
 
-        if (!payload.full_name || !payload.email || !payload.inquiry_type || !payload.message) {
-            message.textContent = 'Completá todos los campos.';
-            message.classList.add('is-error');
+        // Validación secuencial: se detiene en el primer campo inválido.
+        if (!fullName) {
+            showContactError(fullNameInput, 'Ingrese su nombre completo');
             return;
         }
+
+        if (!email) {
+            showContactError(emailInput, 'Ingrese el correo');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showContactError(emailInput, 'Ingrese un correo válido');
+            return;
+        }
+
+        if (!inquiryType) {
+            showContactError(inquiryTypeInput, 'Seleccione un tipo de consulta');
+            return;
+        }
+
+        if (!body) {
+            showContactError(messageInput, 'Ingrese su mensaje');
+            return;
+        }
+
+        const payload = {
+            full_name: fullName,
+            email: email,
+            inquiry_type: inquiryType,
+            message: body
+        };
 
         button.disabled = true;
         button.textContent = 'Enviando...';
@@ -1225,11 +1266,13 @@
             }
 
             form.reset();
+            message.style.display = 'block';
+            message.style.color = '#047857';
+            message.style.background = '#ecfdf5';
+            message.style.border = '1px solid #a7f3d0';
             message.textContent = data.message || '¡Gracias! Recibimos tu mensaje.';
-            message.classList.add('is-success');
         } catch (error) {
-            message.textContent = error.message || 'No pudimos enviar tu mensaje. Intentá nuevamente.';
-            message.classList.add('is-error');
+            showContactError(null, error.message || 'No pudimos enviar tu mensaje. Intentá nuevamente.');
         } finally {
             button.disabled = false;
             button.textContent = 'Enviar Mensaje';

@@ -9,6 +9,9 @@
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/usuarios.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/paginas.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes-hogar.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/inventario.blade.php</file>
         </group>
     </open-files>
 </project-private>

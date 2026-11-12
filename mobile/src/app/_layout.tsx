@@ -64,7 +64,17 @@ export default function RootLayout() {
               headerShown: false,
               contentStyle: { backgroundColor: colors.background },
             }}
-          />
+          >
+            {/* Menú lateral: modal transparente que deja ver la pantalla anterior. */}
+            <Stack.Screen
+              name="menu"
+              options={{
+                animation: 'slide_from_left',
+                contentStyle: { backgroundColor: 'transparent' },
+                presentation: 'transparentModal',
+              }}
+            />
+          </Stack>
         </ManagedProvider>
       </AuthProvider>
     </SafeAreaProvider>

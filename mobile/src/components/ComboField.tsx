@@ -135,11 +135,15 @@ export function ComboField<T extends string | number>({
       >
         <Text
           numberOfLines={1}
-          style={[styles.value, !display && styles.placeholder]}
+          style={[
+            styles.value,
+            !display && styles.placeholder,
+            disabled && styles.valueDisabled,
+          ]}
         >
           {display || placeholder}
         </Text>
-        <Text style={styles.chevron}>⌄</Text>
+        <Text style={[styles.chevron, disabled && styles.chevronDisabled]}>⌄</Text>
       </Pressable>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -292,13 +296,15 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   inputDisabled: {
-    backgroundColor: colors.background,
-    opacity: 0.7,
+    backgroundColor: '#f1f5f9',
   },
   value: {
     color: colors.text,
     flex: 1,
     fontSize: 16,
+  },
+  valueDisabled: {
+    color: colors.muted,
   },
   placeholder: {
     color: colors.muted,
@@ -308,6 +314,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     lineHeight: 18,
+  },
+  chevronDisabled: {
+    color: colors.border,
   },
   error: {
     color: colors.danger,
