@@ -210,19 +210,16 @@
                                     <span style="display:block;padding:9px 0 20px;background:linear-gradient(180deg,#cfd3d9 0%,#c0c4cb 50%,#b3b8bf 100%);clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%);text-shadow:0 1px 0 rgba(255,255,255,.75);">Prueba</span>
                                 </span>
                                 @endif
-                                <div class="ad-banner" style="position:relative;overflow:hidden;background:#f9fafb;height:150px;">
+                                <div class="ad-banner">
                                     @if($provider['banner_url'])
-                                    <img src="{{ asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) }}" alt="{{ $provider['name'] }}" style="width:100%;height:100%;object-fit:contain;display:block;background:#f9fafb;" />
+                                    <img class="ad-avatar-img" src="{{ asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) }}" alt="{{ $provider['name'] }}" />
                                     @else
-                                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                                        <div style="width:92px;height:92px;flex:none;border-radius:50%;background:{{ $initialsColor }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;letter-spacing:1px;box-shadow:0 6px 16px rgba(0,0,0,.14);">{{ $initials }}</div>
-                                    </div>
+                                    <div class="ad-avatar" style="background:{{ $initialsColor }};">{{ $initials }}</div>
                                     @endif
                                 </div>
-                                <div class="ad-body" style="padding:14px;position:relative;z-index:1;background:white;">
-                                    <span class="ad-badge" style="display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:10px;">{{ mb_strtoupper($provider['category']) }}</span>
+                                <div class="ad-body" style="position:relative;z-index:1;background:white;">
+                                    <span class="ad-badge">{{ mb_strtoupper($provider['category']) }}</span>
                                     <div class="ad-card-info" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                                        
                                         <div>
                                             <h4 class="ad-title" style="font-size:14px;font-weight:bold;color:#1f2937;margin:0;">{{ $provider['name'] }}</h4>
                                              @php
@@ -1198,20 +1195,71 @@
         flex-direction: column; 
         height: 100%; 
     }
-    .ad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #f97316; }
+    .ad-card:hover { border-color: #f97316; }
 
-    .ad-banner { width: 100%; height: 200px; overflow: hidden; background: #f9fafb; }
+    .ad-banner {
+        width: 100%;
+        height: 180px;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+        border-bottom: 1px solid #eef2f6;
+    }
+    .ad-avatar,
+    .ad-avatar-img {
+        width: 152px;
+        height: 152px;
+        flex: none;
+        box-sizing: border-box;
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+        transition: transform 0.2s ease;
+    }
+    .ad-avatar-img {
+        object-fit: cover;
+        display: block;
+        background: #f1f5f9;
+    }
+    .ad-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+    @media (hover: hover) {
+        .flip-card:hover .ad-avatar,
+        .flip-card:hover .ad-avatar-img { transform: scale(1.05); }
+    }
     
     .ad-body { 
-        padding: 12px; 
+        padding: 16px; 
         display: flex; 
         flex-direction: column; 
         flex-grow: 1; 
         position: relative;
-        padding-bottom: 36px !important;
+        padding-bottom: 48px !important;
     }
 
-    .ad-badge { font-size: 9px !important; padding: 2px 6px !important; margin-bottom: 6px !important; }
+    .ad-badge {
+        align-self: flex-start;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 20px;
+        color: #c2410c;
+        font-size: 9px !important;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        padding: 3px 9px !important;
+        margin-bottom: 10px !important;
+        text-transform: uppercase;
+    }
     .ad-rating { font-size: 10px !important; }
     .ad-card-info { gap: 6px !important; margin-bottom: 6px !important; }
 
@@ -1234,7 +1282,7 @@
         line-height: 1.4 !important; 
         color: #6b7280;
         margin: 0; 
-        padding-right: 20px; 
+        padding-right: 40px; 
         height: 32px !important; 
         display: -webkit-box; 
         -webkit-line-clamp: 2; 
@@ -1244,10 +1292,10 @@
 
     .card-action-icon { 
         position: absolute; 
-        bottom: 10px; 
-        right: 10px; 
-        width: 28px; 
-        height: 28px; 
+        bottom: 12px; 
+        right: 12px; 
+        width: 32px; 
+        height: 32px; 
         border-radius: 50%; 
         background-color: #D24C19; 
         border: 1px solid #D24C19; 
@@ -1255,6 +1303,7 @@
         display: flex; 
         align-items: center; 
         justify-content: center; 
+        box-shadow: 0 4px 10px rgba(210, 76, 25, 0.28);
         transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease, border-color 0.2s ease; 
     }
     .ad-card:hover .card-action-icon { background-color: #ffffff; color: #D24C19; border-color: #D24C19; transform: translate(2px, -2px); }
@@ -1284,8 +1333,14 @@
         overflow: hidden;
         background: #ffffff;
         box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 4px 8px rgba(0,0,0,0.10);
-        transform: translateY(-2px);
-        transition: box-shadow 0.3s ease, transform 0.3s ease;
+        transform: translateY(0);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    @media (hover: hover) {
+        .flip-card:hover .flip-front {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 30px -8px rgba(0,0,0,0.18), 0 6px 12px rgba(0,0,0,0.08);
+        }
     }
     .flip-front .ad-card:hover { transform: none; box-shadow: none; }
     .flip-card:hover .ad-card { border-color: #f97316 !important; }
@@ -1408,18 +1463,24 @@
         #adSearchInput { padding: 2px 6px; font-size: 10px; }
         #adSubmitBtn { width: 26px; }
         #adResultCount-wrap { font-size: 9px !important; white-space: nowrap !important; padding: 8px 0 !important; }
-        .ad-banner { height: 120px !important; }
+        .ad-banner { height: 168px !important; }
+        .ad-avatar,
+        .ad-avatar-img { width: 128px; height: 128px; }
+        .ad-avatar { font-size: 38px; }
         .ad-title { height: 26px !important; font-size: 11px !important; }
         .ad-desc { height: 24px !important; font-size: 10px !important; }
         .ad-card-info { margin-bottom: 4px !important; }
-        .ad-card .ad-body { padding: 10px !important; }
+        .ad-card .ad-body { padding: 16px !important; padding-bottom: 44px !important; }
     }
 
     @media (max-width: 480px) {
         .provider-grid { 
             grid-template-columns: 1fr !important; 
         }
-        .ad-banner { height: 100px !important; }
+        .ad-banner { height: 148px !important; }
+        .ad-avatar,
+        .ad-avatar-img { width: 112px; height: 112px; }
+        .ad-avatar { font-size: 34px; }
     }
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }

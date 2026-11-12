@@ -12,6 +12,12 @@
     @media (max-width: 1023px) { #fd-solic-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 767px) { #fd-solic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 639px) { #fd-solic-grid { grid-template-columns: 1fr; } }
+
+    /* Cabecera de tarjeta de prestador: foto/logo centrado dentro de un circulo */
+    #fd-solic-grid .fd-provider-head { height: 160px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin: -16px -16px 0; }
+    #fd-solic-grid .fd-provider-circle { width: 104px; height: 104px; flex: none; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1); }
+    #fd-solic-grid .fd-provider-photo { object-fit: cover; display: block; background: #ffffff; }
+    #fd-solic-grid .fd-provider-initials { display: flex; align-items: center; justify-content: center; background: #fff1eb; color: #D24C19; font-size: 38px; font-weight: 700; }
 </style>
 <section id="dash-solicitar-servicio" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -872,14 +878,19 @@
     });
 
     function renderCard(p) {
+        var initial = esc((p.business_name || '?').charAt(0).toUpperCase());
         var html = '<div data-fd-solic-provider="' + p.id + '" style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
 
+        html += '<div class="fd-provider-head">';
         if (p.publicidad_image) {
-            html += '<img src="' + esc(p.publicidad_image) + '" alt="Publicidad de ' + esc(p.business_name) + '" style="width:calc(100% + 32px);margin:-16px -16px 0;display:block;height:70px;object-fit:cover;background:#f1f5f9;">';
+            html += '<img class="fd-provider-circle fd-provider-photo" src="' + esc(p.publicidad_image) + '" alt="' + esc(p.business_name) + '">';
+        } else {
+            html += '<div class="fd-provider-circle fd-provider-initials">' + initial + '</div>';
         }
+        html += '</div>';
 
         html += '<div style="display:flex;gap:12px;align-items:center;">'
-            + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + esc((p.business_name || '?').charAt(0).toUpperCase()) + '</div>'
+            + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + initial + '</div>'
             + '<div style="min-width:0;">'
             + '<div style="font-size:14px;font-weight:700;color:#0c2a4d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(p.business_name) + '</div>'
             + '</div>';

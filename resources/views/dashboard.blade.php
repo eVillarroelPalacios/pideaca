@@ -5458,9 +5458,13 @@
 
         var html = '<div data-fd-provider="' + Number(p.id) + '" style="background:#fff;border:1px solid #e5e7eb;padding:16px;display:flex;flex-direction:column;gap:10px;">';
 
+        html += '<div class="fd-shop-head">';
         if (p.publicidad_image) {
-            html += '<img src="' + escapeHtml(p.publicidad_image) + '" alt="Publicidad de ' + escapeHtml(p.business_name || '') + '" style="width:calc(100% + 32px);margin:-16px -16px 0;display:block;height:70px;object-fit:cover;background:#f1f5f9;" />';
+            html += '<img class="fd-shop-circle fd-shop-photo" src="' + escapeHtml(p.publicidad_image) + '" alt="Publicidad de ' + escapeHtml(p.business_name || '') + '" />';
+        } else {
+            html += '<div class="fd-shop-circle fd-shop-initials">' + initial + '</div>';
         }
+        html += '</div>';
 
         html += '<div style="display:flex;gap:12px;align-items:center;">'
             + '<div style="width:44px;height:44px;flex:none;border-radius:50%;background:#fff1eb;color:#D24C19;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;">' + initial + '</div>'

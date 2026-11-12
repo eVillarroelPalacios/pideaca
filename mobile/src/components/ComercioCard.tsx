@@ -17,8 +17,9 @@ type Props = {
 
 /**
  * Tarjeta de comercio con el mismo esquema que `fdRenderProviderCard` de la
- * web: banner de publicidad, avatar con inicial, rubro/zona, rating, cinta
- * promocional y los tres accesos (favorito, suscripción, catálogo).
+ * web: cabecera con foto/logo circular, avatar con inicial, rubro/zona,
+ * rating, cinta promocional y los tres accesos (favorito, suscripción,
+ * catálogo).
  */
 export function ComercioCard({
   shop,
@@ -34,9 +35,20 @@ export function ComercioCard({
 
   return (
     <View style={styles.card}>
-      {banner ? (
-        <Image source={{ uri: banner }} style={styles.banner} resizeMode="cover" />
-      ) : null}
+      <View style={styles.header}>
+        {banner ? (
+          <Image
+            source={{ uri: banner }}
+            style={[styles.headerCircle, styles.headerImage]}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+          />
+        ) : (
+          <View style={[styles.headerCircle, styles.headerFallback]}>
+            <Text style={styles.headerInitial}>{initial}</Text>
+          </View>
+        )}
+      </View>
 
       <Pressable
         accessibilityRole="button"
@@ -132,10 +144,40 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     overflow: 'hidden',
   },
-  banner: {
-    backgroundColor: colors.background,
-    height: 70,
+  header: {
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    height: 140,
+    justifyContent: 'center',
     width: '100%',
+  },
+  headerCircle: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#ffffff',
+    borderRadius: 48,
+    borderWidth: 3,
+    elevation: 3,
+    height: 96,
+    justifyContent: 'center',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    width: 96,
+  },
+  headerImage: {
+    backgroundColor: '#f1f5f9',
+  },
+  headerFallback: {
+    backgroundColor: '#fff1eb',
+  },
+  headerInitial: {
+    color: ACCENT,
+    fontSize: 36,
+    fontWeight: '800',
   },
   pressable: {
     flexDirection: 'column',

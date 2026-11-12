@@ -24,6 +24,14 @@
                 #fd-shops-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; }
                 @media (max-width: 1023px) { #fd-shops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
                 @media (max-width: 639px) { #fd-shops-grid { grid-template-columns: 1fr; } }
+
+                /* Cabecera de tarjeta de comercio: imagen publicitaria centrada
+                   dentro de un circulo, con fallback de iniciales del mismo
+                   tamano para que todas las tarjetas queden alineadas. */
+                #fd-shops-grid .fd-shop-head { height: 160px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin: -16px -16px 0; }
+                #fd-shops-grid .fd-shop-circle { width: 104px; height: 104px; flex: none; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1); }
+                #fd-shops-grid .fd-shop-photo { object-fit: cover; display: block; background: #ffffff; }
+                #fd-shops-grid .fd-shop-initials { display: flex; align-items: center; justify-content: center; background: #fff1eb; color: #D24C19; font-size: 38px; font-weight: 700; }
             </style>
 
             <section id="dash-comercios" class="dash-section" data-module-id="{{ $page->module_id }}" style="display:none;width:1550;max-width:none;margin:10px auto;padding:0 1rem;box-sizing:border-box;">

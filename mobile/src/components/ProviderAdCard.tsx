@@ -24,8 +24,9 @@ const SERVICE_ICONS: Record<string, string> = {
 
 /**
  * Tarjeta de prestador con el mismo esquema que la web de Solicitar Servicio:
- * banner de publicidad, avatar, rating, promo, servicios que ofrece y
- * estrella de favorito. Reutilizada en Nueva solicitud y en Prestadores.
+ * cabecera con foto/logo circular, avatar, rating, promo, servicios que
+ * ofrece y estrella de favorito. Reutilizada en Nueva solicitud y en
+ * Prestadores.
  */
 export function ProviderAdCard({
   provider,
@@ -51,17 +52,17 @@ export function ProviderAdCard({
         onPress={onPress}
         style={({ pressed }) => [styles.pressable, pressed && onPress ? styles.pressed : null]}
       >
-        <View style={styles.banner}>
+        <View style={styles.header}>
           {banner ? (
             <Image
               source={{ uri: banner }}
-              style={styles.bannerImage}
+              style={[styles.headerCircle, styles.headerImage]}
               resizeMode="cover"
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <View style={styles.bannerFallback}>
-              <Text style={styles.bannerInitial}>{initial}</Text>
+            <View style={[styles.headerCircle, styles.headerFallback]}>
+              <Text style={styles.headerInitial}>{initial}</Text>
             </View>
           )}
 
@@ -142,26 +143,13 @@ export function ProviderAdCard({
       {provider.service_types.length > 0 ? (
         <View style={styles.services}>
           {provider.service_types.map((type) => {
-            const content = (
-              <>
-                <Text style={styles.serviceIcon}>{SERVICE_ICONS[type.code] ?? '🛠️'}</Text>
-                <Text
-                  style={[
-                    styles.serviceText,
-                    onSelectService ? styles.serviceTextAction : styles.serviceTextInfo,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {type.name}
-                </Text>
-              </>
-            );
+            const icon = SERVICE_ICONS[type.code] ?? '🛠️';
 
             return onSelectService ? (
               <Pressable
                 key={type.code}
                 accessibilityRole="button"
-                accessibilityLabel={`Pedir ${type.name}`}
+                accessibilityLabel={type.name}
                 onPress={() => onSelectService(type.code, type.name)}
                 style={({ pressed }) => [
                   styles.service,
@@ -169,11 +157,14 @@ export function ProviderAdCard({
                   pressed && styles.servicePressed,
                 ]}
               >
-                {content}
+                <Text style={[styles.serviceIcon, styles.serviceIconAction]}>{icon}</Text>
               </Pressable>
             ) : (
               <View key={type.code} style={[styles.service, styles.serviceInfo]}>
-                {content}
+                <Text style={styles.serviceIcon}>{icon}</Text>
+                <Text style={[styles.serviceText, styles.serviceTextInfo]} numberOfLines={1}>
+                  {type.name}
+                </Text>
               </View>
             );
           })}
@@ -203,24 +194,39 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.85,
   },
-  banner: {
-    backgroundColor: colors.brandSoft,
-    height: 92,
-    width: '100%',
-  },
-  bannerImage: {
-    height: '100%',
-    width: '100%',
-  },
-  bannerFallback: {
+  header: {
     alignItems: 'center',
-    backgroundColor: colors.brandSoft,
-    flex: 1,
+    backgroundColor: '#f1f5f9',
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    height: 140,
     justifyContent: 'center',
+    width: '100%',
   },
-  bannerInitial: {
+  headerCircle: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#ffffff',
+    borderRadius: 48,
+    borderWidth: 3,
+    elevation: 3,
+    height: 96,
+    justifyContent: 'center',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    width: 96,
+  },
+  headerImage: {
+    backgroundColor: '#f1f5f9',
+  },
+  headerFallback: {
+    backgroundColor: colors.brandSoft,
+  },
+  headerInitial: {
     color: colors.brand,
-    fontSize: 38,
+    fontSize: 36,
     fontWeight: '800',
   },
   availability: {
@@ -340,7 +346,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   serviceAction: {
+    alignItems: 'center',
     backgroundColor: colors.brand,
+    borderRadius: radius.md,
+    height: 38,
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    width: 38,
   },
   serviceInfo: {
     backgroundColor: colors.background,
@@ -353,12 +366,12 @@ const styles = StyleSheet.create({
   serviceIcon: {
     fontSize: 12,
   },
+  serviceIconAction: {
+    fontSize: 16,
+  },
   serviceText: {
     fontSize: 12,
     fontWeight: '700',
-  },
-  serviceTextAction: {
-    color: colors.surface,
   },
   serviceTextInfo: {
     color: colors.text,
