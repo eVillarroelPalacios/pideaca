@@ -467,8 +467,8 @@
   <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch; width: 100%;">
 
     <!-- COLUMNA IZQUIERDA: VIDEO CON PADDING/BORDE -->
-    <div style="flex: 1 1 450px; min-width: 320px;">
-      <video id="video-servicios" autoplay muted playsinline style="width: 100%; height: 100%; min-height: 460px; object-fit: cover; display: block; border: 1px solid #e5e7eb;">
+    <div style="flex: 1 1 450px; min-width: 320px; position: sticky; top: 24px; align-self: flex-start;">
+      <video id="video-servicios" autoplay muted playsinline style="width: 100%; height: 560px; object-fit: cover; display: block; border: 1px solid #e5e7eb;">
         <source src="{{ asset('images/videos/servicios.mp4') }}" type="video/mp4">
       </video>
 <script>
@@ -490,18 +490,49 @@
     <div style="flex: 1 1 450px; min-width: 320px; display: flex; flex-direction: column; justify-content: center;">
       <div style="width: 100%; border: 1px solid #e5e7eb; background: #ffffff;">
 
+        <div style="padding: 0 24px; margin-bottom: 4px;">
+          <p style="margin: 18px 0 6px; font-size: 15px; color: #334155; line-height: 1.6;">PideAca reúne tres grandes soluciones para resolver lo cotidiano: pedir de tus comercios y restaurantes, contratar profesionales del hogar y recibir todo con logística local. Cada grupo funciona de forma independiente, pero comparte la misma cuenta, la misma búsqueda y la misma seguridad.</p>
+        </div>
+
         <!-- 1. Comercio -->
-        <details open style="border-bottom: 1px solid #e5e7eb;">
+        <details open style="border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
           <summary style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; font-weight: 700; color: #1e293b; cursor: pointer; list-style: none; user-select: none;">
             <span>Comercio - Tiendas y Gastronomía</span>
             <span style="font-size: 13px; color: #64748b;">▼</span>
           </summary>
           <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
-            <p style="margin: 0 0 12px 0;">Pedí lo que necesites de tus tiendas favoritas con entrega rápida y seguimiento en tiempo real.</p>
+            <p style="margin: 0 0 14px 0;">Encontrá tus comercios y restaurantes favoritos: pizzerías, rotiserías, hamburgueserías, sushi y poke, heladerías, kioscos y tiendas de conveniencia. Cada negocio publica su catálogo digital con fotos, precios, variantes y adicionales, y lo pedís desde el celular o la web.</p>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Qué incluye</p>
+            <ul style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Catálogo digital con categorías, productos, variantes y grupos de opciones.</li>
+              <li>Pedís para llevar, para enviar a tu dirección o para retirar en el local.</li>
+              <li>Favoritos y recompra rápida de tus comercios habituales.</li>
+              <li>Estado del pedido y seguimiento del envío hasta tu puerta.</li>
+              <li>Calificación y reseñas del comercio y del repartidor.</li>
+            </ul>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Cómo funciona</p>
+            <ol style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Buscá el comercio por nombre o rubro, o filtrá por zona y distancia.</li>
+              <li>Elegí tus productos, cantidades y adicionales.</li>
+              <li>Confirmá el pedido con la dirección de entrega.</li>
+              <li>Seguí el pedido hasta la puerta y calificá la experiencia.</li>
+            </ol>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Para el comercio</p>
+            <ul style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Catálogo, inventario y alertas de stock.</li>
+              <li>Despacho con repartidores de confianza o envío al pool general.</li>
+              <li>Salud financiera: costos, recetas, márgenes y reportes de ventas.</li>
+              <li>Suscripciones flexibles y comisiones reducidas.</li>
+            </ul>
+
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Gastronomía</span>
               <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Tiendas</span>
               <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Envío Veloz</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Catálogo Digital</span>
             </div>
           </div>
         </details>
@@ -513,7 +544,48 @@
             <span style="font-size: 13px; color: #64748b;">▼</span>
           </summary>
           <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
-            <p style="margin: 0;">Contratá electricistas, plomeros, técnicos y profesionales verificados para urgencias, citas programadas y presupuestos garantizados.</p>
+            <p style="margin: 0 0 14px 0;">Soluciones para el hogar, el negocio y el bienestar, con profesionales verificados y matrículas validadas. Desde una urgencia a las 3 de la mañana hasta una obra planificada, encontrás el profesional indicado y el formato de contratación que te convenga.</p>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Qué incluye</p>
+            <ul style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Plomería, electricidad, cerrajería y gasistas matriculados.</li>
+              <li>Aire acondicionado, heladeras, lavarropas y servicio técnico de computadoras y celulares.</li>
+              <li>Limpieza profunda, fumigación, jardinería y mantenimiento de piletas.</li>
+              <li>Peluquería canina y felina a domicilio, veterinarios y urgencias veterinarias 24/7.</li>
+              <li>Cuidado de mascotas, adultos mayores y niños, y enfermería a domicilio.</li>
+              <li>Fletes, minimudanzas, peones de carga, arreglos menores, pintura y albañilería ligera.</li>
+            </ul>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Tres modalidades para contratar</p>
+            <ol style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li><strong>Urgencias 24/7:</strong> publicás el problema y un profesional responde a cualquier hora.</li>
+              <li><strong>Citas programadas:</strong> elegís día y horario, reservás con seña y dejás datos de acceso.</li>
+              <li><strong>Presupuestos:</strong> describís el trabajo con fotos y recibís propuestas de varios profesionales.</li>
+            </ol>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Cómo funciona</p>
+            <ol style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Contá qué necesitás, adjuntá fotos y indicá la ubicación.</li>
+              <li>Elegís urgencia, cita programada o presupuesto.</li>
+              <li>El profesional llega y presenta una estimación o presupuesto para tu aprobación.</li>
+              <li>Aprobás, se realiza el trabajo y liberás el pago cuando esté todo bien.</li>
+              <li>Calificás al profesional para que el resto de la comunidad sepa cómo trabajó.</li>
+            </ol>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Para el profesional</p>
+            <ul style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Agenda, servicios, disponibilidad y reordenamiento de tu oferta.</li>
+              <li>Solicitudes, estimaciones en sitio y cotizaciones desde el panel.</li>
+              <li>Contacto directo con el cliente por WhatsApp.</li>
+              <li>Reportes de demanda, clientes y rendimiento.</li>
+            </ul>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Urgencias 24/7</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Citas Programadas</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Presupuestos</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Profesionales Verificados</span>
+            </div>
           </div>
         </details>
 
@@ -524,7 +596,31 @@
             <span style="font-size: 13px; color: #64748b;">▼</span>
           </summary>
           <div style="padding: 0 24px 24px 24px; color: #4b5563; font-size: 14px; line-height: 1.6;">
-            <p style="margin: 0;">Logística local y envíos express con repartidores de confianza para que recibas todo sin salir de casa.</p>
+            <p style="margin: 0 0 14px 0;">La capa logística que conecta comercios, hogares y repartidores para que recibas todo sin salir de casa. Acá conviven los pedidos de tus tiendas del barrio, los envíos express, la compra recurrente y hasta el auxilio vial, con repartidores de confianza y seguimiento en tiempo real.</p>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Qué incluye</p>
+            <ul style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>Envíos express de comercios del barrio y de abastos recurrentes, como agua purificada.</li>
+              <li>Auxilio vial y mecánica: gomerías, grúas y asistencia 24/7.</li>
+              <li>Pool de repartidores disponibles para tomar pedidos al instante.</li>
+              <li>Despacho propio del comercio con red de repartidores de confianza.</li>
+              <li>Seguimiento del pedido y calificación de cada entrega.</li>
+            </ul>
+
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 700; color: #0c2a4d; text-transform: uppercase; letter-spacing: 0.5px;">Cómo funciona</p>
+            <ol style="margin: 0 0 14px 0; padding-left: 18px;">
+              <li>El comercio o el usuario arma el pedido con lo que necesita.</li>
+              <li>El pedido entra al pool general o se asigna a un repartidor de confianza del comercio.</li>
+              <li>El repartidor retira, entrega y confirma la recepción.</li>
+              <li>Recibís notificaciones de cada paso y calificás la entrega.</li>
+            </ol>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Envíos Express</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Repartidores de Confianza</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Auxilio Vial</span>
+              <span style="background: #f3f4f6; color: #4b5563; padding: 3px 10px; font-size: 12px; font-weight: 500;">Abastos Recurrentes</span>
+            </div>
           </div>
         </details>
 
