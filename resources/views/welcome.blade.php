@@ -276,8 +276,10 @@
 
                                 <!-- COLUMNA DERECHA: Redacci&#243;n Institucional -->
                                 <div class="qs-text-col">
+                                    <span class="qs-badge">Ecosistema multiservicio</span>
+                                    <h2>Qui&#233;nes Somos</h2>
                                     <p class="qs-lead">
-                                        <strong>Pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos una aplicaci&#243;n web multiservicio que integra en un &#250;nico lugar todo lo que un hogar o conductor necesita para resolver compras, urgencias o agendas diarias de forma &#225;gil y segura.
+                                        <strong>Pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos un ecosistema multiservicio &#8212;web y app m&#243;vil&#8212; que integra en un &#250;nico lugar todo lo que un hogar, un comercio o un conductor necesita para resolver compras, urgencias, presupuestos o agendas diarias de forma &#225;gil, segura y transparente.
                                     </p>
 
                                     <div class="qs-section-block">
@@ -286,28 +288,122 @@
                                             Creemos firmemente en el valor bidireccional y arm&#243;nico. Mientras resolvemos las necesidades inmediatas de los usuarios mediante soluciones centralizadas y perfiles verificados, impulsamos el crecimiento comercial y laboral de los prestadores locales a trav&#233;s de esquemas de cobro justos y transparentes.
                                         </p>
 
-                                        <div class="qs-winwin-grid">
-                                            <div class="winwin-card">
-                                                <h4>Para el Usuario (Quien pide)</h4>
-                                                <ul>
-                                                    <li><strong>Soluci&#243;n Integral:</strong> Desde una pizza hasta un plomero o una gr&#250;a en una sola plataforma.</li>
-                                                    <li><strong>Seguridad:</strong> Perfiles comprobados, matr&#237;culas validadas y calificaciones reales.</li>
-                                                    <li><strong>Ahorro de Tiempo:</strong> Proceso &#225;gil con geolocalizaci&#243;n precisa.</li>
-                                                </ul>
-                                            </div>
-                                            <div class="winwin-card">
-                                                <h4>Para el Comercio / Prestador (Quien ofrece)</h4>
-                                                <ul>
-                                                    <li><strong>Alta Visibilidad:</strong> Canal digital directo para captar nuevos clientes.</li>
-                                                    <li><strong>Comisiones Justas:</strong> Suscripciones fijas y modelos flexibles para proteger tus ganancias.</li>
-                                                    <li><strong>Digitalizaci&#243;n Simple:</strong> Herramientas para gestionar productos, agendas y WhatsApp.</li>
-                                                </ul>
-                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="qs-full">
+
+                                <div class="qs-section-block">
+                                    <h3>Un ecosistema, muchas soluciones</h3>
+                                    <div class="qs-pillars-grid">
+                                        <div class="qs-pillar-card">
+                                            <span class="qs-pillar-icon">&#128722;</span>
+                                            <h4>Mercado y Comercio</h4>
+                                            <p>Pizzer&#237;as, rotiser&#237;as, hamburgueser&#237;as, kioscos y tiendas con cat&#225;logo digital, pedidos y env&#237;o express.</p>
+                                        </div>
+                                        <div class="qs-pillar-card">
+                                            <span class="qs-pillar-icon">&#127968;</span>
+                                            <h4>Hogar y Servicios</h4>
+                                            <p>Plomeros, electricistas, gasistas, t&#233;cnicos y profesionales verificados para urgencias, citas programadas y presupuestos.</p>
+                                        </div>
+                                        <div class="qs-pillar-card">
+                                            <span class="qs-pillar-icon">&#128666;</span>
+                                            <h4>Log&#237;stica y Repartidores</h4>
+                                            <p>Repartidores de confianza, seguimiento de entregas, auxilio vial y env&#237;os express para llegar a cada rinc&#243;n.</p>
+                                        </div>
+                                        <div class="qs-pillar-card">
+                                            <span class="qs-pillar-icon">&#129520;</span>
+                                            <h4>Gesti&#243;n del Prestador</h4>
+                                            <p>Cat&#225;logo, inventario, agenda, despacho, finanzas y reportes reunidos en un mismo panel, web y m&#243;vil.</p>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="qs-section-block">
-                                        <h3>Estructura de Servicios</h3>
+                                <div class="qs-section-block">
+                                    <h3>Bondades para quien pide</h3>
+                                    <div class="qs-benefits-grid">
+                                        <div class="qs-benefit-card">
+                                            <h4>Soluci&#243;n integral</h4>
+                                            <p>Desde una pizza hasta un plomero o una gr&#250;a, sin cambiar de aplicaci&#243;n.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Seguridad y confianza</h4>
+                                            <p>Perfiles comprobados, matr&#237;culas validadas, horarios y calificaciones reales.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Tres modalidades de servicio</h4>
+                                            <p>Urgencias 24/7, citas programadas con calendario y se&#241;a, o presupuestos a cotizar.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Geolocalizaci&#243;n y b&#250;squeda</h4>
+                                            <p>Buscador por nombre o rubro, favoritos y filtro por distancia para encontrar lo m&#225;s cercano.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Seguimiento y calificaci&#243;n</h4>
+                                            <p>Aprob&#225;s presupuestos, segu&#237;s el estado del pedido y calific&#225;s el servicio recibido.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Cuentas familiares</h4>
+                                            <p>Titular y secundarios, direcciones compartidas y notificaciones push al instante.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="qs-section-block">
+                                    <h3>Bondades para quien ofrece</h3>
+                                    <div class="qs-benefits-grid">
+                                        <div class="qs-benefit-card">
+                                            <h4>Alta visibilidad</h4>
+                                            <p>Un canal digital directo para captar nuevos clientes en tu zona.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Cat&#225;logo e inventario</h4>
+                                            <p>Productos, categor&#237;as, variantes, grupos de opciones y control de stock con alertas.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Agenda y presupuestos</h4>
+                                            <p>Gestion&#225; solicitudes, estimaciones en sitio, cotizaciones y disponibilidad.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Despacho propio</h4>
+                                            <p>Asign&#225; pedidos a tu red de repartidores de confianza o envialos al pool general.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Finanzas y marketing</h4>
+                                            <p>Costos de recetas, m&#225;rgenes, campa&#241;as, demanda y reportes de tus clientes.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Suscripciones justas</h4>
+                                            <p>Planes fijos, pagos y comisiones reducidas para proteger tus ganancias.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="qs-section-block">
+                                    <h3>Tecnolog&#237;a y confianza</h3>
+                                    <div class="qs-tech-grid">
+                                        <div class="qs-benefit-card">
+                                            <h4>Web + app m&#243;vil</h4>
+                                            <p>La misma experiencia en el navegador y en la app para iOS y Android.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Perfiles verificados</h4>
+                                            <p>Validaci&#243;n de identidad, matr&#237;culas y datos del prestador antes de publicar.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Permisos por rol</h4>
+                                            <p>Cada usuario accede solo a las herramientas y secciones que le corresponden.</p>
+                                        </div>
+                                        <div class="qs-benefit-card">
+                                            <h4>Notificaciones y WhatsApp</h4>
+                                            <p>Avisos push, recordatorios y contacto directo con el prestador por WhatsApp.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="qs-section-block">
+                                    <h3>Estructura de Servicios</h3>
                                         <div class="qs-modules-grid">
                                             @foreach($modules as $mod)
                                             <div class="module-item">
@@ -345,10 +441,24 @@
                                         <p class="qs-small-text">
                                             Para garantizar la sostenibilidad sin encarecer los precios finales, implementamos tarifas planas para profesionales, costos m&#237;nimos por contacto y comisiones reducidas para el sector gastron&#243;mico.
                                         </p>
+                                        <div class="qs-tags">
+                                            <span class="qs-tag">Tarifas planas para profesionales</span>
+                                            <span class="qs-tag">Costos m&#237;nimos por contacto</span>
+                                            <span class="qs-tag">Comisiones reducidas para gastronom&#237;a</span>
+                                            <span class="qs-tag">Planes flexibles</span>
+                                        </div>
                                     </div>
 
+                                <div class="qs-cta">
+                                    <div>
+                                        <h3>&#191;Quer&#233;s sumarte a PideAca?</h3>
+                                        <p>Sum&#225; tu comercio o servicio y empez&#225; a recibir clientes, o escribinos para resolver tus dudas.</p>
+                                    </div>
+                                    <div class="qs-cta-actions">
+                                        <a href="#" onclick="openRegister();return false;" class="qs-cta-btn">Quiero registrarme</a>
+                                        <a href="#" onclick="showSection('contactos');return false;" class="qs-cta-btn qs-cta-btn-outline">Contactar al equipo</a>
+                                    </div>
                                 </div>
-
                             </div>
                         </section>
                     </div>
@@ -760,30 +870,6 @@
         padding-bottom: 8px;
         margin-bottom: 15px;
     }
-    .qs-winwin-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-top: 15px;
-    }
-    .winwin-card {
-        background-color: var(--qs-bg-light);
-        padding: 15px;
-        border-radius: 0;
-        border: 1px solid #e2e8f0;
-    }
-    .winwin-card h4 {
-        margin: 0 0 10px 0;
-        color: var(--qs-accent);
-        font-size: 0.95rem;
-    }
-    .winwin-card ul {
-        margin: 0;
-        padding-left: 15px;
-        font-size: 0.88rem;
-        line-height: 1.45;
-    }
-    .winwin-card li { margin-bottom: 6px; }
     .qs-modules-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -816,11 +902,146 @@
         line-height: 1.5;
         text-align: justify;
     }
+    .qs-full {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        margin: 45px auto 0;
+        max-width: 1400px;
+    }
+    .qs-full .qs-section-block { margin-bottom: 0; }
+    .qs-pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 15px;
+    }
+    .qs-pillar-card {
+        background: var(--qs-bg-light);
+        border: 1px solid #e2e8f0;
+        border-top: 3px solid var(--qs-accent);
+        padding: 18px;
+    }
+    .qs-pillar-icon {
+        display: block;
+        font-size: 22px;
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+    .qs-pillar-card h4 {
+        color: var(--qs-primary);
+        font-size: 0.95rem;
+        margin: 0 0 8px 0;
+    }
+    .qs-pillar-card p {
+        color: var(--qs-muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+    .qs-benefits-grid,
+    .qs-tech-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 15px;
+    }
+    .qs-tech-grid { grid-template-columns: repeat(4, 1fr); }
+    .qs-benefit-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        padding: 16px;
+    }
+    .qs-benefit-card h4 {
+        color: var(--qs-primary);
+        font-size: 0.92rem;
+        margin: 0 0 6px 0;
+    }
+    .qs-benefit-card p {
+        color: var(--qs-muted);
+        font-size: 0.84rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+    .qs-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+    .qs-tag {
+        background: #fff3e0;
+        border: 1px solid #fed7aa;
+        border-radius: 20px;
+        color: var(--qs-accent);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 5px 11px;
+    }
+    .qs-cta {
+        align-items: center;
+        background: var(--qs-primary);
+        border-left: 4px solid var(--qs-accent);
+        color: #ffffff;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+        padding: 26px 28px;
+    }
+    .qs-cta h3 {
+        border: none;
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin: 0 0 6px 0;
+        padding: 0;
+    }
+    .qs-cta p {
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    .qs-cta-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .qs-cta-btn {
+        background: var(--qs-accent);
+        border: 1px solid var(--qs-accent);
+        color: #ffffff;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 10px 16px;
+        text-decoration: none;
+    }
+    .qs-cta-btn:hover {
+        background: #ffffff;
+        color: var(--qs-accent);
+    }
+    .qs-cta-btn-outline {
+        background: transparent;
+        border-color: #ffffff;
+        color: #ffffff;
+    }
+    .qs-cta-btn-outline:hover {
+        background: #ffffff;
+        border-color: #ffffff;
+        color: var(--qs-primary);
+    }
+    @media (max-width: 1100px) {
+        .qs-pillars-grid,
+        .qs-benefits-grid,
+        .qs-tech-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 900px) {
         .qs-container { grid-template-columns: 1fr; }
-        .qs-winwin-grid, .qs-modules-grid { grid-template-columns: 1fr; }
+        .qs-modules-grid,
+        .qs-pillars-grid, .qs-benefits-grid, .qs-tech-grid { grid-template-columns: 1fr; }
         .qs-image-col { position: relative; top: 0; }
         .illustration-wrapper { height: 240px; }
+        .qs-cta { padding: 20px; }
     }
     
     .header-btn:hover, .cta-btn:hover {
