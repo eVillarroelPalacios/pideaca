@@ -5,6 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>PideAca</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-pideaca-32.png') }}?v=2">
+        <link rel="icon" type="image/png" sizes="180x180" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|inter:400,500,600,700,800" rel="stylesheet" />
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -93,7 +97,7 @@
             <section id="hero-carousel" style="padding:0;">
                 <div style="width:100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
-                        <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
+                        <div id="carousel-track" style="display:flex;transition:transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
                                 <img src="{{ asset('images/Imacarousel/slide1.jpg') }}" alt="Comercios y pedidos online en PideAca">
                                 <div class="carousel-caption">Comercios y pedidos online: descubrí catálogos, armá tu carrito y seguí cada pedido en tiempo real.</div>
@@ -1144,7 +1148,7 @@
         to { transform: rotate(360deg); }
     }
     .carousel-slide {
-        height: 210px;
+        height: 200px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -1154,11 +1158,17 @@
     .carousel-slide img {
         flex: 1 1 auto;
         min-height: 0;
+        max-height: 100%;
         width: 100%;
+        height: 100%;
         object-fit: contain;
         object-position: center;
+        transform-origin: center center;
         background-color: #ffffff;
         display: block;
+        image-rendering: -webkit-optimize-contrast;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
     }
 
     .carousel-caption {
@@ -1169,12 +1179,36 @@
         font-weight: 700;
         line-height: 1.4;
         text-align: center;
-        padding: 10px 24px 14px;
-        min-height: 48px;
+        padding: 6px 24px 8px;
+        min-height: 36px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    @keyframes carouselImageIn {
+        0%   { opacity: 0; transform: scale(0.82); filter: blur(6px); }
+        55%  { opacity: 1; }
+        100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+
+    @keyframes carouselCaptionIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .carousel-slide.is-active img {
+        animation: carouselImageIn 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .carousel-slide.is-active .carousel-caption {
+        animation: carouselCaptionIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .carousel-slide.is-active img,
+        .carousel-slide.is-active .carousel-caption { animation: none; }
     }
 
     .carousel-nav-btn:hover, .pagination-nav-btn:hover {
@@ -1472,7 +1506,7 @@
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
         .carousel-slide { height: 140px !important; }
-        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; padding: 7px 14px 9px !important; min-height: 0 !important; }
+        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; padding: 5px 14px 6px !important; min-height: 0 !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
@@ -1528,12 +1562,21 @@
     let carouselIndex = 0;
     const track = document.getElementById('carousel-track');
     const totalSlides = track.children.length;
+    const slides = Array.from(track.children);
+
+    function setActiveSlide(index) {
+        slides.forEach(function (slide, i) {
+            slide.classList.toggle('is-active', i === index);
+        });
+    }
+    setActiveSlide(0);
 
     function moveCarousel(direction) {
         carouselIndex += direction;
         if (carouselIndex < 0) carouselIndex = totalSlides - 1;
         if (carouselIndex >= totalSlides) carouselIndex = 0;
         track.style.transform = 'translateX(-' + (carouselIndex * 100) + '%)';
+        setActiveSlide(carouselIndex);
     }
 
     function toggleMenu() {

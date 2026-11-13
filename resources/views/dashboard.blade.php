@@ -5,6 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>PideAca - Mi Panel</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-pideaca-32.png') }}?v=2">
+        <link rel="icon" type="image/png" sizes="180x180" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon-pideaca.png') }}?v=2">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|inter:400,500,600,700,800" rel="stylesheet" />
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
