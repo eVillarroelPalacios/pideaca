@@ -21,7 +21,7 @@
     <body style="margin:0;padding:0;background:#ffffff;min-height:100vh;display:flex;flex-direction:column;">
 
         <div id="top-social-bar" style="background:#f3f4f6;padding:10px 0;display:block;">
-            <div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="max-width:1200px;margin:0 auto;padding:0 20px;min-height:18px;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:14px;">
                     <a href="#" title="Facebook" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#1877F2'" onmouseout="this.style.color='#6b7280'">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -37,12 +37,6 @@
                     </a>
                     <a href="#" title="WhatsApp" style="color:#6b7280;transition:color 0.2s;" onmouseover="this.style.color='#25D366'" onmouseout="this.style.color='#6b7280'">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    </a>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <a href="tel:+595981234567" style="color:#6b7280;font-size:12px;text-decoration:none;display:flex;align-items:center;gap:5px;transition:color 0.2s;" onmouseover="this.style.color='#1f2937'" onmouseout="this.style.color='#6b7280'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
-                        +595 981 234567
                     </a>
                 </div>
             </div>
@@ -266,7 +260,6 @@
 
                                 <!-- COLUMNA DERECHA: Redacci&#243;n Institucional -->
                                 <div class="qs-text-col">
-                                    <span class="qs-badge">Ecosistema multiservicio</span>
                                     <h2>Qui&#233;nes Somos</h2>
                                     <p class="qs-lead">
                                         <strong>Pideaca.com</strong> nace para transformar la manera en que las comunidades locales interact&#250;an con el comercio y los servicios cotidianos. Dise&#241;amos un ecosistema multiservicio &#8212;web y app m&#243;vil&#8212; que integra en un &#250;nico lugar todo lo que un hogar, un comercio o un conductor necesita para resolver compras, urgencias, presupuestos o agendas diarias de forma &#225;gil, segura y transparente.
@@ -445,8 +438,8 @@
                                         <p>Sum&#225; tu comercio o servicio y empez&#225; a recibir clientes, o escribinos para resolver tus dudas.</p>
                                     </div>
                                     <div class="qs-cta-actions">
-                                        <a href="#" onclick="openRegister();return false;" class="qs-cta-btn">Quiero registrarme</a>
-                                        <a href="#" onclick="showSection('contactos');return false;" class="qs-cta-btn qs-cta-btn-outline">Contactar al equipo</a>
+                                        <a href="#" onclick="openRegister();return false;" class="header-btn" style="padding:12px 20px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;">Quiero registrarme</a>
+                                        <a href="#" onclick="showSection('contactos');return false;" class="header-btn" style="padding:12px 20px;background:#D24C19;color:white;border:1px solid #D24C19;border-radius:4px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;">Contactar al equipo</a>
                                     </div>
                                 </div>
                             </div>
@@ -633,16 +626,7 @@
                                         </span>
                                         <div>
                                             <p style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 2px;">Email</p>
-                                            <a href="mailto:hola@pideaca.com" style="font-size:14px;color:#0c2a4d;font-weight:600;text-decoration:none;">hola@pideaca.com</a>
-                                        </div>
-                                    </div>
-                                    <div style="display:flex;align-items:flex-start;gap:12px;">
-                                        <span style="flex:0 0 38px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#fff7ed;color:#D24C19;border-radius:8px;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
-                                        </span>
-                                        <div>
-                                            <p style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 2px;">Teléfono</p>
-                                            <a href="tel:+541155551234" style="font-size:14px;color:#0c2a4d;font-weight:600;text-decoration:none;">+54 11 5555-1234</a>
+                                            <a href="mailto:pideaca.com@gmail.com" style="font-size:14px;color:#0c2a4d;font-weight:600;text-decoration:none;">pideaca.com@gmail.com</a>
                                         </div>
                                     </div>
                                     <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -677,7 +661,7 @@
                                     </div>
                                     <div style="margin-bottom:12px;">
                                         <label for="contact-message">Mensaje</label>
-                                        <textarea id="contact-message" name="message" rows="5" maxlength="5000" placeholder="Contanos en qué podemos ayudarte"></textarea>
+                                        <textarea id="contact-message" name="message" rows="3" maxlength="5000" placeholder="Contanos en qué podemos ayudarte"></textarea>
                                     </div>
                                     <div id="contacto-msg" role="status" aria-live="polite" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
                                     <button type="submit" id="contacto-submit" style="width:100%;margin-top:12px;padding:11px;background:#D24C19;color:#ffffff;border:1px solid #D24C19;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;">Enviar Mensaje</button>
@@ -871,7 +855,8 @@
         border-color: #D24C19;
     }
     .contacto-form textarea {
-        min-height: 110px;
+        min-height: 68px;
+        padding: 8px 12px;
         resize: vertical;
     }
     @media (max-width: 768px) {
@@ -922,18 +907,6 @@
     @keyframes floatAnim {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-7px); }
-    }
-    .qs-badge {
-        color: var(--qs-accent);
-        background-color: #fff3e0;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        display: inline-block;
-        margin-bottom: 10px;
     }
     .qs-text-col h2 {
         font-size: 2.2rem;
@@ -1488,6 +1461,7 @@
         .nav-link svg { margin: 0 !important; }
         .nav-separator { display: none !important; }
         .header-btn { padding: 3px 8px !important; font-size: 10px !important; }
+        .qs-cta-actions .header-btn { padding: 10px 16px !important; font-size: 14px !important; }
         .ad-suggest-box { max-height: 320px; }
     }
 
