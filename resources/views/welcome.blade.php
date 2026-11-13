@@ -94,19 +94,19 @@
                         <div id="carousel-track" style="display:flex;transition:transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
                                 <img src="{{ asset('images/Imacarousel/slide1.jpg') }}" alt="Comercios y pedidos online en PideAca">
-                                <div class="carousel-caption">Comercios y pedidos online: descubrí catálogos, armá tu carrito y seguí cada pedido en tiempo real.</div>
+                                <div class="carousel-caption mt-1 mb-2">Comercios y pedidos online: descubrí catálogos, armá tu carrito y seguí cada pedido en tiempo real.</div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
                                 <img src="{{ asset('images/Imacarousel/slide2.jpg') }}" alt="Servicios del hogar a domicilio en PideAca">
-                                <div class="carousel-caption">Servicios del hogar a domicilio: pedí plomeros, electricistas o técnicos y calificá el servicio recibido.</div>
+                                <div class="carousel-caption mt-1 mb-2">Servicios del hogar a domicilio: pedí plomeros, electricistas o técnicos y calificá el servicio recibido.</div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
                                 <img src="{{ asset('images/Imacarousel/slide3.jpg') }}" alt="Panel de gestión para comercios en PideAca">
-                                <div class="carousel-caption">Panel para comercios: gestioná inventario, reportes, suscripciones y pedidos desde un solo lugar.</div>
+                                <div class="carousel-caption mt-1 mb-2">Panel para comercios: gestioná inventario, reportes, suscripciones y pedidos desde un solo lugar.</div>
                             </div>
                             <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
                                 <img src="{{ asset('images/Imacarousel/slide4.jpg') }}" alt="Repartidores y entregas en PideAca">
-                                <div class="carousel-caption">Repartidores y entregas: rutas guiadas, alertas de viaje y confirmación de entrega con seguimiento.</div>
+                                <div class="carousel-caption mt-1 mb-2">Repartidores y entregas: rutas guiadas, alertas de viaje y confirmación de entrega con seguimiento.</div>
                             </div>
                         </div>
                         <button class="carousel-nav-btn" onclick="moveCarousel(-1)" style="position:absolute;left:12px;top:calc(50% - 24px);transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10094;</button>
@@ -1120,20 +1120,29 @@
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+    #hero-carousel { width: 100%; max-width: 100%; overflow: hidden; }
+    #hero-carousel > div { width: 100%; max-width: 100%; margin: 0 auto; padding: 0; }
+    #carousel-track { gap: 0; }
     .carousel-slide {
         height: 200px;
+        max-height: 200px;
+        max-width: 100%;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         background-color: #ffffff;
+        padding: 0;
     }
 
     .carousel-slide img {
-        flex: 1 1 auto;
+        flex: 0 1 auto;
         min-height: 0;
-        max-height: 100%;
         width: 100%;
-        height: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 150px;
+        margin: 0 auto;
+        padding: 0;
         object-fit: contain;
         object-position: center;
         transform-origin: center center;
@@ -1152,8 +1161,8 @@
         font-weight: 700;
         line-height: 1.4;
         text-align: center;
-        padding: 6px 24px 8px;
-        min-height: 36px;
+        margin: 4px 0 8px;
+        padding: 2px 24px 6px;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -1479,8 +1488,9 @@
         #menu-toggle { display: block !important; }
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
-        .carousel-slide { height: 140px !important; }
-        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; padding: 5px 14px 6px !important; min-height: 0 !important; }
+        .carousel-slide { height: 140px !important; max-height: 140px !important; }
+        .carousel-slide img { max-height: 92px !important; }
+        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; margin: 2px 0 4px !important; padding: 4px 14px !important; min-height: 0 !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
