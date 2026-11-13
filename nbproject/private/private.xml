@@ -12,6 +12,8 @@
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes-hogar.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/reportes.blade.php</file>
             <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/inventario.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/mis-servicios.blade.php</file>
+            <file>file:/C:/xampp/htdocs/pideaca/resources/views/dashboard/sections/solicitar-servicio.blade.php</file>
         </group>
     </open-files>
 </project-private>

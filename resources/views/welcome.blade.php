@@ -16,7 +16,6 @@
     </head>
     <body style="margin:0;padding:0;background:#ffffff;min-height:100vh;display:flex;flex-direction:column;">
 
-        <div style="background:#D24C19;height:2px;"></div>
         <div id="top-social-bar" style="background:#f3f4f6;padding:10px 0;display:block;">
             <div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:14px;">
@@ -95,35 +94,25 @@
                 <div style="width:100%;">
                     <div style="position:relative;overflow:hidden;border-radius:0;">
                         <div id="carousel-track" style="display:flex;transition:transform 0.4s ease;">
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;overflow:hidden;background:white;">
-                                <video autoplay muted loop playsinline preload="auto" style="width:100%;height:100%;object-fit:cover;">
-                                    <source src="{{ asset('images/videos/video1.mp4') }}" type="video/mp4">
-                                </video>
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
+                                <img src="{{ asset('images/Imacarousel/slide1.jpg') }}" alt="Comercios y pedidos online en PideAca">
+                                <div class="carousel-caption">Comercios y pedidos online: descubrí catálogos, armá tu carrito y seguí cada pedido en tiempo real.</div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide2.jpg') }}') center/cover no-repeat;">
-                                <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
-                                    <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Servicios del Hogar 24/7</h2>
-                                    <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Plomeros, electricistas, técnicos y estética a domicilio. Profesionales certificados.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Servicio</button>
-                                </div>
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
+                                <img src="{{ asset('images/Imacarousel/slide2.jpg') }}" alt="Servicios del hogar a domicilio en PideAca">
+                                <div class="carousel-caption">Servicios del hogar a domicilio: pedí plomeros, electricistas o técnicos y calificá el servicio recibido.</div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide3.jpg') }}') center/cover no-repeat;">
-                                <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
-                                    <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Auxilio Vial en Tiempo Real</h2>
-                                    <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Grúas, mecánica ligera y gomería móvil con ubicación GPS.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Solicitar Auxilio</button>
-                                </div>
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
+                                <img src="{{ asset('images/Imacarousel/slide3.jpg') }}" alt="Panel de gestión para comercios en PideAca">
+                                <div class="carousel-caption">Panel para comercios: gestioná inventario, reportes, suscripciones y pedidos desde un solo lugar.</div>
                             </div>
-                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;position:relative;height:200px;background:url('{{ asset('images/Imacarousel/slide4.jpg') }}') center/cover no-repeat;">
-                                <div class="carousel-text" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;padding:40px;">
-                                    <h2 style="font-size:36px;font-weight:bold;margin-bottom:8px;">Abastos Recurrentes</h2>
-                                    <p style="font-size:18px;max-width:500px;text-align:center;margin-bottom:20px;">Agua, gas, hielo y soda. Pedidos programados semanales o quincenales.</p>
-                                    <button class="cta-btn" style="padding:5px 16px;background:#D24C19;color:white;border:1px solid rgba(255,255,255,0.6);border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">Programar Pedido</button>
-                                </div>
+                            <div class="carousel-slide" style="min-width:100%;box-sizing:border-box;background:#ffffff;">
+                                <img src="{{ asset('images/Imacarousel/slide4.jpg') }}" alt="Repartidores y entregas en PideAca">
+                                <div class="carousel-caption">Repartidores y entregas: rutas guiadas, alertas de viaje y confirmación de entrega con seguimiento.</div>
                             </div>
                         </div>
-                        <button class="carousel-nav-btn" onclick="moveCarousel(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10094;</button>
-                        <button class="carousel-nav-btn" onclick="moveCarousel(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10095;</button>
+                        <button class="carousel-nav-btn" onclick="moveCarousel(-1)" style="position:absolute;left:12px;top:calc(50% - 24px);transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10094;</button>
+                        <button class="carousel-nav-btn" onclick="moveCarousel(1)" style="position:absolute;right:12px;top:calc(50% - 24px);transform:translateY(-50%);background:white;border:1px solid #d1d5db;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:#374151;">&#10095;</button>
                     </div>
                 </div>
             </section>
@@ -1154,6 +1143,40 @@
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+    .carousel-slide {
+        height: 210px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+
+    .carousel-slide img {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        object-fit: contain;
+        object-position: center;
+        background-color: #ffffff;
+        display: block;
+    }
+
+    .carousel-caption {
+        flex: 0 0 auto;
+        background: transparent;
+        color: #1f2937;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.4;
+        text-align: center;
+        padding: 10px 24px 14px;
+        min-height: 48px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .carousel-nav-btn:hover, .pagination-nav-btn:hover {
         border: 1px solid #D24C19 !important;
         color: #D24C19 !important;
@@ -1449,6 +1472,7 @@
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
         .carousel-slide { height: 140px !important; }
+        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; padding: 7px 14px 9px !important; min-height: 0 !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
