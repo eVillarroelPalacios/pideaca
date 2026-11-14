@@ -2,700 +2,209 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, api } from '@/api/client';
-import { useAuth } from '@/auth/AuthContext';
-import { EmptyStateDashedContainer } from '@/components/EmptyStateDashedContainer';
-import { ErrorBanner } from '@/components/ErrorBanner';
-import { LoadingScreen } from '@/components/LoadingScreen';
-import { MonthPickerModal } from '@/components/MonthPickerModal';
-import { PlatoHabitoCard } from '@/components/PlatoHabitoCard';
-import { ReportKpiCard } from '@/components/ReportKpiCard';
 import { money } from '@/lib/money';
-import {
-  exportReportComercioPdf,
-  type ReportComercioPdfData,
-} from '@/lib/reportComercioPdf';
 import { colors, radius, spacing } from '@/theme';
-import type {
-  ReportComercioHistoryResponse,
-  ReportComercioNutritionResponse,
-  ReportComercioSavingsResponse,
-  ReportComercioSubscription,
-  ReportComercioSubscriptionsResponse,
-} from '@/types/api';
+import type { DriverStats, DriverWithdrawal } from '@/types/api';
 
 const NAVY = '#0c2a4d';
 const ACCENT = '#D24C19';
-const GREEN = '#047857';
-const AMBER = '#b45309';
 
-type TabKey = 'savings' | 'mysubs' | 'history' | 'nutrition';
-
-const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: 'savings', label: 'Mi ahorro', icon: '🏷️' },
-  { key: 'mysubs', label: 'Suscripciones activas', icon: '🔄' },
-  { key: 'history', label: 'Histórico y hábitos', icon: '📋' },
-  { key: 'nutrition', label: 'Resumen nutricional', icon: '🤍' },
+const WITHDRAW_METHODS = [
+  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'otro', label: 'Otro' },
 ];
 
-const MONTHS = [
-  'Enero',
-  'Febrero',
-  'Marzo',
-  'Abril',
-  'Mayo',
-  'Junio',
-  'Julio',
-  'Agosto',
-  'Septiembre',
-  'Octubre',
-  'Noviembre',
-  'Diciembre',
-];
+function errorMessage(caught: unknown, fallback: string): string {
+  if (caught instanceof ApiError) {
+    const first = caught.errors ? Object.values(caught.errors)[0] : null;
 
-const FREQUENCY_LABELS: Record<string, string> = {
-  DAILY: 'cada día',
-  WEEKLY: 'cada semana',
-  BIWEEKLY: 'cada dos semanas',
-  MONTHLY: 'cada mes',
-};
+    if (first && first.length > 0) {
+      return first[0];
+    }
 
-const DAY_LABELS: Record<number, string> = {
-  1: 'Lunes',
-  2: 'Martes',
-  3: 'Miércoles',
-  4: 'Jueves',
-  5: 'Viernes',
-  6: 'Sábado',
-  7: 'Domingo',
-};
-
-type TabData = {
-  savings: ReportComercioSavingsResponse | null;
-  mysubs: ReportComercioSubscriptionsResponse | null;
-  history: ReportComercioHistoryResponse | null;
-  nutrition: ReportComercioNutritionResponse | null;
-};
-
-function errorMessage(caught: unknown): string {
-  return caught instanceof ApiError
-    ? caught.message
-    : 'No se pudo cargar el reporte. Revisá tu conexión e intentá de nuevo.';
-}
-
-function shortDate(iso: string | null | undefined): string {
-  if (!iso) {
-    return '—';
+    return caught.message;
   }
 
-  const [y, m, d] = String(iso).slice(0, 10).split('-');
-
-  return y && m && d ? `${d}/${m}/${y}` : '—';
+  return fallback;
 }
 
-function monthLabel(value: string): string {
-  const match = /^(\d{4})-(\d{2})$/.exec(value);
-
-  if (!match) {
-    return 'Mes actual';
+function withdrawalStatusLabel(status: DriverWithdrawal['status']): string {
+  if (status === 'approved') {
+    return 'aprobado';
   }
 
-  const index = Number(match[2]) - 1;
-  const name = MONTHS[index] ?? match[2];
-
-  return `${name} ${match[1]}`;
-}
-
-function openShop(
-  providerId: number | null,
-  product?: { product_id: number; quantity: number },
-) {
-  if (!providerId) {
-    return;
+  if (status === 'rejected') {
+    return 'rechazado';
   }
 
-  router.push({
-    pathname: '/comercio/[id]',
-    params: {
-      id: String(providerId),
-      ...(product
-        ? {
-            repeat: JSON.stringify([
-              { product_id: product.product_id, variant_id: null, quantity: product.quantity },
-            ]),
-          }
-        : {}),
-    },
-  });
+  return 'pendiente de aprobación';
 }
 
-function SectionTitle({ title, hint }: { title: string; hint?: string }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {hint ? <Text style={styles.sectionHint}>{hint}</Text> : null}
-    </View>
-  );
-}
+function formatDate(value: string | null): string {
+  if (!value) {
+    return '';
+  }
 
-function SubscriptionCard({ subscription }: { subscription: ReportComercioSubscription }) {
-  const active = subscription.status === 'ACTIVE';
-  const nextCharge = subscription.next_charge
-    ? `Cobro ${money(subscription.next_charge.total)} el ${shortDate(subscription.next_charge.period_start)}`
-    : 'Sin cobro pendiente';
-  const payment =
-    subscription.payment_method === 'cash'
-      ? 'Efectivo'
-      : (subscription.payment_method ?? '—');
+  const date = new Date(value);
 
-  return (
-    <View
-      style={[
-        styles.subCard,
-        { borderLeftColor: active ? ACCENT : '#f59e0b' },
-      ]}
-    >
-      <View style={styles.subHeader}>
-        <View style={styles.subTitleWrap}>
-          <Text style={styles.subTitle}>{subscription.plan_title ?? 'Plan'}</Text>
-          {subscription.provider ? (
-            <Text style={styles.subProvider}>{subscription.provider}</Text>
-          ) : null}
-        </View>
-        <View
-          style={[
-            styles.pill,
-            { backgroundColor: active ? '#d1fae5' : '#fef3c7' },
-          ]}
-        >
-          <Text style={[styles.pillText, { color: active ? GREEN : AMBER }]}>
-            {subscription.status_label || subscription.status}
-          </Text>
-        </View>
-      </View>
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
 
-      <View style={styles.subAmountRow}>
-        <Text style={styles.subAmount}>{money(subscription.charge_amount)}</Text>
-        <Text style={styles.subFrequency}>
-          {FREQUENCY_LABELS[subscription.frequency ?? ''] ?? ''}
-        </Text>
-      </View>
-
-      <View style={styles.subGrid}>
-        <View style={styles.subField}>
-          <Text style={styles.fieldLabel}>Próxima entrega</Text>
-          <Text style={styles.fieldValue}>{shortDate(subscription.next_delivery_date)}</Text>
-        </View>
-        <View style={styles.subField}>
-          <Text style={styles.fieldLabel}>Día preferido</Text>
-          <Text style={styles.fieldValue}>
-            {DAY_LABELS[subscription.preferred_delivery_day ?? 0] ?? 'Sin preferencia'}
-          </Text>
-        </View>
-        <View style={styles.subField}>
-          <Text style={styles.fieldLabel}>Horario</Text>
-          <Text style={styles.fieldValue}>
-            {subscription.preferred_delivery_time ?? 'Sin preferencia'}
-          </Text>
-        </View>
-        <View style={styles.subField}>
-          <Text style={styles.fieldLabel}>Pago</Text>
-          <Text style={styles.fieldValue}>{payment}</Text>
-        </View>
-        <View style={styles.subField}>
-          <Text style={styles.fieldLabel}>Cobro</Text>
-          <Text style={styles.fieldValue}>{nextCharge}</Text>
-        </View>
-      </View>
-
-      {subscription.products.length ? (
-        <Text style={styles.subProducts}>
-          <Text style={styles.fieldLabel}>Productos: </Text>
-          {subscription.products
-            .map((product) => `${product.name ?? ''} x${Number(product.quantity || 0)}`)
-            .join(' · ')}
-        </Text>
-      ) : null}
-    </View>
-  );
+  return date.toLocaleDateString();
 }
 
 /**
- * Reportes Repartidor: el repartidor consume como cliente (ahorro,
- * suscripciones, hábitos y nutrición), por eso reutiliza los mismos
- * endpoints `/api/reportes` que Reportes Comercio.
- * Espeja `dashboard/sections/reportes.blade.php` (tabs savings/mysubs/
- * history/nutrition) con título y ruta propios del módulo Reparto.
+ * Reportes Repartidor: billetera, ganancias, retiros y estadísticas reales
+ * de entregas del repartidor (`driverStats` + `driverWithdrawals`).
+ * No reutiliza los endpoints de reportes del cliente (`/api/reportes`).
  */
 export default function ReportsRepartidorScreen() {
-  const { user } = useAuth();
-
-  const [activeTab, setActiveTab] = useState<TabKey>('savings');
-  const [data, setData] = useState<TabData>({
-    savings: null,
-    mysubs: null,
-    history: null,
-    nutrition: null,
-  });
-  const [loading, setLoading] = useState<Record<TabKey, boolean>>({
-    savings: true,
-    mysubs: false,
-    history: false,
-    nutrition: false,
-  });
-  const [errors, setErrors] = useState<Record<TabKey, string | null>>({
-    savings: null,
-    mysubs: null,
-    history: null,
-    nutrition: null,
-  });
+  const [stats, setStats] = useState<DriverStats | null>(null);
+  const [balance, setBalance] = useState(0);
+  const [minWithdrawal, setMinWithdrawal] = useState(0);
+  const [withdrawals, setWithdrawals] = useState<DriverWithdrawal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [pdfBusy, setPdfBusy] = useState(false);
-  const [month, setMonth] = useState('');
-  const [monthPicker, setMonthPicker] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchTab = useCallback(async (tab: TabKey, requestedMonth?: string) => {
+  const [amount, setAmount] = useState('');
+  const [method, setMethod] = useState('transferencia');
+  const [notes, setNotes] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const reload = useCallback(async () => {
     try {
-      if (tab === 'savings') {
-        const response = await api.reportComercioSavings();
-        setData((current) => ({ ...current, savings: response }));
-      } else if (tab === 'mysubs') {
-        const response = await api.reportComercioSubscriptions();
-        setData((current) => ({ ...current, mysubs: response }));
-      } else if (tab === 'history') {
-        const response = await api.reportComercioHistory();
-        setData((current) => ({ ...current, history: response }));
-      } else {
-        const response = await api.reportComercioNutrition(
-          requestedMonth ? { month: requestedMonth } : {},
-        );
-        setData((current) => ({ ...current, nutrition: response }));
-        setMonth(response.period.month);
-      }
+      const [statsResponse, walletResponse] = await Promise.all([
+        api.driverStats(),
+        api.driverWithdrawals(),
+      ]);
 
-      setErrors((current) => ({ ...current, [tab]: null }));
+      setStats(statsResponse.stats);
+      setBalance(walletResponse.balance);
+      setMinWithdrawal(walletResponse.min_withdrawal);
+      setWithdrawals(walletResponse.withdrawals);
+      setError(null);
     } catch (caught) {
-      setErrors((current) => ({ ...current, [tab]: errorMessage(caught) }));
+      setError(errorMessage(caught, 'No se pudo cargar tu reporte.'));
     } finally {
-      setLoading((current) => ({ ...current, [tab]: false }));
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void fetchTab('savings');
-  }, [fetchTab]);
+    let active = true;
 
-  function selectTab(tab: TabKey) {
-    setActiveTab(tab);
+    Promise.all([api.driverStats(), api.driverWithdrawals()])
+      .then(([statsResponse, walletResponse]) => {
+        if (!active) {
+          return;
+        }
 
-    if (data[tab] || loading[tab]) {
-      return;
-    }
+        setStats(statsResponse.stats);
+        setBalance(walletResponse.balance);
+        setMinWithdrawal(walletResponse.min_withdrawal);
+        setWithdrawals(walletResponse.withdrawals);
+        setError(null);
+      })
+      .catch((caught: unknown) => {
+        if (!active) {
+          return;
+        }
 
-    setErrors((current) => ({ ...current, [tab]: null }));
-    setLoading((current) => ({ ...current, [tab]: true }));
-    void fetchTab(tab, tab === 'nutrition' && month ? month : undefined);
-  }
+        setError(errorMessage(caught, 'No se pudo cargar tu reporte.'));
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function handleRefresh() {
     setRefreshing(true);
-    await fetchTab(
-      activeTab,
-      activeTab === 'nutrition' && month ? month : undefined,
-    );
-    setRefreshing(false);
-  }
 
-  function retry() {
-    setErrors((current) => ({ ...current, [activeTab]: null }));
-    setLoading((current) => ({ ...current, [activeTab]: true }));
-    void fetchTab(
-      activeTab,
-      activeTab === 'nutrition' && month ? month : undefined,
-    );
-  }
-
-  function pickMonth(value: string) {
-    setMonthPicker(false);
-    setMonth(value);
-    setErrors((current) => ({ ...current, nutrition: null }));
-    setLoading((current) => ({ ...current, nutrition: true }));
-    void fetchTab('nutrition', value);
-  }
-
-  function pickCurrentMonth() {
-    setMonthPicker(false);
-    setMonth('');
-    setErrors((current) => ({ ...current, nutrition: null }));
-    setLoading((current) => ({ ...current, nutrition: true }));
-    void fetchTab('nutrition');
-  }
-
-  function currentPdfData(): ReportComercioPdfData | null {
-    if (activeTab === 'savings' && data.savings) {
-      return { tab: 'savings', data: data.savings };
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
     }
-
-    if (activeTab === 'mysubs' && data.mysubs) {
-      return { tab: 'mysubs', data: data.mysubs };
-    }
-
-    if (activeTab === 'history' && data.history) {
-      return { tab: 'history', data: data.history };
-    }
-
-    if (activeTab === 'nutrition' && data.nutrition) {
-      return {
-        tab: 'nutrition',
-        data: data.nutrition,
-        month: data.nutrition.period.month,
-      };
-    }
-
-    return null;
   }
 
-  async function handlePdf() {
-    const payload = currentPdfData();
+  async function submitWithdraw() {
+    const parsed = Number.parseFloat(amount.replace(',', '.')) || 0;
 
-    if (!payload || pdfBusy) {
+    if (parsed <= 0) {
+      setFormError('Ingresá un monto válido para retirar.');
       return;
     }
 
-    setPdfBusy(true);
+    if (parsed < minWithdrawal) {
+      setFormError(`El monto mínimo de retiro es ${money(minWithdrawal)}.`);
+      return;
+    }
+
+    if (parsed > balance) {
+      setFormError('El monto supera tu saldo disponible.');
+      return;
+    }
+
+    setBusy(true);
+    setFormError(null);
 
     try {
-      await exportReportComercioPdf(payload, user?.name);
+      const response = await api.driverRequestWithdrawal({
+        amount: parsed,
+        method,
+        notes: notes.trim() === '' ? null : notes.trim(),
+      });
+
+      setBalance(response.balance);
+      setAmount('');
+      setNotes('');
+      await reload();
+      Alert.alert(
+        'Solicitud enviada',
+        response.message ||
+          'El admin va a revisar tu retiro. El monto ya quedó reservado.',
+      );
     } catch (caught) {
-      setErrors((current) => ({
-        ...current,
-        [activeTab]:
-          caught instanceof Error
-            ? caught.message
-            : 'No se pudo generar el PDF del reporte.',
-      }));
+      setFormError(
+        errorMessage(caught, 'No se pudo solicitar el retiro. Intentá de nuevo.'),
+      );
     } finally {
-      setPdfBusy(false);
+      setBusy(false);
     }
   }
 
-  function renderSavings(report: ReportComercioSavingsResponse) {
-    const summary = report.summary;
-
+  if (loading) {
     return (
-      <>
-        <View style={styles.kpiGrid}>
-          <ReportKpiCard
-            label="Total ahorrado"
-            value={money(summary.total_saved)}
-            hint="Vs. comprar por separado"
-            accent={GREEN}
-            valueColor={GREEN}
-          />
-          <ReportKpiCard
-            label="Por suscripciones"
-            value={money(summary.saved_with_subscriptions)}
-            accent={ACCENT}
-          />
-          <ReportKpiCard
-            label="Por promociones"
-            value={money(summary.saved_with_promotions)}
-            accent="#f59e0b"
-          />
-          <ReportKpiCard
-            label="Ciclos suscriptos pagados"
-            value={String(summary.paid_subscription_cycles)}
-            accent="#3b82f6"
-          />
-          <ReportKpiCard
-            label="Pedidos con descuento"
-            value={String(summary.orders_with_discount)}
-            accent="#6366f1"
-          />
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={ACCENT} size="large" />
+          <Text style={styles.loadingText}>Cargando tu reporte…</Text>
         </View>
-
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>
-            Comprar con suscripción y promociones te dejó{' '}
-            <Text style={styles.bannerStrong}>{money(summary.total_saved)}</Text> frente a los
-            precios Express del mismo carrito.
-          </Text>
-        </View>
-
-        <SectionTitle title="Suscripciones que generan ahorro" />
-
-        {report.by_subscription.length === 0 ? (
-          <EmptyStateDashedContainer text="Todavía no tenés suscripciones generando ahorro." />
-        ) : (
-          report.by_subscription.map((subscription) => (
-            <View key={subscription.subscription_id} style={styles.rowCard}>
-              <Text style={styles.rowStrong}>{subscription.plan_title ?? 'Plan'}</Text>
-              <Text style={styles.rowMuted}>{subscription.provider ?? '—'}</Text>
-            </View>
-          ))
-        )}
-      </>
+      </SafeAreaView>
     );
   }
-
-  function renderSubscriptions(report: ReportComercioSubscriptionsResponse) {
-    const summary = report.summary;
-
-    return (
-      <>
-        <View style={styles.kpiGrid}>
-          <ReportKpiCard
-            label="Activas"
-            value={String(summary.active_count)}
-            accent={GREEN}
-            valueColor={GREEN}
-          />
-          <ReportKpiCard
-            label="Pausadas"
-            value={String(summary.paused_count)}
-            accent="#f59e0b"
-            valueColor={AMBER}
-          />
-          <ReportKpiCard
-            label="Compromiso mensual"
-            value={money(summary.monthly_commitment)}
-            accent={ACCENT}
-            valueColor={ACCENT}
-          />
-        </View>
-
-        {report.subscriptions.length === 0 ? (
-          <EmptyStateDashedContainer text="No tenés suscripciones activas o pausadas. Armá un plan desde Comercios." />
-        ) : (
-          report.subscriptions.map((subscription) => (
-            <SubscriptionCard
-              key={subscription.subscription_id}
-              subscription={subscription}
-            />
-          ))
-        )}
-      </>
-    );
-  }
-
-  function renderHistory(report: ReportComercioHistoryResponse) {
-    const summary = report.summary;
-
-    return (
-      <>
-        <View style={styles.kpiGrid}>
-          <ReportKpiCard
-            label="Pedidos realizados"
-            value={String(summary.total_orders)}
-            accent={ACCENT}
-          />
-          <ReportKpiCard
-            label="Total gastado"
-            value={money(summary.total_spent)}
-            accent="#f59e0b"
-          />
-          <ReportKpiCard
-            label="Tu plato favorito"
-            value={summary.favorite_dish ?? '—'}
-            hint="El que más pediste"
-            accent="#10b981"
-          />
-          <ReportKpiCard
-            label="Tu comercio favorito"
-            value={summary.favorite_provider ?? '—'}
-            accent="#6366f1"
-          />
-        </View>
-
-        <SectionTitle title="Platos más pedidos" hint="(reordenables en 1 clic)" />
-
-        {report.top_products.length === 0 ? (
-          <EmptyStateDashedContainer text="Todavía no tenés pedidos en tu historial." />
-        ) : (
-          report.top_products.map((product) => (
-            <PlatoHabitoCard
-              key={product.product_id}
-              title={product.name ?? '—'}
-              lines={[
-                `${product.times_ordered} ${product.times_ordered === 1 ? 'vez' : 'veces'} · ${product.total_quantity} unidades · ${money(product.total_spent)}`,
-              ]}
-              footer={`Última vez: ${shortDate(product.last_ordered_at)}`}
-              actionLabel={product.can_reorder_1_click && product.provider_id ? 'Reordenar' : undefined}
-              actionAccessibilityLabel={`Reordenar ${product.name ?? 'producto'}`}
-              onAction={
-                product.can_reorder_1_click && product.provider_id
-                  ? () =>
-                      openShop(product.provider_id, {
-                        product_id: product.product_id,
-                        quantity: 1,
-                      })
-                  : undefined
-              }
-            />
-          ))
-        )}
-
-        <SectionTitle title="Comercios más frecuentes" />
-
-        {report.top_providers.length === 0 ? (
-          <EmptyStateDashedContainer text="Todavía no tenés comercios frecuentes." />
-        ) : (
-          report.top_providers.map((provider) => (
-            <PlatoHabitoCard
-              key={provider.provider_id}
-              title={provider.business_name ?? '—'}
-              lines={[
-                `${provider.orders_count} ${provider.orders_count === 1 ? 'pedido' : 'pedidos'} · ${money(provider.total_spent)}`,
-              ]}
-              footer={`Último pedido: ${shortDate(provider.last_order_at)}`}
-              actionLabel={provider.can_reorder_1_click ? 'Pedir de nuevo' : undefined}
-              actionAccessibilityLabel={`Reordenar en ${provider.business_name ?? 'comercio'}`}
-              onAction={
-                provider.can_reorder_1_click
-                  ? () => openShop(provider.provider_id)
-                  : undefined
-              }
-            />
-          ))
-        )}
-      </>
-    );
-  }
-
-  function renderNutrition(report: ReportComercioNutritionResponse) {
-    const summary = report.summary;
-
-    return (
-      <>
-        <View style={styles.monthCard}>
-          <Text style={styles.filterLabel}>Mes</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Elegir mes del resumen nutricional"
-            onPress={() => setMonthPicker(true)}
-            style={styles.monthInput}
-          >
-            <Text style={styles.monthText}>{monthLabel(month || report.period.month)}</Text>
-            <Text style={styles.monthChevron}>▾</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.kpiGrid}>
-          <ReportKpiCard
-            label="Pedidos entregados"
-            value={String(summary.total_delivered_orders)}
-            accent={ACCENT}
-          />
-          <ReportKpiCard
-            label="Comidas recibidas"
-            value={String(summary.total_meals)}
-            accent="#f59e0b"
-            valueColor={ACCENT}
-          />
-          <ReportKpiCard
-            label="Gastado en el mes"
-            value={money(summary.total_spent)}
-            accent="#6366f1"
-          />
-          <ReportKpiCard
-            label="Categoría principal"
-            value={summary.main_category ?? '—'}
-            accent={GREEN}
-            valueColor={GREEN}
-          />
-        </View>
-
-        <SectionTitle title="Qué comiste este mes" />
-
-        {report.categories.length === 0 ? (
-          <EmptyStateDashedContainer text="Todavía no recibiste comidas en el mes seleccionado." />
-        ) : (
-          report.categories.map((category) => (
-            <View
-              key={`${category.category_id ?? 'none'}`}
-              style={styles.rowCard}
-            >
-              <View style={styles.categoryHeader}>
-                <Text style={styles.rowStrong}>{category.category_name ?? '—'}</Text>
-                <Text style={styles.rowMuted}>{money(category.total_spent)}</Text>
-              </View>
-              <Text style={styles.rowMuted}>
-                {category.meals_count} comidas · {category.total_quantity} unidades
-              </Text>
-              <Text style={styles.rowSubtle}>
-                {category.top_products.length
-                  ? category.top_products
-                      .map((product) => `${product.name} x${product.quantity}`)
-                      .join(' · ')
-                  : '—'}
-              </Text>
-            </View>
-          ))
-        )}
-      </>
-    );
-  }
-
-  function renderActiveTab() {
-    const tab = activeTab;
-    const tabData = data[tab];
-    const isLoading = loading[tab];
-
-    if (isLoading && !tabData) {
-      return (
-        <View style={styles.stateBox}>
-          <ActivityIndicator color={colors.brand} />
-          <Text style={styles.stateText}>Cargando reporte…</Text>
-        </View>
-      );
-    }
-
-    if (!tabData) {
-      return (
-        <View style={styles.stateBox}>
-          <Text style={styles.stateText}>
-            {errors[tab] ?? 'No se pudo cargar el reporte.'}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={retry}
-            style={styles.retryButton}
-          >
-            <Text style={styles.retryText}>Reintentar</Text>
-          </Pressable>
-        </View>
-      );
-    }
-
-    if (tab === 'savings') {
-      return renderSavings(tabData as ReportComercioSavingsResponse);
-    }
-
-    if (tab === 'mysubs') {
-      return renderSubscriptions(tabData as ReportComercioSubscriptionsResponse);
-    }
-
-    if (tab === 'history') {
-      return renderHistory(tabData as ReportComercioHistoryResponse);
-    }
-
-    return renderNutrition(tabData as ReportComercioNutritionResponse);
-  }
-
-  if (loading.savings && !data.savings) {
-    return <LoadingScreen message="Cargando reportes del repartidor…" />;
-  }
-
-  const pdfData = currentPdfData();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
@@ -712,34 +221,9 @@ export default function ReportsRepartidorScreen() {
       <View style={styles.titleWrap}>
         <Text style={styles.title}>Reportes Repartidor</Text>
         <Text style={styles.subtitle}>
-          Tu ahorro, tus suscripciones y tus hábitos de compra
+          Tus ganancias, billetera y retiros como repartidor
         </Text>
       </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabsTrack}
-        style={styles.tabsScroll}
-      >
-        {TABS.map((tab) => {
-          const active = tab.key === activeTab;
-
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => selectTab(tab.key)}
-              style={[styles.tab, active && styles.tabActive]}
-            >
-              <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                {tab.icon} {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -747,45 +231,146 @@ export default function ReportsRepartidorScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onRefresh={() => void handleRefresh()}
             tintColor={colors.brand}
             colors={[colors.brand]}
           />
         }
         style={styles.scroll}
       >
-        <ErrorBanner message={errors[activeTab]} />
-        {renderActiveTab()}
-      </ScrollView>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <View style={styles.pdfBar}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Exportar reporte a PDF"
-          disabled={!pdfData || pdfBusy}
-          onPress={handlePdf}
-          style={[styles.pdfButton, (!pdfData || pdfBusy) && styles.buttonDisabled]}
-        >
-          {pdfBusy ? (
-            <ActivityIndicator color={colors.surface} size="small" />
-          ) : (
-            <Text style={styles.pdfIcon}>🖨️</Text>
-          )}
-          <Text style={styles.pdfText}>
-            {pdfBusy ? 'Generando…' : 'PDF / Imprimir'}
+        <View style={styles.walletCard}>
+          <Text style={styles.walletLabel}>Saldo disponible</Text>
+          <Text style={styles.walletValue}>{money(balance)}</Text>
+          <Text style={styles.walletHint}>
+            Retiro mínimo {money(minWithdrawal)} · El 100% del envío es para
+            vos.
           </Text>
-        </Pressable>
-      </View>
+        </View>
 
-      <MonthPickerModal
-        key={monthPicker ? 'open' : 'closed'}
-        visible={monthPicker}
-        title="Mes del resumen"
-        initial={month || data.nutrition?.period.month || ''}
-        onPick={pickMonth}
-        onClear={pickCurrentMonth}
-        onClose={() => setMonthPicker(false)}
-      />
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Ganado hoy</Text>
+            <Text style={styles.statValue}>{money(stats?.earnings_today ?? 0)}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Entregas hoy</Text>
+            <Text style={styles.statValue}>{stats?.delivered_today ?? 0}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Completadas</Text>
+            <Text style={styles.statValue}>{stats?.completed ?? 0}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Aceptación</Text>
+            <Text style={styles.statValue}>
+              {stats?.acceptance !== null && stats?.acceptance !== undefined
+                ? `${Math.round(stats.acceptance)}%`
+                : '—'}
+            </Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Calificación</Text>
+            <Text style={styles.statValue}>
+              {stats?.rating !== null && stats?.rating !== undefined
+                ? `${stats.rating.toFixed(1)} (${stats.rating_count})`
+                : '—'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.withdrawCard}>
+          <Text style={styles.cardTitle}>Solicitar retiro</Text>
+          <Text style={styles.cardSubtitle}>
+            El monto queda reservado hasta que el admin confirme el pago.
+          </Text>
+          <TextInput
+            keyboardType="decimal-pad"
+            onChangeText={setAmount}
+            placeholder={`Mínimo ${money(minWithdrawal)}`}
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+            value={amount}
+          />
+          <View style={styles.methods}>
+            {WITHDRAW_METHODS.map((option) => {
+              const selected = option.value === method;
+
+              return (
+                <Pressable
+                  key={option.value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  disabled={busy}
+                  onPress={() => setMethod(option.value)}
+                  style={[styles.method, selected && styles.methodActive]}
+                >
+                  <Text
+                    style={[
+                      styles.methodText,
+                      selected && styles.methodTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <TextInput
+            maxLength={500}
+            multiline
+            numberOfLines={2}
+            onChangeText={setNotes}
+            placeholder="Notas para el pago (CBU, alias, referencia) — opcional"
+            placeholderTextColor="#94a3b8"
+            style={styles.notes}
+            value={notes}
+          />
+          {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Solicitar retiro de saldo"
+            disabled={busy || balance <= 0 || balance < minWithdrawal}
+            onPress={() => void submitWithdraw()}
+            style={({ pressed }) => [
+              styles.submit,
+              (busy || balance <= 0 || balance < minWithdrawal) &&
+                styles.submitDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.submitText}>
+              {busy ? 'Enviando…' : 'Solicitar retiro'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.historyCard}>
+          <Text style={styles.cardTitle}>Historial de retiros</Text>
+          {withdrawals.length === 0 ? (
+            <Text style={styles.emptyText}>
+              Todavía no solicitaste ningún retiro.
+            </Text>
+          ) : (
+            withdrawals.map((item) => (
+              <View key={item.id} style={styles.historyRow}>
+                <View style={styles.historyInfo}>
+                  <Text style={styles.historyAmount}>{money(item.amount)}</Text>
+                  <Text style={styles.historyDetail}>
+                    {withdrawalStatusLabel(item.status)}
+                    {item.method ? ` · ${item.method}` : ''}
+                    {formatDate(item.created_at)
+                      ? ` · ${formatDate(item.created_at)}`
+                      : ''}
+                  </Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -794,6 +379,17 @@ const styles = StyleSheet.create({
   safe: {
     backgroundColor: colors.background,
     flex: 1,
+  },
+  loadingWrap: {
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.sm,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '600',
   },
   topBar: {
     paddingHorizontal: spacing.lg,
@@ -808,8 +404,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   titleWrap: {
-    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.xs,
   },
   title: {
@@ -818,283 +414,197 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   subtitle: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 3,
-  },
-  tabsScroll: {
-    flexGrow: 0,
-    marginBottom: spacing.md,
-  },
-  tabsTrack: {
-    gap: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-  },
-  tab: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  tabActive: {
-    backgroundColor: ACCENT,
-    borderColor: ACCENT,
-  },
-  tabText: {
-    color: colors.muted,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: colors.surface,
-    fontWeight: '800',
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 2,
   },
   scroll: {
     flex: 1,
   },
   content: {
-    paddingBottom: spacing.lg,
+    gap: spacing.md,
+    paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xs,
   },
-  kpiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-    rowGap: spacing.md,
-  },
-  banner: {
-    backgroundColor: '#ecfdf5',
-    borderColor: '#a7f3d0',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  bannerText: {
-    color: '#065f46',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  bannerStrong: {
-    fontWeight: '800',
-  },
-  sectionTitleRow: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    color: NAVY,
-    fontSize: 14,
+  error: {
+    color: '#dc2626',
+    fontSize: 12.5,
     fontWeight: '700',
   },
-  sectionHint: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  rowCard: {
-    backgroundColor: colors.surface,
-    borderColor: '#e5e7eb',
-    borderRadius: radius.md,
+  walletCard: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+    borderRadius: radius.lg,
     borderWidth: 1,
-    marginBottom: spacing.md,
+    gap: 2,
     padding: spacing.lg,
   },
-  rowStrong: {
-    color: NAVY,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  rowMuted: {
-    color: colors.muted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  rowSubtle: {
-    color: '#94a3b8',
-    fontSize: 11,
-    marginTop: 4,
-  },
-  subCard: {
-    backgroundColor: colors.surface,
-    borderColor: '#e5e7eb',
-    borderLeftWidth: 3,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-    padding: spacing.lg,
-  },
-  subHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    justifyContent: 'space-between',
-  },
-  subTitleWrap: {
-    flex: 1,
-    minWidth: 0,
-  },
-  subTitle: {
-    color: NAVY,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  subProvider: {
-    color: colors.muted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  pill: {
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  pillText: {
-    fontSize: 10,
+  walletLabel: {
+    color: '#b45309',
+    fontSize: 10.5,
     fontWeight: '800',
-  },
-  subAmountRow: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    gap: 6,
-    marginTop: spacing.sm,
-  },
-  subAmount: {
-    color: NAVY,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  subFrequency: {
-    color: colors.muted,
-    fontSize: 11,
-  },
-  subGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: spacing.sm,
-    rowGap: spacing.sm,
-  },
-  subField: {
-    width: '50%',
-  },
-  fieldLabel: {
-    color: '#94a3b8',
-    fontSize: 11,
-  },
-  fieldValue: {
-    color: '#374151',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 1,
-  },
-  subProducts: {
-    color: '#475569',
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: spacing.sm,
-  },
-  categoryHeader: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  monthCard: {
-    backgroundColor: colors.surface,
-    borderColor: '#e5e7eb',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-  },
-  filterLabel: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  monthInput: {
-    alignItems: 'center',
-    borderColor: '#d1d5db',
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+  walletValue: {
+    color: ACCENT,
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.6,
   },
-  monthText: {
-    color: colors.text,
-    fontSize: 13,
+  walletHint: {
+    color: '#64748b',
+    fontSize: 11.5,
     fontWeight: '600',
   },
-  monthChevron: {
-    color: colors.muted,
-    fontSize: 12,
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
-  stateBox: {
-    alignItems: 'center',
+  statCard: {
     backgroundColor: colors.surface,
-    borderColor: '#e5e7eb',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexBasis: '48%',
+    flexGrow: 1,
+    gap: 2,
+    padding: spacing.md,
+  },
+  statLabel: {
+    color: '#94a3b8',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+  },
+  statValue: {
+    color: NAVY,
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  withdrawCard: {
+    backgroundColor: colors.surface,
+    borderColor: '#e2e8f0',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  cardTitle: {
+    color: NAVY,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  cardSubtitle: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#cbd5e1',
     borderRadius: radius.md,
     borderWidth: 1,
-    padding: spacing.xl,
-  },
-  stateText: {
-    color: colors.muted,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: NAVY,
-    borderRadius: 6,
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  retryText: {
-    color: colors.surface,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  pdfBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  pdfButton: {
-    alignItems: 'center',
-    backgroundColor: ACCENT,
-    borderRadius: radius.sm,
+  methods: {
     flexDirection: 'row',
     gap: spacing.sm,
-    justifyContent: 'center',
-    minHeight: 46,
   },
-  pdfIcon: {
-    color: colors.surface,
-    fontSize: 15,
+  method: {
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 9,
   },
-  pdfText: {
-    color: colors.surface,
-    fontSize: 13,
+  methodActive: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+  },
+  methodText: {
+    color: '#64748b',
+    fontSize: 12,
     fontWeight: '700',
   },
-  buttonDisabled: {
-    opacity: 0.55,
+  methodTextActive: {
+    color: ACCENT,
+  },
+  notes: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#cbd5e1',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 13,
+    minHeight: 64,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    textAlignVertical: 'top',
+  },
+  formError: {
+    color: '#dc2626',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  submit: {
+    alignItems: 'center',
+    backgroundColor: ACCENT,
+    borderRadius: radius.pill,
+    paddingVertical: 12,
+  },
+  submitDisabled: {
+    backgroundColor: '#e2e8f0',
+  },
+  submitText: {
+    color: colors.surface,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  historyCard: {
+    backgroundColor: colors.surface,
+    borderColor: '#e2e8f0',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.xs,
+    padding: spacing.md,
+  },
+  historyRow: {
+    borderTopColor: '#f1f5f9',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    paddingVertical: spacing.sm,
+  },
+  historyInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  historyAmount: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  historyDetail: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptyText: {
+    color: '#94a3b8',
+    fontSize: 12.5,
+    fontWeight: '600',
   },
 });

@@ -8,12 +8,16 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Address;
+use App\Models\DriverWallet;
+use App\Models\DriverWithdrawalRequest;
 use App\Models\Provider;
 use App\Models\ProviderImage;
 use App\Models\ProviderService;
 use App\Models\ServiceType;
 use App\Models\Page;
 use App\Models\UserStatus;
+use App\Services\DriverWalletService;
+use Illuminate\Validation\ValidationException;
 
 class UsuarioController extends Controller
 {
@@ -88,7 +92,7 @@ class UsuarioController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:4|confirmed',
             'user_status_id' => 'nullable|integer|exists:user_statuses,id',
             'type_user_id' => 'nullable|integer|exists:type_users,id',
         ]);
@@ -140,7 +144,7 @@ class UsuarioController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:4',
             'user_status_id' => 'nullable|integer|exists:user_statuses,id',
             'type_user_id' => 'nullable|integer|exists:type_users,id',
             'email_verified' => 'nullable|boolean',
@@ -185,6 +189,12 @@ class UsuarioController extends Controller
             'hours' => 'nullable|array',
             'category_id' => 'nullable|integer|exists:groups,id',
             'is_active' => 'nullable|boolean',
+            'delivery_fee_mode' => 'nullable|string|in:global,flat,distance',
+            'delivery_fee_flat' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_base' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_per_km' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_min' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_max' => 'nullable|numeric|min:0|max:999999',
         ]);
 
         $data = [
@@ -204,8 +214,43 @@ class UsuarioController extends Controller
         $provider = $user->provider ?: $this->resolveAccountProvider($user);
         if ($provider) {
             $provider->update($data);
+
+            // Paridad con el panel del comercio: el admin también puede
+            // configurar la tarifa de envío, solo si viene en el request.
+            if ($request->hasAny([
+                'delivery_fee_mode',
+                'delivery_fee_flat',
+                'delivery_fee_base',
+                'delivery_fee_per_km',
+                'delivery_fee_min',
+                'delivery_fee_max',
+            ])) {
+                $provider->update([
+                    'delivery_fee_mode' => $request->input('delivery_fee_mode', $provider->delivery_fee_mode ?? 'global'),
+                    'delivery_fee_flat' => $request->has('delivery_fee_flat') ? (float) $request->input('delivery_fee_flat') : (float) ($provider->delivery_fee_flat ?? 0),
+                    'delivery_fee_base' => $request->has('delivery_fee_base') ? (float) $request->input('delivery_fee_base') : (float) ($provider->delivery_fee_base ?? 0),
+                    'delivery_fee_per_km' => $request->has('delivery_fee_per_km') ? (float) $request->input('delivery_fee_per_km') : (float) ($provider->delivery_fee_per_km ?? 0),
+                    'delivery_fee_min' => $request->has('delivery_fee_min') ? (float) $request->input('delivery_fee_min') : (float) ($provider->delivery_fee_min ?? 0),
+                    'delivery_fee_max' => $request->has('delivery_fee_max') ? (float) $request->input('delivery_fee_max') : (float) ($provider->delivery_fee_max ?? 0),
+                ]);
+            }
         } else {
             $data['user_id'] = $user->id;
+            if ($request->hasAny([
+                'delivery_fee_mode',
+                'delivery_fee_flat',
+                'delivery_fee_base',
+                'delivery_fee_per_km',
+                'delivery_fee_min',
+                'delivery_fee_max',
+            ])) {
+                $data['delivery_fee_mode'] = $request->input('delivery_fee_mode', 'global');
+                $data['delivery_fee_flat'] = (float) $request->input('delivery_fee_flat', 0);
+                $data['delivery_fee_base'] = (float) $request->input('delivery_fee_base', 0);
+                $data['delivery_fee_per_km'] = (float) $request->input('delivery_fee_per_km', 0);
+                $data['delivery_fee_min'] = (float) $request->input('delivery_fee_min', 0);
+                $data['delivery_fee_max'] = (float) $request->input('delivery_fee_max', 0);
+            }
             $provider = Provider::create($data);
         }
 
@@ -845,5 +890,137 @@ class UsuarioController extends Controller
             'message' => $message,
             'selected' => $provider->serviceTypes()->pluck('service_types.id')->all(),
         ]);
+    }
+
+    /**
+     * Solicitudes de retiro pendientes de todos los repartidores.
+     * GET /admin/withdrawals
+     */
+    public function pendingWithdrawals()
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        if (! Auth::user()->hasPageUrl('usuarios')) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        $requests = DriverWithdrawalRequest::with('user:id,name,email')
+            ->where('status', DriverWithdrawalRequest::STATUS_PENDING)
+            ->latest()
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $withdrawal) => $this->withdrawalPayload($withdrawal));
+
+        return response()->json([
+            'success' => true,
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * Historial de retiros de un usuario + saldo actual.
+     * GET /admin/users/{user}/withdrawals
+     */
+    public function withdrawals(User $user)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        if (! Auth::user()->hasPageUrl('usuarios')) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+
+        $requests = DriverWithdrawalRequest::with('user:id,name,email')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(100)
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $withdrawal) => $this->withdrawalPayload($withdrawal));
+
+        return response()->json([
+            'success' => true,
+            'balance' => (float) ($wallet->balance ?? 0),
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * Aprueba un retiro. El saldo ya fue descontado al solicitarlo.
+     * POST /admin/withdrawals/{withdrawal}/approve
+     */
+    public function approveWithdrawal(DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        if (! Auth::user()->hasPageUrl('usuarios')) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        try {
+            $approved = $walletService->approve($withdrawal, Auth::user());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo aprobar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro aprobado correctamente.',
+            'withdrawal' => $this->withdrawalPayload($approved),
+        ]);
+    }
+
+    /**
+     * Rechaza un retiro y devuelve el monto a la billetera del repartidor.
+     * POST /admin/withdrawals/{withdrawal}/reject
+     */
+    public function rejectWithdrawal(Request $request, DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService)
+    {
+        if ($this->requireAuth()) return $this->requireAuth();
+
+        if (! Auth::user()->hasPageUrl('usuarios')) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $rejected = $walletService->reject($withdrawal, Auth::user(), $data['reason'] ?? null);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo rechazar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro rechazado. El monto volvió a la billetera del repartidor.',
+            'withdrawal' => $this->withdrawalPayload($rejected),
+        ]);
+    }
+
+    private function withdrawalPayload(DriverWithdrawalRequest $withdrawal): array
+    {
+        return [
+            'id' => $withdrawal->id,
+            'user_id' => $withdrawal->user_id,
+            'user' => $withdrawal->relationLoaded('user') && $withdrawal->user ? [
+                'id' => $withdrawal->user->id,
+                'name' => $withdrawal->user->name,
+                'email' => $withdrawal->user->email,
+            ] : null,
+            'amount' => (float) $withdrawal->amount,
+            'status' => $withdrawal->status,
+            'method' => $withdrawal->method,
+            'reference' => $withdrawal->reference,
+            'notes' => $withdrawal->notes,
+            'created_at' => $withdrawal->created_at?->toIso8601String(),
+            'reviewed_at' => $withdrawal->reviewed_at?->toIso8601String(),
+        ];
     }
 }

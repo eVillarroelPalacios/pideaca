@@ -28,6 +28,7 @@ import {
   whatsappUrl,
 } from '@/lib/orderTracking';
 import { colors, radius, spacing } from '@/theme';
+import { DeliveryTrackingMap, useDriverTracking } from './DeliveryTrackingMap';
 import type { MarketMyOrder } from '@/types/api';
 
 function StatusBadge({ status }: { status: string }) {
@@ -167,6 +168,8 @@ export function OrderTrackingCard({ order }: { order: MarketMyOrder }) {
   const current = steps.findIndex((step) => step.key === order.status);
   const shopPhone = order.provider?.user?.phone ?? null;
   const driver = order.driver;
+  const tracking = useDriverTracking(order);
+  const liveEta = tracking.available && tracking.etaMin !== null ? tracking.etaMin : null;
 
   function contactShop() {
     if (!shopPhone) {
@@ -217,13 +220,15 @@ export function OrderTrackingCard({ order }: { order: MarketMyOrder }) {
         <View style={styles.liveRow}>
           <Text style={styles.liveTitle}>{liveTitle(order)}</Text>
 
-          {eta ? (
+          {eta || liveEta !== null ? (
             <View style={styles.etaWrap}>
               <Text style={styles.eyebrow}>
                 {takeaway ? 'TIEMPO ESTIMADO DE PREPARACIÓN' : 'TIEMPO ESTIMADO DE ENTREGA'}
               </Text>
               <View style={styles.etaPill}>
-                <Text style={styles.etaPillText}>🕒 {eta}</Text>
+                <Text style={styles.etaPillText}>
+                  🕒 {liveEta !== null ? `Llega en ${liveEta} min` : eta}
+                </Text>
               </View>
             </View>
           ) : null}
@@ -344,6 +349,7 @@ export function OrderTrackingCard({ order }: { order: MarketMyOrder }) {
       <View style={styles.body}>
         <AddressBlock order={order} />
         <PaymentBlock order={order} />
+        <DeliveryTrackingMap tracking={tracking} orderNumber={order.order_number} />
 
         {order.notes ? (
           <Text style={styles.noteText}>

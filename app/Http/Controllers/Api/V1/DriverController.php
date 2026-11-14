@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\DeliveryOrderController;
 use App\Models\Address;
 use App\Models\DriverWallet;
+use App\Models\DriverWithdrawalRequest;
 use App\Models\Order;
 use App\Models\ProviderDriver;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use App\Services\DriverWalletService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Terminal Central de Repartos (Driver Pro) para la app movil.
@@ -388,6 +391,84 @@ class DriverController extends Controller
                 'balance' => (float) $wallet->balance,
             ],
         ]);
+    }
+
+    /**
+     * GET /api/mobile/v1/driver/wallet/withdrawals
+     *
+     * Saldo disponible + historial de retiros del repartidor.
+     */
+    public function withdrawals(Request $request): JsonResponse
+    {
+        $user = $this->driverOrFail($request);
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+
+        $requests = DriverWithdrawalRequest::where('user_id', $user->id)
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $withdrawal) => $this->withdrawalPayload($withdrawal));
+
+        return response()->json([
+            'success' => true,
+            'balance' => (float) ($wallet->balance ?? 0),
+            'min_withdrawal' => (float) config('fastdelivery.min_withdrawal', 1000),
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * POST /api/mobile/v1/driver/wallet/withdraw
+     *
+     * Solicita un retiro. El saldo queda congelado hasta la aprobacion.
+     */
+    public function requestWithdrawal(Request $request, DriverWalletService $walletService): JsonResponse
+    {
+        $user = $this->driverOrFail($request);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'method' => ['nullable', 'string', 'max:30'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $withdrawal = $walletService->requestWithdrawal(
+                $user,
+                (float) $data['amount'],
+                $data['method'] ?? null,
+                $data['notes'] ?? null
+            );
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo procesar el retiro.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud de retiro enviada. Queda pendiente de aprobación.',
+            'withdrawal' => $this->withdrawalPayload($withdrawal),
+            'balance' => (float) ($wallet->balance ?? 0),
+        ], 201);
+    }
+
+    private function withdrawalPayload(DriverWithdrawalRequest $withdrawal): array
+    {
+        return [
+            'id' => $withdrawal->id,
+            'amount' => (float) $withdrawal->amount,
+            'status' => $withdrawal->status,
+            'method' => $withdrawal->method,
+            'reference' => $withdrawal->reference,
+            'notes' => $withdrawal->notes,
+            'created_at' => $withdrawal->created_at?->toIso8601String(),
+            'reviewed_at' => $withdrawal->reviewed_at?->toIso8601String(),
+        ];
     }
 
     /**

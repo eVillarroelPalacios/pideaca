@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Reporte del repartidor · PideAca</title>
     <style>
         :root {
@@ -21,7 +22,7 @@
 
         body {
             margin: 0;
-            padding: 24px 16px 48px;
+            padding: 0 0 48px;
             background: var(--bg);
             color: var(--ink);
             font-family: 'Inter', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -29,15 +30,25 @@
             print-color-adjust: exact;
         }
 
+        /* Vista abierta: sin tarjeta externa que encierre el reporte. El
+           contenido fluye sobre el fondo gris unificado, como el resto de
+           las secciones principales. */
         .report {
-            width: 95%;
-            max-width: 1200px;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .report-body {
+            width: 100%;
+            max-width: 1320px;
             margin: 0 auto;
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 12px 34px rgba(15, 23, 42, .08);
+            padding: 0 20px;
         }
 
         /* ── Encabezado ── */
@@ -48,6 +59,9 @@
             gap: 16px;
             flex-wrap: wrap;
             padding: 20px 26px;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
             background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
             border-bottom: 3px solid var(--orange);
             color: #fff;
@@ -123,7 +137,7 @@
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
-            padding: 14px 26px;
+            padding: 14px 0;
             border-bottom: 1px solid #e8edf3;
             font-size: 12.5px;
             color: var(--muted);
@@ -136,7 +150,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
             gap: 14px;
-            padding: 22px 26px 8px;
+            padding: 22px 0 8px;
         }
 
         .card {
@@ -172,13 +186,103 @@
 
         .card-sub { margin-top: 8px; font-size: 11.5px; font-weight: 600; color: #94a3b8; }
 
+        /* ── Billetera ── */
+        .wallet {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin: 16px 0 0;
+            padding: 18px 22px;
+            border: 1px solid var(--orange-border);
+            border-radius: 14px;
+            background: linear-gradient(135deg, #fff7ed 0%, #fff 65%);
+        }
+
+        .wallet-label { font-size: 10.5px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: #b45309; }
+
+        .wallet-value { margin-top: 6px; font-size: 30px; font-weight: 800; letter-spacing: -.6px; color: var(--orange); line-height: 1.05; }
+
+        .wallet-sub { margin-top: 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
+        .wallet-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--orange);
+            border-radius: 999px;
+            background: var(--orange);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 11px 22px;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .wallet-btn:hover { background: #b84114; }
+        .wallet-btn:disabled { background: #e5e7eb; border-color: #e5e7eb; color: #94a3b8; cursor: not-allowed; }
+
+        .badge-status { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; }
+        .badge-status.pending { background: #fffbeb; color: #b45309; }
+        .badge-status.approved { background: #ecfdf5; color: #047857; }
+        .badge-status.rejected { background: #fef2f2; color: #b91c1c; }
+
+        .wd-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(7, 26, 48, .55);
+            z-index: 900;
+        }
+
+        .wd-overlay.open { display: flex; }
+
+        .wd-modal {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(7, 26, 48, .35);
+            overflow: hidden;
+        }
+
+        .wd-head { padding: 18px 22px; background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%); border-bottom: 3px solid var(--orange); color: #fff; }
+        .wd-title { margin: 0; font-size: 17px; font-weight: 800; }
+        .wd-sub { margin: 5px 0 0; font-size: 12px; color: rgba(255,255,255,.72); }
+        .wd-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+        .wd-field label { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .wd-field input, .wd-field select, .wd-field textarea {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--ink);
+            background: #fff;
+        }
+        .wd-field textarea { resize: vertical; min-height: 60px; }
+        .wd-msg { min-height: 16px; font-size: 12px; font-weight: 700; color: #dc2626; }
+        .wd-msg.ok { color: #047857; }
+        .wd-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 0 22px 20px; }
+        .wd-cancel { background: #fff; border: 1px solid #cbd5e1; color: #334155; border-radius: 8px; padding: 9px 16px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .wd-send { background: var(--orange); border: 1px solid var(--orange); color: #fff; border-radius: 8px; padding: 9px 18px; font-family: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+        .wd-send:hover { background: #b84114; }
+        .wd-send:disabled { background: #e5e7eb; border-color: #e5e7eb; color: #94a3b8; cursor: not-allowed; }
+
         /* ── Historial ── */
         .section-head {
             display: flex;
             align-items: center;
             gap: 11px;
             flex-wrap: wrap;
-            padding: 26px 26px 12px;
+            padding: 26px 0 12px;
         }
 
         .section-dot {
@@ -194,7 +298,7 @@
 
         .section-hint { margin-left: auto; font-size: 12px; font-weight: 500; color: #94a3b8; }
 
-        .table-wrap { padding: 0 26px 28px; overflow-x: auto; }
+        .table-wrap { padding: 0 0 28px; overflow-x: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
@@ -258,17 +362,9 @@
 
             body { padding: 0; background: #fff; }
 
-            .report {
-                width: 100%;
-                max-width: none;
-                border: 0;
-                border-radius: 0;
-                box-shadow: none;
-            }
+            .report-body { max-width: none; padding: 0; }
 
             .no-print { display: none !important; }
-
-            .report-head { border-radius: 0; }
 
             .cards { break-inside: avoid; }
 
@@ -278,9 +374,9 @@
         }
 
         @media (max-width: 720px) {
-            body { padding: 12px 8px 32px; }
-            .report { width: 100%; }
-            .report-head, .report-meta, .cards, .section-head, .table-wrap { padding-left: 16px; padding-right: 16px; }
+            body { padding: 0 0 32px; }
+            .report-body { padding: 0 12px; }
+            .report-head { padding-left: 16px; padding-right: 16px; }
             .table-wrap { padding-bottom: 20px; }
             .brand-title { font-size: 18px; }
             .section-hint { margin-left: 0; width: 100%; }
@@ -317,12 +413,6 @@
             </div>
 
             <div class="head-actions no-print">
-                <a class="btn" href="{{ route('dashboard', ['section' => 'repartidor']) }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M15 18l-6-6 6-6"></path>
-                    </svg>
-                    Volver al panel
-                </a>
                 <button type="button" class="btn btn-print" onclick="window.print()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M6 9V2h12v7"></path>
@@ -334,6 +424,7 @@
             </div>
         </header>
 
+        <div class="report-body">
         <div class="report-meta">
             <span>Período del reporte: <strong>{{ ucfirst($period) }}</strong></span>
             <span>Generado el <strong>{{ now()->format('d/m/Y H:i') }}</strong></span>
@@ -376,6 +467,92 @@
                 <div class="card-sub">Saldo en billetera: {{ $money($stats['walletBalance']) }}</div>
             </article>
         </section>
+
+        <section class="wallet no-print" aria-label="Billetera del repartidor">
+            <div>
+                <div class="wallet-label">Saldo disponible</div>
+                <div class="wallet-value" id="wd-balance">{{ $money($walletBalance) }}</div>
+                <div class="wallet-sub">
+                    Retiro mínimo {{ $money($minWithdrawal) }} · El saldo se descuenta al solicitar y se paga cuando el admin aprueba.
+                </div>
+            </div>
+            <button type="button" class="wallet-btn" id="wd-open" onclick="fdOpenWithdraw()" @if ($walletBalance < $minWithdrawal) disabled @endif>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v13m0 0-4-4m4 4 4-4"></path>
+                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+                </svg>
+                Retirar saldo
+            </button>
+        </section>
+
+        <div class="section-head no-print">
+            <span class="section-dot"></span>
+            <h2 class="section-title">Retiros de saldo</h2>
+            <span class="section-hint">{{ $withdrawals->count() }} solicitudes recientes</span>
+        </div>
+
+        <div class="table-wrap no-print">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th class="num">Monto</th>
+                        <th>Estado</th>
+                        <th>Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($withdrawals as $withdrawal)
+                        @php
+                            $status = $withdrawal->status;
+                            $statusLabel = $status === 'approved' ? 'Aprobado' : ($status === 'rejected' ? 'Rechazado' : 'Pendiente');
+                        @endphp
+                        <tr>
+                            <td class="date">{{ $withdrawal->created_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                            <td class="num money">{{ $money($withdrawal->amount) }}</td>
+                            <td><span class="badge-status {{ $status }}">{{ $statusLabel }}</span></td>
+                            <td class="muted">{{ $withdrawal->notes ?: '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty">Todavía no solicitaste retiros. Cuando lo hagas, el estado aparece acá.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="wd-overlay no-print" id="wd-overlay" onclick="if (event.target === this) fdCloseWithdraw()">
+            <div class="wd-modal" role="dialog" aria-modal="true" aria-labelledby="wd-title">
+                <div class="wd-head">
+                    <h2 class="wd-title" id="wd-title">Retirar saldo</h2>
+                    <p class="wd-sub">El monto queda reservado hasta que el admin confirme el pago.</p>
+                </div>
+                <div class="wd-body">
+                    <div class="wd-field">
+                        <label for="wd-amount">Monto a retirar</label>
+                        <input type="number" id="wd-amount" min="{{ $minWithdrawal }}" step="0.01" placeholder="{{ $minWithdrawal }}" inputmode="decimal" />
+                    </div>
+                    <div class="wd-field">
+                        <label for="wd-method">Método de pago</label>
+                        <select id="wd-method">
+                            <option value="transferencia">Transferencia</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="wd-field">
+                        <label for="wd-notes">Notas (opcional)</label>
+                        <textarea id="wd-notes" maxlength="500" placeholder="CBU, alias o referencia para el pago"></textarea>
+                    </div>
+                    <span class="wd-msg" id="wd-msg"></span>
+                </div>
+                <div class="wd-foot">
+                    <button type="button" class="wd-cancel" onclick="fdCloseWithdraw()">Cancelar</button>
+                    <button type="button" class="wd-send" id="wd-send" onclick="fdSubmitWithdraw()">Solicitar retiro</button>
+                </div>
+            </div>
+        </div>
 
         <div class="section-head">
             <span class="section-dot"></span>
@@ -420,6 +597,89 @@
                 @endif
             </table>
         </div>
+        </div>
     </main>
+
+    <script>
+        (function () {
+            var MIN = Number({{ (float) $minWithdrawal }}) || 0;
+            var ENDPOINT = '{{ url("/api/v1/delivery/wallet/withdraw") }}';
+
+            function el(id) { return document.getElementById(id); }
+
+            function setMsg(text, ok) {
+                var box = el('wd-msg');
+                if (!box) return;
+                box.textContent = text || '';
+                box.className = 'wd-msg' + (ok ? ' ok' : '');
+            }
+
+            window.fdOpenWithdraw = function () {
+                var overlay = el('wd-overlay');
+                if (!overlay) return;
+                setMsg('', false);
+                var amount = el('wd-amount');
+                if (amount) amount.value = '';
+                overlay.classList.add('open');
+                if (amount) amount.focus();
+            };
+
+            window.fdCloseWithdraw = function () {
+                var overlay = el('wd-overlay');
+                if (overlay) overlay.classList.remove('open');
+                setMsg('', false);
+            };
+
+            window.fdSubmitWithdraw = function () {
+                var amountEl = el('wd-amount');
+                var amount = parseFloat((amountEl && amountEl.value) || '0') || 0;
+
+                if (amount <= 0) {
+                    setMsg('Ingresá un monto válido para retirar.', false);
+                    return;
+                }
+
+                if (amount < MIN) {
+                    setMsg('El monto mínimo de retiro es ' + {{ \Illuminate\Support\Js::from(\App\Support\Money::format($minWithdrawal)) }} + '.', false);
+                    return;
+                }
+
+                var button = el('wd-send');
+                if (button) button.disabled = true;
+                setMsg('', false);
+
+                var meta = document.querySelector('meta[name="csrf-token"]');
+
+                fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': meta ? meta.content : ''
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        method: (el('wd-method') || {}).value || null,
+                        notes: (el('wd-notes') || {}).value || null
+                    })
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        if (data && data.success) {
+                            setMsg(data.message || 'Solicitud enviada.', true);
+                            window.setTimeout(function () { window.location.reload(); }, 900);
+                            return;
+                        }
+
+                        if (button) button.disabled = false;
+                        setMsg((data && data.message) || 'No se pudo procesar el retiro.', false);
+                    })
+                    .catch(function () {
+                        if (button) button.disabled = false;
+                        setMsg('Error de conexión al solicitar el retiro.', false);
+                    });
+            };
+        })();
+    </script>
 </body>
 </html>

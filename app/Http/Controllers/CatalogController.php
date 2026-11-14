@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Provider;
+use App\Services\DeliveryFeeCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CatalogController extends Controller
 {
+    public function __construct(private readonly DeliveryFeeCalculator $deliveryFee) {}
+
     /**
      * Catalogo completo de un comercio: categorias, productos, variantes y opciones
      */
@@ -83,7 +86,7 @@ class CatalogController extends Controller
                 'hours' => $provider->hours,
                 'is_active' => (bool) $provider->is_active,
                 'address' => $pickupAddress,
-                'delivery_fee' => (float) config('fastdelivery.delivery_fee'),
+                'delivery_fee' => $this->deliveryFee->estimateFor($provider),
                 'categories' => [
                     'id' => $provider->category->id ?? null,
                     'name' => $provider->category->description ?? null,

@@ -24,6 +24,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { appendPhoto, pickSingleImage } from '@/lib/media';
+import { money } from '@/lib/money';
 import { PANEL_META, visiblePanels, type PanelKey } from '@/lib/profilePanels';
 import { colors, radius, spacing } from '@/theme';
 import type {
@@ -33,6 +34,7 @@ import type {
   ProfileServiceRow,
   ProfileServiceTypesResponse,
   ProfileSubgroupsResponse,
+  ProviderWithdrawal,
   TrustedDriversResponse,
 } from '@/types/api';
 
@@ -138,6 +140,11 @@ export default function HomeScreen() {
   // Repartidores.
   const [trusted, setTrusted] = useState<TrustedDriversResponse | null>(null);
   const [trustedSearch, setTrustedSearch] = useState('');
+  const [providerWithdrawals, setProviderWithdrawals] = useState<ProviderWithdrawal[]>([]);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState(false);
+  const [busyWithdrawalId, setBusyWithdrawalId] = useState<number | null>(null);
+  const [rejectWithdrawalId, setRejectWithdrawalId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [togglingTrusted, setTogglingTrusted] = useState(false);
 
   // Publicidad.
@@ -281,6 +288,16 @@ export default function HomeScreen() {
         }
       } else {
         setTrusted(null);
+      }
+      // Retiros de repartidores del comercio: mismo alcance que la web.
+      if (data.flags.can_configure_business && !managedId) {
+        try {
+          setProviderWithdrawals((await api.providerWithdrawals()).withdrawals);
+        } catch {
+          setProviderWithdrawals([]);
+        }
+      } else {
+        setProviderWithdrawals([]);
       }
     } else {
       setServices([]);
@@ -625,6 +642,83 @@ export default function HomeScreen() {
     }
   }
 
+  // Retiros de repartidores del comercio.
+  async function loadProviderWithdrawals() {
+    setLoadingWithdrawals(true);
+
+    try {
+      setProviderWithdrawals((await api.providerWithdrawals()).withdrawals);
+    } catch (caught) {
+      Alert.alert(
+        'No pudimos cargar los retiros',
+        caught instanceof ApiError ? caught.message : 'Intentá de nuevo.',
+      );
+    } finally {
+      setLoadingWithdrawals(false);
+    }
+  }
+
+  function confirmApproveWithdrawal(id: number, name: string | null) {
+    Alert.alert(
+      'Aprobar retiro',
+      `¿Confirmás que el pago a ${name ?? 'el repartidor'} ya fue realizado?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Aprobar',
+          onPress: () =>
+            void (async () => {
+              setBusyWithdrawalId(id);
+
+              try {
+                const res = await api.providerApproveWithdrawal(id);
+                setProviderWithdrawals((current) =>
+                  current.filter((item) => item.id !== res.withdrawal.id),
+                );
+                showNotice('Retiro aprobado correctamente.');
+              } catch (caught) {
+                Alert.alert(
+                  'No pudimos aprobar',
+                  caught instanceof ApiError ? caught.message : 'Intentá de nuevo.',
+                );
+              } finally {
+                setBusyWithdrawalId(null);
+              }
+            })(),
+        },
+      ],
+    );
+  }
+
+  async function submitRejectWithdrawal() {
+    if (rejectWithdrawalId === null) {
+      return;
+    }
+
+    const id = rejectWithdrawalId;
+    setBusyWithdrawalId(id);
+
+    try {
+      const res = await api.providerRejectWithdrawal(
+        id,
+        rejectReason.trim() === '' ? null : rejectReason.trim(),
+      );
+      setProviderWithdrawals((current) =>
+        current.filter((item) => item.id !== res.withdrawal.id),
+      );
+      setRejectWithdrawalId(null);
+      setRejectReason('');
+      showNotice('Retiro rechazado. El monto volvió a la billetera.');
+    } catch (caught) {
+      Alert.alert(
+        'No pudimos rechazar',
+        caught instanceof ApiError ? caught.message : 'Intentá de nuevo.',
+      );
+    } finally {
+      setBusyWithdrawalId(null);
+    }
+  }
+
   function confirmRemoveDriver(id: number, name: string | null) {
     Alert.alert('Quitar repartidor', `¿Quitar a ${name ?? 'este repartidor'} de tu lista?`, [
       { text: 'Cancelar', style: 'cancel' },
@@ -824,10 +918,10 @@ export default function HomeScreen() {
       setAccountUserError('Ingresá el nombre del usuario.');
       return;
     }
-    if (!editingUserId && (accountPassword.length < 8 || accountPassword !== accountPasswordConfirm)) {
+    if (!editingUserId && (accountPassword.length < 4 || accountPassword !== accountPasswordConfirm)) {
       setAccountUserError(
-        accountPassword.length < 8
-          ? 'La contraseña debe tener al menos 8 caracteres.'
+        accountPassword.length < 4
+          ? 'La contraseña debe tener al menos 4 caracteres.'
           : 'Las contraseñas no coinciden.',
       );
       return;
@@ -956,8 +1050,8 @@ export default function HomeScreen() {
   }
 
   async function handleSavePassword() {
-    if (newPassword.length < 8) {
-      setPasswordError('La contraseña debe tener al menos 8 caracteres.');
+    if (newPassword.length < 4) {
+      setPasswordError('La contraseña debe tener al menos 4 caracteres.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -1328,6 +1422,100 @@ export default function HomeScreen() {
               </View>
             ))}
             {candidates.length === 0 ? <Text style={styles.emptyText}>Sin candidatos disponibles.</Text> : null}
+          </View>
+        ) : null}
+
+        {activePanel === 'retiros' && canConfigureBusiness && !managedId ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>💸 Retiros de repartidores</Text>
+            <Text style={styles.cardSub}>
+              Solicitudes pendientes de tus repartidores. El saldo ya quedó reservado al solicitar: aprobá para confirmar el pago o rechazá para devolverlo a la billetera.
+            </Text>
+            <Text style={styles.sectionLabel}>
+              Pendientes: {providerWithdrawals.length}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              disabled={loadingWithdrawals}
+              onPress={() => void loadProviderWithdrawals()}
+              style={styles.actionButton}
+            >
+              <Text style={styles.actionText}>
+                {loadingWithdrawals ? 'Actualizando…' : 'Actualizar'}
+              </Text>
+            </Pressable>
+            {providerWithdrawals.length === 0 ? (
+              <Text style={styles.emptyText}>No hay retiros pendientes de tus repartidores.</Text>
+            ) : null}
+            {providerWithdrawals.map((item) => (
+              <View key={item.id} style={styles.serviceCard}>
+                <Text style={styles.serviceName}>
+                  {money(item.amount)} · {item.user?.name ?? 'Repartidor'}
+                </Text>
+                <Text style={styles.serviceDescription}>
+                  {[item.method ? `Método: ${item.method}` : null, item.user?.email, item.notes].filter(Boolean).join(' · ')}
+                </Text>
+                {rejectWithdrawalId === item.id ? (
+                  <View style={{ gap: spacing.sm }}>
+                    <TextField
+                      label="Motivo (opcional)"
+                      placeholder="Motivo del rechazo…"
+                      value={rejectReason}
+                      onChangeText={setRejectReason}
+                      maxLength={500}
+                      multiline
+                    />
+                    <View style={styles.serviceActions}>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyWithdrawalId === item.id}
+                        onPress={() => void submitRejectWithdrawal()}
+                        style={[styles.actionButton, styles.deleteButton]}
+                      >
+                        <Text style={[styles.actionText, styles.deleteText]}>
+                          {busyWithdrawalId === item.id ? 'Enviando…' : 'Confirmar rechazo'}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyWithdrawalId === item.id}
+                        onPress={() => {
+                          setRejectWithdrawalId(null);
+                          setRejectReason('');
+                        }}
+                        style={styles.actionButton}
+                      >
+                        <Text style={styles.actionText}>Cancelar</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.serviceActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={busyWithdrawalId === item.id}
+                      onPress={() => confirmApproveWithdrawal(item.id, item.user?.name ?? null)}
+                      style={styles.actionButton}
+                    >
+                      <Text style={styles.actionText}>
+                        {busyWithdrawalId === item.id ? 'Procesando…' : 'Aprobar'}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={busyWithdrawalId !== null}
+                      onPress={() => {
+                        setRejectWithdrawalId(item.id);
+                        setRejectReason('');
+                      }}
+                      style={[styles.actionButton, styles.deleteButton]}
+                    >
+                      <Text style={[styles.actionText, styles.deleteText]}>Rechazar</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+            ))}
           </View>
         ) : null}
 

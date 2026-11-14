@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Favorite;
 use App\Models\Module;
 use App\Models\Provider;
+use App\Services\DeliveryFeeCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class ProviderController extends Controller
 {
+    public function __construct(private readonly DeliveryFeeCalculator $deliveryFee) {}
+
     /**
      * Comercios publicados para el cliente (pagina "Comercios").
      *
@@ -103,6 +106,7 @@ class ProviderController extends Controller
                 'whatsapp' => $provider->whatsapp,
                 'hours' => $provider->hours,
                 'banner_image' => $provider->banner_image,
+                'delivery_fee' => $this->deliveryFee->estimateFor($provider),
                 'categories_count' => (int) $provider->categories_count,
                 'products_count' => (int) $provider->products_count,
                 'active_subscription_plans_count' => (int) $provider->active_subscription_plans_count,

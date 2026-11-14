@@ -147,12 +147,12 @@ class AdminUsersController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
             'user_status_id' => ['nullable', 'integer', 'exists:user_statuses,id'],
         ], [
             'name.required' => 'Ingresá el nombre del usuario.',
             'password.required' => 'Ingresá una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_status_id.exists' => 'El estado seleccionado no existe.',
         ]);
@@ -209,13 +209,13 @@ class AdminUsersController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'max:255'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:4', 'confirmed'],
             'user_status_id' => ['sometimes', 'nullable', 'integer', 'exists:user_statuses,id'],
             'type_user_id' => ['sometimes', 'nullable', 'integer', 'exists:type_users,id'],
         ], [
             'name.required' => 'Ingresá el nombre del usuario.',
             'email.email' => 'Ingresá un email válido.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_status_id.exists' => 'El estado seleccionado no existe.',
             'type_user_id.exists' => 'El rol seleccionado no existe.',

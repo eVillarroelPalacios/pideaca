@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Models\DriverWithdrawalRequest;
 use App\Models\Group;
+use App\Models\Order;
 use App\Models\Provider;
+use App\Models\ProviderDriver;
 use App\Models\ProviderImage;
 use App\Models\Region;
 use App\Models\ServiceType;
 use App\Models\User;
+use App\Services\DriverWalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
 {
@@ -55,7 +60,7 @@ class ProfileController extends Controller
 
         $request->validate([
             'current_password' => 'nullable|string',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:4|confirmed',
         ]);
 
         $user = Auth::user();
@@ -96,7 +101,7 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'Solo los prestadores pueden configurar perfil de proveedor.'], 403);
         }
 
-        $request->validate([
+        $data = $request->validate([
             'business_name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:30',
@@ -104,9 +109,38 @@ class ProfileController extends Controller
             'zone' => 'nullable|string|max:255',
             'promo' => 'nullable|string|max:500',
             'hours' => 'nullable|array',
+            // Motor de tarifas de envio configurable por el comercio.
+            'delivery_fee_mode' => 'nullable|string|in:global,flat,distance',
+            'delivery_fee_flat' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_base' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_per_km' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_min' => 'nullable|numeric|min:0|max:999999',
+            'delivery_fee_max' => 'nullable|numeric|min:0|max:999999',
         ]);
 
         $provider = $user->provider;
+
+        $delivery = [];
+
+        if ($request->hasAny([
+            'delivery_fee_mode',
+            'delivery_fee_flat',
+            'delivery_fee_base',
+            'delivery_fee_per_km',
+            'delivery_fee_min',
+            'delivery_fee_max',
+        ])) {
+            // Update parcial: los campos no enviados conservan el valor
+            // guardado en vez de resetearse a 0/global.
+            $delivery = [
+                'delivery_fee_mode' => $data['delivery_fee_mode'] ?? $provider?->delivery_fee_mode ?? 'global',
+                'delivery_fee_flat' => $request->has('delivery_fee_flat') ? (float) ($data['delivery_fee_flat'] ?? 0) : (float) ($provider?->delivery_fee_flat ?? 0),
+                'delivery_fee_base' => $request->has('delivery_fee_base') ? (float) ($data['delivery_fee_base'] ?? 0) : (float) ($provider?->delivery_fee_base ?? 0),
+                'delivery_fee_per_km' => $request->has('delivery_fee_per_km') ? (float) ($data['delivery_fee_per_km'] ?? 0) : (float) ($provider?->delivery_fee_per_km ?? 0),
+                'delivery_fee_min' => $request->has('delivery_fee_min') ? (float) ($data['delivery_fee_min'] ?? 0) : (float) ($provider?->delivery_fee_min ?? 0),
+                'delivery_fee_max' => $request->has('delivery_fee_max') ? (float) ($data['delivery_fee_max'] ?? 0) : (float) ($provider?->delivery_fee_max ?? 0),
+            ];
+        }
 
         if (! $provider) {
             $provider = Provider::create([
@@ -119,6 +153,7 @@ class ProfileController extends Controller
                 'promo' => $request->promo,
                 'hours' => $request->hours,
                 'is_active' => true,
+                ...$delivery,
             ]);
         } else {
             $provider->update([
@@ -129,6 +164,7 @@ class ProfileController extends Controller
                 'zone' => $request->zone,
                 'promo' => $request->promo,
                 'hours' => $request->hours,
+                ...$delivery,
             ]);
         }
 
@@ -139,6 +175,180 @@ class ProfileController extends Controller
             'message' => 'Perfil de proveedor actualizado correctamente.',
             'provider' => $provider,
         ]);
+    }
+
+    /**
+     * Retiros pendientes de los repartidores del comercio.
+     * GET /profile/provider/withdrawals
+     *
+     * El comercio solo ve solicitudes de sus repartidores: los que tienen al
+     * menos un pedido entregado para su comercio o están en su lista de
+     * repartidores de confianza. Solo el titular (o el Admin) gestiona.
+     */
+    public function providerWithdrawals()
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+
+        if (! $user->isAccountPrincipal() && ! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Los retiros los administra el usuario principal de la cuenta.',
+            ], 403);
+        }
+
+        if (! $user->typeUser || $user->typeUser->description !== 'Prestador') {
+            return response()->json(['success' => false, 'message' => 'Solo los comercios pueden gestionar retiros de repartidores.'], 403);
+        }
+
+        $provider = $user->provider;
+
+        if (! $provider) {
+            return response()->json(['success' => false, 'message' => 'Primero debés configurar tu perfil de proveedor.'], 404);
+        }
+
+        $requests = DriverWithdrawalRequest::with('user:id,name,email')
+            ->where('status', DriverWithdrawalRequest::STATUS_PENDING)
+            ->whereIn('user_id', $this->providerWithdrawalDriverIds($provider))
+            ->latest()
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $withdrawal) => $this->providerWithdrawalPayload($withdrawal));
+
+        return response()->json([
+            'success' => true,
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * El comercio confirma que ya pagó el retiro al repartidor.
+     * POST /profile/provider/withdrawals/{withdrawal}/approve
+     */
+    public function approveProviderWithdrawal(DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+        $provider = $this->providerForWithdrawals($user);
+
+        if (! $provider) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        if (! in_array((int) $withdrawal->user_id, $this->providerWithdrawalDriverIds($provider), true)) {
+            return response()->json(['success' => false, 'message' => 'Esa solicitud no es de un repartidor de tu comercio.'], 403);
+        }
+
+        try {
+            $approved = $walletService->approve($withdrawal, $user);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo aprobar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro aprobado correctamente.',
+            'withdrawal' => $this->providerWithdrawalPayload($approved),
+        ]);
+    }
+
+    /**
+     * El comercio rechaza el retiro y el monto vuelve a la billetera.
+     * POST /profile/provider/withdrawals/{withdrawal}/reject
+     */
+    public function rejectProviderWithdrawal(Request $request, DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $user = Auth::user();
+        $provider = $this->providerForWithdrawals($user);
+
+        if (! $provider) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        if (! in_array((int) $withdrawal->user_id, $this->providerWithdrawalDriverIds($provider), true)) {
+            return response()->json(['success' => false, 'message' => 'Esa solicitud no es de un repartidor de tu comercio.'], 403);
+        }
+
+        try {
+            $rejected = $walletService->reject($withdrawal, $user, $data['reason'] ?? null);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo rechazar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro rechazado. El monto volvió a la billetera del repartidor.',
+            'withdrawal' => $this->providerWithdrawalPayload($rejected),
+        ]);
+    }
+
+    private function providerForWithdrawals(User $user): ?Provider
+    {
+        if (! $user->isAccountPrincipal() && ! $user->isAdmin()) {
+            return null;
+        }
+
+        if (! $user->typeUser || $user->typeUser->description !== 'Prestador') {
+            return null;
+        }
+
+        return $user->provider;
+    }
+
+    /**
+     * IDs de los repartidores del comercio: con entregas para él o en su
+     * lista de confianza.
+     */
+    private function providerWithdrawalDriverIds(Provider $provider): array
+    {
+        $delivered = Order::where('provider_id', $provider->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->whereNotNull('driver_id')
+            ->distinct()
+            ->pluck('driver_id');
+
+        $trusted = ProviderDriver::where('provider_id', $provider->id)->pluck('user_id');
+
+        return $delivered->merge($trusted)->filter()->unique()->values()->all();
+    }
+
+    private function providerWithdrawalPayload(DriverWithdrawalRequest $withdrawal): array
+    {
+        return [
+            'id' => $withdrawal->id,
+            'user_id' => $withdrawal->user_id,
+            'user' => $withdrawal->relationLoaded('user') && $withdrawal->user ? [
+                'id' => $withdrawal->user->id,
+                'name' => $withdrawal->user->name,
+                'email' => $withdrawal->user->email,
+            ] : null,
+            'amount' => (float) $withdrawal->amount,
+            'status' => $withdrawal->status,
+            'method' => $withdrawal->method,
+            'reference' => $withdrawal->reference,
+            'notes' => $withdrawal->notes,
+            'created_at' => $withdrawal->created_at?->toIso8601String(),
+            'reviewed_at' => $withdrawal->reviewed_at?->toIso8601String(),
+        ];
     }
 
     public function storeImage(Request $request)

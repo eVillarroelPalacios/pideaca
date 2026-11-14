@@ -87,8 +87,8 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+    if (password.length < 4) {
+      setError('La contraseña debe tener al menos 4 caracteres.');
       return;
     }
 
@@ -185,7 +185,7 @@ export default function RegisterScreen() {
         value={password}
         onChangeText={setPassword}
         error={fieldErrors.password?.[0] ?? null}
-        placeholder="Mínimo 8 caracteres"
+        placeholder="Mínimo 4 caracteres"
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"

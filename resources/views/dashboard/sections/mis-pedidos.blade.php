@@ -77,6 +77,22 @@
                         #dash-mis-pedidos .fd-eta{text-align:left;}
                         #dash-mis-pedidos .fd-step{width:66px;}
                     }
+                    #dash-mis-pedidos .fd-track-grid{display:grid;grid-template-columns:minmax(0,35%) minmax(0,65%);gap:12px;align-items:stretch;}
+                    #dash-mis-pedidos .fd-track-left{display:flex;flex-direction:column;min-width:0;}
+                    #dash-mis-pedidos .fd-track-left .fd-block + .fd-block{margin-top:12px;}
+                    #dash-mis-pedidos .fd-track-map{height:320px;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;background:#f1f5f9;z-index:0;}
+                    #dash-mis-pedidos .fd-track-map .leaflet-container{font:inherit;}
+                    #dash-mis-pedidos .fd-track-empty{height:320px;border-radius:12px;border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;text-align:center;font-size:12.5px;color:#64748b;}
+                    #dash-mis-pedidos .fd-pin{display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 2px 8px rgba(15,23,42,.35);border:3px solid #fff;}
+                    #dash-mis-pedidos .fd-pin-origin{width:38px;height:38px;background:#0c2a4d;color:#fff;font-size:13px;font-weight:800;}
+                    #dash-mis-pedidos .fd-pin-dest{width:38px;height:38px;background:#ea580c;color:#fff;}
+                    #dash-mis-pedidos .fd-pin-driver{width:44px;height:44px;background:#ea580c;color:#fff;font-size:22px;border:3px solid #fff;}
+                    #dash-mis-pedidos .fd-track-driver{transition:transform 4.8s linear;}
+                    #dash-mis-pedidos .fd-track-divicon{background:none;border:none;}
+                    #dash-mis-pedidos .fd-drv-label{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;background:#fff;color:#0f172a;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:9999px;box-shadow:0 4px 14px rgba(15,23,42,.22);border:1px solid #e2e8f0;pointer-events:none;}
+                    @media (max-width:768px){
+                        #dash-mis-pedidos .fd-track-grid{grid-template-columns:minmax(0,100%);}
+                    }
                 </style>
 
                 {{-- Cabecera: seguimiento de pedidos --}}

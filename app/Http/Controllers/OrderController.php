@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use App\Models\Provider;
+use App\Services\DeliveryFeeCalculator;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -22,7 +23,10 @@ use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
-    public function __construct(private readonly InventoryService $inventory) {}
+    public function __construct(
+        private readonly InventoryService $inventory,
+        private readonly DeliveryFeeCalculator $deliveryFee
+    ) {}
 
     /**
      * Pedidos recibidos por un comercio: alimenta la vista "Pedidos" del prestador.
@@ -172,7 +176,7 @@ class OrderController extends Controller
                     // driver alimenta el circuito: el cliente ve quién lo lleva.
                     'driver:id,name,phone',
                     'items.options',
-                    'address:id,street,number,floor_apartment,postal_code,notes',
+                    'address:id,street,number,floor_apartment,postal_code,notes,latitude,longitude',
                     'payments:id,order_id,provider,status,amount,created_at',
                     'ratings',
                 ])
@@ -285,6 +289,103 @@ class OrderController extends Controller
                 'payments:id,order_id,provider,status,amount,created_at',
                 'driver:id,name,phone',
             ]),
+        ]);
+    }
+
+    /**
+     * Ubicacion del repartidor para el seguimiento en vivo del cliente.
+     *
+     * Solo el dueno del pedido, el comercio o el repartidor asignado pueden
+     * consultarla. Como aun no hay GPS real del repartidor, la posicion se
+     * simula interpolando entre el comercio y el domicilio segun el tiempo
+     * transcurrido desde que el pedido salio a reparto (ventana de 20 min).
+     */
+    public function driverLocation(Request $request, Order $order)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $userId = (int) Auth::id();
+        $isClient = (int) $order->user_id === $userId;
+        $isProvider = $order->provider !== null && (int) $order->provider->user_id === $userId;
+        $isDriver = $order->driver_id !== null && (int) $order->driver_id === $userId;
+
+        if (! ($isClient || $isProvider || $isDriver)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenes acceso a este pedido.',
+            ], 403);
+        }
+
+        $order->loadMissing([
+            'driver:id,name,phone',
+            'address:id,street,number,floor_apartment,postal_code,latitude,longitude',
+            'provider.user.primaryAddress',
+        ]);
+
+        $addr = $order->address;
+        $shopAddr = $order->provider?->user?->primaryAddress;
+
+        $origin = ($shopAddr && $shopAddr->latitude !== null && $shopAddr->longitude !== null)
+            ? ['latitude' => (float) $shopAddr->latitude, 'longitude' => (float) $shopAddr->longitude, 'label' => $order->provider->business_name ?? 'Comercio']
+            : null;
+
+        $destination = ($addr && $addr->latitude !== null && $addr->longitude !== null)
+            ? [
+                'latitude' => (float) $addr->latitude,
+                'longitude' => (float) $addr->longitude,
+                'label' => trim(($addr->street ?? '').' '.($addr->number ?? '')),
+            ]
+            : null;
+
+        $driver = $order->driver
+            ? ['id' => (int) $order->driver->id, 'name' => $order->driver->name, 'phone' => $order->driver->phone]
+            : null;
+
+        $trackable = $order->status === Order::STATUS_ON_THE_WAY
+            && $order->delivery_type !== Order::DELIVERY_TYPE_TAKEAWAY
+            && $driver !== null;
+
+        $mapAvailable = $trackable && $origin !== null && $destination !== null;
+
+        $driverLocation = null;
+        $etaMinutos = null;
+        $progress = 0.0;
+
+        if ($trackable) {
+            // Ventana estimada de reparto: 20 minutos desde la ultima
+            // actualizacion del pedido (cuando salio a reparto).
+            $windowMin = 20;
+            $elapsedMin = 0.0;
+            if ($order->updated_at) {
+                $elapsedMin = min($windowMin, max(0.0, now()->diffInSeconds($order->updated_at, true) / 60));
+            }
+            $progress = min(0.95, $elapsedMin / $windowMin);
+            $etaMinutos = (int) max(1, round($windowMin - $elapsedMin));
+
+            if ($origin !== null && $destination !== null) {
+                $driverLocation = [
+                    'latitude' => round($origin['latitude'] + ($destination['latitude'] - $origin['latitude']) * $progress, 6),
+                    'longitude' => round($origin['longitude'] + ($destination['longitude'] - $origin['longitude']) * $progress, 6),
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'order_id' => (int) $order->id,
+            'status' => $order->status,
+            'delivery_type' => $order->delivery_type,
+            'driver' => $driver,
+            'origin' => $origin,
+            'destination' => $destination,
+            'driver_location' => $driverLocation,
+            'progress' => round($progress, 4),
+            'eta_minutos' => $etaMinutos,
+            'simulated' => true,
+            'map_available' => $mapAvailable,
+            'updated_at' => $order->updated_at,
         ]);
     }
 
@@ -405,16 +506,15 @@ class OrderController extends Controller
 
             $this->inventory->applySale($provider, $order, $stockLines);
 
-            $deliveryFee = $deliveryType === Order::DELIVERY_TYPE_TAKEAWAY
-                ? 0.0
-                : (float) config('fastdelivery.delivery_fee');
+            $quote = $this->deliveryFee->quote($provider, $address, $deliveryType);
 
             $order->update([
                 'subtotal' => $subtotal,
-                'delivery_fee' => $deliveryFee,
+                'delivery_fee' => $quote['fee'],
+                'delivery_distance_km' => $quote['distance_km'],
                 // El descuento aplica sobre lo que el backend calcula (cupones en un paso posterior).
                 'discount' => 0,
-                'total' => $subtotal + $deliveryFee,
+                'total' => $subtotal + $quote['fee'],
             ]);
 
             return $order;
@@ -425,6 +525,52 @@ class OrderController extends Controller
             'message' => 'Pedido registrado correctamente.',
             'order' => $order->load('items.options'),
         ], 201);
+    }
+
+    /**
+     * Cotiza el envio para una direccion antes de confirmar el carrito.
+     * Devuelve el monto exacto, los km usados y el precio de referencia.
+     */
+    public function quote(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $data = $request->validate([
+            'provider_id' => ['required', 'integer', 'exists:providers,id'],
+            'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'delivery_type' => ['nullable', 'string', 'in:'.Order::DELIVERY_TYPE_DELIVERY.','.Order::DELIVERY_TYPE_TAKEAWAY],
+        ]);
+
+        $provider = Provider::where('id', $data['provider_id'])->where('is_active', true)->first();
+
+        if (! $provider) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El comercio no esta disponible.',
+            ], 404);
+        }
+
+        $deliveryType = $data['delivery_type'] ?? Order::DELIVERY_TYPE_DELIVERY;
+        $address = null;
+
+        if ($deliveryType === Order::DELIVERY_TYPE_DELIVERY && ! empty($data['address_id'])) {
+            $address = Address::where('id', $data['address_id'])
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+
+        $quote = $this->deliveryFee->quote($provider, $address, $deliveryType);
+
+        return response()->json([
+            'success' => true,
+            'delivery_fee' => $quote['fee'],
+            'distance_km' => $quote['distance_km'],
+            'mode' => $quote['mode'],
+            'source' => $quote['source'],
+            'estimate' => $this->deliveryFee->estimateFor($provider),
+        ]);
     }
 
     /**

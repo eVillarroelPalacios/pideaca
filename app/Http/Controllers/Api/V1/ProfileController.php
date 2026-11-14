@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\V1\Concerns\ResolvesAccount;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
+use App\Models\DriverWithdrawalRequest;
+use App\Models\Order;
 use App\Models\Provider;
+use App\Models\ProviderDriver;
 use App\Models\ProviderImage;
 use App\Models\Region;
 use App\Models\User;
+use App\Services\DriverWalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * "Mi Perfil" para la app movil.
@@ -154,10 +159,10 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'current_password' => ['nullable', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
         ], [
             'password.required' => 'Ingresá la nueva contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
@@ -245,6 +250,153 @@ class ProfileController extends Controller
             'message' => 'Perfil de proveedor actualizado correctamente.',
             'provider' => $this->providerPayload($provider),
         ]);
+    }
+
+    /**
+     * Retiros pendientes de los repartidores del comercio (app movil).
+     * GET /api/mobile/v1/profile/provider/withdrawals
+     *
+     * Mismas reglas que el panel web: solo solicitudes de repartidores
+     * vinculados (entregas para el comercio o lista de confianza) y solo
+     * el titular de la cuenta (o el Admin).
+     */
+    public function providerWithdrawals(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $provider = $this->providerForWithdrawals($user);
+
+        if (! $provider) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés permisos para administrar retiros.',
+            ], 403);
+        }
+
+        $requests = DriverWithdrawalRequest::with('user:id,name,email')
+            ->where('status', DriverWithdrawalRequest::STATUS_PENDING)
+            ->whereIn('user_id', $this->providerWithdrawalDriverIds($provider))
+            ->latest()
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $withdrawal) => $this->providerWithdrawalPayload($withdrawal));
+
+        return response()->json([
+            'success' => true,
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * El comercio confirma que ya pagó el retiro.
+     * POST /api/mobile/v1/profile/provider/withdrawals/{withdrawal}/approve
+     */
+    public function approveProviderWithdrawal(Request $request, DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService): JsonResponse
+    {
+        $user = $request->user();
+        $provider = $this->providerForWithdrawals($user);
+
+        if (! $provider || ! in_array((int) $withdrawal->user_id, $this->providerWithdrawalDriverIds($provider), true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esa solicitud no es de un repartidor de tu comercio.',
+            ], 403);
+        }
+
+        try {
+            $approved = $walletService->approve($withdrawal, $user);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo aprobar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro aprobado correctamente.',
+            'withdrawal' => $this->providerWithdrawalPayload($approved),
+        ]);
+    }
+
+    /**
+     * El comercio rechaza el retiro y el monto vuelve a la billetera.
+     * POST /api/mobile/v1/profile/provider/withdrawals/{withdrawal}/reject
+     */
+    public function rejectProviderWithdrawal(Request $request, DriverWithdrawalRequest $withdrawal, DriverWalletService $walletService): JsonResponse
+    {
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $user = $request->user();
+        $provider = $this->providerForWithdrawals($user);
+
+        if (! $provider || ! in_array((int) $withdrawal->user_id, $this->providerWithdrawalDriverIds($provider), true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esa solicitud no es de un repartidor de tu comercio.',
+            ], 403);
+        }
+
+        try {
+            $rejected = $walletService->reject($withdrawal, $user, $data['reason'] ?? null);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo rechazar el retiro.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Retiro rechazado. El monto volvió a la billetera del repartidor.',
+            'withdrawal' => $this->providerWithdrawalPayload($rejected),
+        ]);
+    }
+
+    private function providerForWithdrawals(User $user): ?Provider
+    {
+        if (! $user->isAccountPrincipal() && ! $user->isAdmin()) {
+            return null;
+        }
+
+        if (strcasecmp((string) $user->typeUser?->description, 'Prestador') !== 0 && ! $user->isAdmin()) {
+            return null;
+        }
+
+        return $user->provider;
+    }
+
+    private function providerWithdrawalDriverIds(Provider $provider): array
+    {
+        $delivered = Order::where('provider_id', $provider->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->whereNotNull('driver_id')
+            ->distinct()
+            ->pluck('driver_id');
+
+        $trusted = ProviderDriver::where('provider_id', $provider->id)->pluck('user_id');
+
+        return $delivered->merge($trusted)->filter()->unique()->values()->all();
+    }
+
+    private function providerWithdrawalPayload(DriverWithdrawalRequest $withdrawal): array
+    {
+        return [
+            'id' => $withdrawal->id,
+            'user_id' => $withdrawal->user_id,
+            'user' => $withdrawal->relationLoaded('user') && $withdrawal->user ? [
+                'id' => $withdrawal->user->id,
+                'name' => $withdrawal->user->name,
+                'email' => $withdrawal->user->email,
+            ] : null,
+            'amount' => (float) $withdrawal->amount,
+            'status' => $withdrawal->status,
+            'method' => $withdrawal->method,
+            'reference' => $withdrawal->reference,
+            'notes' => $withdrawal->notes,
+            'created_at' => $withdrawal->created_at?->toIso8601String(),
+            'reviewed_at' => $withdrawal->reviewed_at?->toIso8601String(),
+        ];
     }
 
     /**

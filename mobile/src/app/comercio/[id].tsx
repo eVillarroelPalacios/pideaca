@@ -24,6 +24,7 @@ import type {
   MarketOrder,
   MarketProduct,
   MarketProductOptionGroup,
+  MarketQuoteResponse,
 } from '@/types/api';
 
 const NAVY = '#0c2a4d';
@@ -376,6 +377,10 @@ export default function ComercioCatalogScreen() {
   const [catalog, setCatalog] = useState<MarketCatalogResponse | null>(null);
   const [addresses, setAddresses] = useState<MarketAddress[]>([]);
   const [addressId, setAddressId] = useState<number | null>(null);
+  const [quoteState, setQuoteState] = useState<{
+    key: string;
+    data: MarketQuoteResponse | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -532,10 +537,42 @@ export default function ComercioCatalogScreen() {
     };
   }, [providerId, repeatRaw, valid]);
 
+  // Cotización exacta del envío: se recalcula al elegir dirección. El
+  // backend decide el monto (global, fijo del comercio o por distancia).
+  const quoteKey =
+    valid && deliveryType === 'delivery' && addressId
+      ? `${providerId}:${addressId}`
+      : null;
+
+  useEffect(() => {
+    if (!valid || deliveryType !== 'delivery' || addressId === null) {
+      return;
+    }
+
+    let active = true;
+    const key = `${providerId}:${addressId}`;
+
+    api
+      .marketQuote(providerId, addressId, 'delivery')
+      .then((response) => {
+        if (active) {
+          setQuoteState({ key, data: response });
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setQuoteState({ key, data: null });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [addressId, deliveryType, providerId, valid]);
+
   const settings = catalog?.settings;
   const maxQuantity = settings?.max_quantity_per_item ?? 20;
   const maxItems = settings?.max_items_per_order ?? 30;
-  const deliveryFee = settings?.delivery_fee ?? 0;
 
   const provider = catalog?.provider ?? null;
   const categories = useMemo(() => catalog?.categories ?? [], [catalog]);
@@ -558,6 +595,13 @@ export default function ComercioCatalogScreen() {
     categoryIndex !== null && categories[categoryIndex]
       ? [categories[categoryIndex]]
       : categories;
+
+  // Monto exacto devuelto por el backend al elegir dirección. Mientras llega
+  // (o si falla) se usa el precio de referencia del catálogo.
+  const quoteLoaded = quoteKey !== null && quoteState?.key === quoteKey;
+  const quote = quoteLoaded ? (quoteState?.data ?? null) : null;
+  const quoting = quoteKey !== null && !quoteLoaded;
+  const deliveryFee = quote?.delivery_fee ?? settings?.delivery_fee ?? 0;
 
   const subtotal = cart.reduce(
     (sum, line) => sum + (line.unit_price + line.options_extra) * line.quantity,
@@ -1006,7 +1050,13 @@ export default function ComercioCatalogScreen() {
                   <View style={styles.deliveryInfo}>
                     <Text style={styles.deliveryTitle}>Envío con repartidor</Text>
                     <Text style={styles.deliveryHint}>
-                      Costo de envío {money(deliveryFee)}
+                      {quoting
+                        ? 'Calculando el envío…'
+                        : quote?.distance_km
+                          ? `Costo de envío ${money(deliveryFee)} · ${quote.distance_km
+                              .toFixed(1)
+                              .replace('.', ',')} km`
+                          : `Costo de envío ${money(deliveryFee)}`}
                     </Text>
                   </View>
                   <View

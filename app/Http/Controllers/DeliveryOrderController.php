@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\DriverWallet;
+use App\Models\DriverWithdrawalRequest;
 use App\Models\Order;
 use App\Models\ProviderDriver;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use App\Services\DriverWalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class DeliveryOrderController extends Controller
 {
@@ -515,6 +518,12 @@ class DeliveryOrderController extends Controller
             ->whereBetween('updated_at', [$monthStart, $monthEnd])
             ->count();
 
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+        $withdrawals = DriverWithdrawalRequest::where('user_id', $user->id)
+            ->latest()
+            ->limit(20)
+            ->get();
+
         return view('repartidor.reportes', [
             'user' => $user,
             'stats' => $stats,
@@ -523,6 +532,93 @@ class DeliveryOrderController extends Controller
             'tipsMonth' => $tipsMonth,
             'totalEarnings' => $totalEarnings,
             'tripsMonth' => $tripsMonth,
+            'walletBalance' => (float) ($wallet->balance ?? 0),
+            'minWithdrawal' => (float) config('fastdelivery.min_withdrawal', 1000),
+            'withdrawals' => $withdrawals,
         ]);
+    }
+
+    /**
+     * Historial de retiros del repartidor + saldo disponible.
+     * GET /api/v1/delivery/wallet/withdrawals
+     */
+    public function withdrawals()
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+        $wallet = DriverWallet::where('user_id', $user->id)->first();
+
+        $requests = DriverWithdrawalRequest::where('user_id', $user->id)
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->map(fn (DriverWithdrawalRequest $request) => $this->withdrawalPayload($request));
+
+        return response()->json([
+            'success' => true,
+            'balance' => (float) ($wallet->balance ?? 0),
+            'pending_balance' => (float) ($wallet->pending_balance ?? 0),
+            'min_withdrawal' => (float) config('fastdelivery.min_withdrawal', 1000),
+            'withdrawals' => $requests,
+        ]);
+    }
+
+    /**
+     * Solicita un retiro de saldo. El monto se congela en el acto y queda
+     * pendiente hasta que el admin lo aprueba.
+     * POST /api/v1/delivery/wallet/withdraw
+     */
+    public function requestWithdrawal(Request $request, DriverWalletService $walletService)
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'No autenticado'], 401);
+        }
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'method' => ['nullable', 'string', 'max:30'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $withdrawal = $walletService->requestWithdrawal(
+                Auth::user(),
+                (float) $data['amount'],
+                $data['method'] ?? null,
+                $data['notes'] ?? null
+            );
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first() ?: 'No se pudo procesar el retiro.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $wallet = DriverWallet::where('user_id', Auth::id())->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud de retiro enviada. Queda pendiente de aprobación.',
+            'withdrawal' => $this->withdrawalPayload($withdrawal),
+            'balance' => (float) ($wallet->balance ?? 0),
+        ], 201);
+    }
+
+    private function withdrawalPayload(DriverWithdrawalRequest $request): array
+    {
+        return [
+            'id' => $request->id,
+            'amount' => (float) $request->amount,
+            'status' => $request->status,
+            'method' => $request->method,
+            'reference' => $request->reference,
+            'notes' => $request->notes,
+            'created_at' => $request->created_at?->toIso8601String(),
+            'reviewed_at' => $request->reviewed_at?->toIso8601String(),
+        ];
     }
 }

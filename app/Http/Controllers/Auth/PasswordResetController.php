@@ -102,11 +102,11 @@ class PasswordResetController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'password' => 'required|string|min:8|max:255|confirmed',
+            'password' => 'required|string|min:4|max:255|confirmed',
         ], [
             'token.required' => 'El enlace de recuperación no es válido.',
             'password.required' => 'Ingresá la contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 

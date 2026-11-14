@@ -332,3 +332,79 @@ export function itemsResume(order: MarketMyOrder): string {
 
   return parts.join(' + ');
 }
+
+export type TrackLatLng = { latitude: number; longitude: number };
+
+export type TrackCoords = { origin: TrackLatLng; destination: TrackLatLng };
+
+/**
+ * Distancia en km entre dos puntos (haversine). Se usa tanto en el mapa
+ * del cliente como en la navegación del repartidor para el badge de
+ * distancia restante (misma fórmula que la web `drvHaversineKm`).
+ */
+export function haversineKm(a: TrackLatLng, b: TrackLatLng): number {
+  const R = 6371;
+  const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
+  const dLng = ((b.longitude - a.longitude) * Math.PI) / 180;
+  const s =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((a.latitude * Math.PI) / 180) *
+      Math.cos((b.latitude * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+/** ETA en minutos a velocidad urbana (~25 km/h), mínimo 1. */
+export function etaMinutesForKm(km: number, kmh = 25): number {
+  return Math.max(1, Math.round((km / kmh) * 60));
+}
+
+/** "850 m" o "2,3 km" para el badge de distancia restante. */
+export function formatRemainKm(km: number): string {
+  if (km < 1) {
+    return `${Math.round(km * 1000)} m`;
+  }
+
+  return `${km.toFixed(1).replace('.', ',')} km`;
+}
+
+/** El pedido está en reparto con repartidor: corresponde el mapa en vivo. */
+export function isTrackable(order: MarketMyOrder): boolean {
+  return order.status === 'on_the_way' && !isTakeaway(order) && order.driver != null;
+}
+
+function toLatLng(value: unknown): number | null {
+  const parsed = typeof value === 'number' ? value : parseFloat(String(value ?? ''));
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * Origen (comercio) y destino (cliente) si hay coordenadas para trazar.
+ * La relación serializa como primary_address (snake_case).
+ */
+export function trackCoords(order: MarketMyOrder): TrackCoords | null {
+  if (!isTrackable(order)) {
+    return null;
+  }
+
+  const user = order.provider?.user ?? null;
+  const primary = user?.primary_address ?? null;
+  const address = order.address;
+
+  const originLat = primary ? toLatLng(primary.latitude) : null;
+  const originLng = primary ? toLatLng(primary.longitude) : null;
+  const destLat = address ? toLatLng(address.latitude) : null;
+  const destLng = address ? toLatLng(address.longitude) : null;
+
+  if (originLat === null || originLng === null || destLat === null || destLng === null) {
+    return null;
+  }
+
+  return {
+    origin: { latitude: originLat, longitude: originLng },
+    destination: { latitude: destLat, longitude: destLng },
+  };
+}

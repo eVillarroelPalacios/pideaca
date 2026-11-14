@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,12 +25,14 @@ import { DriverKpisGrid } from '@/components/DriverKpisGrid';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { API_BASE_URL } from '@/config';
+import { money } from '@/lib/money';
 import { colors, radius, spacing } from '@/theme';
 import type {
   DriverActiveOrder,
   DriverOffer,
   DriverStatsResponse,
   DriverStatusPayload,
+  DriverWithdrawal,
 } from '@/types/api';
 
 const NAVY = '#0c2a4d';
@@ -37,6 +40,12 @@ const ACCENT = '#D24C19';
 const GREEN = '#16a34a';
 const AMBER = '#f59e0b';
 const POLL_MS = 10000;
+
+const WITHDRAW_METHODS = [
+  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'otro', label: 'Otro' },
+];
 
 // El panel web vive fuera del prefijo del API móvil.
 const PANEL_URL = API_BASE_URL.replace(/\/api\/mobile\/v1\/?$/, '/delivery');
@@ -62,6 +71,18 @@ function errorMessage(caught: unknown, fallback: string): string {
   }
 
   return fallback;
+}
+
+function withdrawalStatusLabel(status: DriverWithdrawal['status']): string {
+  if (status === 'approved') {
+    return 'aprobado';
+  }
+
+  if (status === 'rejected') {
+    return 'rechazado';
+  }
+
+  return 'pendiente de aprobación';
 }
 
 function vehicleIcon(value: string | null): string {
@@ -115,6 +136,11 @@ export default function RepartidorScreen() {
   const [activeOrders, setActiveOrders] = useState<DriverActiveOrder[]>([]);
   const [tab, setTab] = useState<Tab>('available');
 
+  // En pantallas angostas (≤768px) las tabs muestran solo ícono + contador;
+  // en pantallas grandes se conservan los textos completos.
+  const { width } = useWindowDimensions();
+  const compactTabs = width <= 768;
+
   const [online, setOnline] = useState(true);
   const [zone, setZone] = useState('');
   const [radarOn, setRadarOn] = useState(true);
@@ -138,6 +164,17 @@ export default function RepartidorScreen() {
   const [vehicleOpen, setVehicleOpen] = useState(false);
   const [savingVehicle, setSavingVehicle] = useState(false);
 
+  // Billetera del repartidor: saldo, historial de retiros y modal de solicitud.
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [minWithdrawal, setMinWithdrawal] = useState(0);
+  const [withdrawals, setWithdrawals] = useState<DriverWithdrawal[]>([]);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawMethod, setWithdrawMethod] = useState('transferencia');
+  const [withdrawNotes, setWithdrawNotes] = useState('');
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [savingWithdraw, setSavingWithdraw] = useState(false);
+
   const player = useAudioPlayer(require('../../assets/beep.wav'));
 
   const onlineRef = useRef(true);
@@ -150,6 +187,8 @@ export default function RepartidorScreen() {
   }>({ latitude: null, longitude: null, accuracy: null });
   const lastAvailableIds = useRef<number[]>([]);
   const zoneTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchSub = useRef<Location.LocationSubscription | null>(null);
+  const lastPersistAt = useRef(0);
   const initialized = useRef(false);
   const mounted = useRef(true);
 
@@ -162,6 +201,9 @@ export default function RepartidorScreen() {
       if (zoneTimer.current) {
         clearTimeout(zoneTimer.current);
       }
+
+      watchSub.current?.remove();
+      watchSub.current = null;
     };
   }, []);
 
@@ -245,6 +287,82 @@ export default function RepartidorScreen() {
     }
   }, [persistStatus]);
 
+  /**
+   * Watcher de geolocalización en vivo (foreground): alimenta el mapa de
+   * navegación del paso 2. En entrega con la posición del repartidor en
+   * movimiento. La telemetría al backend va throttled (30 s) para no
+   * saturarlo; el mapa se mueve con cada fix local.
+   */
+  const startGpsWatch = useCallback(async () => {
+    watchSub.current?.remove();
+    watchSub.current = null;
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+
+      if (permission.status !== 'granted') {
+        if (mounted.current) {
+          setGps((current) =>
+            current.latitude !== null
+              ? current
+              : { status: 'off', latitude: null, longitude: null, accuracy: null },
+          );
+        }
+
+        return;
+      }
+
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 5,
+        },
+        (position) => {
+          if (!mounted.current) {
+            return;
+          }
+
+          const next: GpsState = {
+            status: 'active',
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          };
+
+          gpsRef.current = {
+            latitude: next.latitude,
+            longitude: next.longitude,
+            accuracy: next.accuracy,
+          };
+          setGps(next);
+
+          const now = Date.now();
+
+          if (now - lastPersistAt.current > 30000) {
+            lastPersistAt.current = now;
+            void persistStatus();
+          }
+        },
+      );
+
+      if (!mounted.current) {
+        subscription.remove();
+        return;
+      }
+
+      watchSub.current = subscription;
+    } catch {
+      if (mounted.current) {
+        setGps((current) =>
+          current.latitude !== null
+            ? current
+            : { status: 'off', latitude: null, longitude: null, accuracy: null },
+        );
+      }
+    }
+  }, [persistStatus]);
+
   const loadOffers = useCallback(
     async (silent = false) => {
       try {
@@ -292,6 +410,24 @@ export default function RepartidorScreen() {
     }
   }, []);
 
+  const loadWallet = useCallback(async (silent = false) => {
+    try {
+      const response = await api.driverWithdrawals();
+
+      if (!mounted.current) {
+        return;
+      }
+
+      setWalletBalance(response.balance);
+      setMinWithdrawal(response.min_withdrawal);
+      setWithdrawals(response.withdrawals);
+    } catch (caught) {
+      if (!silent) {
+        setError(errorMessage(caught, 'No se pudo cargar tu saldo.'));
+      }
+    }
+  }, []);
+
   const bootstrap = useCallback(async () => {
     setLoading(true);
 
@@ -334,7 +470,7 @@ export default function RepartidorScreen() {
         setGps(cached);
       }
 
-      await Promise.all([loadOffers(true), loadMyOrders(true)]);
+      await Promise.all([loadOffers(true), loadMyOrders(true), loadWallet(true)]);
 
       if (mounted.current) {
         setError(null);
@@ -350,7 +486,7 @@ export default function RepartidorScreen() {
         setLoading(false);
       }
     }
-  }, [loadMyOrders, loadOffers]);
+  }, [loadMyOrders, loadOffers, loadWallet]);
 
   useFocusEffect(
     useCallback(() => {
@@ -361,9 +497,11 @@ export default function RepartidorScreen() {
         void loadStats(true);
         void loadOffers(true);
         void loadMyOrders(true);
+        void loadWallet(true);
       }
 
       void refreshGps();
+      void startGpsWatch();
 
       const interval = setInterval(() => {
         if (onlineRef.current) {
@@ -372,15 +510,24 @@ export default function RepartidorScreen() {
         }
       }, POLL_MS);
 
-      return () => clearInterval(interval);
-    }, [bootstrap, loadMyOrders, loadOffers, loadStats, refreshGps]),
+      return () => {
+        clearInterval(interval);
+        watchSub.current?.remove();
+        watchSub.current = null;
+      };
+    }, [bootstrap, loadMyOrders, loadOffers, loadStats, loadWallet, refreshGps, startGpsWatch]),
   );
 
   async function handleRefresh() {
     setRefreshing(true);
 
     try {
-      await Promise.all([loadStats(true), loadOffers(true), loadMyOrders(true)]);
+      await Promise.all([
+        loadStats(true),
+        loadOffers(true),
+        loadMyOrders(true),
+        loadWallet(true),
+      ]);
       setError(null);
     } finally {
       setRefreshing(false);
@@ -443,6 +590,59 @@ export default function RepartidorScreen() {
     }
 
     setGoalOpen(false);
+  }
+
+  function openWithdraw() {
+    setWithdrawAmount('');
+    setWithdrawMethod('transferencia');
+    setWithdrawNotes('');
+    setWithdrawError(null);
+    setWithdrawOpen(true);
+  }
+
+  async function submitWithdraw() {
+    const amount = Number.parseFloat(withdrawAmount.replace(',', '.')) || 0;
+
+    if (amount <= 0) {
+      setWithdrawError('Ingresá un monto válido para retirar.');
+      return;
+    }
+
+    if (amount < minWithdrawal) {
+      setWithdrawError(`El monto mínimo de retiro es ${money(minWithdrawal)}.`);
+      return;
+    }
+
+    if (amount > walletBalance) {
+      setWithdrawError('El monto supera tu saldo disponible.');
+      return;
+    }
+
+    setSavingWithdraw(true);
+    setWithdrawError(null);
+
+    try {
+      const response = await api.driverRequestWithdrawal({
+        amount,
+        method: withdrawMethod,
+        notes: withdrawNotes.trim() === '' ? null : withdrawNotes.trim(),
+      });
+
+      setWalletBalance(response.balance);
+      await loadWallet(true);
+      setWithdrawOpen(false);
+      Alert.alert(
+        'Solicitud enviada',
+        response.message ||
+          'El admin va a revisar tu retiro. El monto ya quedó reservado.',
+      );
+    } catch (caught) {
+      setWithdrawError(
+        errorMessage(caught, 'No se pudo solicitar el retiro. Intentá de nuevo.'),
+      );
+    } finally {
+      setSavingWithdraw(false);
+    }
   }
 
   async function takeOffer(offer: DriverOffer) {
@@ -744,20 +944,69 @@ export default function RepartidorScreen() {
           onPressGoal={openGoal}
         />
 
+        <View style={styles.walletCard}>
+          <View style={styles.walletInfo}>
+            <Text style={styles.walletLabel}>Saldo disponible</Text>
+            <Text style={styles.walletValue}>{money(walletBalance)}</Text>
+            <Text style={styles.walletHint}>
+              Retiro mínimo {money(minWithdrawal)} · El 100% del envío es para vos.
+            </Text>
+            {withdrawals.length > 0 ? (
+              <Text style={styles.walletHint}>
+                Último retiro {money(withdrawals[0].amount)} ·{' '}
+                {withdrawalStatusLabel(withdrawals[0].status)}
+              </Text>
+            ) : null}
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Solicitar retiro de saldo"
+            disabled={walletBalance <= 0 || walletBalance < minWithdrawal}
+            onPress={openWithdraw}
+            style={({ pressed }) => [
+              styles.walletButton,
+              (walletBalance <= 0 || walletBalance < minWithdrawal) &&
+                styles.walletButtonDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.walletButtonText}>Retirar saldo</Text>
+          </Pressable>
+        </View>
+
+        {withdrawals.length > 0 ? (
+          <View style={styles.walletHistoryCard}>
+            <Text style={styles.walletHistoryTitle}>Historial de retiros</Text>
+            {withdrawals.slice(0, 5).map((item) => (
+              <View key={item.id} style={styles.walletHistoryRow}>
+                <Text style={styles.walletHistoryAmount}>{money(item.amount)}</Text>
+                <Text style={styles.walletHistoryStatus}>
+                  {withdrawalStatusLabel(item.status)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.tabsWrap}>
-          <View style={styles.tabs}>
+          <View style={[styles.tabs, compactTabs && styles.tabsCompact]}>
             <Pressable
               accessibilityRole="tab"
               accessibilityState={{ selected: isAvailable }}
+              accessibilityLabel={`Pedidos disponibles, ${offers.length} ofertas`}
               onPress={() => setTab('available')}
               style={[styles.tab, isAvailable && styles.tabActive]}
             >
-              <Text
-                numberOfLines={1}
-                style={[styles.tabText, isAvailable && styles.tabTextActive]}
-              >
-                Pedidos Disponibles
-              </Text>
+              {compactTabs ? (
+                <Text style={styles.tabIcon}>📋</Text>
+              ) : (
+                <Text
+                  numberOfLines={1}
+                  style={[styles.tabText, isAvailable && styles.tabTextActive]}
+                >
+                  Pedidos Disponibles
+                </Text>
+              )}
               <View style={[styles.tabCount, isAvailable && styles.tabCountActive]}>
                 <Text
                   style={[
@@ -773,15 +1022,20 @@ export default function RepartidorScreen() {
             <Pressable
               accessibilityRole="tab"
               accessibilityState={{ selected: !isAvailable }}
+              accessibilityLabel={`En curso y asignados, ${activeOrders.length} pedidos`}
               onPress={() => setTab('inprogress')}
               style={[styles.tab, !isAvailable && styles.tabActive]}
             >
-              <Text
-                numberOfLines={1}
-                style={[styles.tabText, !isAvailable && styles.tabTextActive]}
-              >
-                En Curso / Asignados
-              </Text>
+              {compactTabs ? (
+                <Text style={styles.tabIcon}>🛵</Text>
+              ) : (
+                <Text
+                  numberOfLines={1}
+                  style={[styles.tabText, !isAvailable && styles.tabTextActive]}
+                >
+                  En Curso / Asignados
+                </Text>
+              )}
               <View style={[styles.tabCount, !isAvailable && styles.tabCountActive]}>
                 <Text
                   style={[
@@ -860,6 +1114,11 @@ export default function RepartidorScreen() {
                 key={order.id}
                 order={order}
                 busy={busyOrderId === order.id}
+                driverPos={
+                  gps.latitude !== null && gps.longitude !== null
+                    ? { latitude: gps.latitude, longitude: gps.longitude }
+                    : null
+                }
                 onPickup={() => void pickupOrder(order)}
                 onConfirmDelivery={(pin) => void confirmDelivery(order, pin)}
               />
@@ -963,6 +1222,102 @@ export default function RepartidorScreen() {
                 {savingVehicle ? 'Guardando…' : 'Cerrar'}
               </Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={withdrawOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setWithdrawOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Retirar saldo</Text>
+            <Text style={styles.modalSubtitle}>
+              El monto queda reservado hasta que el admin confirme el pago.
+              Disponible: {money(walletBalance)}.
+            </Text>
+
+            <TextInput
+              keyboardType="decimal-pad"
+              onChangeText={setWithdrawAmount}
+              placeholder={`Mínimo ${money(minWithdrawal)}`}
+              placeholderTextColor="#94a3b8"
+              style={styles.modalInput}
+              value={withdrawAmount}
+            />
+
+            <Text style={styles.withdrawFieldLabel}>Método de pago</Text>
+            <View style={styles.withdrawMethods}>
+              {WITHDRAW_METHODS.map((option) => {
+                const selected = option.value === withdrawMethod;
+
+                return (
+                  <Pressable
+                    key={option.value}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    disabled={savingWithdraw}
+                    onPress={() => setWithdrawMethod(option.value)}
+                    style={[
+                      styles.withdrawMethod,
+                      selected && styles.withdrawMethodActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.withdrawMethodText,
+                        selected && styles.withdrawMethodTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <TextInput
+              maxLength={500}
+              multiline
+              numberOfLines={2}
+              onChangeText={setWithdrawNotes}
+              placeholder="Notas para el pago (CBU, alias, referencia) — opcional"
+              placeholderTextColor="#94a3b8"
+              style={styles.withdrawNotes}
+              value={withdrawNotes}
+            />
+
+            {withdrawError ? (
+              <Text style={styles.withdrawError}>{withdrawError}</Text>
+            ) : null}
+
+            <View style={styles.modalActions}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={savingWithdraw}
+                onPress={() => setWithdrawOpen(false)}
+                style={[styles.modalButton, styles.modalCancel]}
+              >
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={savingWithdraw}
+                onPress={() => void submitWithdraw()}
+                style={[
+                  styles.modalButton,
+                  styles.modalSave,
+                  savingWithdraw && styles.busy,
+                ]}
+              >
+                <Text style={styles.modalSaveText}>
+                  {savingWithdraw ? 'Enviando…' : 'Solicitar'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -1137,6 +1492,141 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
+  walletCard: {
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    justifyContent: 'space-between',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  walletInfo: {
+    flexShrink: 1,
+    gap: 2,
+  },
+  walletLabel: {
+    color: '#b45309',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  walletValue: {
+    color: ACCENT,
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+  },
+  walletHint: {
+    color: '#64748b',
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  walletButton: {
+    alignItems: 'center',
+    backgroundColor: ACCENT,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 11,
+  },
+  walletButtonDisabled: {
+    backgroundColor: '#e2e8f0',
+  },
+  walletButtonText: {
+    color: colors.surface,
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  walletHistoryCard: {
+    backgroundColor: colors.surface,
+    borderColor: '#e2e8f0',
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: spacing.xs,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  walletHistoryTitle: {
+    color: '#0c2a4d',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  walletHistoryRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  walletHistoryAmount: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  walletHistoryStatus: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  withdrawFieldLabel: {
+    color: '#94a3b8',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    marginTop: spacing.xs,
+    textTransform: 'uppercase',
+  },
+  withdrawMethods: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  withdrawMethod: {
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 9,
+  },
+  withdrawMethodActive: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+  },
+  withdrawMethodText: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  withdrawMethodTextActive: {
+    color: ACCENT,
+  },
+  withdrawNotes: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#cbd5e1',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 13,
+    minHeight: 64,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    textAlignVertical: 'top',
+  },
+  withdrawError: {
+    color: '#dc2626',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   tabsWrap: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
@@ -1152,6 +1642,10 @@ const styles = StyleSheet.create({
     gap: 4,
     padding: 5,
   },
+  tabsCompact: {
+    alignSelf: 'center',
+    flexWrap: 'nowrap',
+  },
   tab: {
     alignItems: 'center',
     borderRadius: radius.pill,
@@ -1160,6 +1654,10 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingHorizontal: spacing.lg,
     paddingVertical: 8,
+  },
+  tabIcon: {
+    fontSize: 16,
+    lineHeight: 20,
   },
   tabActive: {
     backgroundColor: colors.surface,

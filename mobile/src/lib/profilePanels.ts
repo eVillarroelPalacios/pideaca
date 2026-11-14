@@ -13,6 +13,7 @@ export type PanelKey =
   | 'horarios'
   | 'servicios'
   | 'repartidores'
+  | 'retiros'
   | 'imagenes'
   | 'categorias'
   | 'direccion'
@@ -31,6 +32,7 @@ export const PANEL_META: ProfilePanel[] = [
   { key: 'horarios', label: 'Horarios de Atención', icon: '🕒' },
   { key: 'servicios', label: 'Mis Servicios', icon: '🧰' },
   { key: 'repartidores', label: 'Repartidores de confianza', icon: '🛵' },
+  { key: 'retiros', label: 'Retiros de repartidores', icon: '💸' },
   { key: 'imagenes', label: 'Publicidad', icon: '🖼️' },
   { key: 'categorias', label: 'Categorías', icon: '🏷️' },
   { key: 'vehiculo', label: 'Mi Vehículo', icon: '🚗' },
@@ -64,6 +66,7 @@ export function visiblePanels(
   const hiddenInManaged: PanelKey[] = managedId
     ? [
         'repartidores',
+        'retiros',
         'vehiculo',
         ...(options.keepUsersInManaged ? [] : (['usuarios'] as PanelKey[])),
       ]
@@ -87,6 +90,9 @@ export function visiblePanels(
     }
     if (panel.key === 'repartidores') {
       return flags.can_see_trusted_drivers;
+    }
+    if (panel.key === 'retiros') {
+      return flags.can_configure_business;
     }
 
     // Negocio, horarios, servicios, publicidad y categorías.

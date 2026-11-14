@@ -84,12 +84,12 @@ class ProfileUsersController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
             'user_status_id' => ['nullable', 'integer', 'exists:user_statuses,id'],
         ], [
             'name.required' => 'Ingresá el nombre del usuario.',
             'password.required' => 'Ingresá una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_status_id.exists' => 'El estado seleccionado no existe.',
         ]);
@@ -142,11 +142,11 @@ class ProfileUsersController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:4', 'confirmed'],
             'user_status_id' => ['nullable', 'integer', 'exists:user_statuses,id'],
         ], [
             'name.required' => 'Ingresá el nombre del usuario.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_status_id.exists' => 'El estado seleccionado no existe.',
         ]);

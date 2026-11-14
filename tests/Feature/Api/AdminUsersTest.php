@@ -155,8 +155,8 @@ class AdminUsersTest extends TestCase
             ->putJson('/api/mobile/v1/admin-users/'.$secondary->id, [
                 'name' => $secondary->name,
                 'email' => $secondary->email,
-                'password' => 'corta',
-                'password_confirmation' => 'corta',
+                'password' => 'abc',
+                'password_confirmation' => 'abc',
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors('password');

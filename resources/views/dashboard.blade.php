@@ -17,6 +17,8 @@
             <script src="https://cdn.tailwindcss.com"></script>
             <link href="https://cdn.jsdelivr.net/npm/daisyui@5/dist/full.min.css" rel="stylesheet" />
         @endif
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     </head>
     <body style="margin:0;padding:0;background:#ffffff;min-height:100vh;display:flex;flex-direction:column;">
 
@@ -61,7 +63,11 @@
                     <div class="nav-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;background:white;border-radius:0;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;padding:6px 0;z-index:100;">
                         @foreach($module->pages as $page)
                             @if($page->url)
-                                @if(str_starts_with($page->url, '/'))
+                                @if($module->description === 'Reparto' && !str_starts_with($page->url, '/') && ($page->url === 'reportes' || $page->description === 'Reportes Repartidor'))
+                        <a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection('reportes-repartidor')" data-page-id="{{ $page->id }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
+                            {{ $page->description }}
+                        </a>
+                                @elseif(str_starts_with($page->url, '/'))
                         <a href="{{ url($page->url) }}" data-page-id="{{ $page->id }}" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">
                             {{ $page->description }}
                         </a>
@@ -114,7 +120,9 @@
                         <div class="mobile-sub" style="display:none;width:100%;text-align:center;">
                             @foreach($module->pages as $page)
                                 @if($page->url)
-                                    @if(str_starts_with($page->url, '/'))
+                                    @if($module->description === 'Reparto' && !str_starts_with($page->url, '/') && ($page->url === 'reportes' || $page->description === 'Reportes Repartidor'))
+                            <a href="#" onclick="event.preventDefault();showDashSection('reportes-repartidor')" data-page-id="{{ $page->id }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
+                                    @elseif(str_starts_with($page->url, '/'))
                             <a href="{{ url($page->url) }}" data-page-id="{{ $page->id }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
                                     @else
                             <a href="#" onclick="event.preventDefault();showDashSection('{{ $page->url }}')" data-page-id="{{ $page->id }}" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">{{ $page->description }}</a>
@@ -271,7 +279,7 @@
                         if (! $esCuentaPrincipal && $perfilPanelInicial === 'direccion') {
                             $perfilPanelInicial = 'cuenta';
                         }
-                        if (! $puedeConfigurarNegocio && in_array($perfilPanelInicial, ['negocio', 'horarios', 'servicios', 'repartidores', 'imagenes', 'categorias'], true)) {
+                        if (! $puedeConfigurarNegocio && in_array($perfilPanelInicial, ['negocio', 'horarios', 'servicios', 'repartidores', 'retiros', 'imagenes', 'categorias'], true)) {
                             $perfilPanelInicial = 'cuenta';
                         }
                         $perfilEtiquetas = [
@@ -280,6 +288,7 @@
                             'cuenta' => 'Contraseñas',
                             'vehiculo' => 'Mi Vehículo',
                             'repartidores' => 'Repartidores de confianza',
+                            'retiros' => 'Retiros de repartidores',
                         ];
                         $estadoPerfil = $user->status?->status ?? '-';
                         $estadoPerfilKey = strtolower(trim($estadoPerfil));
@@ -325,6 +334,10 @@
                             <a href="#" onclick="event.preventDefault();showProfilePanel('repartidores')" class="sidebar-link" data-panel="repartidores" id="sidebar-link-repartidores">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 18h6l3-9h3l2 5h2"/><path d="M9 9h5"/><path d="M14 5h3"/></svg>
                                 <span>Repartidores de confianza</span>
+                            </a>
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('retiros')" class="sidebar-link" data-panel="retiros" id="sidebar-link-retiros">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/></svg>
+                                <span>Retiros de repartidores</span>
                             </a>
                             @endif
                             <a href="#" onclick="event.preventDefault();showProfilePanel('imagenes')" class="sidebar-link" data-panel="imagenes" id="sidebar-link-imagenes">
@@ -405,6 +418,51 @@
                                             </button>
                                         </div>
                                     </div>
+                                    <div class="pcard">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg> Tarifa de envío</h3>
+                                        <p class="pcard-sub">Vos decidís cuánto cobrar por el envío de tus pedidos. El repartidor se queda con el <strong>100%</strong> del monto.</p>
+                                        <div class="profile-field-grid">
+                                            <div>
+                                                <label class="field-label" for="provider-delivery-mode">Modalidad</label>
+                                                <select id="provider-delivery-mode" class="field-input" onchange="fdDeliverySync()">
+                                                    <option value="global">Tarifa general de PideAca</option>
+                                                    <option value="flat">Monto fijo propio</option>
+                                                    <option value="distance">Por distancia (base + $/km)</option>
+                                                </select>
+                                            </div>
+                                            <div id="provider-delivery-flat-wrap">
+                                                <label class="field-label" for="provider-delivery-flat">Monto fijo del envío</label>
+                                                <input type="number" min="0" step="0.01" id="provider-delivery-flat" class="field-input" placeholder="Ej: 3000" oninput="fdDeliverySync()" />
+                                            </div>
+                                        </div>
+                                        <div id="provider-delivery-distance-wrap" style="display:none;margin-top:12px;">
+                                            <div class="profile-field-grid">
+                                                <div>
+                                                    <label class="field-label" for="provider-delivery-base">Costo base</label>
+                                                    <input type="number" min="0" step="0.01" id="provider-delivery-base" class="field-input" placeholder="Ej: 1000" oninput="fdDeliverySync()" />
+                                                </div>
+                                                <div>
+                                                    <label class="field-label" for="provider-delivery-per-km">Precio por km</label>
+                                                    <input type="number" min="0" step="0.01" id="provider-delivery-per-km" class="field-input" placeholder="Ej: 800" oninput="fdDeliverySync()" />
+                                                </div>
+                                                <div>
+                                                    <label class="field-label" for="provider-delivery-min">Mínimo por envío</label>
+                                                    <input type="number" min="0" step="0.01" id="provider-delivery-min" class="field-input" placeholder="Ej: 3000" oninput="fdDeliverySync()" />
+                                                </div>
+                                                <div>
+                                                    <label class="field-label" for="provider-delivery-max">Techo por envío (0 = sin techo)</label>
+                                                    <input type="number" min="0" step="0.01" id="provider-delivery-max" class="field-input" placeholder="Ej: 8000" oninput="fdDeliverySync()" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p id="provider-delivery-preview" style="margin:12px 0 0;font-size:12px;line-height:1.5;color:#0c2a4d;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:9px 12px;"></p>
+                                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
+                                            <span class="save-msg" id="delivery-msg"></span>
+                                            <button type="button" onclick="submitProvider('delivery-msg')" title="Guardar tarifa de envío" aria-label="Guardar tarifa de envío" style="background:#D24C19;color:#fff;border:none;padding:8px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:0;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="profile-panel" data-panel="horarios">
@@ -440,6 +498,9 @@
                                 @if($user->provider)
                                 <div class="profile-panel" data-panel="repartidores">
                                     @include('dashboard.partials.repartidores-confianza')
+                                </div>
+                                <div class="profile-panel" data-panel="retiros">
+                                    @include('dashboard.partials.retiros-comercio')
                                 </div>
                                 @endif
 
@@ -695,7 +756,11 @@
                     @elseif($page->url === 'mis-suscripciones')
             @include('partials.mis-suscripciones')
                     @elseif($page->url === 'reportes')
+                        @if($module->description === 'Reparto' || $page->description === 'Reportes Repartidor')
+            @include('dashboard.sections.reportes-repartidor')
+                        @else
             @include('dashboard.sections.reportes')
+                        @endif
                     @elseif($page->url === 'reportes-hogar')
             <div id="dash-reportes-hogar" class="dash-section" style="display:none;width:100%;">
                 @include('reports.hogar')
@@ -926,6 +991,14 @@
     var FD_SECTION_SHOP_FALLBACK = 'comercios';
 
     function showDashSection(key) {
+        // La pagina "Reportes Repartidor" vive con url '/repartidor/reportes'
+        // (ruta directa) pero su seccion SPA es 'dash-reportes-repartidor'.
+        // Sin esta normalizacion el getElementById no encuentra nada y el
+        // panel queda en blanco o conserva la seccion anterior (p. ej. la de
+        // reportes del cliente).
+        if (key === '/repartidor/reportes' || key === 'repartidor/reportes') {
+            key = 'reportes-repartidor';
+        }
         unmountProfileUsuariosPanel();
         var sections = document.querySelectorAll('.dash-section');
         sections.forEach(function (s) { s.style.display = 'none'; });
@@ -6726,6 +6799,7 @@
             }
 
             fdSetMyOrdersState('message', text);
+            fdTrackSync([]);
             return;
         }
 
@@ -6754,6 +6828,7 @@
         listEl.innerHTML = html;
         fdSetMyOrdersState('content');
         fdMyOrdersPaintPagination(totalPages);
+        fdTrackSync(fdMyOrdersActive === 'history' ? [] : pageList);
     }
 
     var FD_MY_STEPS = [
@@ -6924,7 +6999,7 @@
             + '<div class="fd-live-title">' + escapeHtml(fdMyOrdersLiveTitle(o)) + '</div>'
             + '</div>'
             + (eta
-                ? '<div class="fd-eta"><div class="fd-eyebrow">' + (isTakeaway ? 'Tiempo estimado de preparación' : 'Tiempo estimado de entrega') + '</div>'
+                ? '<div class="fd-eta" data-fd-eta="' + Number(o.id) + '"><div class="fd-eyebrow">' + (isTakeaway ? 'Tiempo estimado de preparación' : 'Tiempo estimado de entrega') + '</div>'
                     + '<b><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
                     + escapeHtml(eta) + '</b></div>'
                 : '')
@@ -6960,7 +7035,7 @@
         // Cuerpo: direccion, pago, productos y totales
         html += '<div style="padding:14px 16px;">';
 
-        html += '<div class="fd-block">'
+        var addrHtml = '<div class="fd-block">'
             + '<div style="display:flex;gap:11px;align-items:flex-start;">'
             + '<span class="fd-block-ico">'
             + (isTakeaway
@@ -6993,7 +7068,7 @@
             + '</div>'
             + '</div>';
 
-        html += '<div class="fd-block">'
+        var payHtml = '<div class="fd-block">'
             + '<div style="display:flex;gap:11px;align-items:flex-start;flex-wrap:wrap;">'
             + '<span class="fd-block-ico fd-block-ico-green">'
             + '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>'
@@ -7011,6 +7086,25 @@
             + '</div>'
             + '</div>'
             + '</div>';
+
+        var showTrack = !isTakeaway && o.status === 'on_the_way' && !!driver;
+        var trackData = showTrack ? fdTrackCoords(o) : null;
+        if (showTrack) {
+            html += '<div class="fd-track-grid">'
+                + '<div class="fd-track-left">' + addrHtml + payHtml + '</div>'
+                + '<div class="fd-track-right">'
+                + (trackData
+                    ? '<div class="fd-track-map" id="fd-track-map-' + Number(o.id) + '" data-order="' + Number(o.id) + '"></div>'
+                    : '<div class="fd-track-empty">'
+                        + '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+                        + '<b>Mapa no disponible todavía</b>'
+                        + '<span>Faltan coordenadas de ubicación para trazar la ruta en vivo.</span>'
+                        + '</div>')
+                + '</div>'
+                + '</div>';
+        } else {
+            html += addrHtml + payHtml;
+        }
 
         if (o.notes) {
             html += '<div style="margin-top:10px;font-size:12.5px;color:#9a3412;"><b>Nota del pedido:</b> ' + escapeHtml(o.notes) + '</div>';
@@ -7032,6 +7126,144 @@
             + '</div>';
 
         return html;
+    }
+
+    // ---------- Seguimiento en vivo con mapa (estilo DiDi) ----------
+    var FD_TRACK_URL = '{{ url("/api/orders") }}';
+    var FD_TRACK_MS = 5000;
+    var fdTrackMaps = {};
+
+    function fdTrackNum(v) {
+        var n = parseFloat(v);
+        return isFinite(n) ? n : null;
+    }
+
+    // Origen (comercio) y destino (cliente) si hay coordenadas para trazar.
+    // Nota: la relacion llega serializada como primary_address (snake_case).
+    function fdTrackCoords(o) {
+        if (!o || o.status !== 'on_the_way' || !o.driver || o.delivery_type === 'takeaway') return null;
+        var usr = (o.provider && o.provider.user) || null;
+        var pa = usr ? (usr.primary_address || usr.primaryAddress) : null;
+        var ad = o.address;
+        var oLat = pa ? fdTrackNum(pa.latitude) : null;
+        var oLng = pa ? fdTrackNum(pa.longitude) : null;
+        var dLat = ad ? fdTrackNum(ad.latitude) : null;
+        var dLng = ad ? fdTrackNum(ad.longitude) : null;
+        if (oLat === null || oLng === null || dLat === null || dLng === null) return null;
+        return { origin: [oLat, oLng], dest: [dLat, dLng] };
+    }
+
+    function fdTrackFirstName(name) {
+        return String(name || 'Tu repartidor').split(' ')[0];
+    }
+
+    function fdTrackClockSvg() {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    }
+
+    function fdTrackHomeSvg() {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>';
+    }
+
+    function fdTrackInit(orderId, o) {
+        var el = document.getElementById('fd-track-map-' + orderId);
+        var c = fdTrackCoords(o);
+        if (!el || !c) return;
+        if (typeof L === 'undefined') {
+            el.innerHTML = '';
+            var msg = document.createElement('div');
+            msg.className = 'fd-track-empty';
+            msg.style.height = '100%';
+            msg.textContent = 'No se pudo cargar el mapa (sin conexión a la librería).';
+            el.appendChild(msg);
+            return;
+        }
+        var shopName = (o.provider && o.provider.business_name) || 'Comercio';
+        var drvName = (o.driver && o.driver.name) || '';
+        var map = L.map(el, { scrollWheelZoom: false }).setView(c.origin, 14);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        var originIcon = L.divIcon({
+            className: 'fd-track-divicon',
+            html: '<div class="fd-pin fd-pin-origin">' + escapeHtml(fdInitials(shopName)) + '</div>',
+            iconSize: [38, 38], iconAnchor: [19, 19]
+        });
+        var destIcon = L.divIcon({
+            className: 'fd-track-divicon',
+            html: '<div class="fd-pin fd-pin-dest">' + fdTrackHomeSvg() + '</div>',
+            iconSize: [38, 38], iconAnchor: [19, 19]
+        });
+        var driverIcon = L.divIcon({
+            className: 'fd-track-divicon fd-track-driver',
+            html: '<div class="fd-pin fd-pin-driver">🛵</div><div class="fd-drv-label"><b>' + escapeHtml(fdTrackFirstName(drvName)) + '</b></div>',
+            iconSize: [44, 44], iconAnchor: [22, 22]
+        });
+        L.marker(c.origin, { icon: originIcon, title: shopName }).addTo(map).bindPopup(escapeHtml(shopName));
+        L.marker(c.dest, { icon: destIcon, title: 'Tu domicilio' }).addTo(map).bindPopup('Tu domicilio');
+        var driverMk = L.marker(c.origin, { icon: driverIcon, title: drvName }).addTo(map);
+        var route = L.polyline([c.origin, c.origin, c.dest], {
+            color: '#ea580c', weight: 5, opacity: 0.9, lineJoin: 'round'
+        }).addTo(map);
+        map.fitBounds(L.latLngBounds([c.origin, c.dest]).pad(0.3));
+        fdTrackMaps[orderId] = {
+            map: map, driver: driverMk, route: route,
+            origin: c.origin, dest: c.dest, timer: null
+        };
+        fdTrackTick(orderId);
+        fdTrackMaps[orderId].timer = setInterval(function () { fdTrackTick(orderId); }, FD_TRACK_MS);
+    }
+
+    function fdTrackTick(orderId) {
+        var st = fdTrackMaps[orderId];
+        if (!st || !st.map) return;
+        if (document.hidden) return;
+        fdFetchJson(FD_TRACK_URL + '/' + orderId + '/driver-location').then(function (res) {
+            var d = res && res.data;
+            if (!res.ok || !d || !d.success) return;
+            if (d.status !== 'on_the_way') {
+                fdTrackStop(orderId);
+                if (typeof loadMyOrders === 'function') loadMyOrders(true);
+                return;
+            }
+            if (!d.map_available || !d.driver_location) return;
+            var pos = [parseFloat(d.driver_location.latitude), parseFloat(d.driver_location.longitude)];
+            st.driver.setLatLng(pos);
+            st.route.setLatLngs([st.origin, pos, st.dest]);
+            var first = d.driver ? fdTrackFirstName(d.driver.name) : 'Tu repartidor';
+            var mins = (d.eta_minutos !== null && d.eta_minutos !== undefined) ? d.eta_minutos : null;
+            var iconEl = st.driver.getElement ? st.driver.getElement() : null;
+            if (iconEl) {
+                var b = iconEl.querySelector('.fd-drv-label b');
+                if (b) b.textContent = mins !== null ? (first + ' - ' + mins + ' min') : first;
+            }
+            if (mins !== null) {
+                var etaB = document.querySelector('.fd-myorders-card[data-order-id="' + orderId + '"] [data-fd-eta] b');
+                if (etaB) etaB.innerHTML = fdTrackClockSvg() + 'Llega en ' + mins + ' min';
+            }
+        });
+    }
+
+    function fdTrackStop(orderId) {
+        var st = fdTrackMaps[orderId];
+        if (!st) return;
+        if (st.timer) clearInterval(st.timer);
+        try { if (st.map) st.map.remove(); } catch (e) {}
+        delete fdTrackMaps[orderId];
+    }
+
+    // Crea los mapas de los pedidos en camino y limpia los que ya no estan.
+    function fdTrackSync(list) {
+        var ids = {};
+        (list || []).forEach(function (o) { if (fdTrackCoords(o)) ids[Number(o.id)] = o; });
+        Object.keys(fdTrackMaps).forEach(function (id) {
+            if (!ids[id]) { fdTrackStop(Number(id)); return; }
+            if (!document.getElementById('fd-track-map-' + id)) fdTrackStop(Number(id));
+        });
+        Object.keys(ids).forEach(function (id) {
+            if (!fdTrackMaps[Number(id)]) fdTrackInit(Number(id), ids[id]);
+        });
     }
 
     // Tarjeta compacta del historial: local, estado, importe, resumen de
@@ -7523,6 +7755,9 @@
         // El enlace directo de la pagina unificada llega con ?section=... y
         // deja esa seccion abierta (si el usuario realmente la tiene).
         var requestedSection = new URLSearchParams(window.location.search).get('section');
+        if (requestedSection === '/repartidor/reportes' || requestedSection === 'repartidor/reportes') {
+            requestedSection = 'reportes-repartidor';
+        }
         if (requestedSection && document.getElementById('dash-' + requestedSection)) {
             showDashSection(requestedSection);
         } else {
@@ -8098,7 +8333,7 @@
     }
     function umApplyManagedSidebar() {
         var can = umManagedCanConfigureBusiness();
-        ['sidebar-link-negocio', 'sidebar-link-horarios', 'sidebar-link-servicios', 'sidebar-link-repartidores', 'sidebar-link-imagenes', 'sidebar-link-categorias'].forEach(function(id) {
+        ['sidebar-link-negocio', 'sidebar-link-horarios', 'sidebar-link-servicios', 'sidebar-link-repartidores', 'sidebar-link-retiros', 'sidebar-link-imagenes', 'sidebar-link-categorias'].forEach(function(id) {
             var link = document.getElementById(id);
             if (link) link.style.display = can ? '' : 'none';
         });
@@ -8218,6 +8453,18 @@
         if (!pg.url) return null;
         return (String(pg.url).charAt(0) === '/') ? (UM_BASE_URL + pg.url) : null;
     }
+    // La url `reportes` existe en Mercado (cliente) y en Reparto. La de
+    // Reparto ("Reportes Repartidor") debe abrir la seccion del repartidor
+    // (billetera/retiros), nunca la del cliente.
+    function umNavSectionKey(m, pg) {
+        var mod = String((m && m.description) || '').trim().toLowerCase();
+        var url = String(pg.url || '').trim();
+        var desc = String(pg.description || '').trim().toLowerCase();
+        if (desc === 'reportes repartidor' || url === '/repartidor/reportes' || url === 'repartidor/reportes' || url === 'reportes-repartidor' || (mod === 'reparto' && url === 'reportes')) {
+            return 'reportes-repartidor';
+        }
+        return pg.url;
+    }
     function umNavLogoutDesktop() {
         return '<div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>' +
             '<a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#dc2626;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">Cerrar Sesi\u00f3n</a>';
@@ -8256,7 +8503,7 @@
                 var itemsHtml = m.pages.map(function(pg) {
                     var href = umNavPageHref(pg);
                     if (href) return '<a href="' + href + '" data-page-id="' + pg.id + '" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">' + escapeHtml(pg.description || '') + '</a>';
-                    if (pg.url) return '<a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection(\'' + pg.url + '\')" data-page-id="' + pg.id + '" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">' + escapeHtml(pg.description || '') + '</a>';
+                    if (pg.url) return '<a href="#" onclick="event.preventDefault();closeDropdowns();showDashSection(\'' + umNavSectionKey(m, pg) + '\')" data-page-id="' + pg.id + '" class="dropdown-item" style="display:block;padding:8px 16px;color:#1f2937;font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;">' + escapeHtml(pg.description || '') + '</a>';
                     return '<div class="dropdown-item" data-page-id="' + pg.id + '" title="Todavia no tiene seccion" style="display:block;padding:8px 16px;color:#9ca3af;font-size:13px;font-weight:500;white-space:nowrap;cursor:default;">' + escapeHtml(pg.description || '') + ' <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>';
                 }).join('');
                 if (String(m.description).trim().toLowerCase() === 'administrar' || idx === mods.length - 1) itemsHtml += umNavLogoutDesktop();
@@ -8286,7 +8533,7 @@
                 sub.innerHTML = m.pages.map(function(pg) {
                     var href = umNavPageHref(pg);
                     if (href) return '<a href="' + href + '" data-page-id="' + pg.id + '" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">' + escapeHtml(pg.description || '') + '</a>';
-                    if (pg.url) return '<a href="#" onclick="event.preventDefault();showDashSection(\'' + pg.url + '\')" data-page-id="' + pg.id + '" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">' + escapeHtml(pg.description || '') + '</a>';
+                    if (pg.url) return '<a href="#" onclick="event.preventDefault();showDashSection(\'' + umNavSectionKey(m, pg) + '\')" data-page-id="' + pg.id + '" style="display:block;color:#1f2937;text-decoration:none;font-size:13px;font-weight:500;padding:6px 0;">' + escapeHtml(pg.description || '') + '</a>';
                     return '<div data-page-id="' + pg.id + '" title="Todavia no tiene seccion" style="display:block;color:#9ca3b8;font-size:13px;font-weight:500;padding:6px 0;cursor:default;">' + escapeHtml(pg.description || '') + ' <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;">pronto</span></div>';
                 }).join('');
                 if (String(m.description).trim().toLowerCase() === 'administrar' || idx === mods.length - 1) {
@@ -11188,8 +11435,8 @@
             setErr('user-email-error', 'Ingresá un email válido.');
             hasError = true;
         }
-        if (!id && password.length < 8) {
-            setErr('user-password-error', 'La contraseña debe tener al menos 8 caracteres.');
+        if (!id && password.length < 4) {
+            setErr('user-password-error', 'La contraseña debe tener al menos 4 caracteres.');
             hasError = true;
         }
         if (!id) {
@@ -11202,8 +11449,8 @@
             }
         }
         if (id && password) {
-            if (password.length < 8) {
-                setErr('user-password-error', 'La contraseña debe tener al menos 8 caracteres.');
+            if (password.length < 4) {
+                setErr('user-password-error', 'La contraseña debe tener al menos 4 caracteres.');
                 hasError = true;
             }
             if (passwordConfirm && password !== passwordConfirm) {
@@ -12964,6 +13211,7 @@
         horarios: 'Horarios de Atención',
         servicios: 'Mis Servicios',
         repartidores: 'Repartidores de confianza',
+        retiros: 'Retiros de repartidores',
         imagenes: 'Publicidad',
         categorias: 'Categorias',
         direccion: 'Mi Dirección',
@@ -13044,7 +13292,7 @@
         // Guard de paneles de negocio: el secundario no los ve ni los edita,
         // se lo lleva a su primera página autorizada. Con impersonación se
         // evalúa el rol de la cuenta administrada.
-        var panelesNegocio = ['negocio', 'horarios', 'servicios', 'repartidores', 'imagenes', 'categorias'];
+        var panelesNegocio = ['negocio', 'horarios', 'servicios', 'repartidores', 'retiros', 'imagenes', 'categorias'];
         if (!umManagedCanConfigureBusiness() && panelesNegocio.indexOf(key) !== -1) {
             if (firstAuthorizedSection && document.getElementById('dash-' + firstAuthorizedSection)) {
                 showDashSection(firstAuthorizedSection);
@@ -13090,6 +13338,7 @@
         }
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
+        if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
             link.classList.toggle('active', link.dataset.panel === key);
         });
@@ -13207,6 +13456,70 @@
         document.getElementById('provider-whatsapp').value = profileProvider.whatsapp || '';
         document.getElementById('provider-zone').value = profileProvider.zone || '';
         document.getElementById('provider-promo').value = profileProvider.promo || '';
+
+        // Tarifa de envío configurable por el comercio.
+        if (document.getElementById('provider-delivery-mode')) {
+            var mode = profileProvider.delivery_fee_mode || 'global';
+            document.getElementById('provider-delivery-mode').value = mode;
+            document.getElementById('provider-delivery-flat').value = fdDeliveryNumber(profileProvider.delivery_fee_flat);
+            document.getElementById('provider-delivery-base').value = fdDeliveryNumber(profileProvider.delivery_fee_base);
+            document.getElementById('provider-delivery-per-km').value = fdDeliveryNumber(profileProvider.delivery_fee_per_km);
+            document.getElementById('provider-delivery-min').value = fdDeliveryNumber(profileProvider.delivery_fee_min);
+            document.getElementById('provider-delivery-max').value = fdDeliveryNumber(profileProvider.delivery_fee_max);
+            fdDeliverySync();
+        }
+    }
+
+    function fdDeliveryNumber(value) {
+        var n = Number(value || 0);
+        return n > 0 ? n : '';
+    }
+
+    /**
+     * Muestra los campos que corresponden a la modalidad elegida y arma una
+     * vista previa del precio que verá el cliente.
+     */
+    function fdDeliverySync() {
+        var modeEl = document.getElementById('provider-delivery-mode');
+        if (!modeEl) return;
+
+        var mode = modeEl.value;
+        var flatWrap = document.getElementById('provider-delivery-flat-wrap');
+        var distWrap = document.getElementById('provider-delivery-distance-wrap');
+
+        if (flatWrap) flatWrap.style.display = mode === 'flat' ? '' : 'none';
+        if (distWrap) distWrap.style.display = mode === 'distance' ? '' : 'none';
+
+        var preview = document.getElementById('provider-delivery-preview');
+        if (!preview) return;
+
+        var globalFee = Number({{ (float) config('fastdelivery.delivery_fee') }}) || 0;
+
+        if (mode === 'flat') {
+            var flat = parseFloat(document.getElementById('provider-delivery-flat').value || '0') || 0;
+            preview.innerHTML = flat > 0
+                ? 'Tus clientes verán un envío fijo de <strong>' + fdMoney(flat) + '</strong>. El repartidor recibe el 100%.'
+                : 'Ingresá el monto fijo que vas a cobrar por el envío.';
+            return;
+        }
+
+        if (mode === 'distance') {
+            var base = parseFloat(document.getElementById('provider-delivery-base').value || '0') || 0;
+            var perKm = parseFloat(document.getElementById('provider-delivery-per-km').value || '0') || 0;
+            var min = parseFloat(document.getElementById('provider-delivery-min').value || '0') || 0;
+            var max = parseFloat(document.getElementById('provider-delivery-max').value || '0') || 0;
+
+            var parts = ['Costo base ' + fdMoney(base)];
+            parts.push('+' + fdMoney(perKm) + ' por km');
+            if (min > 0) parts.push('mínimo ' + fdMoney(min));
+            if (max > 0) parts.push('techo ' + fdMoney(max));
+            else parts.push('sin techo');
+
+            preview.innerHTML = 'El envío se calcula como <strong>' + parts.join(' · ') + '</strong> según la distancia al cliente.';
+            return;
+        }
+
+        preview.innerHTML = 'Se aplica la tarifa general de PideAca (<strong>' + fdMoney(globalFee) + '</strong>). El repartidor recibe el 100% del envío.';
     }
 
     function submitProvider(msgId) {
@@ -13234,6 +13547,16 @@
             hours: collectHours()
         };
 
+        // Motor de tarifas de envío: solo se envía si el panel está presente.
+        if (document.getElementById('provider-delivery-mode')) {
+            payload.delivery_fee_mode = document.getElementById('provider-delivery-mode').value;
+            payload.delivery_fee_flat = parseFloat(document.getElementById('provider-delivery-flat').value || '0') || 0;
+            payload.delivery_fee_base = parseFloat(document.getElementById('provider-delivery-base').value || '0') || 0;
+            payload.delivery_fee_per_km = parseFloat(document.getElementById('provider-delivery-per-km').value || '0') || 0;
+            payload.delivery_fee_min = parseFloat(document.getElementById('provider-delivery-min').value || '0') || 0;
+            payload.delivery_fee_max = parseFloat(document.getElementById('provider-delivery-max').value || '0') || 0;
+        }
+
         fetch(umManagedId() ? umAdminUserUrl('/provider') : '{{ url("/profile/provider") }}', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
@@ -13242,8 +13565,13 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.errors) {
-                nameEl.classList.add('err');
-                if (data.errors.business_name) { errBn.textContent = data.errors.business_name[0]; errBn.style.display = 'block'; }
+                if (data.errors.business_name) {
+                    nameEl.classList.add('err');
+                    errBn.textContent = data.errors.business_name[0];
+                    errBn.style.display = 'block';
+                }
+                var firstError = Object.keys(data.errors)[0];
+                showMsg(msgId, data.errors[firstError][0], false);
                 return;
             }
             if (data.success) {
@@ -14227,7 +14555,7 @@
         var pwCard = document.getElementById('user-cfg-password-card');
         if (pwCard) pwCard.style.display = '';
         var pwSub = document.getElementById('user-cfg-pw-sub');
-        if (pwSub) pwSub.textContent = 'Establecé una nueva contraseña para este usuario (mínimo 8 caracteres).';
+        if (pwSub) pwSub.textContent = 'Establecé una nueva contraseña para este usuario (mínimo 4 caracteres).';
 
         ['user-cfg-pw-new', 'user-cfg-pw-confirm'].forEach(function(id) {
             var el = document.getElementById(id);
@@ -14303,9 +14631,9 @@
         [errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
         [nwEl, conEl].forEach(function(e) { if (e) e.classList.remove('err'); });
 
-        if (nw.length < 8) {
+        if (nw.length < 4) {
             nwEl.classList.add('err');
-            errNew.textContent = 'Mínimo 8 caracteres.';
+            errNew.textContent = 'Mínimo 4 caracteres.';
             errNew.style.display = 'block';
             return;
         }
@@ -14597,7 +14925,7 @@
         [errNew, errCon].forEach(function(e) { e.style.display = 'none'; });
         [nwEl, conEl].forEach(function(e) { e.classList.remove('err'); });
 
-        if (nw.length < 8) { nwEl.classList.add('err'); errNew.textContent = 'Mínimo 8 caracteres.'; errNew.style.display = 'block'; return; }
+        if (nw.length < 4) { nwEl.classList.add('err'); errNew.textContent = 'Mínimo 4 caracteres.'; errNew.style.display = 'block'; return; }
         if (nw !== con) { conEl.classList.add('err'); errCon.textContent = 'Las contraseñas no coinciden.'; errCon.style.display = 'block'; return; }
 
         fetch('{{ url("/profile/password") }}', {

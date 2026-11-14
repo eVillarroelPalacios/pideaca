@@ -70,7 +70,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'type_user_id' => 'required|integer',
-            'password' => 'required|string|min:8|max:255|confirmed',
+            'password' => 'required|string|min:4|max:255|confirmed',
             'device_name' => 'nullable|string|max:100',
         ], [
             'name.required' => 'Ingresá tu nombre completo.',
@@ -78,7 +78,7 @@ class AuthController extends Controller
             'email.email' => 'Ingresá un correo electrónico válido.',
             'type_user_id.required' => 'Seleccioná el tipo de cuenta.',
             'password.required' => 'Ingresá tu contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 

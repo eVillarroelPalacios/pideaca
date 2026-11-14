@@ -25,6 +25,9 @@ import type {
   DriverStatsResponse,
   DriverStatusPayload,
   DriverStatusResponse,
+  DriverWithdrawalPayload,
+  DriverWithdrawalResponse,
+  DriverWithdrawalsResponse,
   GroupStatusResponse,
   GroupStatusesResponse,
   GroupPayload,
@@ -34,11 +37,13 @@ import type {
   MeResponse,
   MarketAddressesResponse,
   MarketCatalogResponse,
+  MarketDriverLocationResponse,
   MarketMyOrdersParams,
   MarketMyOrdersResponse,
   MarketOrderPayload,
   MarketOrderResponse,
   MarketPlansResponse,
+  MarketQuoteResponse,
   MarketRateOrderPayload,
   MarketRateOrderResponse,
   MarketShopsParams,
@@ -93,6 +98,8 @@ import type {
   ProviderMarketingRulesResponse,
   ProviderOrdersResponse,
   ProviderPayload,
+  ProviderWithdrawalActionResponse,
+  ProviderWithdrawalsResponse,
   ProviderRecipePayload,
   ProviderRecipeResponse,
   ProviderSubscriptionPaymentPayload,
@@ -372,6 +379,23 @@ export const api = {
     return request<MarketAddressesResponse>('/market/addresses');
   },
 
+  marketQuote(
+    providerId: number,
+    addressId: number | null,
+    deliveryType: 'delivery' | 'takeaway' = 'delivery',
+  ): Promise<MarketQuoteResponse> {
+    const params = new URLSearchParams({
+      provider_id: String(providerId),
+      delivery_type: deliveryType,
+    });
+
+    if (addressId) {
+      params.set('address_id', String(addressId));
+    }
+
+    return request<MarketQuoteResponse>(`/market/quote?${params.toString()}`);
+  },
+
   createMarketOrder(payload: MarketOrderPayload): Promise<MarketOrderResponse> {
     return request<MarketOrderResponse>('/market/orders', {
       method: 'POST',
@@ -393,6 +417,10 @@ export const api = {
       method: 'POST',
       body: payload,
     });
+  },
+
+  driverLocation(id: number): Promise<MarketDriverLocationResponse> {
+    return request<MarketDriverLocationResponse>(`/market/orders/${id}/driver-location`);
   },
 
   marketSubscriptions(): Promise<MarketSubscriptionsResponse> {
@@ -1143,6 +1171,24 @@ export const api = {
     });
   },
 
+  providerWithdrawals(): Promise<ProviderWithdrawalsResponse> {
+    return request<ProviderWithdrawalsResponse>('/profile/provider/withdrawals');
+  },
+
+  providerApproveWithdrawal(id: number): Promise<ProviderWithdrawalActionResponse> {
+    return request<ProviderWithdrawalActionResponse>(
+      `/profile/provider/withdrawals/${id}/approve`,
+      { method: 'POST' },
+    );
+  },
+
+  providerRejectWithdrawal(id: number, reason?: string | null): Promise<ProviderWithdrawalActionResponse> {
+    return request<ProviderWithdrawalActionResponse>(
+      `/profile/provider/withdrawals/${id}/reject`,
+      { method: 'POST', body: { reason: reason ?? null } },
+    );
+  },
+
   updateVehicle(vehicle_type: string, vehicle_plate?: string): Promise<ProfileVehicleResponse> {
     return request<ProfileVehicleResponse>('/profile/vehicle', {
       method: 'PATCH',
@@ -1668,6 +1714,17 @@ export const api = {
     return request<DriverActionResponse>(`/driver/orders/${id}/confirm`, {
       method: 'POST',
       body: { delivery_pin: deliveryPin },
+    });
+  },
+
+  driverWithdrawals(): Promise<DriverWithdrawalsResponse> {
+    return request<DriverWithdrawalsResponse>('/driver/wallet/withdrawals');
+  },
+
+  driverRequestWithdrawal(payload: DriverWithdrawalPayload): Promise<DriverWithdrawalResponse> {
+    return request<DriverWithdrawalResponse>('/driver/wallet/withdraw', {
+      method: 'POST',
+      body: payload,
     });
   },
 };

@@ -32,14 +32,14 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'type_user_id' => 'required|integer',
-            'password' => 'required|string|min:8|max:255|confirmed',
+            'password' => 'required|string|min:4|max:255|confirmed',
         ], [
             'name.required' => 'Ingresá el nombre completo.',
             'email.required' => 'Ingresá el correo.',
             'email.email' => 'Ingresá un correo válido.',
             'type_user_id.required' => 'Seleccioná el tipo de cliente.',
             'password.required' => 'Ingresá la contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 4 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 

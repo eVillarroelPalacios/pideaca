@@ -202,6 +202,37 @@
                         </div>
                     </div>
 
+                    <div id="um-withdrawals-card" class="um-card" style="margin-top:18px;">
+                        <div class="um-card-head">
+                            <div>
+                                <h3 class="um-card-title">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D24C19" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/></svg>
+                                    Retiros pendientes
+                                </h3>
+                                <p class="um-card-sub">Solicitudes de retiro de saldo de los repartidores. El monto se descuenta de su billetera al solicitar; aprobá para confirmar el pago o rechazá para devolverlo.</p>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                                <span id="um-withdrawals-count" class="um-count-badge">0</span>
+                                <button type="button" onclick="umLoadWithdrawals()" class="um-outline-btn">Actualizar</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="um-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40%;">Repartidor</th>
+                                        <th style="width:20%;">Monto</th>
+                                        <th style="width:20%;">Solicitado</th>
+                                        <th style="width:20%;text-align:right;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="um-withdrawals-tbody"></tbody>
+                            </table>
+                            <div id="um-withdrawals-empty" class="um-empty" style="display:none;">No hay retiros pendientes de aprobación.</div>
+                        </div>
+                        <p id="um-withdrawals-msg" class="um-msg" style="margin:0;padding:10px 18px;"></p>
+                    </div>
+
                     <div id="um-edit-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:415;align-items:center;justify-content:center;">
                         <div style="background:white;width:100%;max-width:640px;margin:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow:auto;position:relative;">
                             <button type="button" onclick="closeUserEditModal()" title="Cerrar" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;background:none;border:none;cursor:pointer;font-size:20px;line-height:1;color:#6b7280;z-index:2;">&times;</button>
@@ -275,3 +306,145 @@
                     </div>
                 </div>
             </section>
+
+            <script>
+                // Retiros de saldo del repartidor: el admin aprueba o rechaza.
+                // El saldo ya fue congelado al solicitar, así que aprobar solo
+                // marca la solicitud y el movimiento como completados.
+                function umWithdrawalsEndpoint() {
+                    return '{{ url("/admin/withdrawals") }}';
+                }
+
+                function umEscapeHtml(value) {
+                    return String(value == null ? '' : value)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+
+                function umWithdrawalsMsg(text, ok) {
+                    var el = document.getElementById('um-withdrawals-msg');
+                    if (!el) return;
+                    el.textContent = text || '';
+                    el.className = 'um-msg ' + (ok ? 'ok' : 'err');
+                    if (!text) el.className = 'um-msg';
+                }
+
+                function umWithdrawalsDate(value) {
+                    if (!value) return '—';
+                    var d = new Date(value);
+                    if (isNaN(d.getTime())) return '—';
+                    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+
+                function umCanManageWithdrawals() {
+                    return {{ Auth::user() && Auth::user()->typeUser && Auth::user()->hasPageUrl('usuarios') ? 'true' : 'false' }};
+                }
+
+                function umLoadWithdrawals() {
+                    var tbody = document.getElementById('um-withdrawals-tbody');
+                    if (!tbody) return;
+                    if (!umCanManageWithdrawals()) return;
+
+                    fetch(umWithdrawalsEndpoint(), {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (!data || !data.success) {
+                                umWithdrawalsMsg((data && data.message) || 'No se pudieron cargar los retiros.', false);
+                                return;
+                            }
+
+                            var rows = data.withdrawals || [];
+                            var count = document.getElementById('um-withdrawals-count');
+                            if (count) count.textContent = rows.length;
+
+                            var empty = document.getElementById('um-withdrawals-empty');
+                            if (empty) empty.style.display = rows.length ? 'none' : 'block';
+
+                            tbody.innerHTML = rows.map(function (w) {
+                                var user = w.user || {};
+                                var name = umEscapeHtml(user.name || 'Repartidor');
+                                var email = umEscapeHtml(user.email || '');
+                                var money = (typeof fdMoney === 'function') ? fdMoney(w.amount) : ('$ ' + w.amount);
+                                var method = umEscapeHtml(w.method || '');
+                                var reference = umEscapeHtml(w.reference || '');
+                                var notes = umEscapeHtml(w.notes || '');
+                                var payDetail = method || reference || notes
+                                    ? '<div class="um-user-email">'
+                                        + (method ? 'Método: ' + method : '')
+                                        + (reference ? (method ? ' · ' : '') + 'Ref: ' + reference : '')
+                                        + (notes ? '<br>' + notes : '')
+                                        + '</div>'
+                                    : '';
+
+                                return '<tr>'
+                                    + '<td><div class="um-user-name">' + name + '</div>'
+                                    + (email ? '<div class="um-user-email">' + email + '</div>' : '')
+                                    + payDetail
+                                    + '</td>'
+                                    + '<td><strong>' + money + '</strong></td>'
+                                    + '<td>' + umWithdrawalsDate(w.created_at) + '</td>'
+                                    + '<td><div class="um-actions">'
+                                    + '<button type="button" class="um-action-btn edit" title="Aprobar retiro" aria-label="Aprobar retiro" onclick="umApproveWithdrawal(' + Number(w.id) + ')">'
+                                    + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+                                    + '</button>'
+                                    + '<button type="button" class="um-action-btn del" title="Rechazar retiro" aria-label="Rechazar retiro" onclick="umRejectWithdrawal(' + Number(w.id) + ')">'
+                                    + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>'
+                                    + '</button>'
+                                    + '</div></td>'
+                                    + '</tr>';
+                            }).join('');
+                        })
+                        .catch(function () {
+                            umWithdrawalsMsg('Error de conexión al cargar los retiros.', false);
+                        });
+                }
+
+                function umWithdrawalAction(id, action, body) {
+                    var url = umWithdrawalsEndpoint() + '/' + id + '/' + action;
+                    var token = document.querySelector('meta[name="csrf-token"]');
+
+                    return fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token ? token.content : ''
+                        },
+                        body: JSON.stringify(body || {})
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data && data.success) {
+                                umWithdrawalsMsg(data.message || 'Retiro actualizado.', true);
+                                umLoadWithdrawals();
+                                return;
+                            }
+                            umWithdrawalsMsg((data && data.message) || 'No se pudo procesar el retiro.', false);
+                        })
+                        .catch(function () {
+                            umWithdrawalsMsg('Error de conexión.', false);
+                        });
+                }
+
+                function umApproveWithdrawal(id) {
+                    if (!confirm('¿Confirmás que el pago del retiro ya fue realizado?')) return;
+                    umWithdrawalAction(id, 'approve', {});
+                }
+
+                function umRejectWithdrawal(id) {
+                    var reason = prompt('Motivo del rechazo (opcional):', '');
+                    if (reason === null) return;
+                    umWithdrawalAction(id, 'reject', { reason: reason });
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (document.getElementById('um-withdrawals-tbody')) {
+                        umLoadWithdrawals();
+                    }
+                });
+            </script>

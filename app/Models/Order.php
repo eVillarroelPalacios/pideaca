@@ -63,6 +63,7 @@ class Order extends Model
         'status',
         'subtotal',
         'delivery_fee',
+        'delivery_distance_km',
         'discount',
         'total',
         'payment_method',
@@ -81,6 +82,7 @@ class Order extends Model
     protected $casts = [
         'subtotal' => 'decimal:2',
         'delivery_fee' => 'decimal:2',
+        'delivery_distance_km' => 'decimal:2',
         'discount' => 'decimal:2',
         'total' => 'decimal:2',
         'released_to_pool_at' => 'datetime',

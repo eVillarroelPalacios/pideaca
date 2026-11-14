@@ -58,6 +58,8 @@ Route::patch('/api/driver/vehicle', [DeliveryOrderController::class, 'updateVehi
 Route::post('/api/v1/delivery/orders/{order}/take', [DeliveryOrderController::class, 'takeOrder'])->name('api.delivery.orders.take');
 Route::post('/api/v1/delivery/orders/{order}/pickup', [DeliveryOrderController::class, 'markPickedUp'])->name('api.delivery.orders.pickup');
 Route::post('/api/v1/delivery/orders/{order}/confirm', [DeliveryOrderController::class, 'confirmDelivery'])->name('api.delivery.orders.confirm');
+Route::get('/api/v1/delivery/wallet/withdrawals', [DeliveryOrderController::class, 'withdrawals'])->name('api.delivery.wallet.withdrawals');
+Route::post('/api/v1/delivery/wallet/withdraw', [DeliveryOrderController::class, 'requestWithdrawal'])->name('api.delivery.wallet.withdraw');
 
 // Despacho cerrado a repartidores de confianza. La autenticacion y la
 // pertenencia del comercio se validan dentro del controlador. No hay timer:
@@ -193,6 +195,12 @@ Route::middleware('page:usuarios')->group(function () {
     Route::delete('/admin/users/{user}/services/{service}', [UsuarioController::class, 'destroyService'])->name('admin.users.services.destroy');
     Route::get('/admin/users/{user}/service-types', [UsuarioController::class, 'serviceTypes'])->name('admin.users.service-types.index');
     Route::post('/admin/users/{user}/service-types/toggle', [UsuarioController::class, 'toggleServiceType'])->name('admin.users.service-types.toggle');
+
+    // Retiros de saldo de repartidores: aprobacion manual del admin.
+    Route::get('/admin/withdrawals', [UsuarioController::class, 'pendingWithdrawals'])->name('admin.withdrawals.index');
+    Route::get('/admin/users/{user}/withdrawals', [UsuarioController::class, 'withdrawals'])->name('admin.users.withdrawals.index');
+    Route::post('/admin/withdrawals/{withdrawal}/approve', [UsuarioController::class, 'approveWithdrawal'])->name('admin.withdrawals.approve');
+    Route::post('/admin/withdrawals/{withdrawal}/reject', [UsuarioController::class, 'rejectWithdrawal'])->name('admin.withdrawals.reject');
 });
 
 Route::middleware('page:paginas')->group(function () {
@@ -220,6 +228,10 @@ Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index
 Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 Route::put('/profile/provider', [ProfileController::class, 'updateProvider'])->name('profile.provider.update');
+// Retiros de repartidores del comercio: el titular los aprueba o rechaza.
+Route::get('/profile/provider/withdrawals', [ProfileController::class, 'providerWithdrawals'])->name('profile.provider.withdrawals.index');
+Route::post('/profile/provider/withdrawals/{withdrawal}/approve', [ProfileController::class, 'approveProviderWithdrawal'])->name('profile.provider.withdrawals.approve');
+Route::post('/profile/provider/withdrawals/{withdrawal}/reject', [ProfileController::class, 'rejectProviderWithdrawal'])->name('profile.provider.withdrawals.reject');
 Route::get('/profile/services', [ProviderServiceController::class, 'index'])->name('profile.services.index');
 Route::post('/profile/services', [ProviderServiceController::class, 'store'])->name('profile.services.store');
 Route::put('/profile/services/reorder', [ProviderServiceController::class, 'reorder'])->name('profile.services.reorder');
@@ -243,7 +255,9 @@ Route::get('/api/providers/{provider}/catalog', [CatalogController::class, 'show
 Route::get('/api/providers/{provider}/orders', [OrderController::class, 'index'])->name('api.providers.orders');
 Route::get('/api/orders/mine', [OrderController::class, 'mine'])->name('api.orders.mine');
 Route::post('/api/orders', [OrderController::class, 'store'])->name('api.orders.store');
+Route::get('/api/orders/quote', [OrderController::class, 'quote'])->name('api.orders.quote');
 Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('api.orders.status');
+Route::get('/api/orders/{order}/driver-location', [OrderController::class, 'driverLocation'])->name('api.orders.driver-location');
 Route::post('/api/orders/{order}/rate', [OrderController::class, 'rateOrder'])->name('api.orders.rate');
 Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.me.addresses');
 

@@ -164,6 +164,9 @@ Route::prefix('mobile/v1')->group(function () {
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
         Route::put('/profile/provider', [ProfileController::class, 'updateProvider']);
+        Route::get('/profile/provider/withdrawals', [ProfileController::class, 'providerWithdrawals']);
+        Route::post('/profile/provider/withdrawals/{withdrawal}/approve', [ProfileController::class, 'approveProviderWithdrawal']);
+        Route::post('/profile/provider/withdrawals/{withdrawal}/reject', [ProfileController::class, 'rejectProviderWithdrawal']);
         Route::patch('/profile/vehicle', [ProfileController::class, 'updateVehicle']);
         Route::post('/profile/images', [ProfileController::class, 'storeImage']);
         Route::delete('/profile/images/{image}', [ProfileController::class, 'destroyImage']);
@@ -220,8 +223,12 @@ Route::prefix('mobile/v1')->group(function () {
                 ->middleware('throttle:30,1');
             Route::get('/addresses', [MarketController::class, 'addresses'])
                 ->middleware('throttle:30,1');
+            Route::get('/quote', [MarketController::class, 'quote'])
+                ->middleware('throttle:60,1');
             Route::post('/orders', [MarketController::class, 'storeOrder']);
             Route::get('/orders', [MarketController::class, 'myOrders'])
+                ->middleware('throttle:60,1');
+            Route::get('/orders/{order}/driver-location', [MarketController::class, 'driverLocation'])
                 ->middleware('throttle:60,1');
             Route::post('/orders/{order}/rate', [MarketController::class, 'rateOrder'])
                 ->middleware('throttle:30,1');
@@ -278,6 +285,9 @@ Route::prefix('mobile/v1')->group(function () {
             Route::post('/orders/{order}/take', [DriverController::class, 'takeOrder']);
             Route::post('/orders/{order}/pickup', [DriverController::class, 'markPickedUp']);
             Route::post('/orders/{order}/confirm', [DriverController::class, 'confirmDelivery']);
+            Route::get('/wallet/withdrawals', [DriverController::class, 'withdrawals'])
+                ->middleware('throttle:60,1');
+            Route::post('/wallet/withdraw', [DriverController::class, 'requestWithdrawal']);
         });
 
         Route::prefix('provider')->group(function () {

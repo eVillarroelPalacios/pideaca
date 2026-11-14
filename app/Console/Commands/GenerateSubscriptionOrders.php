@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Address;
 use App\Models\CustomerSubscription;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\DeliveryFeeCalculator;
 use App\Services\InventoryService;
 use App\Services\SubscriptionBillingService;
 use Carbon\Carbon;
@@ -20,7 +22,7 @@ class GenerateSubscriptionOrders extends Command
 
     protected $description = 'Genera el pedido de cada suscripcion activa con entrega vencida y agenda el siguiente ciclo';
 
-    public function handle(InventoryService $inventory, SubscriptionBillingService $billing): int
+    public function handle(InventoryService $inventory, SubscriptionBillingService $billing, DeliveryFeeCalculator $deliveryFees): int
     {
         $date = $this->resolveDate();
 
@@ -61,10 +63,10 @@ class GenerateSubscriptionOrders extends Command
             try {
                 // Orden, cobro, descuento de stock y reprogramacion van en la
                 // misma transaccion: o pasa todo, o la suscripcion sigue pendiente.
-                [$order, $payment] = DB::transaction(function () use ($subscription, $date, $inventory, $billing) {
+                [$order, $payment] = DB::transaction(function () use ($subscription, $date, $inventory, $billing, $deliveryFees) {
                     $periodStart = $subscription->next_delivery_date->copy();
 
-                    $order = $this->createOrder($subscription);
+                    $order = $this->createOrder($subscription, $deliveryFees);
 
                     $this->applyStock($inventory, $subscription, $order);
 
@@ -130,7 +132,7 @@ class GenerateSubscriptionOrders extends Command
         return null;
     }
 
-    private function createOrder(CustomerSubscription $subscription): Order
+    private function createOrder(CustomerSubscription $subscription, DeliveryFeeCalculator $deliveryFees): Order
     {
         $plan = $subscription->plan;
 
@@ -170,13 +172,17 @@ class GenerateSubscriptionOrders extends Command
         // sobre ese precio y los productos describen el contenido del pedido.
         $subtotal = (float) $plan->price;
         $discount = $plan->discountAmount();
-        $deliveryFee = (float) config('fastdelivery.delivery_fee');
+        $address = $subscription->delivery_address_id
+            ? Address::find($subscription->delivery_address_id)
+            : null;
+        $quote = $deliveryFees->quote($subscription->provider, $address);
 
         $order->update([
             'subtotal' => $subtotal,
-            'delivery_fee' => $deliveryFee,
+            'delivery_fee' => $quote['fee'],
+            'delivery_distance_km' => $quote['distance_km'],
             'discount' => $discount,
-            'total' => round($subtotal - $discount + $deliveryFee, 2),
+            'total' => round($subtotal - $discount + $quote['fee'], 2),
         ]);
 
         return $order;

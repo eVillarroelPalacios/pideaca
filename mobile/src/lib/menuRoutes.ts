@@ -69,9 +69,13 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'mercado::suscripciones': '/suscripciones',
     // Reparto: terminal central del repartidor (Driver Pro).
     'reparto::repartidor': '/repartidor',
-    // Reparto: reportes personales del repartidor (ahorro, suscripciones,
-    // hábitos y nutrición). La url `reportes` se repite en Mercado.
+    // Reparto: billetera, ganancias, retiros y estadísticas del repartidor.
+    // La url `reportes` se repite en Mercado (cliente): la clave incluye el
+    // módulo para no mezclarlos. Se aceptan las variantes con y sin slashes.
     'reparto::reportes': '/reports-repartidor',
+    'reparto::/repartidor/reportes': '/reports-repartidor',
+    'reparto::repartidor/reportes': '/reports-repartidor',
+    'reparto::reportes-repartidor': '/reports-repartidor',
     // Por si la pagina se mueve al modulo "Pide aca" (Fast Delivery):
     // se dejan las dos variantes, con y sin tilde.
     'pide acá::mi-catalogo': '/catalogo',

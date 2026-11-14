@@ -30,6 +30,12 @@ class Provider extends Model
         'base_visit_fee',
         'has_inventory_control',
         'trusted_drivers_enabled',
+        'delivery_fee_mode',
+        'delivery_fee_flat',
+        'delivery_fee_base',
+        'delivery_fee_per_km',
+        'delivery_fee_min',
+        'delivery_fee_max',
     ];
 
     protected $casts = [
@@ -41,6 +47,11 @@ class Provider extends Model
         'base_visit_fee' => 'decimal:2',
         'has_inventory_control' => 'boolean',
         'trusted_drivers_enabled' => 'boolean',
+        'delivery_fee_flat' => 'decimal:2',
+        'delivery_fee_base' => 'decimal:2',
+        'delivery_fee_per_km' => 'decimal:2',
+        'delivery_fee_min' => 'decimal:2',
+        'delivery_fee_max' => 'decimal:2',
     ];
 
     public function user(): BelongsTo

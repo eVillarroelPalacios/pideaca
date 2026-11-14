@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 
 import { money } from '@/lib/money';
+import type { TrackLatLng } from '@/lib/orderTracking';
 import { colors, radius, spacing } from '@/theme';
-import type { DriverActiveOrder, DriverOrderAddress } from '@/types/api';
+import type { DriverActiveOrder } from '@/types/api';
 
-const NAVY = '#0c2a4d';
+import { DriverNavMap } from './DriverNavMap';
+
 const ACCENT = '#D24C19';
 const GREEN = '#16a34a';
 
@@ -31,42 +33,6 @@ function stepIndex(status: string | null): number {
   return 1;
 }
 
-function destinationQuery(address: DriverOrderAddress | null): string | null {
-  if (!address) {
-    return null;
-  }
-
-  if (address.latitude !== null && address.longitude !== null) {
-    return `${address.latitude},${address.longitude}`;
-  }
-
-  return address.full_line || null;
-}
-
-function googleMapsUrl(address: DriverOrderAddress | null): string | null {
-  const query = destinationQuery(address);
-
-  return query
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
-    : null;
-}
-
-function wazeUrl(address: DriverOrderAddress | null): string | null {
-  if (!address) {
-    return null;
-  }
-
-  if (address.latitude !== null && address.longitude !== null) {
-    return `https://waze.com/ul?ll=${encodeURIComponent(
-      `${address.latitude},${address.longitude}`,
-    )}&navigate=yes`;
-  }
-
-  const query = destinationQuery(address);
-
-  return query ? `https://waze.com/ul?q=${encodeURIComponent(query)}` : null;
-}
-
 function callUrl(phone: string | null): string | null {
   const digits = String(phone ?? '').replace(/[^\d+]/g, '');
 
@@ -82,16 +48,24 @@ function openUrl(url: string | null): void {
 type Props = {
   order: DriverActiveOrder;
   busy: boolean;
+  /** GPS vivo del repartidor (null = sin señal: el mapa usa fallback). */
+  driverPos?: TrackLatLng | null;
   onPickup: () => void;
   onConfirmDelivery: (pin: string) => void;
 };
 
 /**
  * Tarjeta de pedido asignado con stepper de 3 fases, direcciones de retiro y
- * entrega, deep links a Google Maps/Waze, llamada al cliente y confirmación
- * con PIN. Espeja `myCardHtml()` de `repartidor.blade.php`.
+ * entrega, mapa de navegación en vivo en el paso 2, llamada al cliente y
+ * confirmación con PIN. Espeja `myCardHtml()` de `repartidor.blade.php`.
  */
-export function ActiveDeliveryCard({ order, busy, onPickup, onConfirmDelivery }: Props) {
+export function ActiveDeliveryCard({
+  order,
+  busy,
+  driverPos,
+  onPickup,
+  onConfirmDelivery,
+}: Props) {
   const [pinOpen, setPinOpen] = useState(false);
   const [pin, setPin] = useState('');
 
@@ -105,8 +79,6 @@ export function ActiveDeliveryCard({ order, busy, onPickup, onConfirmDelivery }:
   const customerName = order.customer.name || 'Cliente';
   const customerAddress = order.address?.full_line || 'Sin dirección cargada';
   const phone = callUrl(order.customer.phone);
-  const maps = googleMapsUrl(order.address);
-  const waze = wazeUrl(order.address);
 
   function handleComplete(): void {
     if (order.has_delivery_pin) {
@@ -184,29 +156,9 @@ export function ActiveDeliveryCard({ order, busy, onPickup, onConfirmDelivery }:
         </View>
       </View>
 
-      <View style={styles.mapRow}>
-        {maps ? (
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Abrir la entrega en Google Maps"
-            onPress={() => openUrl(maps)}
-            style={({ pressed }) => [styles.mapButton, styles.mapsButton, pressed && styles.pressed]}
-          >
-            <Text style={styles.mapsButtonText}>🗺️ Google Maps</Text>
-          </Pressable>
-        ) : null}
-
-        {waze ? (
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel="Abrir la entrega en Waze"
-            onPress={() => openUrl(waze)}
-            style={({ pressed }) => [styles.mapButton, styles.wazeButton, pressed && styles.pressed]}
-          >
-            <Text style={styles.wazeButtonText}>🧭 Waze</Text>
-          </Pressable>
-        ) : null}
-      </View>
+      {/* Paso 2. En entrega: mapa de navegación en vivo estilo DiDi entre
+          el GPS del repartidor y el cliente, encima del botón principal. */}
+      {currentStep === 2 ? <DriverNavMap order={order} driverPos={driverPos ?? null} /> : null}
 
       {delivered ? (
         <View style={styles.deliveredChip}>
@@ -435,38 +387,6 @@ const styles = StyleSheet.create({
     color: ACCENT,
     fontSize: 12.5,
     fontWeight: '700',
-  },
-  mapRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  mapButton: {
-    alignItems: 'center',
-    borderRadius: radius.pill,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 46,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  mapsButton: {
-    backgroundColor: NAVY,
-  },
-  mapsButtonText: {
-    color: colors.surface,
-    fontSize: 12.5,
-    fontWeight: '800',
-  },
-  wazeButton: {
-    backgroundColor: colors.surface,
-    borderColor: '#cbd5e1',
-    borderWidth: 1.5,
-  },
-  wazeButtonText: {
-    color: NAVY,
-    fontSize: 12.5,
-    fontWeight: '800',
   },
   actionButton: {
     alignItems: 'center',

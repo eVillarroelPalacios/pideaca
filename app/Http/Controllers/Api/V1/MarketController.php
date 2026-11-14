@@ -16,6 +16,7 @@ use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use App\Models\Provider;
 use App\Models\SubscriptionPlan;
+use App\Services\DeliveryFeeCalculator;
 use App\Services\InventoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,10 @@ use Illuminate\Validation\ValidationException;
  */
 class MarketController extends Controller
 {
-    public function __construct(private readonly InventoryService $inventory) {}
+    public function __construct(
+        private readonly InventoryService $inventory,
+        private readonly DeliveryFeeCalculator $deliveryFee
+    ) {}
 
     /**
      * Listado de comercios, con busqueda, favoritos y limites del pedido.
@@ -246,7 +250,7 @@ class MarketController extends Controller
                 'whatsapp' => $provider->whatsapp,
                 'hours' => $provider->hours,
                 'address' => $provider->user?->primaryAddress?->formatted,
-                'delivery_fee' => (float) config('fastdelivery.delivery_fee'),
+                'delivery_fee' => $this->deliveryFee->estimateFor($provider),
                 'category' => $provider->category ? [
                     'id' => $provider->category->id,
                     'name' => $provider->category->description,
@@ -283,6 +287,52 @@ class MarketController extends Controller
         return response()->json([
             'success' => true,
             'addresses' => $addresses,
+        ]);
+    }
+
+    /**
+     * Cotiza el envio del comercio para una direccion concreta.
+     *
+     * GET /api/mobile/v1/market/quote?provider_id=1&address_id=7
+     * Devuelve el monto exacto y los km usados por el motor de tarifas.
+     */
+    public function quote(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'provider_id' => ['required', 'integer', 'exists:providers,id'],
+            'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'delivery_type' => ['nullable', 'string', 'in:'.Order::DELIVERY_TYPE_DELIVERY.','.Order::DELIVERY_TYPE_TAKEAWAY],
+        ]);
+
+        $provider = $this->baseQuery($this->marketModuleId())
+            ->whereKey($data['provider_id'])
+            ->first();
+
+        if (! $provider) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El comercio no está disponible.',
+            ], 404);
+        }
+
+        $deliveryType = $data['delivery_type'] ?? Order::DELIVERY_TYPE_DELIVERY;
+        $address = null;
+
+        if ($deliveryType === Order::DELIVERY_TYPE_DELIVERY && ! empty($data['address_id'])) {
+            $address = Address::where('id', $data['address_id'])
+                ->where('user_id', $request->user()->id)
+                ->first();
+        }
+
+        $quote = $this->deliveryFee->quote($provider, $address, $deliveryType);
+
+        return response()->json([
+            'success' => true,
+            'delivery_fee' => $quote['fee'],
+            'distance_km' => $quote['distance_km'],
+            'mode' => $quote['mode'],
+            'source' => $quote['source'],
+            'estimate' => $this->deliveryFee->estimateFor($provider),
         ]);
     }
 
@@ -397,15 +447,14 @@ class MarketController extends Controller
 
             $this->inventory->applySale($provider, $order, $stockLines);
 
-            $deliveryFee = $deliveryType === Order::DELIVERY_TYPE_TAKEAWAY
-                ? 0.0
-                : (float) config('fastdelivery.delivery_fee');
+            $quote = $this->deliveryFee->quote($provider, $address, $deliveryType);
 
             $order->update([
                 'subtotal' => $subtotal,
-                'delivery_fee' => $deliveryFee,
+                'delivery_fee' => $quote['fee'],
+                'delivery_distance_km' => $quote['distance_km'],
                 'discount' => 0,
-                'total' => $subtotal + $deliveryFee,
+                'total' => $subtotal + $quote['fee'],
             ]);
 
             return $order;
@@ -479,7 +528,7 @@ class MarketController extends Controller
                     // El cliente ve quien lleva su pedido en el circuito.
                     'driver:id,name,phone',
                     'items.options',
-                    'address:id,street,number,floor_apartment,postal_code,notes',
+                    'address:id,street,number,floor_apartment,postal_code,notes,latitude,longitude',
                     'payments:id,order_id,provider,status,amount,created_at',
                     'ratings',
                 ])
@@ -520,6 +569,102 @@ class MarketController extends Controller
             'success' => true,
             'statuses' => Order::STATUSES,
             'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Ubicacion del repartidor para el seguimiento en vivo de la app.
+     *
+     * Espeja OrderController@driverLocation de la web con el usuario del
+     * token Sanctum. Sin GPS real, interpola comercio -> domicilio segun el
+     * tiempo desde que el pedido salio a reparto (ventana de 20 min).
+     */
+    public function driverLocation(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['success' => false, 'message' => 'No autenticado.'], 401);
+        }
+
+        $userId = (int) $user->id;
+        $isClient = (int) $order->user_id === $userId;
+        $isProvider = $order->provider !== null && (int) $order->provider->user_id === $userId;
+        $isDriver = $order->driver_id !== null && (int) $order->driver_id === $userId;
+
+        if (! ($isClient || $isProvider || $isDriver)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés acceso a este pedido.',
+            ], 403);
+        }
+
+        $order->loadMissing([
+            'driver:id,name,phone',
+            'address:id,street,number,floor_apartment,postal_code,latitude,longitude',
+            'provider.user.primaryAddress',
+        ]);
+
+        $addr = $order->address;
+        $shopAddr = $order->provider?->user?->primaryAddress;
+
+        $origin = ($shopAddr && $shopAddr->latitude !== null && $shopAddr->longitude !== null)
+            ? ['latitude' => (float) $shopAddr->latitude, 'longitude' => (float) $shopAddr->longitude, 'label' => $order->provider->business_name ?? 'Comercio']
+            : null;
+
+        $destination = ($addr && $addr->latitude !== null && $addr->longitude !== null)
+            ? [
+                'latitude' => (float) $addr->latitude,
+                'longitude' => (float) $addr->longitude,
+                'label' => trim(($addr->street ?? '').' '.($addr->number ?? '')),
+            ]
+            : null;
+
+        $driver = $order->driver
+            ? ['id' => (int) $order->driver->id, 'name' => $order->driver->name, 'phone' => $order->driver->phone]
+            : null;
+
+        $trackable = $order->status === Order::STATUS_ON_THE_WAY
+            && $order->delivery_type !== Order::DELIVERY_TYPE_TAKEAWAY
+            && $driver !== null;
+
+        $mapAvailable = $trackable && $origin !== null && $destination !== null;
+
+        $driverLocation = null;
+        $etaMinutos = null;
+        $progress = 0.0;
+
+        if ($trackable) {
+            $windowMin = 20;
+            $elapsedMin = 0.0;
+            if ($order->updated_at) {
+                $elapsedMin = min($windowMin, max(0.0, now()->diffInSeconds($order->updated_at, true) / 60));
+            }
+            $progress = min(0.95, $elapsedMin / $windowMin);
+            $etaMinutos = (int) max(1, round($windowMin - $elapsedMin));
+
+            if ($origin !== null && $destination !== null) {
+                $driverLocation = [
+                    'latitude' => round($origin['latitude'] + ($destination['latitude'] - $origin['latitude']) * $progress, 6),
+                    'longitude' => round($origin['longitude'] + ($destination['longitude'] - $origin['longitude']) * $progress, 6),
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'order_id' => (int) $order->id,
+            'status' => $order->status,
+            'delivery_type' => $order->delivery_type,
+            'driver' => $driver,
+            'origin' => $origin,
+            'destination' => $destination,
+            'driver_location' => $driverLocation,
+            'progress' => round($progress, 4),
+            'eta_minutos' => $etaMinutos,
+            'simulated' => true,
+            'map_available' => $mapAvailable,
+            'updated_at' => $order->updated_at,
         ]);
     }
 
@@ -874,6 +1019,7 @@ class MarketController extends Controller
             'whatsapp' => $provider->whatsapp,
             'hours' => $provider->hours,
             'banner_image' => $provider->banner_image,
+            'delivery_fee' => $this->deliveryFee->estimateFor($provider),
             'categories_count' => (int) $provider->categories_count,
             'products_count' => (int) $provider->products_count,
             'active_subscription_plans_count' => (int) $provider->active_subscription_plans_count,

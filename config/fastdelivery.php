@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Retiro de saldo del repartidor
+    |--------------------------------------------------------------------------
+    |
+    | Monto minimo que puede solicitarse por retiro. El saldo queda congelado
+    | al solicitar y solo se paga cuando el admin lo aprueba.
+    |
+    */
+
+    'min_withdrawal' => env('DRIVER_MIN_WITHDRAWAL', 1000.00),
+
+    /*
+    |--------------------------------------------------------------------------
     | Limites del pedido
     |--------------------------------------------------------------------------
     */

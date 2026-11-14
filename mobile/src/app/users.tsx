@@ -432,8 +432,8 @@ export default function UsersScreen() {
       return;
     }
 
-    if (createPassword.length < 8) {
-      setCreateErrors({ password: 'La contraseña debe tener al menos 8 caracteres.' });
+    if (createPassword.length < 4) {
+      setCreateErrors({ password: 'La contraseña debe tener al menos 4 caracteres.' });
       return;
     }
 
@@ -554,8 +554,8 @@ export default function UsersScreen() {
       return;
     }
 
-    if (editPassword && editPassword.length < 8) {
-      setEditErrors({ password: 'La contraseña debe tener al menos 8 caracteres.' });
+    if (editPassword && editPassword.length < 4) {
+      setEditErrors({ password: 'La contraseña debe tener al menos 4 caracteres.' });
       return;
     }
 

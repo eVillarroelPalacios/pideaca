@@ -1293,6 +1293,15 @@ export type MarketAddressesResponse = {
   addresses: MarketAddress[];
 };
 
+export type MarketQuoteResponse = {
+  success: boolean;
+  delivery_fee: number;
+  distance_km: number | null;
+  mode: 'global' | 'flat' | 'distance';
+  source: string;
+  estimate: number;
+};
+
 export type MarketOrderItemPayload = {
   product_id: number;
   variant_id?: number | null;
@@ -1443,6 +1452,18 @@ export type MarketMyOrderAddress = {
   floor_apartment: string | null;
   postal_code: string | null;
   notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+export type MarketMyOrderProviderUser = {
+  id: number;
+  name: string;
+  phone: string | null;
+  primary_address?: {
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
 };
 
 export type MarketMyOrderProvider = {
@@ -1450,7 +1471,7 @@ export type MarketMyOrderProvider = {
   business_name: string;
   is_active: boolean;
   user_id: number;
-  user: { id: number; name: string; phone: string | null } | null;
+  user: MarketMyOrderProviderUser | null;
 };
 
 export type MarketMyOrderDriver = {
@@ -1491,6 +1512,21 @@ export type MarketMyOrdersResponse = {
   success: boolean;
   statuses: string[];
   orders: MarketMyOrder[];
+};
+
+export type MarketDriverLocationResponse = {
+  success: boolean;
+  order_id: number;
+  status: string;
+  delivery_type: string | null;
+  driver: { id: number; name: string; phone: string | null } | null;
+  origin: { latitude: number; longitude: number; label: string } | null;
+  destination: { latitude: number; longitude: number; label: string } | null;
+  driver_location: { latitude: number; longitude: number } | null;
+  progress: number;
+  eta_minutos: number | null;
+  simulated: boolean;
+  map_available: boolean;
 };
 
 export type MarketRateOrderPayload = {
@@ -2370,6 +2406,56 @@ export type DriverStatusPayload = {
   latitude?: number | null;
   longitude?: number | null;
   accuracy?: number | null;
+};
+
+export type DriverWithdrawal = {
+  id: number;
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  method: string | null;
+  reference: string | null;
+  notes: string | null;
+  created_at: string | null;
+  reviewed_at: string | null;
+};
+
+export type DriverWithdrawalsResponse = {
+  success: boolean;
+  balance: number;
+  min_withdrawal: number;
+  withdrawals: DriverWithdrawal[];
+};
+
+export type DriverWithdrawalPayload = {
+  amount: number;
+  method?: string | null;
+  notes?: string | null;
+};
+
+export type DriverWithdrawalResponse = {
+  success: boolean;
+  message: string;
+  withdrawal: DriverWithdrawal;
+  balance: number;
+};
+
+export type ProviderWithdrawalsResponse = {
+  success: boolean;
+  withdrawals: ProviderWithdrawal[];
+};
+
+export type ProviderWithdrawalActionResponse = {
+  success: boolean;
+  message: string;
+  withdrawal: ProviderWithdrawal;
+};
+
+export type ProviderWithdrawal = DriverWithdrawal & {
+  user: {
+    id: number;
+    name: string;
+    email: string | null;
+  } | null;
 };
 
 export type DriverOrderAddress = {

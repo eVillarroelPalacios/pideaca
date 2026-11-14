@@ -87,6 +87,8 @@
                     #dash-repartidor .drv-tab.active{background:#fff;color:#D24C19;box-shadow:0 3px 8px rgba(15,23,42,.12);}
                     #dash-repartidor .drv-count{min-width:23px;height:23px;padding:0 7px;border-radius:9999px;background:#D24C19;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;}
                     #dash-repartidor .drv-tab:not(.active) .drv-count{background:#cbd5e1;color:#475569;}
+                    /* Ícono de tab: solo se muestra en móvil (ver media query). */
+                    #dash-repartidor .drv-tab-ico{display:none;width:18px;height:18px;flex:none;}
 
                     /* ── Radar row ── */
                     #dash-repartidor .drv-radar-row{display:flex;align-items:center;gap:16px;padding:16px 24px 0;flex-wrap:wrap;}
@@ -174,10 +176,6 @@
                     #dash-repartidor .drv-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px;}
                     #dash-repartidor .drv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9999px;padding:14px 22px;font-size:13.5px;font-weight:800;cursor:pointer;text-decoration:none;transition:.16s;font-family:inherit;border:none;}
                     #dash-repartidor .drv-btn svg{width:16px;height:16px;}
-                    #dash-repartidor .drv-btn-maps{background:#0c2a4d;color:#fff;box-shadow:0 6px 14px rgba(12,42,77,.22);}
-                    #dash-repartidor .drv-btn-maps:hover{background:#123a63;transform:translateY(-1px);}
-                    #dash-repartidor .drv-btn-waze{background:#fff;color:#0c2a4d;border:1.5px solid #cbd5e1;}
-                    #dash-repartidor .drv-btn-waze:hover{border-color:#0c2a4d;transform:translateY(-1px);}
                     #dash-repartidor .drv-btn-pickup{background:#D24C19;color:#fff;box-shadow:0 6px 16px rgba(210,76,25,.30);margin-left:auto;}
                     #dash-repartidor .drv-btn-pickup:hover{background:#bd4115;transform:translateY(-1px);}
                     #dash-repartidor .drv-btn-done{background:#16a34a;color:#fff;box-shadow:0 6px 16px rgba(22,163,74,.30);margin-left:auto;}
@@ -188,6 +186,29 @@
                     #dash-repartidor .drv-pin:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.14);}
                     #dash-repartidor .drv-pin-hint{font-size:11.5px;color:#64748b;width:100%;font-weight:600;}
 
+                    /* ── Mapa de navegación en vivo (paso 2. En entrega) ── */
+                    /* Reutiliza Leaflet + OSM como el mapa del cliente (fdTrack*):
+                       origen = GPS vivo del repartidor, destino = cliente. */
+                    #dash-repartidor .drv-nav{margin-top:17px;background:#0c2a4d;border-radius:12px;overflow:hidden;border:1px solid #0c2a4d;}
+                    #dash-repartidor .drv-nav-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;}
+                    #dash-repartidor .drv-nav-badge{display:inline-flex;align-items:center;gap:7px;background:#D24C19;color:#fff;font-size:12.5px;font-weight:800;padding:8px 15px;border-radius:9999px;letter-spacing:.2px;box-shadow:0 4px 10px rgba(210,76,25,.35);}
+                    #dash-repartidor .drv-nav-badge.sim{background:rgba(255,255,255,.14);box-shadow:none;color:#fff;border:1px solid rgba(255,255,255,.25);}
+                    #dash-repartidor .drv-nav-map{height:280px;width:100%;background:#e2e8f0;z-index:0;}
+                    #dash-repartidor .drv-nav-map .leaflet-container{font:inherit;}
+                    /* Blindaje contra el preflight de Tailwind (img{max-width:100%}):
+                       sin esto los tiles de 256px se deforman y el mapa se ve roto. */
+                    #dash-repartidor .drv-nav-map img{max-width:none !important;}
+                    #dash-repartidor .drv-nav-map .leaflet-tile{max-width:none !important;}
+                    #dash-repartidor .drv-nav-attr{background:rgba(12,42,77,.96);color:rgba(255,255,255,.75);font-size:10.5px;padding:7px 14px;text-align:right;}
+                    #dash-repartidor .drv-nav-attr a{color:#fdba74;text-decoration:none;}
+                    #dash-repartidor .drv-nav-attr a:hover{text-decoration:underline;}
+                    #dash-repartidor .drv-nav-pin{display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 2px 8px rgba(15,23,42,.35);border:3px solid #fff;}
+                    #dash-repartidor .drv-nav-pin-dest{width:38px;height:38px;background:#ea580c;color:#fff;}
+                    #dash-repartidor .drv-nav-pin-driver{width:44px;height:44px;background:#ea580c;color:#fff;font-size:22px;}
+                    #dash-repartidor .drv-nav-divicon{background:none;border:none;}
+                    #dash-repartidor .drv-nav-driver{transition:transform 4.8s linear;}
+                    #dash-repartidor .drv-nav-label{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;background:#fff;color:#0f172a;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:9999px;box-shadow:0 4px 14px rgba(15,23,42,.22);border:1px solid #e2e8f0;pointer-events:none;}
+
                     /* ── Empty / loading ── */
                     #dash-repartidor .drv-empty{background:#fff;border:2px dashed #e2e8f0;border-radius:14px;padding:48px 26px;text-align:center;}
                     #dash-repartidor .drv-empty-icon{width:80px;height:80px;border-radius:50%;background:#FFF1E8;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#D24C19;}
@@ -195,6 +216,16 @@
                     #dash-repartidor .drv-empty-title{font-size:18px;font-weight:800;color:#0f172a;letter-spacing:-.3px;}
                     #dash-repartidor .drv-empty-sub{font-size:13.5px;color:#94a3b8;margin-top:9px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.65;}
                     #dash-repartidor .drv-loading{padding:34px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600;}
+
+                    /* Móvil: tabs solo con ícono + contador, en una sola fila
+                       centrada. En escritorio se conservan los textos completos. */
+                    @media (max-width:768px){
+                        #dash-repartidor .drv-tabs-wrap{display:flex;justify-content:center;}
+                        #dash-repartidor .drv-tabs{display:flex;flex-wrap:nowrap;justify-content:center;width:auto;max-width:100%;}
+                        #dash-repartidor .drv-tab{flex:0 0 auto;gap:8px;padding:10px 18px;}
+                        #dash-repartidor .drv-tab-ico{display:block;}
+                        #dash-repartidor .drv-tab-label{display:none;}
+                    }
 
                     @media (max-width:640px){
                         #dash-repartidor .drv-header{padding:14px 16px;}
@@ -329,11 +360,13 @@
                     {{-- ═══ Tabs ═══ --}}
                     <div class="drv-tabs-wrap">
                         <div class="drv-tabs">
-                            <button type="button" class="drv-tab active" id="drv-tab-available" onclick="drvSwitchTab('available')">
-                                Pedidos Disponibles <span class="drv-count" id="drv-count-available">0</span>
+                            <button type="button" class="drv-tab active" id="drv-tab-available" onclick="drvSwitchTab('available')" aria-label="Pedidos disponibles" title="Pedidos disponibles">
+                                <svg class="drv-tab-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                <span class="drv-tab-label">Pedidos Disponibles</span> <span class="drv-count" id="drv-count-available">0</span>
                             </button>
-                            <button type="button" class="drv-tab" id="drv-tab-inprogress" onclick="drvSwitchTab('inprogress')">
-                                En Curso / Asignados <span class="drv-count" id="drv-count-inprogress">0</span>
+                            <button type="button" class="drv-tab" id="drv-tab-inprogress" onclick="drvSwitchTab('inprogress')" aria-label="En curso y asignados" title="En curso / Asignados">
+                                <svg class="drv-tab-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"></circle><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"></path><circle cx="18" cy="5" r="3"></circle></svg>
+                                <span class="drv-tab-label">En Curso / Asignados</span> <span class="drv-count" id="drv-count-inprogress">0</span>
                             </button>
                         </div>
                     </div>
@@ -493,7 +526,12 @@
                         });
                     }
 
-                    /* ── GPS: estado de precisión en la barra ── */
+                    /* ── GPS: estado de precisión en la barra + watcher en vivo ── */
+                    // El watcher alimenta drvLivePos para el mapa de navegación
+                    // (paso 2. En entrega): cada fix mueve el marcador, recorta
+                    // la ruta restante y refresca el badge de distancia/ETA.
+                    var drvLivePos = null; // {lat, lng, acc} o null sin señal
+                    var drvWatchStarted = false;
                     function initGps() {
                         var el = document.getElementById('drv-gps');
                         if (!el) return;
@@ -507,6 +545,26 @@
                         }, function () {
                             el.innerHTML = '<span class="drv-dot paused"></span> GPS sin señal';
                         }, { enableHighAccuracy: true, timeout: 8000 });
+                        drvWatchStart();
+                    }
+                    function drvWatchStart() {
+                        if (drvWatchStarted || !navigator.geolocation) return;
+                        drvWatchStarted = true;
+                        try {
+                            navigator.geolocation.watchPosition(function (pos) {
+                                drvLivePos = {
+                                    lat: pos.coords.latitude,
+                                    lng: pos.coords.longitude,
+                                    acc: Math.round(pos.coords.accuracy || 0)
+                                };
+                                var el = document.getElementById('drv-gps');
+                                if (el) el.innerHTML = '<span class="drv-dot"></span> GPS Activo (' + drvLivePos.acc + 'm de precisión)';
+                                drvNavRefreshAll();
+                            }, function () {
+                                var el = document.getElementById('drv-gps');
+                                if (el && !drvLivePos) el.innerHTML = '<span class="drv-dot paused"></span> GPS sin señal';
+                            }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+                        } catch (e) { /* sin watcher: el mapa usa el fallback */ }
                     }
 
                     /* ── Meta del día: clic para ajustar ── */
@@ -544,7 +602,7 @@
                         document.getElementById('drv-tab-inprogress').classList.toggle('active', !av);
                         document.getElementById('drv-panel-available').style.display = av ? 'block' : 'none';
                         document.getElementById('drv-panel-inprogress').style.display = av ? 'none' : 'block';
-                        if (!av) loadMyOrders(); else loadAvailable();
+                        if (!av) { loadMyOrders(); setTimeout(drvNavInvalidate, 60); } else loadAvailable();
                     };
                     window.drvScrollList = function () {
                         var el = document.getElementById('dash-delivery-orders-list');
@@ -621,25 +679,168 @@
                         var loc = addrLocality(a);
                         return [line, loc].filter(Boolean).join(', ') || 'Sin dirección cargada';
                     }
-                    function destQuery(a, fallback) {
-                        if (a) {
-                            if (a.latitude && a.longitude) return a.latitude + ',' + a.longitude;
-                            var t = [a.street, a.number].filter(Boolean).join(' ');
-                            if (t) return [t, addrLocality(a)].filter(Boolean).join(', ');
-                        }
-                        return fallback || '';
+
+                    /* ── Navegación en vivo del repartidor (paso 2. En entrega) ── */
+                    // Misma librería y estilo que el mapa del cliente (fdTrack*):
+                    // Leaflet + OSM, polilínea naranja, pins redondos y badge
+                    // con distancia/ETA. Origen = GPS vivo del watcher; sin
+                    // señal se usa el punto de retiro (o punto simulado cercano)
+                    // para que el mapa siempre se visualice sin romperse.
+                    var drvNavMaps = {}; // orderId -> {map, driver, route, dest, order}
+                    function drvNavNum(v) {
+                        var n = parseFloat(v);
+                        return isFinite(n) ? n : null;
                     }
-                    function mapUrl(a, fallback) {
-                        var q = destQuery(a, fallback);
-                        return q ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q) : null;
+                    function drvNavDest(o) {
+                        var a = o ? o.address : null;
+                        var la = a ? drvNavNum(a.latitude) : null;
+                        var ln = a ? drvNavNum(a.longitude) : null;
+                        return (la === null || ln === null) ? null : { lat: la, lng: ln };
                     }
-                    function wazeUrl(a, fallback) {
-                        var q = destQuery(a, fallback);
-                        if (!q) return null;
-                        if (a && a.latitude && a.longitude) {
-                            return 'https://waze.com/ul?ll=' + encodeURIComponent(a.latitude + ',' + a.longitude) + '&navigate=yes';
+                    function drvNavPickup(o) {
+                        var pa = (o && o.provider && o.provider.user) ? o.provider.user.primary_address : null;
+                        var la = pa ? drvNavNum(pa.latitude) : null;
+                        var ln = pa ? drvNavNum(pa.longitude) : null;
+                        return (la === null || ln === null) ? null : { lat: la, lng: ln };
+                    }
+                    function drvHaversineKm(a, b) {
+                        var R = 6371;
+                        var dLa = (b.lat - a.lat) * Math.PI / 180;
+                        var dLn = (b.lng - a.lng) * Math.PI / 180;
+                        var s = Math.sin(dLa / 2) * Math.sin(dLa / 2)
+                            + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180)
+                            * Math.sin(dLn / 2) * Math.sin(dLn / 2);
+                        return 2 * R * Math.asin(Math.sqrt(s));
+                    }
+                    function drvNavOriginFor(o, dest) {
+                        if (drvLivePos) return { lat: drvLivePos.lat, lng: drvLivePos.lng, simulated: false };
+                        var p = drvNavPickup(o);
+                        if (p) return { lat: p.lat, lng: p.lng, simulated: true, label: 'punto de retiro' };
+                        return { lat: dest.lat + 0.0045, lng: dest.lng + 0.0045, simulated: true, label: 'ubicación simulada' };
+                    }
+                    function drvNavEtaText(km) {
+                        var mins = Math.max(1, Math.round(km / 25 * 60));
+                        var dist = km < 1 ? (Math.round(km * 1000) + ' m') : (km.toFixed(1).replace('.', ',') + ' km');
+                        return '🛵 ' + dist + ' · ~' + mins + ' min';
+                    }
+                    function drvNavBadge(orderId, origin, dest) {
+                        var el = document.getElementById('drv-nav-eta-' + orderId);
+                        if (!el) return;
+                        var km = drvHaversineKm({ lat: origin.lat, lng: origin.lng }, dest);
+                        el.textContent = drvNavEtaText(km) + (origin.simulated ? ' · 📍 Sin GPS: desde ' + origin.label : '');
+                        el.classList.toggle('sim', !!origin.simulated);
+                    }
+                    function drvNavHtml(o) {
+                        if (!drvNavDest(o)) return '';
+                        return '<div class="drv-nav">'
+                            + '<div class="drv-nav-head"><span class="drv-nav-badge" id="drv-nav-eta-' + o.id + '">🛵 Calculando ruta…</span></div>'
+                            + '<div class="drv-nav-map" id="drv-nav-map-' + o.id + '"></div>'
+                            + '<div class="drv-nav-attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · ruta en vivo estilo DiDi</div>'
+                            + '</div>';
+                    }
+                    function drvNavInit(orderId, o) {
+                        var el = document.getElementById('drv-nav-map-' + orderId);
+                        var dest = drvNavDest(o);
+                        if (!el || !dest) return;
+                        if (typeof L === 'undefined') {
+                            el.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;font-size:13px;">No se pudo cargar el mapa (sin conexión a la librería).</div>';
+                            return;
                         }
-                        return 'https://waze.com/ul?q=' + encodeURIComponent(q);
+                        // Defensa contra "Map container is already initialized":
+                        // si había una instancia previa para este pedido se
+                        // destruye antes de crear la nueva.
+                        drvNavStop(orderId);
+                        var origin = drvNavOriginFor(o, dest);
+                        var map = L.map(el, { scrollWheelZoom: false }).setView([origin.lat, origin.lng], 15);
+                        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        }).addTo(map);
+                        var destIcon = L.divIcon({
+                            className: 'drv-nav-divicon',
+                            html: '<div class="drv-nav-pin drv-nav-pin-dest"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg></div>',
+                            iconSize: [38, 38], iconAnchor: [19, 19]
+                        });
+                        var driverIcon = L.divIcon({
+                            className: 'drv-nav-divicon drv-nav-driver',
+                            html: '<div class="drv-nav-pin drv-nav-pin-driver">🛵</div><div class="drv-nav-label"><b>Vos</b></div>',
+                            iconSize: [44, 44], iconAnchor: [22, 22]
+                        });
+                        L.marker([dest.lat, dest.lng], { icon: destIcon, title: 'Cliente' }).addTo(map).bindPopup('Destino del cliente');
+                        var driverMk = L.marker([origin.lat, origin.lng], { icon: driverIcon, title: 'Tu ubicación' }).addTo(map);
+                        var route = L.polyline([[origin.lat, origin.lng], [dest.lat, dest.lng]], {
+                            color: '#ea580c', weight: 5, opacity: 0.9, lineJoin: 'round'
+                        }).addTo(map);
+                        map.fitBounds(L.latLngBounds([[origin.lat, origin.lng], [dest.lat, dest.lng]]).pad(0.3));
+                        drvNavMaps[orderId] = { map: map, driver: driverMk, route: route, dest: dest, order: o };
+                        drvNavBadge(orderId, origin, dest);
+                        // El mapa se monta condicionalmente al entrar al paso 2:
+                        // se le da un ciclo a que el navegador pinte el
+                        // contenedor y luego se recalcula el tamaño real para
+                        // que los tiles y marcadores no queden en gris.
+                        setTimeout(function () {
+                            var st = drvNavMaps[orderId];
+                            if (st && st.map) { try { st.map.invalidateSize(); } catch (e) {} }
+                        }, 200);
+                    }
+                    // true solo si la instancia sigue atada a un nodo visible
+                    // en el DOM (el polling reemplaza el innerHTML y destruye
+                    // los contenedores: sin este cheque el mapa pintaría sobre
+                    // un nodo desmontado y el div visible quedaría gris).
+                    function drvNavAlive(orderId) {
+                        var st = drvNavMaps[orderId];
+                        if (!st || !st.map) return false;
+                        try {
+                            var c = st.map.getContainer();
+                            return !!(c && c.isConnected);
+                        } catch (e) { return false; }
+                    }
+                    function drvNavRefresh(orderId) {
+                        var st = drvNavMaps[orderId];
+                        if (!st || !st.map) return;
+                        if (!drvNavAlive(orderId)) { drvNavStop(orderId); return; }
+                        var origin = drvNavOriginFor(st.order, st.dest);
+                        st.driver.setLatLng([origin.lat, origin.lng]);
+                        st.route.setLatLngs([[origin.lat, origin.lng], [st.dest.lat, st.dest.lng]]);
+                        drvNavBadge(orderId, origin, st.dest);
+                    }
+                    function drvNavRefreshAll() {
+                        Object.keys(drvNavMaps).forEach(function (id) { drvNavRefresh(Number(id)); });
+                    }
+                    function drvNavInvalidate() {
+                        Object.keys(drvNavMaps).forEach(function (id) {
+                            var st = drvNavMaps[Number(id)];
+                            if (st && st.map) { try { st.map.invalidateSize(); } catch (e) {} }
+                        });
+                    }
+                    function drvNavStop(orderId) {
+                        var st = drvNavMaps[orderId];
+                        if (!st) return;
+                        try { if (st.map) st.map.remove(); } catch (e) {}
+                        delete drvNavMaps[orderId];
+                    }
+                    // Crea el mapa solo en tarjetas con paso activo 2. En entrega
+                    // y destino con coordenadas; limpia los que ya no apliquen.
+                    // Si la instancia quedo atada a un nodo destruido por el
+                    // re-render se recrea sobre el div visible actual.
+                    function drvNavSync(list) {
+                        var ids = {};
+                        (list || []).forEach(function (o) {
+                            if (stepIndexOf(o.delivery_status) === 2 && drvNavDest(o)) ids[Number(o.id)] = o;
+                        });
+                        Object.keys(drvNavMaps).forEach(function (id) {
+                            if (!ids[id] || !document.getElementById('drv-nav-map-' + id)) drvNavStop(Number(id));
+                        });
+                        Object.keys(ids).forEach(function (id) {
+                            var nid = Number(id);
+                            if (!drvNavAlive(nid)) { drvNavStop(nid); drvNavInit(nid, ids[id]); }
+                            else { drvNavMaps[nid].order = ids[id]; drvNavRefresh(nid); }
+                        });
+                    }
+                    // Destruye todas las instancias antes de reemplazar el
+                    // innerHTML: evita pintar sobre nodos desmontados (gris).
+                    function drvNavTeardown() {
+                        Object.keys(drvNavMaps).forEach(function (id) { drvNavStop(Number(id)); });
                     }
 
                     /* ── Tarjeta de viaje en curso ── */
@@ -657,9 +858,6 @@
                             ? addrFull(pickupAddr)
                             : (shop.zone || 'Punto de retiro en el comercio');
 
-                        var gMaps = mapUrl(dest, addrFull(dest));
-                        var wMaps = wazeUrl(dest, addrFull(dest));
-
                         var labels = ['1. En retiro', '2. En entrega', '3. Entregado'];
                         var steps = '';
                         for (var i = 1; i <= 3; i++) {
@@ -668,17 +866,6 @@
                         }
 
                         var actions = '';
-                        if (gMaps) {
-                            actions += '<a class="drv-btn drv-btn-maps" href="' + gMaps + '" target="_blank" rel="noopener">'
-                                + '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>'
-                                + 'Abrir en Google Maps / Waze</a>';
-                        }
-                        if (wMaps) {
-                            actions += '<a class="drv-btn drv-btn-waze" href="' + wMaps + '" target="_blank" rel="noopener">'
-                                + '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>'
-                                + 'Waze</a>';
-                        }
-
                         if (delivered) {
                             actions += '<span class="drv-chip ok" style="margin-left:auto;padding:12px 18px;font-size:13px;">✓ Entregado</span>';
                         } else if (cur === 1) {
@@ -732,6 +919,10 @@
                                 : '')
                             +     '</div>'
                             +   '</div>'
+
+                            // Paso 2. En entrega: mapa en vivo estilo DiDi entre
+                            // el GPS del repartidor y el cliente (con fallback).
+                            +   (cur === 2 ? drvNavHtml(o) : '')
 
                             +   '<div class="drv-actions">' + actions + '</div>'
                             +   pinRow
@@ -791,7 +982,13 @@
                                 var list = (json && json.success && json.orders) ? json.orders : [];
                                 document.getElementById('drv-count-inprogress').textContent = list.length;
                                 if (typingPin && box.querySelector('.drv-pin-row:not([hidden])')) return;
+                                // El re-render destruye los divs de los mapas:
+                                // se desmontan primero para recrearlos limpios.
+                                drvNavTeardown();
                                 box.innerHTML = list.length ? list.map(myCardHtml).join('') : emptyMyHtml();
+                                // Mapas de navegación estilo DiDi en el paso 2.
+                                // En entrega (se destruyen los que ya no apliquen).
+                                drvNavSync(list);
                             })
                             .catch(function () { if (!box.querySelector('.drv-pin-row:not([hidden])')) box.innerHTML = emptyMyHtml(); });
                     }
