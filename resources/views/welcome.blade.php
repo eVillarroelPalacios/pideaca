@@ -211,9 +211,9 @@
                                                      $emptyStar = 5 - $fullStars - ($halfStar ? 1 : 0);
                                                      $starsHtml = str_repeat('&#9733;', $fullStars) . ($halfStar ? '&#9734;' : '') . str_repeat('&#9734;', $emptyStar);
                                                  @endphp
-                                                 <span class="ad-rating" style="font-size:11px;color:#f59e0b;">{!! $starsHtml !!}</span> <span style="font-size:11px;color:#6b7280;">{{ number_format($rating, 1) }} ({{ $ratingCount }})</span>
+                                                 <span class="ad-rating" style="font-size:11px;color:#f59e0b;">{!! $starsHtml !!}</span> <span class="ad-rating-count" style="font-size:11px;color:#6b7280;">{{ number_format($rating, 1) }} ({{ $ratingCount }})</span>
                                              @else
-                                                 <span style="font-size:11px;color:#94a3b8;font-style:italic;">★ Sin calificaciones</span>
+                                                 <span class="ad-rating-empty" style="font-size:11px;color:#94a3b8;font-style:italic;">★ Sin calificaciones</span>
                                              @endif
                                         </div>
                                     </div>
@@ -1507,13 +1507,54 @@
     }
 
     @media (max-width: 480px) {
-        .provider-grid { 
-            grid-template-columns: 1fr !important; 
+        /* 2 tarjetas por fila en móvil: la grilla pasa de 1 a 2 columnas y
+           todos los elementos de la tarjeta se escalan en proporción para
+           que entren cómodas lado a lado sin desbordarse. */
+        .provider-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+            padding: 4px 8px !important;
         }
-        .ad-banner { height: 148px !important; }
+        .ad-banner { height: 118px !important; }
         .ad-avatar,
-        .ad-avatar-img { width: 112px; height: 112px; }
-        .ad-avatar { font-size: 34px; }
+        .ad-avatar-img { width: 86px; height: 86px; border-width: 2px; }
+        .ad-avatar { font-size: 30px; letter-spacing: 0.5px; }
+
+        .ad-card .ad-body { padding: 10px !important; padding-bottom: 38px !important; }
+        .ad-card-info { gap: 4px !important; margin-bottom: 4px !important; }
+
+        .ad-badge {
+            font-size: 8px !important;
+            padding: 2px 7px !important;
+            margin-bottom: 6px !important;
+            letter-spacing: 0.4px !important;
+        }
+
+        .ad-title {
+            font-size: 10.5px !important;
+            line-height: 1.25 !important;
+            height: auto !important;
+            max-height: 27px !important;
+        }
+
+        .ad-rating,
+        .ad-rating-count,
+        .ad-rating-empty { font-size: 9px !important; }
+        .ad-rating { letter-spacing: -0.5px; }
+
+        .ad-desc {
+            font-size: 9.5px !important;
+            line-height: 1.35 !important;
+            height: 26px !important;
+            padding-right: 0 !important;
+            margin-bottom: 8px !important;
+        }
+
+        .card-action-icon { width: 26px; height: 26px; bottom: 8px; right: 8px; }
+        .card-action-icon svg { width: 14px; height: 14px; }
+
+        #ad-pagination { padding: 8px !important; }
+        #ad-pagination .pagination-nav-btn { width: 28px !important; height: 28px !important; }
     }
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }
