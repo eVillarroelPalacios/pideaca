@@ -1025,6 +1025,19 @@
         closeDropdowns();
         var menu = document.getElementById('mobile-menu');
         if (menu) menu.style.display = 'none';
+        // Cerrar drawers moviles al cambiar de seccion (p. ej. admin que va a
+        // 'usuarios' desde showProfilePanel, o navegacion entre secciones).
+        var psb = document.getElementById('profile-sidebar');
+        if (psb) psb.classList.remove('open');
+        var sov = document.getElementById('sidebar-overlay');
+        if (sov) sov.style.display = 'none';
+        var usb = document.getElementById('user-sidebar');
+        if (usb) usb.classList.remove('open');
+        var uov = document.getElementById('user-sidebar-overlay');
+        if (uov) uov.style.display = 'none';
+        // Entrada directa a Gestión de Usuarios (nav superior u otros accesos):
+        // marcar 'Usuarios' aunque no se pase por showProfilePanel.
+        if (key === 'usuarios' && typeof setProfileSidebarActive === 'function') setProfileSidebarActive('usuarios');
     }
 
     window.addEventListener('popstate', function (e) {
@@ -13288,7 +13301,26 @@
         updateCreateUserBtnVisibility();
     }
 
+    function setProfileSidebarActive(key) {
+        // Limpia el resaltado de todas las opciones y marca solo la
+        // correspondiente a la seccion visible (desktop y movil usan
+        // los mismos nodos: el sidebar se mueve al acoplar, no se duplica).
+        document.querySelectorAll('.sidebar-link[data-panel]').forEach(function (link) {
+            link.classList.toggle('active', link.dataset.panel === key);
+        });
+        var bc = document.getElementById('breadcrumb-current');
+        if (bc) bc.textContent = (typeof profileBreadcrumbLabels !== 'undefined' && profileBreadcrumbLabels[key]) || key;
+    }
+
     function showProfilePanel(key) {
+        // En movil el sidebar es un drawer: cerrarlo siempre al elegir una
+        // seccion, incluso en las salidas anticipadas de abajo (guards de rol,
+        // admin->usuarios, errores en loaders). Sin esto el drawer y el overlay
+        // quedaban abiertos tapando la pantalla.
+        var sbTop = document.getElementById('profile-sidebar');
+        if (sbTop) sbTop.classList.remove('open');
+        var ovTop = document.getElementById('sidebar-overlay');
+        if (ovTop) ovTop.style.display = 'none';
         // Guard de paneles de negocio: el secundario no los ve ni los edita,
         // se lo lleva a su primera página autorizada. Con impersonación se
         // evalúa el rol de la cuenta administrada.
@@ -13310,10 +13342,12 @@
             }
             return;
         }
-        if (key === 'imagenes' && !profileCanAdvertise) key = profileIsPrestador ? 'negocio' : 'cuenta';
+        // Publicidad abre siempre su modulo: el backend (ProfileController@storeImage)
+        // ya rechaza con 403/400 a quien no pueda anunciar o no tenga proveedor.
         if (key === 'usuarios' && !document.querySelector('.sidebar-link[data-panel="usuarios"]')) key = 'cuenta';
         // El Admin gestiona usuarios en la pantalla dedicada (con sidebar acoplado).
         if (key === 'usuarios' && actorIsAdmin && document.getElementById('dash-usuarios')) {
+            setProfileSidebarActive('usuarios');
             showDashSection('usuarios');
             return;
         }
@@ -13339,18 +13373,11 @@
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
-        document.querySelectorAll('.sidebar-link[data-panel]').forEach(function(link) {
-            link.classList.toggle('active', link.dataset.panel === key);
-        });
+        if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
+        setProfileSidebarActive(key);
         document.querySelectorAll('.profile-panel').forEach(function(p) {
             p.classList.toggle('active', p.dataset.panel === key);
         });
-        var bc = document.getElementById('breadcrumb-current');
-        if (bc) bc.textContent = profileBreadcrumbLabels[key] || key;
-        var sb = document.getElementById('profile-sidebar');
-        if (sb) sb.classList.remove('open');
-        var ov = document.getElementById('sidebar-overlay');
-        if (ov) ov.style.display = 'none';
     }
 
     function toggleProfileSidebar() {
@@ -13364,6 +13391,16 @@
 
     function loadProfile() {
         if (!profileEsPrestador && !umManagedId()) {
+            // Vuelta desde una seccion con sidebar acoplado (p. ej. Gestion de
+            // Usuarios): el panel pedido quedo en __pendingProfilePanel y no hay
+            // fetch que lo consuma en esta rama. Sin esto, el primer clic no
+            // cambiaba de vista y hacia falta un segundo clic.
+            if (window.__pendingProfilePanel) {
+                var pendingKey = window.__pendingProfilePanel;
+                window.__pendingProfilePanel = null;
+                showProfilePanel(pendingKey);
+                return;
+            }
             if (profilePanelInicial === 'direccion') showProfilePanel('direccion');
             return;
         }
@@ -13400,7 +13437,7 @@
             toggleSidebarLink('sidebar-link-negocio', profilePuedeConfigurarNegocio);
             toggleSidebarLink('sidebar-link-horarios', profilePuedeConfigurarNegocio);
             toggleSidebarLink('sidebar-link-servicios', profilePuedeConfigurarNegocio);
-            toggleSidebarLink('sidebar-link-imagenes', profilePuedeConfigurarNegocio && profileCanAdvertise);
+            toggleSidebarLink('sidebar-link-imagenes', profilePuedeConfigurarNegocio);
             toggleSidebarLink('sidebar-link-categorias', profilePuedeConfigurarNegocio);
             if (umManagedId()) umApplyManagedSidebar();
 

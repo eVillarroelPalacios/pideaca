@@ -11,6 +11,11 @@
                     @media (max-width:768px){
                         .um-with-sidebar.docked .um-main{margin-left:0;}
                     }
+                    /* Barra superior blanca con hamburguesa (igual a la de Mi Panel):
+                       en movil abre el drawer acoplado; en desktop va oculta. */
+                    .um-topbar{height:44px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 20px;gap:8px;position:sticky;top:60px;z-index:40;margin:0 -20px 18px;}
+                    .um-topbar a{font-size:12px;color:#64748b;text-decoration:none;}
+                    .um-topbar .um-topbar-current{font-size:12px;color:#0f172a;font-weight:600;}
                     .um-outline-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#D24C19;border:1px solid #D24C19;padding:9px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;transition:background .15s ease;}
                     .um-outline-btn:hover{background:#fff7ed;}
                     .um-limit-card{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;background:#fff;border:1px solid #e5e7eb;padding:16px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
@@ -93,11 +98,22 @@
                         .um-perm-grid{grid-template-columns:1fr;}
                         .um-limit-card{align-items:flex-start;}
                     }
+                    @media (max-width:768px){
+                        #um-sidebar-toggle{display:flex !important;}
+                    }
                 </style>
 
                 <div class="um-with-sidebar" id="um-with-sidebar">
                     <div id="um-sidebar-slot"></div>
                     <div class="um-main">
+                <div class="um-topbar">
+                    <button onclick="toggleProfileSidebar()" id="um-sidebar-toggle" title="Abrir menú" aria-label="Abrir menú" style="display:none;background:none;border:none;cursor:pointer;padding:4px;color:#0f172a;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    </button>
+                    <a href="{{ url('/') }}" title="Ir al inicio del panel">Mi Panel</a>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                    <span class="um-topbar-current">Gestión de Usuarios</span>
+                </div>
                 <div class="um-page-head">
                     <div>
                         <h2 class="um-page-title">Gestión de Usuarios</h2>
