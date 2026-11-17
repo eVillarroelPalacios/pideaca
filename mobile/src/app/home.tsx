@@ -141,7 +141,6 @@ export default function HomeScreen() {
   const [trusted, setTrusted] = useState<TrustedDriversResponse | null>(null);
   const [trustedSearch, setTrustedSearch] = useState('');
   const [providerWithdrawals, setProviderWithdrawals] = useState<ProviderWithdrawal[]>([]);
-  const [loadingWithdrawals, setLoadingWithdrawals] = useState(false);
   const [busyWithdrawalId, setBusyWithdrawalId] = useState<number | null>(null);
   const [rejectWithdrawalId, setRejectWithdrawalId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -639,22 +638,6 @@ export default function HomeScreen() {
       showNotice(`${name} se agregó a tus repartidores de confianza.`);
     } catch (caught) {
       Alert.alert('No pudimos agregar', caught instanceof ApiError ? caught.message : 'Intentá de nuevo.');
-    }
-  }
-
-  // Retiros de repartidores del comercio.
-  async function loadProviderWithdrawals() {
-    setLoadingWithdrawals(true);
-
-    try {
-      setProviderWithdrawals((await api.providerWithdrawals()).withdrawals);
-    } catch (caught) {
-      Alert.alert(
-        'No pudimos cargar los retiros',
-        caught instanceof ApiError ? caught.message : 'Intentá de nuevo.',
-      );
-    } finally {
-      setLoadingWithdrawals(false);
     }
   }
 
@@ -1434,16 +1417,6 @@ export default function HomeScreen() {
             <Text style={styles.sectionLabel}>
               Pendientes: {providerWithdrawals.length}
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              disabled={loadingWithdrawals}
-              onPress={() => void loadProviderWithdrawals()}
-              style={styles.actionButton}
-            >
-              <Text style={styles.actionText}>
-                {loadingWithdrawals ? 'Actualizando…' : 'Actualizar'}
-              </Text>
-            </Pressable>
             {providerWithdrawals.length === 0 ? (
               <Text style={styles.emptyText}>No hay retiros pendientes de tus repartidores.</Text>
             ) : null}
