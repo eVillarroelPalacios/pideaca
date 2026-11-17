@@ -6,7 +6,7 @@
     <p class="pcard-sub">Solicitudes pendientes de tus repartidores (con entregas para tu comercio o en tu lista de confianza). El saldo ya quedó reservado al solicitar: aprobá para confirmar el pago o rechazá para devolverlo a la billetera.</p>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:14px 0;">
         <span class="pcard-sub" style="margin:0;"><strong id="pv-wd-count">0</strong> pendientes</span>
-        <button type="button" class="um-outline-btn" onclick="pvWdLoad()">Actualizar</button>
+        
     </div>
     <div style="overflow-x:auto;">
         <table class="um-table">
