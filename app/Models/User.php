@@ -185,13 +185,22 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->pages()
+        if ($this->pages()->whereIn('pages.url', $urls)->exists()) {
+            return true;
+        }
+
+        // Sin tipo de usuario no hay plantilla de permisos que heredar:
+        // sin este guard, $this->typeUser->assignedPages() lanza
+        // "Attempt to read property on null" (500) para usuarios con
+        // type_user_id nulo y sin paginas asignadas directo.
+        if (! $this->typeUser) {
+            return false;
+        }
+
+        return $this->typeUser
+            ->assignedPages()
             ->whereIn('pages.url', $urls)
-            ->exists()
-            || $this->typeUser
-                ->assignedPages()
-                ->whereIn('pages.url', $urls)
-                ->exists();
+            ->exists();
     }
 
     public function addresses()

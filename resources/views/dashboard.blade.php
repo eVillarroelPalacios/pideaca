@@ -133,12 +133,12 @@
                             @endforeach
                             @if($module->description === 'Administrar' || $loop->last)
                             <div style="width:60%;height:1px;background:#e5e7eb;margin:6px auto;"></div>
-                            <button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
+                            <button type="button" onclick="doLogout()" style="background:none;border:none;color:#000000;font-size:13px;font-weight:400;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
                             @endif
                         </div>
                     @endforeach
                     @if($modules->isEmpty())
-                    <button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
+                    <button type="button" onclick="doLogout()" style="background:none;border:none;color:#000000;font-size:13px;font-weight:400;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>
                     @endif
                 </div>
             </div>
@@ -8480,7 +8480,7 @@
     }
     function umNavLogoutDesktop() {
         return '<div style="width:100%;height:1px;background:#e5e7eb;margin:4px 0;"></div>' +
-            '<a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#dc2626;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">Cerrar Sesi\u00f3n</a>';
+            '<a href="#" onclick="event.preventDefault();closeDropdowns();doLogout()" class="dropdown-item" style="display:block;padding:8px 16px;color:#000000;font-size:13px;font-weight:400;text-decoration:none;white-space:nowrap;">Cerrar Sesi\u00f3n</a>';
     }
     function umRebuildTopNav(allowed) {
         allowed = allowed || {};
@@ -8530,7 +8530,7 @@
         if (mWrap) {
             mWrap.innerHTML = '<div style="width:100%;height:1px;background:#e5e7eb;"></div>';
             if (!mods.length) {
-                mWrap.innerHTML += '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
+                mWrap.innerHTML += '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#000000;font-size:13px;font-weight:400;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
             }
             mods.forEach(function(m, idx) {
                 var btn = document.createElement('button');
@@ -8551,7 +8551,7 @@
                 }).join('');
                 if (String(m.description).trim().toLowerCase() === 'administrar' || idx === mods.length - 1) {
                     sub.innerHTML += '<div style="width:60%;height:1px;background:#e5e7eb;margin:6px auto;"></div>' +
-                        '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#dc2626;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
+                        '<button type="button" onclick="doLogout()" style="background:none;border:none;color:#000000;font-size:13px;font-weight:400;cursor:pointer;padding:6px 0;">Cerrar Sesión</button>';
                 }
                 mWrap.appendChild(btn);
                 mWrap.appendChild(sub);

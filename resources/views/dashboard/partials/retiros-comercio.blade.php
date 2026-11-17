@@ -27,7 +27,7 @@
 
 <script>
 (function () {
-    // Base con prefijo del proyecto (http://localhost/pideaca): url() genera
+    // Base con prefijo del proyecto: url() genera la ruta absoluta correcta
     // la ruta absoluta correcta; una ruta hardcodeada '/profile/...' ignora
     // el prefijo y devuelve 404 HTML que rompe el .json().
     function endpoint() { return '{{ url("/profile/provider/withdrawals") }}'; }

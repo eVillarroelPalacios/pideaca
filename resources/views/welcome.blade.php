@@ -415,12 +415,6 @@
                                         <p class="qs-small-text">
                                             Para garantizar la sostenibilidad sin encarecer los precios finales, implementamos tarifas planas para profesionales, costos m&#237;nimos por contacto y comisiones reducidas para el sector gastron&#243;mico.
                                         </p>
-                                        <div class="qs-tags">
-                                            <span class="qs-tag">Tarifas planas para profesionales</span>
-                                            <span class="qs-tag">Costos m&#237;nimos por contacto</span>
-                                            <span class="qs-tag">Comisiones reducidas para gastronom&#237;a</span>
-                                            <span class="qs-tag">Planes flexibles</span>
-                                        </div>
                                     </div>
 
                                 <div class="qs-cta">
@@ -1479,9 +1473,21 @@
         #menu-toggle { display: block !important; }
         .logo-img { width: 140px !important; height: 52px !important; }
         .nav-container { padding: 1px 8px !important; justify-content: space-between !important; }
-        .carousel-slide { height: 140px !important; max-height: 140px !important; }
-        .carousel-slide img { max-height: 92px !important; }
-        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; margin: 2px 0 4px !important; padding: 4px 14px !important; min-height: 0 !important; }
+        .carousel-slide { height: 140px !important; max-height: 140px !important; padding: 0 44px !important; }
+        .carousel-slide img { max-height: 86px !important; }
+        .carousel-caption { font-size: 13px !important; font-weight: 700 !important; line-height: 1.3 !important; margin: 2px 0 4px !important; padding: 4px 6px !important; min-height: 0 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+        /* Flechas mas chicas y pegadas al borde para que no pisen la imagen */
+        .carousel-nav-btn { width: 30px !important; height: 30px !important; font-size: 13px !important; }
+        button.carousel-nav-btn[onclick="moveCarousel(-1)"] { left: 5px !important; }
+        button.carousel-nav-btn[onclick="moveCarousel(1)"] { right: 5px !important; }
+        /* Video de Servicios compacto en movil: altura limitada con ratio 16/9 */
+        #video-servicios { height: auto !important; max-height: 250px !important; aspect-ratio: 16 / 9 !important; object-fit: cover !important; }
+        /* Evitar overflow horizontal: columnas con min-width fijo y padding amplio */
+        #section-servicios > div { padding: 20px 12px !important; }
+        #section-servicios [style*="min-width: 320px"] { min-width: 0 !important; }
+        /* El contenedor del video es sticky en escritorio; en movil pasa a flujo
+           normal para que suba con el scroll y no tape el texto de abajo */
+        #section-servicios [style*="position: sticky"] { position: static !important; top: auto !important; align-self: auto !important; }
         
         .provider-grid { 
             grid-template-columns: repeat(2, 1fr) !important; 
@@ -1555,6 +1561,17 @@
 
         #ad-pagination { padding: 8px !important; }
         #ad-pagination .pagination-nav-btn { width: 28px !important; height: 28px !important; }
+
+        /* Carrusel en pantallas chicas: un poco mas de aire lateral y flechas mas compactas */
+        .carousel-slide { padding: 0 42px !important; }
+        .carousel-nav-btn { width: 28px !important; height: 28px !important; font-size: 12px !important; }
+        button.carousel-nav-btn[onclick="moveCarousel(-1)"] { left: 4px !important; }
+        button.carousel-nav-btn[onclick="moveCarousel(1)"] { right: 4px !important; }
+        /* Video de Servicios aun mas compacto en telefonos chicos */
+        #video-servicios { max-height: 220px !important; }
+        /* CTA "Sumate": los dos botones en una misma fila */
+        .qs-cta-actions { flex-wrap: nowrap !important; gap: 8px !important; }
+        .qs-cta-actions .header-btn { flex: 1 1 0 !important; min-width: 0 !important; padding: 10px 6px !important; font-size: 13px !important; text-align: center !important; white-space: nowrap !important; }
     }
     @media (min-width: 769px) {
         #mobile-menu { display: none !important; }
