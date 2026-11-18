@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AdminBillingController;
 use App\Http\Controllers\AdvertisingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AccountActivationController;
@@ -208,6 +209,27 @@ Route::middleware('page:usuarios')->group(function () {
     Route::get('/admin/users/{user}/withdrawals', [UsuarioController::class, 'withdrawals'])->name('admin.users.withdrawals.index');
     Route::post('/admin/withdrawals/{withdrawal}/approve', [UsuarioController::class, 'approveWithdrawal'])->name('admin.withdrawals.approve');
     Route::post('/admin/withdrawals/{withdrawal}/reject', [UsuarioController::class, 'rejectWithdrawal'])->name('admin.withdrawals.reject');
+});
+
+// Backoffice de dinero - Fase 1 (el controlador verifica Admin).
+Route::prefix('admin/billing')->name('admin.billing.')->group(function () {
+    Route::get('/fee-rules', [AdminBillingController::class, 'feeRules'])->name('fee-rules.index');
+    Route::post('/fee-rules', [AdminBillingController::class, 'storeFeeRule'])->name('fee-rules.store');
+    Route::put('/fee-rules/{rule}', [AdminBillingController::class, 'updateFeeRule'])->name('fee-rules.update');
+    Route::get('/company', [AdminBillingController::class, 'companyMatrix'])->name('company.index');
+    Route::put('/company', [AdminBillingController::class, 'updateCompanyMatrix'])->name('company.update');
+    Route::get('/settlements', [AdminBillingController::class, 'settlements'])->name('settlements.index');
+    Route::post('/settlements', [AdminBillingController::class, 'createSettlement'])->name('settlements.store');
+    Route::post('/settlements/{settlement}/pay', [AdminBillingController::class, 'paySettlement'])->name('settlements.pay');
+    Route::post('/settlements/{settlement}/cancel', [AdminBillingController::class, 'cancelSettlement'])->name('settlements.cancel');
+    Route::get('/ledger', [AdminBillingController::class, 'ledger'])->name('ledger.index');
+    Route::get('/status', [AdminBillingController::class, 'operatingStatus'])->name('status');
+    Route::get('/plans', [AdminBillingController::class, 'plans'])->name('plans.index');
+    Route::post('/plans', [AdminBillingController::class, 'storePlan'])->name('plans.store');
+    Route::put('/plans/{plan}', [AdminBillingController::class, 'updatePlan'])->name('plans.update');
+    Route::get('/invoices', [AdminBillingController::class, 'invoices'])->name('invoices.index');
+    Route::post('/invoices/{invoice}/pay', [AdminBillingController::class, 'payInvoice'])->name('invoices.pay');
+    Route::post('/subscribe', [AdminBillingController::class, 'subscribe'])->name('subscribe');
 });
 
 Route::middleware('page:paginas')->group(function () {
