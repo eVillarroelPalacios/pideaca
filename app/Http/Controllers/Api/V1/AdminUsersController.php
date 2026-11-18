@@ -225,6 +225,23 @@ class AdminUsersController extends Controller
             'type_user_id.exists' => 'El rol seleccionado no existe.',
         ]);
 
+        // El email solo se acepta si no lo usa OTRA cuenta. Si no cambió,
+        // pasa directo (los secundarios comparten el del titular).
+        if ($request->exists('email') && $data['email'] !== null) {
+            $data['email'] = strtolower(trim((string) $data['email']));
+
+            if ($data['email'] !== strtolower(trim((string) $user->email))
+                && User::where('id', '<>', $user->id)->whereRaw('LOWER(email) = ?', [$data['email']])->exists()
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ese correo ya lo usa otra cuenta.',
+                    'code' => 'EMAIL_TAKEN',
+                    'errors' => ['email' => ['Ese correo ya lo usa otra cuenta.']],
+                ], 422);
+            }
+        }
+
         // Actualizacion parcial: solo cambian los campos enviados (igual que
         // el panel de cuenta del perfil movil).
         $changes = ['name' => $data['name']];
@@ -556,6 +573,7 @@ class AdminUsersController extends Controller
                 'phone' => $user->phone,
                 'role' => $role,
                 'status' => $user->status?->status,
+                'user_status_id' => $user->user_status_id,
                 'is_admin' => $isAdmin,
                 'is_principal' => $isPrincipal,
                 'has_provider' => $user->provider()->exists(),

@@ -12373,6 +12373,28 @@
             document.getElementById('profile-name').value = user.name || '';
             document.getElementById('profile-email').value = user.email || '';
             setProfileStatusBadge(user);
+            var statusSel = document.getElementById('profile-status-select');
+            if (statusSel) {
+                statusSel.innerHTML = '<option value="">Cargando…</option>';
+                fetch(window.APP_BASE+"/user-statuses", {
+                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(list) {
+                    statusSel.innerHTML = '<option value="">-- Seleccionar --</option>';
+                    (Array.isArray(list) ? list : []).forEach(function(s) {
+                        var opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.status;
+                        statusSel.appendChild(opt);
+                    });
+                    var sid = user.user_status_id || (user.status && user.status.id) || null;
+                    if (sid) statusSel.value = String(sid);
+                })
+                .catch(function() {
+                    statusSel.innerHTML = '<option value="">Error al cargar estados</option>';
+                });
+            }
             document.getElementById('profile-type').textContent = typeObj ? typeObj.description : '-';
 
             var toggleSidebarLink = function (id, visible) {
@@ -13693,26 +13715,56 @@
     function submitProfile() {
         var nameEl = document.getElementById('profile-name');
         var errName = document.getElementById('profile-name-error');
+        var emailEl = document.getElementById('profile-email');
+        var errEmail = document.getElementById('profile-email-error');
+        var statusSel = document.getElementById('profile-status-select');
+        var errStatus = document.getElementById('profile-status-error');
+        var managedId = (typeof umManagedId === 'function') ? umManagedId() : null;
         var name = nameEl.value.trim();
 
         errName.style.display = 'none';
         nameEl.classList.remove('err');
+        if (errEmail) { errEmail.style.display = 'none'; }
+        if (emailEl) { emailEl.classList.remove('err'); }
+        if (errStatus) { errStatus.style.display = 'none'; }
 
         if (!name) { nameEl.classList.add('err'); errName.textContent = 'El nombre es obligatorio.'; errName.style.display = 'block'; return; }
 
-        fetch(window.APP_BASE+"/profile", {
+        var body = { name: name };
+        var url = window.APP_BASE+"/profile";
+        if (managedId) {
+            // Gestionado: nombre + correo + estado van al usuario gestionado,
+            // nunca a la sesion del admin.
+            var emailVal = emailEl ? emailEl.value.trim() : '';
+            if (!emailVal || emailVal.indexOf('@') < 0) {
+                if (emailEl) emailEl.classList.add('err');
+                if (errEmail) { errEmail.textContent = 'Ingresá un email válido.'; errEmail.style.display = 'block'; }
+                return;
+            }
+            body.email = emailVal;
+            if (statusSel && statusSel.value) body.user_status_id = parseInt(statusSel.value, 10);
+            url = umAdminUserUrl('');
+        }
+
+        fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ name: name })
+            body: JSON.stringify(body)
         })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
+        .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+        .then(function(r) {
+            var data = r.data || {};
             if (data.errors) {
                 if (data.errors.name) { nameEl.classList.add('err'); errName.textContent = data.errors.name[0]; errName.style.display = 'block'; }
+                if (data.errors.email && errEmail) { if (emailEl) emailEl.classList.add('err'); errEmail.textContent = data.errors.email[0]; errEmail.style.display = 'block'; }
+                if (data.errors.user_status_id && errStatus) { errStatus.textContent = data.errors.user_status_id[0]; errStatus.style.display = 'block'; }
+                if (data.message && !data.errors.name && !data.errors.email && !data.errors.user_status_id) showMsg('profile-msg', data.message, false);
                 return;
             }
             if (data.success) {
                 showMsg('profile-msg', data.message, true);
+                // Repintar con lo guardado (insignia de estado incluida).
+                if (managedId && typeof loadProfile === 'function') loadProfile();
             }
         })
         .catch(function() {
@@ -13909,10 +13961,21 @@
         if (nw.length < 4) { nwEl.classList.add('err'); errNew.textContent = 'Mínimo 4 caracteres.'; errNew.style.display = 'block'; return; }
         if (nw !== con) { conEl.classList.add('err'); errCon.textContent = 'Las contraseñas no coinciden.'; errCon.style.display = 'block'; return; }
 
-        fetch(window.APP_BASE+"/profile/password", {
+        var managedId = (typeof umManagedId === 'function') ? umManagedId() : null;
+        var url = window.APP_BASE+"/profile/password";
+        var payload = { password: nw, password_confirmation: con };
+        if (managedId) {
+            // Gestionado: la clave nueva es para el usuario gestionado, no
+            // para la sesion del admin (el endpoint del gestionado exige nombre).
+            url = umAdminUserUrl('');
+            var managedName = document.getElementById('profile-name');
+            payload.name = (managedName && managedName.value.trim()) || '';
+        }
+
+        fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ password: nw, password_confirmation: con })
+            body: JSON.stringify(payload)
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {

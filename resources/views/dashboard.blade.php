@@ -265,6 +265,9 @@
                             && trim((string) $perfilDireccion->street) !== ''
                             && trim((string) $perfilDireccion->number) !== '';
                         $perfilPanelInicial = $esPerfilPrestador ? 'negocio' : ($esPerfilCliente ? 'direccion' : ($esPerfilRepartidor ? 'vehiculo' : 'cuenta'));
+                        // Modo gestion (Admin viendo ?managed=): estado en combo
+                        // y correo editable. Sin gestionar, ambos de solo lectura.
+                        $esModoGestionado = $user->isAdmin() && (bool) request()->query('managed');
                         // Solo el titular configura el negocio: el secundario hereda
                         // todo del principal (solo lectura) y nunca lo edita.
                         $esCuentaPrincipal = $user->isAccountPrincipal();
@@ -637,8 +640,12 @@
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Datos personales</h3>
                                         <div class="profile-field-grid">
                                             <div><label class="field-label">Nombre</label><input type="text" id="profile-name" class="field-input" value="{{ $user->name }}" /><span class="err-msg" id="profile-name-error"></span></div>
-                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" value="{{ $user->email }}" readonly style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;" /><span class="err-msg" id="profile-email-error"></span></div>
-                                            <div><label class="field-label">Estado</label><span id="profile-status" class="status-badge" style="{{ $estadoPerfilEstilo }}">{{ $estadoPerfil }}</span></div>
+                                            <div><label class="field-label">Correo</label><input type="email" id="profile-email" class="field-input" value="{{ $user->email }}" @if(!$esModoGestionado) readonly style="background:#f3f4f6;color:#6b7280;cursor:not-allowed;" @endif /><span class="err-msg" id="profile-email-error"></span></div>
+                                            <div><label class="field-label">Estado</label><span id="profile-status" class="status-badge" style="{{ $estadoPerfilEstilo }}">{{ $estadoPerfil }}</span>
+                                        @if($esModoGestionado)
+                                            <select id="profile-status-select" class="field-input" style="margin-top:8px;"><option value="">Cargando…</option></select><span class="err-msg" id="profile-status-error"></span>
+                                        @endif
+                                        </div>
                                             <div><label class="field-label">Tipo de usuario</label><span id="profile-type" class="status-badge">{{ $user->typeUser?->description ?? '-' }}</span></div>
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
