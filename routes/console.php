@@ -19,3 +19,9 @@ Schedule::command('marketing:run-retention')
     ->dailyAt('09:00')
     ->withoutOverlapping()
     ->description('Envia el mensaje de recuperacion a clientes inactivos');
+
+// Membresias Hogar: emite facturas, avisa mora y suspende a los 15 dias.
+Schedule::command('membership:daily')
+    ->dailyAt('07:00')
+    ->withoutOverlapping()
+    ->description('Emite facturas Hogar, avisa mora y suspende impagas');

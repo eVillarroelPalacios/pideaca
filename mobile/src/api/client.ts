@@ -116,6 +116,11 @@ import type {
   RegionsResponse,
   RegisterPayload,
   RegisterResponse,
+  PayoutAccountPayload,
+  PayoutAccountResponse,
+  PayoutAccountsResponse,
+  BillingStatusResponse,
+  WalletTypesResponse,
   ReportComercioHistoryParams,
   ReportComercioHistoryResponse,
   ReportComercioNutritionParams,
@@ -298,6 +303,56 @@ export const api = {
       timeoutMs: 90000,
       body: { email },
     });
+  },
+
+  /**
+   * Billeteras de cobro (Fase 1). Mismas reglas que el panel web:
+   * validacion de CBU/alias/IBAN, una predeterminada por moneda y
+   * desactivar exige otra activa.
+   */
+  payoutAccounts(): Promise<PayoutAccountsResponse> {
+    return request<PayoutAccountsResponse>('/profile/payout-accounts');
+  },
+
+  walletTypes(): Promise<WalletTypesResponse> {
+    return request<WalletTypesResponse>('/wallet-types');
+  },
+
+  createPayoutAccount(payload: PayoutAccountPayload): Promise<PayoutAccountResponse> {
+    return request<PayoutAccountResponse>('/profile/payout-accounts', {
+      method: 'POST',
+      timeoutMs: 90000,
+      body: payload,
+    });
+  },
+
+  updatePayoutAccount(id: number, payload: Partial<PayoutAccountPayload>): Promise<PayoutAccountResponse> {
+    return request<PayoutAccountResponse>(`/profile/payout-accounts/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  setDefaultPayoutAccount(id: number): Promise<PayoutAccountResponse> {
+    return request<PayoutAccountResponse>(`/profile/payout-accounts/${id}/default`, {
+      method: 'POST',
+    });
+  },
+
+  deactivatePayoutAccount(id: number): Promise<PayoutAccountResponse> {
+    return request<PayoutAccountResponse>(`/profile/payout-accounts/${id}/deactivate`, {
+      method: 'POST',
+    });
+  },
+
+  reactivatePayoutAccount(id: number): Promise<PayoutAccountResponse> {
+    return request<PayoutAccountResponse>(`/profile/payout-accounts/${id}/reactivate`, {
+      method: 'POST',
+    });
+  },
+
+  billingStatus(): Promise<BillingStatusResponse> {
+    return request<BillingStatusResponse>('/profile/billing/status');
   },
 
   types(): Promise<TypesResponse> {

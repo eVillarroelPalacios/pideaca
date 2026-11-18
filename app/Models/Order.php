@@ -12,6 +12,21 @@ class Order extends Model
 {
     use HasFactory;
 
+    /**
+     * Integración no intrusiva con el motor de dinero (Fase 1).
+     *
+     * Al guardarse un pedido con medio en efectivo/transferencia se intenta
+     * registrar su cobro. Nunca rompe el flujo del pedido: cualquier error
+     * se reporta y se sigue. La idempotencia la garantiza el propio motor
+     * (un cobro por pedido).
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (Order $order) {
+            \App\Support\CheckoutCharge::tryRegisterForOrder($order);
+        });
+    }
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_CONFIRMED = 'confirmed';

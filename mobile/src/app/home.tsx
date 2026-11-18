@@ -1735,6 +1735,11 @@ export default function HomeScreen() {
               <TextField label="Confirmar nueva contraseña" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry error={passwordError} />
               <PrimaryButton title="Guardar contraseña" onPress={() => void handleSavePassword()} loading={savingPassword} />
             </View>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>💳 Billetera de cobro</Text>
+              <Text style={styles.cardSub}>Cuentas donde recibís tus liquidaciones. Necesitás al menos una activa para operar.</Text>
+              <PrimaryButton title="Gestionar billetera" onPress={() => router.push('/billetera' as never)} />
+            </View>
             
           </View>
         ) : null}

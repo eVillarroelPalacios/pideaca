@@ -53,6 +53,96 @@ export type SimpleResponse = {
   message: string;
 };
 
+export type PayoutAccount = {
+  id: number;
+  currency: string;
+  country: string | null;
+  wallet_type_id: number | null;
+  wallet_type: string | null;
+  label: string | null;
+  holder_name: string;
+  cbu: string | null;
+  alias_cbu: string | null;
+  account_ref: string | null;
+  iban: string | null;
+  bank: string | null;
+  is_default: boolean;
+  is_active: boolean;
+};
+
+export type PayoutAccountsResponse = {
+  success: boolean;
+  can_operate: boolean;
+  data: PayoutAccount[];
+};
+
+export type PayoutAccountResponse = {
+  success: boolean;
+  message: string;
+  account: PayoutAccount;
+  can_operate?: boolean;
+};
+
+export type BillingStatusResponse = {
+  success: boolean;
+  data: {
+    can_operate: boolean;
+    cash_debt: number;
+    currency: string;
+    membership: {
+      subscribed: boolean;
+      plan_id: number | null;
+      suspended: boolean;
+      open_invoice: {
+        id: number;
+        amount: number;
+        currency: string;
+        due_date: string | null;
+        status: string;
+        reminders_sent: number;
+      } | null;
+    } | null;
+    matrix?: Record<string, string | null>;
+    fee_rules: {
+      id: number;
+      module: string;
+      country: string | null;
+      currency: string | null;
+      percent: number;
+      fixed_fee: number;
+      min_fee: number;
+      valid_from: string | null;
+      valid_to: string | null;
+    }[];
+  };
+};
+
+export type WalletType = {
+  id: number;
+  country: string;
+  code: string;
+  name: string;
+  fields: string[];
+};
+
+export type WalletTypesResponse = {
+  success: boolean;
+  data: WalletType[];
+};
+
+export type PayoutAccountPayload = {
+  label?: string;
+  holder_name: string;
+  cbu?: string;
+  alias_cbu?: string;
+  account_ref?: string;
+  iban?: string;
+  bank?: string;
+  currency?: string;
+  country?: string;
+  wallet_type_id?: number;
+};
+
 export type RegisterPayload = {
   name: string;
   email: string;

@@ -5330,7 +5330,7 @@
         var total = subtotal + fee;
 
         var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
-            if (key === 'transferencia' || key === 'mercadopago') return '';
+            if (key === 'mercadopago') return '';
             return '<option value="' + key + '"' + (key === keepPayment ? ' selected' : '') + '>'
                 + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
         }).join('');
@@ -5353,9 +5353,10 @@
             + '</div>'
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
-            + '<select id="fd-shop-payment" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+            + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
             + paymentOptions
-            + '</select></div>'
+            + '</select>'
+            + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div></div>'
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nota para el comercio</label>'
             + '<textarea id="fd-shop-notes" rows="2" maxlength="1000" placeholder="Ej: sin cebolla, timbre roto, etc." style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">'
@@ -5481,6 +5482,48 @@
         }
     }
 
+    var FD_MATRIX_CACHE = null;
+
+    function fdShopMatrix(done) {
+        if (FD_MATRIX_CACHE) { done(FD_MATRIX_CACHE); return; }
+        fetch(window.APP_BASE + "/billing/matrix", {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            FD_MATRIX_CACHE = (data && data.success) ? data : null;
+            done(FD_MATRIX_CACHE);
+        })
+        .catch(function () { done(null); });
+    }
+
+    function fdShopPaymentChanged() {
+        var sel = document.getElementById('fd-shop-payment');
+        var box = document.getElementById('fd-shop-transfer-info');
+        if (!sel || !box) return;
+        if (sel.value !== 'transferencia' && sel.value !== 'transferencia_bancaria') {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.style.display = 'block';
+        box.innerHTML = 'Cargando datos para transferir…';
+        fdShopMatrix(function (res) {
+            var m = (res && res.data) || {};
+            var cbu = m.matrix_AR_CBU || m['matrix_AR_CBU'];
+            var alias = m.matrix_AR_ALIAS || m['matrix_AR_ALIAS'];
+            var holder = m.matrix_AR_HOLDER || m['matrix_AR_HOLDER'];
+            if (!cbu && !alias) {
+                box.innerHTML = 'Elegí transferencia y te mostraremos los datos al confirmar el pedido.';
+                return;
+            }
+            box.innerHTML = 'Transferí a <b>' + escapeHtml(holder || 'PideAca')
+                + '</b> · CBU <b>' + escapeHtml(cbu || '—') + '</b>'
+                + (alias ? ' · Alias <b>' + escapeHtml(alias) + '</b>' : '')
+                + '.<br>Usá como referencia el <b>número de pedido</b> que te mostramos al confirmar.';
+        });
+    }
+
     function fdShopSubmit() {
         if (FD_SHOP.busy) return;
 
@@ -5525,6 +5568,7 @@
         };
 
         FD_SHOP.busy = true;
+        FD_SHOP.lastPaymentMethod = payload.payment_method;
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.title = 'Enviando...';
@@ -5562,6 +5606,7 @@
             }
 
             var orderNumber = (res.data.order && res.data.order.order_number) || '';
+            var paidByTransfer = FD_SHOP.lastPaymentMethod === 'transferencia' || FD_SHOP.lastPaymentMethod === 'transferencia_bancaria';
 
             FD_SHOP.cart = [];
             fdShopRenderDelivery();
@@ -5572,6 +5617,7 @@
                 + '<div style="font-size:12px;color:#64748b;">'
                 + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
                 + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
+                + (paidByTransfer ? '<div id="fd-order-transfer-box" style="margin-top:10px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;text-align:left;">Cargando datos para transferir…</div>' : '')
                 + '<button type="button" onclick="fdShopGo(\'mis-pedidos\');" title="Ver mis pedidos" aria-label="Ver mis pedidos" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
                 + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
                 + '</button>'
@@ -5579,6 +5625,25 @@
 
             var cartEl = document.getElementById('fd-shop-cart');
             if (cartEl) cartEl.scrollTop = 0;
+
+            if (paidByTransfer) {
+                fdShopMatrix(function (res) {
+                    var box = document.getElementById('fd-order-transfer-box');
+                    if (!box) return;
+                    var m = (res && res.data) || {};
+                    var cbu = m.matrix_AR_CBU || m['matrix_AR_CBU'];
+                    var alias = m.matrix_AR_ALIAS || m['matrix_AR_ALIAS'];
+                    var holder = m.matrix_AR_HOLDER || m['matrix_AR_HOLDER'];
+                    if (!cbu && !alias) {
+                        box.innerHTML = 'Te avisaremos por este medio los datos para transferir.';
+                        return;
+                    }
+                    box.innerHTML = 'Transferí a <b>' + escapeHtml(holder || 'PideAca')
+                        + '</b> · CBU <b>' + escapeHtml(cbu || '—') + '</b>'
+                        + (alias ? ' · Alias <b>' + escapeHtml(alias) + '</b>' : '')
+                        + '.<br>Usá como referencia el <b>número de pedido ' + escapeHtml(orderNumber || '') + '</b>. Tu pedido queda en preparación al conciliarse el pago.';
+                });
+            }
 
             loadMyOrders();
         })
@@ -12318,6 +12383,9 @@
         }
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
+        if (key === 'dinero' && typeof dnInitDinero === 'function') dnInitDinero();
+        if (key === 'billeteras-pais' && typeof wtLoad === 'function') wtLoad();
+        if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
         setProfileSidebarActive(key);
@@ -12373,6 +12441,7 @@
             document.getElementById('profile-name').value = user.name || '';
             document.getElementById('profile-email').value = user.email || '';
             setProfileStatusBadge(user);
+            paintMembershipCard();
             var statusSel = document.getElementById('profile-status-select');
             if (statusSel) {
                 statusSel.innerHTML = '<option value="">Cargando…</option>';
@@ -13770,6 +13839,752 @@
         .catch(function() {
             showMsg('profile-msg', 'Error de conexión.', false);
         });
+    }
+
+    /* ---------- Billetera de cobro (Fase 1) ---------- */
+
+    function walletCsrf() {
+        return document.querySelector('meta[name="csrf-token"]').content;
+    }
+
+    function walletJsonHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': walletCsrf()
+        };
+    }
+
+    function paintMembershipCard() {
+        var empty = document.getElementById('profile-membership-empty');
+        var box = document.getElementById('profile-membership-box');
+        var matrix = document.getElementById('profile-membership-matrix');
+        if (!box) return;
+        box.style.display = 'none';
+        if (matrix) matrix.style.display = 'none';
+        if (empty) empty.style.display = 'block';
+
+        var mid = (typeof umManagedId === 'function') ? umManagedId() : null;
+        var url = mid
+            ? window.APP_BASE + '/admin/billing/status?user_id=' + encodeURIComponent(mid)
+            : window.APP_BASE + '/profile/billing/status';
+
+        fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            var data = (res && res.data) || {};
+            if (!data.membership || !data.membership.subscribed) return;
+            if (empty) empty.style.display = 'none';
+            var inv = data.membership.open_invoice;
+            var html = 'Suscripción <strong>activa</strong>.';
+            if (inv) {
+                html += '<br>Factura #' + inv.id + ': <strong>$' + inv.amount + ' ' + inv.currency + '</strong> · vence ' + (inv.due_date || '—') + ' · estado: ' + inv.status + '.';
+                var m = data.matrix || {};
+                var pay = m.matrix_AR_CBU ? ('Transferí a CBU ' + m.matrix_AR_CBU + (m.matrix_AR_ALIAS ? ' / alias ' + m.matrix_AR_ALIAS : '') + ' y avisanos para imputarlo.') : '';
+                if (matrix && pay) {
+                    matrix.textContent = pay;
+                    matrix.style.display = 'block';
+                }
+            } else {
+                html += '<br>Sin facturas pendientes. Al día.';
+            }
+            box.innerHTML = html;
+            box.style.display = 'block';
+        })
+        .catch(function () {});
+    }
+
+    function paintOperateBanner(canOperate) {
+        var el = document.getElementById('wallet-operate-banner');
+        if (!el) return;
+        if (canOperate) {
+            el.style.display = 'block';
+            el.style.background = '#ecfdf5';
+            el.style.border = '1px solid #a7f3d0';
+            el.style.color = '#047857';
+            el.textContent = 'Billetera activa: podés operar y recibir liquidaciones.';
+        } else {
+            el.style.display = 'block';
+            el.style.background = '#fef2f2';
+            el.style.border = '1px solid #fecaca';
+            el.style.color = '#b91c1d';
+            el.textContent = 'Agregá al menos una billetera para operar (recibir pedidos, trabajos o repartos).';
+        }
+    }
+
+    function paintPayoutAccounts(list) {
+        var box = document.getElementById('wallet-list');
+        if (!box) return;
+        box.innerHTML = '';
+
+        if (!list || !list.length) {
+            box.innerHTML = '<div style="font-size:12.5px;color:#64748b;">Todavía no cargaste billeteras.</div>';
+            return;
+        }
+
+        list.forEach(function (a) {
+            var card = document.createElement('div');
+            card.style.cssText = 'border:1px solid #e2e8f0;border-radius:4px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;';
+
+            var info = document.createElement('div');
+            info.style.flex = '1';
+            info.style.minWidth = '180px';
+            var title = (a.label || a.bank || a.currency || 'Billetera') + (a.is_default ? ' · Predeterminada' : '') + (a.is_active ? '' : ' · Inactiva');
+            info.innerHTML = '<div style="font-size:13px;font-weight:700;color:#0f172a;"></div>'
+                + '<div style="font-size:12px;color:#64748b;"></div>';
+            info.children[0].textContent = title;
+            info.children[1].textContent = (a.holder_name || '')
+                + (a.cbu ? ' · CBU ' + a.cbu : '')
+                + (a.alias_cbu ? ' · ' + a.alias_cbu : '')
+                + (a.account_ref ? ' · ' + a.account_ref : '')
+                + (a.iban ? ' · IBAN ' + a.iban : '');
+            card.appendChild(info);
+
+            if (!a.is_default && a.is_active) {
+                var def = document.createElement('button');
+                def.type = 'button';
+                def.textContent = 'Predeterminada';
+                def.style.cssText = 'background:#fff;color:#D24C19;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+                def.onclick = function () { setDefaultPayoutAccount(a.id); };
+                card.appendChild(def);
+            }
+
+            if (a.is_active) {
+                var off = document.createElement('button');
+                off.type = 'button';
+                off.textContent = 'Desactivar';
+                off.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+                off.onclick = function () { togglePayoutAccount(a.id, 'deactivate'); };
+                card.appendChild(off);
+            } else {
+                var on = document.createElement('button');
+                on.type = 'button';
+                on.textContent = 'Activar';
+                on.style.cssText = 'background:#D24C19;color:#fff;border:1px solid #D24C19;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                on.onclick = function () { togglePayoutAccount(a.id, 'reactivate'); };
+                card.appendChild(on);
+            }
+
+            box.appendChild(card);
+        });
+    }
+
+    function loadPayoutAccounts() {
+        loadWalletTypes(function () {
+            fetch(window.APP_BASE+"/profile/payout-accounts", {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': walletCsrf() }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                paintOperateBanner(!!(data && data.can_operate));
+                paintPayoutAccounts(data && data.data);
+            })
+            .catch(function () {
+                var box = document.getElementById('wallet-list');
+                if (box) box.innerHTML = '<div style="font-size:12.5px;color:#b91c1d;">No pudimos cargar tus billeteras.</div>';
+            });
+        });
+    }
+
+    var walletTypesCache = null;
+
+    function loadWalletTypes(done) {
+        var sel = document.getElementById('wallet-type');
+        if (!sel) { if (done) done(); return; }
+        var apply = function (list) {
+            walletTypesCache = Array.isArray(list) ? list : [];
+            paintWalletTypes();
+            if (done) done();
+        };
+        if (walletTypesCache) { apply(walletTypesCache); return; }
+        fetch(window.APP_BASE+"/wallet-types", {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': walletCsrf() }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { apply(data && data.data); })
+        .catch(function () { apply([]); });
+    }
+
+    function paintWalletTypes() {
+        var sel = document.getElementById('wallet-type');
+        var countryEl = document.getElementById('wallet-country');
+        if (!sel || !countryEl) return;
+        var country = countryEl.value || 'AR';
+        var prev = sel.value;
+        sel.innerHTML = '';
+        (walletTypesCache || []).forEach(function (t) {
+            if (String(t.country || '').toUpperCase() !== country) return;
+            var opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.name;
+            sel.appendChild(opt);
+        });
+        if (!sel.options.length) {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Sin tipos para este país';
+            sel.appendChild(opt);
+        } else if (prev) {
+            sel.value = prev;
+        }
+        paintWalletFields();
+    }
+
+    function paintWalletFields() {
+        var sel = document.getElementById('wallet-type');
+        if (!sel) return;
+        var type = null;
+        (walletTypesCache || []).forEach(function (t) {
+            if (String(t.id) === String(sel.value)) type = t;
+        });
+        var fields = (type && type.fields) || ['holder', 'cbu', 'alias', 'iban', 'bank'];
+        var show = function (name, visible) {
+            document.querySelectorAll('[data-wfield="' + name + '"]').forEach(function (el) {
+                el.style.display = visible ? '' : 'none';
+            });
+        };
+        show('cbu', fields.indexOf('cbu') !== -1);
+        show('alias', fields.indexOf('alias') !== -1);
+        show('iban', fields.indexOf('iban') !== -1);
+        var needsRef = fields.indexOf('email') !== -1 || fields.indexOf('phone') !== -1;
+        show('ref', needsRef);
+        var refLabel = document.getElementById('wallet-ref-label');
+        if (refLabel) {
+            refLabel.textContent = fields.indexOf('email') !== -1 ? 'Email de la cuenta' : 'Celular asociado';
+        }
+    }
+
+    document.addEventListener('change', function (event) {
+        var t = event.target;
+        if (!t || !t.id) return;
+        if (t.id === 'wallet-country') paintWalletTypes();
+        if (t.id === 'wallet-type') paintWalletFields();
+    });
+
+    function walletFieldError(id, text) {
+        var el = document.getElementById(id);
+        var inp = document.getElementById(id.replace('-error', ''));
+        if (text) {
+            el.textContent = text;
+            el.style.display = 'block';
+            if (inp) inp.classList.add('err');
+        } else {
+            el.textContent = '';
+            el.style.display = 'none';
+            if (inp) inp.classList.remove('err');
+        }
+    }
+
+    function submitPayoutAccount() {
+        ['wallet-label-error', 'wallet-holder-error', 'wallet-cbu-error', 'wallet-alias-error', 'wallet-ref-error', 'wallet-iban-error', 'wallet-bank-error'].forEach(function (id) { walletFieldError(id, ''); });
+
+        var typeSel = document.getElementById('wallet-type');
+        var body = {
+            wallet_type_id: typeSel && typeSel.value ? parseInt(typeSel.value, 10) : null,
+            country: (document.getElementById('wallet-country') || {}).value || 'AR',
+            label: document.getElementById('wallet-label').value.trim(),
+            holder_name: document.getElementById('wallet-holder').value.trim(),
+            cbu: document.getElementById('wallet-cbu').value.trim(),
+            alias_cbu: document.getElementById('wallet-alias').value.trim(),
+            account_ref: document.getElementById('wallet-ref').value.trim(),
+            iban: document.getElementById('wallet-iban').value.trim(),
+            bank: document.getElementById('wallet-bank').value.trim()
+        };
+
+        if (!body.holder_name) { walletFieldError('wallet-holder-error', 'Ingresá el titular.'); return; }
+        if (!body.cbu && !body.iban) { walletFieldError('wallet-cbu-error', 'Ingresá un CBU o un IBAN.'); return; }
+
+        fetch(window.APP_BASE+"/profile/payout-accounts", {
+            method: 'POST',
+            headers: walletJsonHeaders(),
+            body: JSON.stringify(body)
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (r) {
+            if (r.ok && r.data.success) {
+                ['wallet-label', 'wallet-holder', 'wallet-cbu', 'wallet-alias', 'wallet-iban', 'wallet-bank'].forEach(function (id) { document.getElementById(id).value = ''; });
+                showMsg('wallet-msg', r.data.message, true);
+                loadPayoutAccounts();
+            } else {
+                var errs = (r.data && r.data.errors) || {};
+                var map = { label: 'wallet-label-error', holder_name: 'wallet-holder-error', cbu: 'wallet-cbu-error', alias_cbu: 'wallet-alias-error', account_ref: 'wallet-ref-error', iban: 'wallet-iban-error', bank: 'wallet-bank-error', wallet_type_id: 'wallet-type-error' };
+                Object.keys(errs).forEach(function (k) {
+                    if (map[k]) walletFieldError(map[k], errs[k][0]);
+                });
+                if (r.data && r.data.message && !Object.keys(errs).length) showMsg('wallet-msg', r.data.message, false);
+            }
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    function setDefaultPayoutAccount(id) {
+        fetch(window.APP_BASE+"/profile/payout-accounts/" + id + "/default", {
+            method: 'POST',
+            headers: walletJsonHeaders()
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            showMsg('wallet-msg', data.message, !!data.success);
+            loadPayoutAccounts();
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    function togglePayoutAccount(id, action) {
+        fetch(window.APP_BASE+"/profile/payout-accounts/" + id + "/" + action, {
+            method: 'POST',
+            headers: walletJsonHeaders()
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (r) {
+            showMsg('wallet-msg', r.data.message, !!r.ok && !!r.data.success);
+            loadPayoutAccounts();
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    /* ---------- Backoffice Dinero (Fase 1) ---------- */
+
+    function dnMsg(text, ok) {
+        showMsg('dn-msg', text, !!ok);
+    }
+
+    function dnSwitchTab(name) {
+        document.querySelectorAll('#dn-tabs .dn-tab').forEach(function (b) {
+            var active = b.getAttribute('data-dntab') === name;
+            b.style.background = active ? '#D24C19' : '#fff';
+            b.style.color = active ? '#fff' : '#374151';
+            b.style.borderColor = active ? '#D24C19' : '#d1d5db';
+        });
+        document.querySelectorAll('[data-dnpanel]').forEach(function (p) {
+            p.style.display = p.getAttribute('data-dnpanel') === name ? '' : 'none';
+        });
+    }
+
+    async function dnFetch(url, options) {
+        var res = await fetch(window.APP_BASE + url, Object.assign({
+            headers: Object.assign({ 'Accept': 'application/json' }, (options && options.headers) || {})
+        }, options || {}));
+        var data = await res.json().catch(function () { return {}; });
+        return { ok: res.ok, data: data };
+    }
+
+    function dnCsrf() {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        };
+    }
+
+    async function dnLoadRules() {
+        var r = await dnFetch('/admin/billing/fee-rules');
+        var body = document.getElementById('dn-rules-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#b91c1d;">No se pudieron cargar.</td></tr>';
+            return;
+        }
+        if (!r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin reglas. Creá la primera abajo.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (rule) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td style="padding:8px;border:1px solid #e2e8f0;"></td>'.repeat(0);
+            var cells = [rule.module, rule.country || '—', rule.currency || '—', rule.percent + '%', rule.min_fee, rule.active ? 'Sí' : 'No'];
+            cells.forEach(function (t) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = t;
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = rule.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { dnToggleRule(rule.id, !rule.active); };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnSaveRule() {
+        var body = {
+            module: document.getElementById('dn-rule-module').value,
+            country: document.getElementById('dn-rule-country').value.trim() || null,
+            currency: document.getElementById('dn-rule-currency').value.trim() || null,
+            percent: parseFloat(document.getElementById('dn-rule-percent').value) || 0,
+            min_fee: parseFloat(document.getElementById('dn-rule-min').value) || 0,
+            active: document.getElementById('dn-rule-active').value === '1'
+        };
+        var r = await dnFetch('/admin/billing/fee-rules', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadRules();
+    }
+
+    async function dnToggleRule(id, active) {
+        var r = await dnFetch('/admin/billing/fee-rules/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadRules();
+    }
+
+    async function dnLoadMatrix() {
+        var r = await dnFetch('/admin/billing/company');
+        if (!r.ok || !r.data.success) return;
+        var d = r.data.data || {};
+        var map = {
+            'matrix_AR_CBU': 'dn-mx-ar-cbu', 'matrix_AR_ALIAS': 'dn-mx-ar-alias',
+            'matrix_AR_HOLDER': 'dn-mx-ar-holder', 'matrix_AR_BANK': 'dn-mx-ar-bank',
+            'matrix_ES_IBAN': 'dn-mx-es-iban', 'matrix_ES_HOLDER': 'dn-mx-es-holder',
+            'matrix_ES_BANK': 'dn-mx-es-bank'
+        };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.value = d[k] || '';
+        });
+    }
+
+    async function dnSaveMatrix() {
+        var get = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+        var settings = {
+            'matrix_AR_CBU': get('dn-mx-ar-cbu'),
+            'matrix_AR_ALIAS': get('dn-mx-ar-alias'),
+            'matrix_AR_HOLDER': get('dn-mx-ar-holder'),
+            'matrix_AR_BANK': get('dn-mx-ar-bank'),
+            'matrix_ES_IBAN': get('dn-mx-es-iban'),
+            'matrix_ES_HOLDER': get('dn-mx-es-holder'),
+            'matrix_ES_BANK': get('dn-mx-es-bank')
+        };
+        var r = await dnFetch('/admin/billing/company', { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ settings: settings }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+    }
+
+    async function dnLoadSettlements() {
+        var r = await dnFetch('/admin/billing/settlements?status=pending');
+        var body = document.getElementById('dn-settlements-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin liquidaciones pendientes.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (s) {
+            var tr = document.createElement('tr');
+            [['id', s.id], ['user', (s.user && (s.user.name || s.user.email)) || ('#' + s.user_id)], ['gross', s.gross], ['fee', s.fee], ['net', s.net], ['status', s.status]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'Pagar';
+            btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+            btn.onclick = function () {
+                var ref = window.prompt('Comprobante de la transferencia al comercio/prestador:');
+                if (!ref) return;
+                dnPaySettlement(s.id, ref);
+            };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnLoadCharges() {
+        var r = await dnFetch('/admin/billing/charges?status=pending_verification');
+        var body = document.getElementById('dn-charges-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin cobros pendientes.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (c) {
+            var tr = document.createElement('tr');
+            [[c.id, c.id], ['o', c.order_type + ' #' + c.order_id], ['a', c.amount], ['f', c.fee], ['m', c.method]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            if (c.method === 'transferencia') {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'Verificar';
+                btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                btn.onclick = function () { dnVerifyCharge(c.id); };
+                act.appendChild(btn);
+            } else {
+                act.textContent = 'Auto (efectivo)';
+            }
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnRegisterCharge() {
+        var body = {
+            module: document.getElementById('dn-ch-module').value,
+            order_type: document.getElementById('dn-ch-ordertype').value,
+            order_id: parseInt(document.getElementById('dn-ch-order').value, 10),
+            amount: parseFloat(document.getElementById('dn-ch-amount').value),
+            method: document.getElementById('dn-ch-method').value,
+            reference: document.getElementById('dn-ch-ref').value.trim() || null,
+            currency: 'ARS'
+        };
+        var r = await dnFetch('/admin/billing/charges', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Registrado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-ch-order').value = ''; document.getElementById('dn-ch-amount').value = ''; document.getElementById('dn-ch-ref').value = ''; dnLoadCharges(); }
+    }
+
+    async function dnVerifyCharge(id) {
+        var r = await dnFetch('/admin/billing/charges/' + id + '/verify', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({}) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Verificado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadCharges();
+    }
+
+    async function dnCreateSettlement() {        var ids = document.getElementById('dn-settle-charges').value.split(',').map(function (x) { return parseInt(x.trim(), 10); }).filter(function (x) { return !isNaN(x); });
+        var body = {
+            user_id: parseInt(document.getElementById('dn-settle-user').value, 10),
+            currency: (document.getElementById('dn-settle-currency').value || 'ARS').toUpperCase(),
+            charge_ids: ids,
+            notes: document.getElementById('dn-settle-notes').value.trim() || null
+        };
+        var r = await dnFetch('/admin/billing/settlements', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Creada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-settle-charges').value = ''; dnLoadSettlements(); }
+    }
+
+    async function dnPaySettlement(id, reference) {
+        var r = await dnFetch('/admin/billing/settlements/' + id + '/pay', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({ reference: reference }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Pagada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadSettlements();
+    }
+
+    async function dnCheckDebt() {
+        var box = document.getElementById('dn-debt-result');
+        var uid = document.getElementById('dn-cash-user').value.trim();
+        var cur = (document.getElementById('dn-cash-currency').value || 'ARS').toUpperCase();
+        if (!uid) { box.textContent = 'Ingresá el ID del usuario.'; return; }
+        var r = await dnFetch('/admin/billing/status?user_id=' + encodeURIComponent(uid) + '&currency=' + encodeURIComponent(cur));
+        if (!r.ok || !r.data.success) { box.textContent = 'No se pudo consultar.'; return; }
+        var d = r.data.data;
+        box.textContent = 'Puede operar: ' + (d.can_operate ? 'Sí' : 'No') + ' · Deuda efectivo: ' + d.cash_debt + ' ' + d.currency;
+    }
+
+    async function dnLoadLedger() {
+        var type = document.getElementById('dn-led-type').value;
+        var cur = (document.getElementById('dn-led-currency').value || 'ARS').toUpperCase();
+        var q = '?currency=' + encodeURIComponent(cur) + (type ? '&type=' + encodeURIComponent(type) : '');
+        var r = await dnFetch('/admin/billing/ledger' + q);
+        var body = document.getElementById('dn-ledger-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin movimientos.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (m) {
+            var tr = document.createElement('tr');
+            [[m.id, m.id], ['t', m.type], ['u', (m.user && (m.user.name || m.user.email)) || 'PideAca'], ['a', m.amount + ' ' + m.currency], ['r', (m.reference_type || '-') + ' ' + (m.reference_id || '')], ['d', m.description || '']].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnLoadPlans() {
+        var r = await dnFetch('/admin/billing/plans');
+        var box = document.getElementById('dn-plans-list');
+        if (!box) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            box.textContent = 'Sin planes. Creá el primero abajo.';
+            return;
+        }
+        box.innerHTML = '';
+        r.data.data.forEach(function (p) {
+            var row = document.createElement('div');
+            row.style.cssText = 'border:1px solid #e2e8f0;border-radius:4px;padding:8px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;';
+            var t = document.createElement('span');
+            t.style.cssText = 'font-weight:700;color:#0f172a;';
+            t.textContent = '#' + p.id + ' ' + p.name + ' · $' + p.price + ' ' + p.currency + ' · ' + p.billing_days + 'd + ' + p.grace_days + 'd gracia';
+            row.appendChild(t);
+            var st = document.createElement('span');
+            st.style.cssText = 'font-size:12px;color:' + (p.active ? '#047857' : '#b91c1d') + ';';
+            st.textContent = p.active ? 'Activo' : 'Inactivo';
+            row.appendChild(st);
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = p.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { dnTogglePlan(p.id, !p.active); };
+            row.appendChild(btn);
+            box.appendChild(row);
+        });
+    }
+
+    async function dnSavePlan() {
+        var body = {
+            name: document.getElementById('dn-plan-name').value.trim(),
+            currency: (document.getElementById('dn-plan-currency').value || 'ARS').toUpperCase(),
+            price: parseFloat(document.getElementById('dn-plan-price').value) || 0,
+            billing_days: parseInt(document.getElementById('dn-plan-days').value, 10) || 30,
+            grace_days: parseInt(document.getElementById('dn-plan-grace').value, 10) || 15,
+            active: document.getElementById('dn-plan-active').value === '1'
+        };
+        if (!body.name) { dnMsg('El plan necesita un nombre.', false); return; }
+        var r = await dnFetch('/admin/billing/plans', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-plan-name').value = ''; document.getElementById('dn-plan-price').value = ''; dnLoadPlans(); }
+    }
+
+    async function dnTogglePlan(id, active) {
+        var r = await dnFetch('/admin/billing/plans/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadPlans();
+    }
+
+    async function dnSubscribe() {
+        var body = {
+            user_id: parseInt(document.getElementById('dn-sub-user').value, 10),
+            plan_id: parseInt(document.getElementById('dn-sub-plan').value, 10)
+        };
+        var r = await dnFetch('/admin/billing/subscribe', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Suscripto.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadInvoices();
+    }
+
+    async function dnLoadInvoices() {
+        var st = document.getElementById('dn-inv-status').value;
+        var r = await dnFetch('/admin/billing/invoices' + (st ? ('?status=' + encodeURIComponent(st)) : ''));
+        var body = document.getElementById('dn-invoices-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin facturas.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (inv) {
+            var tr = document.createElement('tr');
+            [[inv.id, inv.id], ['u', (inv.user && (inv.user.name || inv.user.email)) || ('#' + inv.user_id)], ['a', inv.amount + ' ' + inv.currency], ['d', inv.due_date || '—'], ['s', inv.status]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            if (inv.status === 'pending' || inv.status === 'overdue') {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'Marcar pagada';
+                btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                btn.onclick = function () {
+                    var ref = window.prompt('Comprobante del pago (opcional):') || '';
+                    dnPayInvoice(inv.id, ref);
+                };
+                act.appendChild(btn);
+            } else {
+                act.textContent = '—';
+            }
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnPayInvoice(id, reference) {
+        var r = await dnFetch('/admin/billing/invoices/' + id + '/pay', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({ reference: reference || null }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Pagada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadInvoices();
+    }
+
+    function dnInitDinero() {
+        dnSwitchTab('comisiones');
+        dnLoadRules();
+        dnLoadMatrix();
+        dnLoadCharges();
+        dnLoadSettlements();
+        dnLoadPlans();
+        dnLoadInvoices();
+    }
+
+    document.addEventListener('click', function (event) {
+        var btn = event.target && event.target.closest ? event.target.closest('[data-dntab]') : null;
+        if (!btn || !document.getElementById('dash-dinero')) return;
+        dnSwitchTab(btn.getAttribute('data-dntab'));
+    });
+
+    /* ---------- Catálogo de billeteras por país ---------- */
+
+    async function wtLoad() {
+        var r = await dnFetch('/admin/billing/wallet-types');
+        var body = document.getElementById('wt-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin tipos cargados.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (t) {
+            var tr = document.createElement('tr');
+            [t.country, t.name, t.code, (t.fields || []).join(', '), t.active ? 'Sí' : 'No'].forEach(function (v) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = v;
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = t.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { wtToggle(t.id, !t.active); };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function wtSave() {
+        var fields = document.getElementById('wt-fields').value.split(',').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+        var body = {
+            country: document.getElementById('wt-country').value,
+            code: document.getElementById('wt-code').value.trim().toLowerCase(),
+            name: document.getElementById('wt-name').value.trim(),
+            fields: fields,
+            active: true
+        };
+        if (!body.code || !body.name) { dnMsg('Completá código y nombre.', false); return; }
+        var r = await dnFetch('/admin/billing/wallet-types', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) {
+            document.getElementById('wt-code').value = '';
+            document.getElementById('wt-name').value = '';
+            document.getElementById('wt-fields').value = '';
+            wtLoad();
+        }
+    }
+
+    async function wtToggle(id, active) {
+        var r = await dnFetch('/admin/billing/wallet-types/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) wtLoad();
     }
 
     /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */

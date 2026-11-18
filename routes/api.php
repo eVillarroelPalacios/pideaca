@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\MarketReportsController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
+use App\Http\Controllers\Api\V1\PayoutAccountsController;
 use App\Http\Controllers\Api\V1\SubGroupsController;
 use App\Http\Controllers\Api\V1\TypeUsersController;
 use App\Http\Controllers\Api\V1\UnitsOfMeasureController;
@@ -187,6 +188,18 @@ Route::prefix('mobile/v1')->group(function () {
             ->middleware('throttle:30,1');
         Route::get('/profile/regions', [ProfileController::class, 'regions'])
             ->middleware('throttle:30,1');
+
+        // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
+        Route::get('/profile/payout-accounts', [PayoutAccountsController::class, 'index']);
+        Route::get('/profile/billing/status', [PayoutAccountsController::class, 'status']);
+        // Catálogo de tipos de billetera por país (solo activos).
+        Route::get('/wallet-types', [PayoutAccountsController::class, 'types']);
+        Route::post('/profile/payout-accounts', [PayoutAccountsController::class, 'store'])
+            ->middleware('throttle:10,1');
+        Route::put('/profile/payout-accounts/{account}', [PayoutAccountsController::class, 'update']);
+        Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountsController::class, 'setDefault']);
+        Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountsController::class, 'deactivate']);
+        Route::post('/profile/payout-accounts/{account}/reactivate', [PayoutAccountsController::class, 'reactivate']);
 
         Route::get('/profile/services', [ProfileServicesController::class, 'index'])
             ->middleware('throttle:30,1');

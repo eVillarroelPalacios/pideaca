@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AdminBillingController;
 use App\Http\Controllers\AdvertisingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AccountActivationController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrdenesGestionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PayoutAccountController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
@@ -209,6 +211,33 @@ Route::middleware('page:usuarios')->group(function () {
     Route::post('/admin/withdrawals/{withdrawal}/reject', [UsuarioController::class, 'rejectWithdrawal'])->name('admin.withdrawals.reject');
 });
 
+// Backoffice de dinero - Fase 1 (el controlador verifica Admin).
+Route::prefix('admin/billing')->name('admin.billing.')->group(function () {
+    Route::get('/fee-rules', [AdminBillingController::class, 'feeRules'])->name('fee-rules.index');
+    Route::post('/fee-rules', [AdminBillingController::class, 'storeFeeRule'])->name('fee-rules.store');
+    Route::put('/fee-rules/{rule}', [AdminBillingController::class, 'updateFeeRule'])->name('fee-rules.update');
+    Route::get('/company', [AdminBillingController::class, 'companyMatrix'])->name('company.index');
+    Route::put('/company', [AdminBillingController::class, 'updateCompanyMatrix'])->name('company.update');
+    Route::get('/settlements', [AdminBillingController::class, 'settlements'])->name('settlements.index');
+    Route::post('/settlements', [AdminBillingController::class, 'createSettlement'])->name('settlements.store');
+    Route::post('/settlements/{settlement}/pay', [AdminBillingController::class, 'paySettlement'])->name('settlements.pay');
+    Route::post('/settlements/{settlement}/cancel', [AdminBillingController::class, 'cancelSettlement'])->name('settlements.cancel');
+    Route::get('/ledger', [AdminBillingController::class, 'ledger'])->name('ledger.index');
+    Route::get('/status', [AdminBillingController::class, 'operatingStatus'])->name('status');
+    Route::get('/plans', [AdminBillingController::class, 'plans'])->name('plans.index');
+    Route::post('/plans', [AdminBillingController::class, 'storePlan'])->name('plans.store');
+    Route::put('/plans/{plan}', [AdminBillingController::class, 'updatePlan'])->name('plans.update');
+    Route::get('/invoices', [AdminBillingController::class, 'invoices'])->name('invoices.index');
+    Route::post('/invoices/{invoice}/pay', [AdminBillingController::class, 'payInvoice'])->name('invoices.pay');
+    Route::post('/subscribe', [AdminBillingController::class, 'subscribe'])->name('subscribe');
+    Route::get('/charges', [AdminBillingController::class, 'charges'])->name('charges.index');
+    Route::post('/charges', [AdminBillingController::class, 'registerCharge'])->name('charges.store');
+    Route::post('/charges/{charge}/verify', [AdminBillingController::class, 'verifyCharge'])->name('charges.verify');
+    Route::get('/wallet-types', [AdminBillingController::class, 'walletTypes'])->name('wallet-types.index');
+    Route::post('/wallet-types', [AdminBillingController::class, 'storeWalletType'])->name('wallet-types.store');
+    Route::put('/wallet-types/{walletType}', [AdminBillingController::class, 'updateWalletType'])->name('wallet-types.update');
+});
+
 Route::middleware('page:paginas')->group(function () {
     Route::get('/pages', [PageController::class, 'index'])->name('pages.index');
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
@@ -251,6 +280,15 @@ Route::get('/profile/service-types', [ProfileController::class, 'getServiceTypes
 Route::post('/profile/service-types/toggle', [ProfileController::class, 'toggleServiceType'])->middleware('page:ordenes-servicio')->name('profile.service-types.toggle');
 Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('profile.address.index');
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
+// Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
+Route::get('/profile/payout-accounts', [PayoutAccountController::class, 'index'])->name('profile.payout-accounts.index');
+Route::get('/billing/matrix', [PayoutAccountController::class, 'matrix'])->name('billing.matrix');
+Route::get('/profile/billing/status', [PayoutAccountController::class, 'status'])->name('profile.billing.status');
+Route::get('/wallet-types', [PayoutAccountController::class, 'types'])->name('wallet-types.index');Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
+Route::put('/profile/payout-accounts/{account}', [PayoutAccountController::class, 'update'])->name('profile.payout-accounts.update');
+Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountController::class, 'setDefault'])->name('profile.payout-accounts.default');
+Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountController::class, 'deactivate'])->name('profile.payout-accounts.deactivate');
+Route::post('/profile/payout-accounts/{account}/reactivate', [PayoutAccountController::class, 'reactivate'])->name('profile.payout-accounts.reactivate');
 Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
 Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.index');
 
