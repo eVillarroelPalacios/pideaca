@@ -197,4 +197,24 @@ class PayoutAccountController extends Controller
             'can_operate' => PayoutAccountService::canOperate(Auth::user()),
         ]);
     }
+
+    /**
+     * Estado operativo propio + datos de la matriz para pagar.
+     */
+    public function status()
+    {
+        if ($denied = $this->denied()) {
+            return $denied;
+        }
+
+        $user = Auth::user()->load(['status', 'typeUser', 'membershipSubscription']);
+
+        return response()->json([
+            'success' => true,
+            'data' => array_merge(
+                \App\Support\OperatingGate::status($user),
+                ['matrix' => \App\Models\CompanySetting::orderBy('key')->pluck('value', 'key')]
+            ),
+        ]);
+    }
 }

@@ -12375,6 +12375,7 @@
             document.getElementById('profile-name').value = user.name || '';
             document.getElementById('profile-email').value = user.email || '';
             setProfileStatusBadge(user);
+            paintMembershipCard();
             var statusSel = document.getElementById('profile-status-select');
             if (statusSel) {
                 statusSel.innerHTML = '<option value="">Cargando…</option>';
@@ -13786,6 +13787,47 @@
             'Accept': 'application/json',
             'X-CSRF-TOKEN': walletCsrf()
         };
+    }
+
+    function paintMembershipCard() {
+        var empty = document.getElementById('profile-membership-empty');
+        var box = document.getElementById('profile-membership-box');
+        var matrix = document.getElementById('profile-membership-matrix');
+        if (!box) return;
+        box.style.display = 'none';
+        if (matrix) matrix.style.display = 'none';
+        if (empty) empty.style.display = 'block';
+
+        var mid = (typeof umManagedId === 'function') ? umManagedId() : null;
+        var url = mid
+            ? window.APP_BASE + '/admin/billing/status?user_id=' + encodeURIComponent(mid)
+            : window.APP_BASE + '/profile/billing/status';
+
+        fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            var data = (res && res.data) || {};
+            if (!data.membership || !data.membership.subscribed) return;
+            if (empty) empty.style.display = 'none';
+            var inv = data.membership.open_invoice;
+            var html = 'Suscripción <strong>activa</strong>.';
+            if (inv) {
+                html += '<br>Factura #' + inv.id + ': <strong>$' + inv.amount + ' ' + inv.currency + '</strong> · vence ' + (inv.due_date || '—') + ' · estado: ' + inv.status + '.';
+                var m = data.matrix || {};
+                var pay = m.matrix_AR_CBU ? ('Transferí a CBU ' + m.matrix_AR_CBU + (m.matrix_AR_ALIAS ? ' / alias ' + m.matrix_AR_ALIAS : '') + ' y avisanos para imputarlo.') : '';
+                if (matrix && pay) {
+                    matrix.textContent = pay;
+                    matrix.style.display = 'block';
+                }
+            } else {
+                html += '<br>Sin facturas pendientes. Al día.';
+            }
+            box.innerHTML = html;
+            box.style.display = 'block';
+        })
+        .catch(function () {});
     }
 
     function paintOperateBanner(canOperate) {

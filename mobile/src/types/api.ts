@@ -79,6 +79,39 @@ export type PayoutAccountResponse = {
   can_operate?: boolean;
 };
 
+export type BillingStatusResponse = {
+  success: boolean;
+  data: {
+    can_operate: boolean;
+    cash_debt: number;
+    currency: string;
+    membership: {
+      subscribed: boolean;
+      plan_id: number | null;
+      suspended: boolean;
+      open_invoice: {
+        id: number;
+        amount: number;
+        currency: string;
+        due_date: string | null;
+        status: string;
+        reminders_sent: number;
+      } | null;
+    } | null;
+    fee_rules: {
+      id: number;
+      module: string;
+      country: string | null;
+      currency: string | null;
+      percent: number;
+      fixed_fee: number;
+      min_fee: number;
+      valid_from: string | null;
+      valid_to: string | null;
+    }[];
+  };
+};
+
 export type PayoutAccountPayload = {
   label?: string;
   holder_name: string;

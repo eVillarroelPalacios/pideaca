@@ -119,6 +119,7 @@ import type {
   PayoutAccountPayload,
   PayoutAccountResponse,
   PayoutAccountsResponse,
+  BillingStatusResponse,
   ReportComercioHistoryParams,
   ReportComercioHistoryResponse,
   ReportComercioNutritionParams,
@@ -343,6 +344,10 @@ export const api = {
     return request<PayoutAccountResponse>(`/profile/payout-accounts/${id}/reactivate`, {
       method: 'POST',
     });
+  },
+
+  billingStatus(): Promise<BillingStatusResponse> {
+    return request<BillingStatusResponse>('/profile/billing/status');
   },
 
   types(): Promise<TypesResponse> {

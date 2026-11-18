@@ -9,7 +9,7 @@ import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
-import type { PayoutAccount } from '@/types/api';
+import type { BillingStatusResponse, PayoutAccount } from '@/types/api';
 import { colors, radius, spacing } from '@/theme';
 
 /**
@@ -22,6 +22,7 @@ export default function BilleteraScreen() {
 
   const [accounts, setAccounts] = useState<PayoutAccount[]>([]);
   const [canOperate, setCanOperate] = useState(true);
+  const [billing, setBilling] = useState<BillingStatusResponse['data'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -54,7 +55,17 @@ export default function BilleteraScreen() {
             ? caught.message
             : 'No pudimos cargar tus billeteras.',
         );
+      });
+
+    api.billingStatus()
+      .then((response) => {
+        if (!active) return;
+        setBilling(response.data);
+        if (typeof response.data.can_operate === 'boolean') {
+          setCanOperate(response.data.can_operate);
+        }
       })
+      .catch(() => {})
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -172,6 +183,28 @@ export default function BilleteraScreen() {
             : 'Agregá al menos una billetera para operar (recibir pedidos, trabajos o repartos).'}
         </Text>
       </View>
+
+      {billing && billing.cash_debt < 0 ? (
+        <View style={[styles.banner, styles.bannerAlert]} accessibilityRole="alert">
+          <Text style={[styles.bannerText, styles.bannerTextAlert]}>
+            Tenés deuda de efectivo: ${Math.abs(billing.cash_debt).toFixed(2)} {billing.currency}.
+            Regularizala para seguir operando con efectivo.
+          </Text>
+        </View>
+      ) : null}
+
+      {billing?.membership?.subscribed ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🧾 Suscripción Hogar</Text>
+          <Text style={styles.cardSub}>
+            {billing.membership.suspended
+              ? 'Suspendida por mora. Pagá lo adeudado para reactivarte.'
+              : billing.membership.open_invoice
+                ? `Cuota pendiente: $${billing.membership.open_invoice.amount.toFixed(2)} ${billing.membership.open_invoice.currency} · vence ${billing.membership.open_invoice.due_date ?? '—'}.`
+                : 'Al día. Sin facturas pendientes.'}
+          </Text>
+        </View>
+      ) : null}
 
       {notice ? (
         <View style={styles.notice} accessibilityRole="alert">

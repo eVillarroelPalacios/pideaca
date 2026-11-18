@@ -164,4 +164,17 @@ class PayoutAccountsController extends Controller
             'can_operate' => PayoutAccountService::canOperate($request->user()),
         ]);
     }
+
+    /**
+     * Estado operativo propio (puede operar, deuda efectivo, membresía).
+     */
+    public function status(Request $request): JsonResponse
+    {
+        $user = $request->user()->load(['status', 'typeUser', 'membershipSubscription']);
+
+        return response()->json([
+            'success' => true,
+            'data' => \App\Support\OperatingGate::status($user),
+        ]);
+    }
 }

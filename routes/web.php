@@ -279,7 +279,7 @@ Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
 // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
 Route::get('/profile/payout-accounts', [PayoutAccountController::class, 'index'])->name('profile.payout-accounts.index');
-Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
+Route::get('/profile/billing/status', [PayoutAccountController::class, 'status'])->name('profile.billing.status');Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
 Route::put('/profile/payout-accounts/{account}', [PayoutAccountController::class, 'update'])->name('profile.payout-accounts.update');
 Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountController::class, 'setDefault'])->name('profile.payout-accounts.default');
 Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountController::class, 'deactivate'])->name('profile.payout-accounts.deactivate');

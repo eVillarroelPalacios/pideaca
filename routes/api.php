@@ -191,6 +191,7 @@ Route::prefix('mobile/v1')->group(function () {
 
         // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
         Route::get('/profile/payout-accounts', [PayoutAccountsController::class, 'index']);
+        Route::get('/profile/billing/status', [PayoutAccountsController::class, 'status']);
         Route::post('/profile/payout-accounts', [PayoutAccountsController::class, 'store'])
             ->middleware('throttle:10,1');
         Route::put('/profile/payout-accounts/{account}', [PayoutAccountsController::class, 'update']);

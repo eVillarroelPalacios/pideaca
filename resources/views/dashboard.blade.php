@@ -661,6 +661,12 @@
                                         </div>
                                     </div>
                                     <div class="pcard">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Mi suscripción</h3>
+                                        <div id="profile-membership-empty" style="font-size:12.5px;color:#64748b;">Solo los prestadores Hogar tienen suscripción mensual.</div>
+                                        <div id="profile-membership-box" style="display:none;font-size:12.5px;line-height:1.7;color:#0f172a;"></div>
+                                        <div id="profile-membership-matrix" style="display:none;margin-top:10px;font-size:12px;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;border-radius:4px;"></div>
+                                    </div>
+                                    <div class="pcard">
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg> Cambiar contraseña</h3>
                                         <div class="profile-field-grid">
                                             <div><label class="field-label">Nueva contraseña</label>
