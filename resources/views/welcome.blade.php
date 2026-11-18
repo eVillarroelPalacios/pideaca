@@ -692,6 +692,7 @@
                         </div>
                     </div>
                     <div id="login-error" style="display:none;font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:8px 12px;border-radius:0;"></div>
+                    <button type="button" id="login-resend" onclick="resendActivation()" style="display:none;padding:10px;background:#ffffff;color:#047857;border:1px solid #a7f3d0;border-radius:0;font-size:13px;font-weight:600;cursor:pointer;">Reenviar correo de activación</button>
                     <div id="login-spinner-overlay" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:transparent;z-index:10;align-items:center;justify-content:center;border-radius:0;">
                         <div class="spinner-ring"></div>
                     </div>
@@ -2132,6 +2133,7 @@
 
     function openLogin(prefillEmail) {
         loginError.style.display = 'none';
+        document.getElementById('login-resend').style.display = 'none';
         setRecoveryMsg('');
         recoveryForm.style.display = 'none';
         loginForm.style.display = 'flex';
@@ -2188,12 +2190,15 @@
                     window.location.href = '{{ url("/") }}';
                 }, 1000);
             } else {
-                loginError.style.color = '#dc2626';
-                loginError.style.background = '#fef2f2';
-                loginError.style.border = '1px solid #fecaca';
+                var serverMsg = (r.data && r.data.message) ? r.data.message : 'Contraseña incorrecta';
+                var inactive = r.data && r.data.code === 'ACCOUNT_INACTIVE';
+                loginError.style.color = inactive ? '#047857' : '#dc2626';
+                loginError.style.background = inactive ? '#ecfdf5' : '#fef2f2';
+                loginError.style.border = inactive ? '1px solid #a7f3d0' : '1px solid #fecaca';
                 loginError.style.display = 'block';
-                loginError.textContent = 'Contraseña incorrecta';
-                setTimeout(function () { loginError.style.display = 'none'; }, 2000);
+                loginError.textContent = serverMsg;
+                document.getElementById('login-resend').style.display = inactive ? 'block' : 'none';
+                setTimeout(function () { loginError.style.display = 'none'; document.getElementById('login-resend').style.display = 'none'; }, inactive ? 10000 : 2000);
             }
         })
         .catch(function () {
@@ -2215,6 +2220,37 @@
         var loginEmail = document.getElementById('login-email').value.trim();
         if (loginEmail) recoveryEmail.value = loginEmail;
         recoveryEmail.focus();
+    }
+
+    function resendActivation() {
+        var email = document.getElementById('login-email').value.trim();
+        var btn = document.getElementById('login-resend');
+        if (!email) return;
+        btn.disabled = true;
+        btn.textContent = 'Enviando…';
+        fetch(@json(url('/registro/reenviar')), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            btn.disabled = false;
+            btn.textContent = 'Reenviar correo de activación';
+            loginError.style.color = '#047857';
+            loginError.style.background = '#ecfdf5';
+            loginError.style.border = '1px solid #a7f3d0';
+            loginError.style.display = 'block';
+            loginError.textContent = (data && data.message) || 'Si tu cuenta sigue sin activarse, te enviamos un enlace nuevo.';
+        })
+        .catch(function () {
+            btn.disabled = false;
+            btn.textContent = 'Reenviar correo de activación';
+        });
     }
 
     recoveryForm.addEventListener('submit', function (e) {

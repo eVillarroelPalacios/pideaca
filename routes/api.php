@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AdminUsersController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\AccountActivationController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
 use App\Http\Controllers\Api\V1\CurrenciesController;
@@ -71,6 +72,10 @@ Route::prefix('mobile/v1')->group(function () {
     // Recuperacion de contrasena: mismo controlador que la web, que ya
     // responde JSON y aplica los mismos limites y la misma vigencia (60 min).
     Route::post('/auth/password/forgot', [PasswordResetController::class, 'forgot'])
+        ->middleware('throttle:5,1');
+
+    // Reenvio del correo de activacion (responde igual exista o no).
+    Route::post('/auth/activation/resend', [AccountActivationController::class, 'resend'])
         ->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function () {

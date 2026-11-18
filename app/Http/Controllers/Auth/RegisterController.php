@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AccountActivationMail;
+use App\Models\AccountActivationRequest;
 use App\Models\TypeUser;
 use App\Models\User;
 use App\Models\UserStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class RegisterController extends Controller
@@ -61,7 +64,7 @@ class RegisterController extends Controller
             ], 422);
         }
 
-        $status = UserStatus::whereRaw('LOWER(status) = ?', ['activo'])->first();
+        $status = UserStatus::firstOrCreate(['status' => 'Inactivo']);
 
         $name = trim((string) $request->input('name'));
 
@@ -71,14 +74,22 @@ class RegisterController extends Controller
         $user->type_user_id = $type->id;
         $user->user_status_id = $status?->id;
         $user->password = Hash::make($request->input('password'));
-        // Cuenta activa: queda verificada de inmediato, sin validación por correo.
-        $user->email_verified_at = now();
+        // Cuenta desactivada: queda pendiente de activación por correo.
+        $user->email_verified_at = null;
 
         // Las páginas del usuario quedan iguales a las asignadas a su tipo
         // en page_type_user (es lo que alimenta el menú del dashboard).
-        DB::transaction(function () use ($user, $type) {
+        $plain = Str::random(64);
+
+        DB::transaction(function () use ($user, $type, $plain) {
             $user->save();
             $user->pages()->sync($type->assignedPages()->pluck('pages.id')->all());
+
+            AccountActivationRequest::create([
+                'user_id' => $user->id,
+                'token' => hash('sha256', $plain),
+                'expires_at' => now()->addHours(AccountActivationController::EXPIRATION_HOURS),
+            ]);
 
             // Si el usuario registrado es Repartidor, crear wallet inicial
             if (strcasecmp($type->description, 'Repartidor') === 0) {
@@ -89,9 +100,27 @@ class RegisterController extends Controller
             }
         });
 
+        try {
+            Mail::to($email)->send(new AccountActivationMail(
+                $user->name,
+                route('activation.activate', $plain)
+            ));
+        } catch (\Throwable $e) {
+            report($e);
+
+            // Sin correo no hay forma de activar: se elimina todo para que
+            // pueda registrarse de nuevo.
+            $user->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No pudimos enviar el correo de activación. Intentá de nuevo en unos minutos.',
+            ], 500);
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Cuenta creada correctamente. Ya podés iniciar sesión.',
+            'message' => 'Te enviamos un correo para activar tu cuenta. Revisá tu bandeja de entrada.',
             'pages_count' => $user->pages()->count(),
         ]);
     }

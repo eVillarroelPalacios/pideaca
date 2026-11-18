@@ -26,6 +26,15 @@ class LoginController extends Controller
         });
 
         if ($user) {
+            // Sin activación por correo no hay sesión, aunque la clave sea válida.
+            if ($user->email_verified_at === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tu cuenta aún no está activada. Revisá tu correo electrónico.',
+                    'code' => 'ACCOUNT_INACTIVE',
+                ], 422);
+            }
+
             Auth::login($user);
             $request->session()->regenerate();
             return response()->json([

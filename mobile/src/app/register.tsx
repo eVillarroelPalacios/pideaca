@@ -1,4 +1,4 @@
-import { Link, Redirect } from 'expo-router';
+import { Link, Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -29,6 +29,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,6 +71,7 @@ export default function RegisterScreen() {
 
   async function handleSubmit() {
     setError(null);
+    setSuccess(null);
     setFieldErrors({});
 
     if (!name.trim()) {
@@ -100,13 +102,14 @@ export default function RegisterScreen() {
     setSubmitting(true);
 
     try {
-      await signUp({
+      const message = await signUp({
         name: name.trim(),
         email: email.trim(),
         type_user_id: selectedTypeId,
         password,
         password_confirmation: passwordConfirmation,
       });
+      setSuccess(message);
     } catch (caught) {
       if (caught instanceof ApiError) {
         setError(caught.message);
@@ -133,6 +136,16 @@ export default function RegisterScreen() {
       }
     >
       <ErrorBanner message={error} />
+
+      {success ? (
+        <View style={styles.success} accessibilityRole="alert">
+          <Text style={styles.successText}>{success}</Text>
+          <Text style={styles.successHint}>
+            El enlace vence en 24 horas y sirve una sola vez. Si no lo ves, revisá
+            la carpeta de spam.
+          </Text>
+        </View>
+      ) : null}
 
       <TextField
         label="Nombre completo"
@@ -210,11 +223,45 @@ export default function RegisterScreen() {
         loading={submitting}
         disabled={submitting || loadingTypes}
       />
+
+      {success ? (
+        <View style={styles.backWrapper}>
+          <PrimaryButton
+            title="Volver a ingresar"
+            variant="ghost"
+            onPress={() => router.replace('/login')}
+          />
+        </View>
+      ) : null}
     </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  success: {
+    backgroundColor: colors.successSoft,
+    borderColor: '#bbf7d0',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  successText: {
+    color: colors.success,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  successHint: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: spacing.xs,
+  },
+  backWrapper: {
+    marginTop: spacing.md,
+  },
   typesWrapper: {
     marginBottom: spacing.lg,
   },

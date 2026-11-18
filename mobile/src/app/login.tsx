@@ -2,7 +2,7 @@ import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ApiError } from '@/api/client';
+import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { AuthScreen } from '@/components/AuthScreen';
 import { ErrorBanner } from '@/components/ErrorBanner';
@@ -20,6 +20,9 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [inactive, setInactive] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState<string | null>(null);
 
   if (isLoading) {
     return <LoadingScreen message="Revisando tu sesión…" />;
@@ -32,6 +35,8 @@ export default function LoginScreen() {
   async function handleSubmit() {
     setError(null);
     setFieldErrors({});
+    setInactive(false);
+    setResent(null);
 
     if (!email.trim() || !password) {
       setError('Ingresá tu correo y tu contraseña.');
@@ -46,6 +51,7 @@ export default function LoginScreen() {
       if (caught instanceof ApiError) {
         setError(caught.message);
         setFieldErrors(caught.errors ?? {});
+        setInactive(caught.code === 'ACCOUNT_INACTIVE');
       } else {
         setError('No pudimos iniciar sesión. Intentá de nuevo.');
       }
@@ -54,9 +60,47 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleResend() {
+    if (!email.trim() || resending) {
+      return;
+    }
+
+    setResending(true);
+    setResent(null);
+
+    try {
+      const response = await api.resendActivation(email.trim());
+      setResent(response.message);
+    } catch (caught) {
+      setResent(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos reenviar el correo. Intentá de nuevo.',
+      );
+    } finally {
+      setResending(false);
+    }
+  }
+
   return (
     <AuthScreen subtitle="Ingresá con la misma cuenta que usás en la web.">
       <ErrorBanner message={error} />
+
+      {inactive ? (
+        <View style={styles.resendWrapper}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleResend}
+            disabled={resending}
+            style={styles.resend}
+          >
+            <Text style={styles.resendText}>
+              {resending ? 'Enviando…' : 'Reenviar correo de activación'}
+            </Text>
+          </Pressable>
+          {resent ? <Text style={styles.resentText}>{resent}</Text> : null}
+        </View>
+      ) : null}
 
       <TextField
         label="Correo electrónico"
@@ -146,5 +190,22 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 13,
     fontWeight: '600',
+  },
+  resendWrapper: {
+    marginBottom: spacing.md,
+  },
+  resend: {
+    paddingVertical: spacing.xs,
+  },
+  resendText: {
+    color: colors.brandDark,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  resentText: {
+    color: colors.success,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: spacing.xs,
   },
 });

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AdvertisingController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\AccountActivationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CatalogController;
@@ -93,6 +94,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::post('/password/forgot', [PasswordResetController::class, 'forgot'])->middleware('throttle:5,1')->name('password.forgot');
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'showForm'])->name('password.reset');
 Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.reset.store');
+
+// Activacion de cuenta por correo: mismo esquema que la recuperacion
+// (enlace unico de 24 h, reenvio con la misma respuesta siempre).
+Route::get('/activar/{token}', [AccountActivationController::class, 'activate'])->name('activation.activate');
+Route::post('/registro/reenviar', [AccountActivationController::class, 'resend'])->middleware('throttle:5,1')->name('activation.resend');
 
 Route::get('/registro/tipos', [RegisterController::class, 'types'])->name('registro.tipos');
 Route::post('/registro', [RegisterController::class, 'store'])->name('registro.store');

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AccountActivationMail;
+use App\Models\AccountActivationRequest;
 use App\Models\DriverWallet;
 use App\Models\TypeUser;
 use App\Models\User;
@@ -10,6 +12,7 @@ use App\Models\UserStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -50,6 +53,15 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Credenciales incorrectas.',
                 'code' => 'INVALID_CREDENTIALS',
+            ], 422);
+        }
+
+        // Sin activación por correo no hay token, aunque la clave sea válida.
+        if ($user->email_verified_at === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tu cuenta aún no está activada. Revisá tu correo electrónico.',
+                'code' => 'ACCOUNT_INACTIVE',
             ], 422);
         }
 
@@ -103,7 +115,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $status = UserStatus::whereRaw('LOWER(status) = ?', ['activo'])->first();
+        $status = UserStatus::firstOrCreate(['status' => 'Inactivo']);
 
         $user = new User;
         $user->name = trim($data['name']);
@@ -111,13 +123,22 @@ class AuthController extends Controller
         $user->type_user_id = $type->id;
         $user->user_status_id = $status?->id;
         $user->password = Hash::make($data['password']);
-        $user->email_verified_at = now();
+        // Cuenta desactivada: queda pendiente de activación por correo.
+        $user->email_verified_at = null;
 
-        DB::transaction(function () use ($user, $type) {
+        $plain = Str::random(64);
+
+        DB::transaction(function () use ($user, $type, $plain) {
             $user->save();
 
             // El menú web y los permisos por página salen de esta relación.
             $user->pages()->sync($type->assignedPages()->pluck('pages.id')->all());
+
+            AccountActivationRequest::create([
+                'user_id' => $user->id,
+                'token' => hash('sha256', $plain),
+                'expires_at' => now()->addHours(\App\Http\Controllers\Auth\AccountActivationController::EXPIRATION_HOURS),
+            ]);
 
             if (strcasecmp($type->description, 'Repartidor') === 0) {
                 DriverWallet::firstOrCreate(
@@ -127,14 +148,31 @@ class AuthController extends Controller
             }
         });
 
-        $user->load(['typeUser', 'status']);
-        $device = trim((string) ($data['device_name'] ?? '')) ?: 'mobile';
+        try {
+            Mail::to($email)->send(new AccountActivationMail(
+                $user->name,
+                route('activation.activate', $plain)
+            ));
+        } catch (\Throwable $e) {
+            report($e);
 
+            // Sin correo no hay forma de activar: se elimina todo para que
+            // pueda registrarse de nuevo.
+            $user->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No pudimos enviar el correo de activación. Intentá de nuevo en unos minutos.',
+                'code' => 'MAIL_FAILED',
+            ], 500);
+        }
+
+        $user->load(['typeUser', 'status']);
+
+        // Sin token: la app muestra el aviso de revisar el correo.
         return response()->json([
             'success' => true,
-            'message' => 'Cuenta creada correctamente.',
-            'token' => $user->createToken($device)->plainTextToken,
-            'token_type' => 'Bearer',
+            'message' => 'Te enviamos un correo para activar tu cuenta. Revisá tu bandeja de entrada.',
             'user' => $this->userPayload($user),
         ], 201);
     }

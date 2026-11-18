@@ -115,6 +115,7 @@ import type {
   ProvidersResponse,
   RegionsResponse,
   RegisterPayload,
+  RegisterResponse,
   ReportComercioHistoryParams,
   ReportComercioHistoryResponse,
   ReportComercioNutritionParams,
@@ -277,11 +278,25 @@ export const api = {
     });
   },
 
-  register(payload: RegisterPayload): Promise<AuthResponse> {
-    return request<AuthResponse>('/auth/register', {
+  register(payload: RegisterPayload): Promise<RegisterResponse> {
+    return request<RegisterResponse>('/auth/register', {
       method: 'POST',
       auth: false,
+      timeoutMs: 90000,
       body: { ...payload, device_name: payload.device_name ?? 'PideAca Mobile' },
+    });
+  },
+
+  /**
+   * Reenvío del correo de activación (cuenta aún no activada).
+   * Responde igual exista o no, igual que la recuperación de contraseña.
+   */
+  resendActivation(email: string): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/auth/activation/resend', {
+      method: 'POST',
+      auth: false,
+      timeoutMs: 90000,
+      body: { email },
     });
   },
 

@@ -28,6 +28,16 @@ export type MeResponse = {
   user: User;
 };
 
+/**
+ * Registro: ya no abre sesión directa. La cuenta nace desactivada y el
+ * servidor manda el correo de activación (24 h). La app muestra el aviso.
+ */
+export type RegisterResponse = {
+  success: boolean;
+  message: string;
+  user: User;
+};
+
 export type TypeUser = {
   id: number;
   description: string;

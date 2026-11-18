@@ -20,7 +20,7 @@ type AuthContextValue = {
   /** true mientras revisamos si había un token guardado al abrir la app. */
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (payload: RegisterPayload) => Promise<void>;
+  signUp: (payload: RegisterPayload) => Promise<string>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -73,10 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (payload: RegisterPayload) => {
+    // La cuenta nace desactivada: no hay token. Se devuelve el mensaje para
+    // mostrar el aviso de revisar el correo.
     const response = await api.register(payload);
-    await saveToken(response.token);
-    setUser(response.user);
-    void registerPushToken();
+    return response.message;
   }, []);
 
   const signOut = useCallback(async () => {
