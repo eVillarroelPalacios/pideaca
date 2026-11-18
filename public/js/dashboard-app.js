@@ -10207,7 +10207,9 @@
         if (nameInput) nameInput.value = u ? u.name : '';
         var principal = getPrincipalAccountUser() || u || selectedUser;
         var managedEmail = (typeof umManagedEmail === 'function') ? umManagedEmail() : null;
-        var accountEmail = managedEmail || (principal && principal.email) || (u && u.email) || (selectedUser && selectedUser.email) || authEmail || '';
+        // El email propio manda: los secundarios ya lo comparten con el
+        // titular; las cuentas independientes conservan el suyo.
+        var accountEmail = (u && u.email) || managedEmail || (principal && principal.email) || (selectedUser && selectedUser.email) || authEmail || '';
         if (emailInput) emailInput.value = accountEmail;
         if (emailInput) emailInput.disabled = true;
         if (deleteBtn) deleteBtn.style.display = u ? 'inline-block' : 'none';
@@ -10336,13 +10338,14 @@
                 if (!active && (n === 'active' || n === 'activo')) active = s;
             });
             if (!active) return;
-            var principal = getPrincipalAccountUser() || u;
+            // El email es siempre el del propio usuario: nunca se pisa con
+            // el del titular (los secundarios ya lo comparten en la base).
             var body = {
                 name: u.name,
-                email: (principal && principal.email) || u.email || authEmail || '',
                 user_status_id: active.id,
                 type_user_id: u.type_user_id || (u.type_user && u.type_user.id) || null
             };
+            if (u.email) body.email = u.email;
             return fetch(window.APP_BASE+"/admin/users"+"/" + u.id, {
                 method: 'PUT',
                 headers: jsonHeaders,
@@ -10367,7 +10370,9 @@
         var emailInputVal = emailEl ? emailEl.value.trim() : '';
         var principal = getPrincipalAccountUser() || selectedUser;
         var managedEmail = (typeof umManagedEmail === 'function') ? umManagedEmail() : null;
-        var email = emailInputVal || managedEmail || (principal && principal.email) || (selectedUser && selectedUser.email) || authEmail || '';
+        // El email propio manda (el input viene prellenado con el del usuario
+        // en edicion; los secundarios ya lo comparten con el titular).
+        var email = emailInputVal || (selectedUser && selectedUser.email) || managedEmail || (principal && principal.email) || authEmail || '';
         var password = el('user-password') ? el('user-password').value : '';
         var passwordConfirm = el('user-password-confirm') ? el('user-password-confirm').value : '';
         var target = selectedUser;

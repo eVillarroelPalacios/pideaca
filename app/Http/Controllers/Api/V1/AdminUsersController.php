@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\V1\Concerns\ResolvesAccount;
 use App\Http\Controllers\Controller;
+use App\Models\AccountActivationRequest;
 use App\Models\Address;
 use App\Models\Group;
 use App\Models\Module;
@@ -245,6 +246,20 @@ class AdminUsersController extends Controller
         if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
             $user->save();
+        }
+
+        // Activar desde el panel equivale a activar por correo: si la cuenta
+        // no estaba verificada y el nuevo estado es Activo, se verifica y se
+        // consumen sus enlaces pendientes.
+        if (array_key_exists('user_status_id', $changes) && $user->email_verified_at === null) {
+            $newStatus = $changes['user_status_id'] !== null ? UserStatus::find($changes['user_status_id']) : null;
+
+            if ($newStatus && in_array(strtolower(trim((string) $newStatus->status)), ['activo', 'active'], true)) {
+                $user->email_verified_at = now();
+                $user->save();
+
+                AccountActivationRequest::where('user_id', $user->id)->update(['used_at' => now()]);
+            }
         }
 
         return response()->json([
