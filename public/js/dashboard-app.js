@@ -5330,7 +5330,7 @@
         var total = subtotal + fee;
 
         var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
-            if (key === 'mercadopago') return '';
+            if (key === 'mercado_pago') return '';
             return '<option value="' + key + '"' + (key === keepPayment ? ' selected' : '') + '>'
                 + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
         }).join('');
@@ -5607,6 +5607,7 @@
 
             var orderNumber = (res.data.order && res.data.order.order_number) || '';
             var paidByTransfer = FD_SHOP.lastPaymentMethod === 'transferencia' || FD_SHOP.lastPaymentMethod === 'transferencia_bancaria';
+            var paidWithMP = FD_SHOP.lastPaymentMethod === 'mercadopago' || FD_SHOP.lastPaymentMethod === 'mercado_pago';
 
             FD_SHOP.cart = [];
             fdShopRenderDelivery();
@@ -5625,6 +5626,12 @@
 
             var cartEl = document.getElementById('fd-shop-cart');
             if (cartEl) cartEl.scrollTop = 0;
+
+            if (paidWithMP) {
+                var mpOrderId = res.data.order && res.data.order.id;
+                fdShopStartMercadoPago(mpOrderId);
+                return;
+            }
 
             if (paidByTransfer) {
                 fdShopMatrix(function (res) {
@@ -14760,6 +14767,35 @@
         var show = el.type === 'password';
         el.type = show ? 'text' : 'password';
         btn.innerHTML = show ? PW_EYE_OFF : PW_EYE_ON;
+    }
+
+    function fdShopStartMercadoPago(orderId) {
+        var box = document.getElementById('fd-shop-cart');
+        if (box) {
+            box.innerHTML = '<div style="text-align:center;padding:6px 0;"><div style="font-size:14px;font-weight:700;color:#0c2a4d;margin-bottom:6px;">Pedido registrado</div><div style="font-size:12px;color:#64748b;">Te llevamos a Mercado Pago para completar el pago…</div></div>';
+        }
+        fetch(window.APP_BASE + '/checkout/mercadopago/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ order_type: 'order', order_id: orderId })
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (r) {
+            if (r.ok && r.data && r.data.init_point) {
+                window.location.href = r.data.init_point;
+                return;
+            }
+            fdShopShowMsg((r.data && r.data.message) || 'No pudimos iniciar el pago con Mercado Pago.', true);
+            fdRenderShopCart();
+        })
+        .catch(function () {
+            fdShopShowMsg('No pudimos conectar con Mercado Pago.', true);
+            fdRenderShopCart();
+        });
     }
 
     function submitPassword() {

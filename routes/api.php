@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\GroupsController;
 use App\Http\Controllers\Api\V1\MarketController;
 use App\Http\Controllers\Api\V1\MarketReportsController;
 use App\Http\Controllers\Api\V1\MenuController;
+use App\Http\Controllers\MercadoPagoCheckoutController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
 use App\Http\Controllers\Api\V1\PayoutAccountsController;
@@ -190,6 +191,10 @@ Route::prefix('mobile/v1')->group(function () {
             ->middleware('throttle:30,1');
         Route::get('/profile/regions', [ProfileController::class, 'regions'])
             ->middleware('throttle:30,1');
+
+        // Checkout Mercado Pago (Fase 3, solo titular de la cuenta).
+        Route::post('/checkout/mercadopago/start', [MercadoPagoCheckoutController::class, 'start'])
+            ->middleware('throttle:10,1');
 
         // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
         Route::get('/profile/payout-accounts', [PayoutAccountsController::class, 'index']);

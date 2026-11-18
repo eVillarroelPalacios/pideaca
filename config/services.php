@@ -28,6 +28,24 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mercado Pago (Fase 3)
+    |--------------------------------------------------------------------------
+    |
+    | Checkout Pro con cuenta única recaudadora (escrow manual): el pago
+    | entra a la cuenta de PideAca y se liquida por Liquidaciones. Sin SDK:
+    | HTTP directo + verificación HMAC del webhook.
+    |
+    */
+
+    'mercadopago' => [
+        'access_token' => env('MP_ACCESS_TOKEN'),
+        'public_key' => env('MP_PUBLIC_KEY'),
+        'webhook_secret' => env('MP_WEBHOOK_SECRET'),
+        'base_url' => env('MP_BASE_URL', 'https://api.mercadopago.com'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

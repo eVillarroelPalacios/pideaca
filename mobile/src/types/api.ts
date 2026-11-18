@@ -1451,6 +1451,13 @@ export type MarketOrderResponse = {
   order: MarketOrder;
 };
 
+export type MercadoPagoCheckoutResponse = {
+  success: boolean;
+  init_point: string;
+  preference_id: string | null;
+  charge_id: number;
+};
+
 export type MarketPlanItem = {
   product_id: number;
   name: string | null;

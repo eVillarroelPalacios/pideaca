@@ -43,7 +43,7 @@ class BillingService
             throw ValidationException::withMessages(['module' => 'Módulo inválido.']);
         }
 
-        if (! in_array($method, [Charge::METHOD_TRANSFER, Charge::METHOD_CASH], true)) {
+        if (! in_array($method, [Charge::METHOD_TRANSFER, Charge::METHOD_CASH, Charge::METHOD_MERCADOPAGO], true)) {
             throw ValidationException::withMessages(['method' => 'Medio inválido.']);
         }
 

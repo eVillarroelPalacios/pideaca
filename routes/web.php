@@ -11,6 +11,7 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactInquiryController;
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\MercadoPagoCheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstadosDeLosGruposController;
 use App\Http\Controllers\GroupController;
@@ -293,6 +294,13 @@ Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountContr
 Route::post('/profile/payout-accounts/{account}/reactivate', [PayoutAccountController::class, 'reactivate'])->name('profile.payout-accounts.reactivate');
 Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
 Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.index');
+
+// Checkout Mercado Pago (Fase 3, cuenta única recaudadora).
+Route::middleware('auth')->group(function () {
+    Route::post('/checkout/mercadopago/start', [MercadoPagoCheckoutController::class, 'start']);
+});
+Route::post('/webhooks/mercadopago', [MercadoPagoCheckoutController::class, 'webhook'])->name('checkout.mp.webhook')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::get('/checkout/return', [MercadoPagoCheckoutController::class, 'retorno'])->name('checkout.mp.return');
 
 // Modulo A - Fast Delivery
 Route::get('/api/providers', [ProviderController::class, 'index'])->name('api.providers.index');

@@ -13,6 +13,7 @@ class Charge extends Model
 
     public const METHOD_TRANSFER = 'transferencia';
     public const METHOD_CASH = 'efectivo';
+    public const METHOD_MERCADOPAGO = 'mercadopago';
 
     protected $fillable = [
         'module', 'order_type', 'order_id', 'amount', 'currency',

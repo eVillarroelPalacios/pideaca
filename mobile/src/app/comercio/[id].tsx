@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Linking } from 'react-native';
 import {
   ActivityIndicator,
   Image,
@@ -64,6 +65,7 @@ type Notice = { text: string; error: boolean };
 const PAYMENT_OPTIONS: ComboOption<string>[] = [
   { value: 'efectivo', label: 'Efectivo' },
   { value: 'transfer', label: 'Transferencia' },
+  { value: 'mercadopago', label: 'Mercado Pago' },
 ];
 
 function firstError(caught: unknown, fallback: string): string {
@@ -712,6 +714,22 @@ export default function ComercioCatalogScreen() {
       setCart([]);
       setNotes('');
       setSuccess(response.order);
+
+      if (paymentMethod === 'mercadopago') {
+        try {
+          const checkout = await api.startMercadoPagoCheckout('order', response.order.id);
+          setTransferInfo(null);
+          await Linking.openURL(checkout.init_point);
+        } catch (caught) {
+          setTransferInfo(
+            caught instanceof ApiError
+              ? caught.message
+              : 'No pudimos iniciar el pago con Mercado Pago.',
+          );
+        }
+
+        return;
+      }
 
       if (paymentMethod === 'transfer') {
         api.billingStatus()

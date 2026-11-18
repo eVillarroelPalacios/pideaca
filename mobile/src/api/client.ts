@@ -120,6 +120,7 @@ import type {
   PayoutAccountResponse,
   PayoutAccountsResponse,
   BillingStatusResponse,
+  MercadoPagoCheckoutResponse,
   WalletTypesResponse,
   AutoApproveResponse,
   ReportComercioHistoryParams,
@@ -354,6 +355,16 @@ export const api = {
 
   billingStatus(): Promise<BillingStatusResponse> {
     return request<BillingStatusResponse>('/profile/billing/status');
+  },
+
+  startMercadoPagoCheckout(
+    orderType: 'order' | 'service_order',
+    orderId: number,
+  ): Promise<MercadoPagoCheckoutResponse> {
+    return request<MercadoPagoCheckoutResponse>('/checkout/mercadopago/start', {
+      method: 'POST',
+      body: { order_type: orderType, order_id: orderId },
+    });
   },
 
   types(): Promise<TypesResponse> {
