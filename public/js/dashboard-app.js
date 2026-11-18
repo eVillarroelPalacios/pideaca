@@ -12318,6 +12318,7 @@
         }
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
+        if (key === 'dinero' && typeof dnInitDinero === 'function') dnInitDinero();
         if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
@@ -13953,6 +13954,289 @@
         })
         .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
     }
+
+    /* ---------- Backoffice Dinero (Fase 1) ---------- */
+
+    function dnMsg(text, ok) {
+        showMsg('dn-msg', text, !!ok);
+    }
+
+    function dnSwitchTab(name) {
+        document.querySelectorAll('#dn-tabs .dn-tab').forEach(function (b) {
+            var active = b.getAttribute('data-dntab') === name;
+            b.style.background = active ? '#D24C19' : '#fff';
+            b.style.color = active ? '#fff' : '#374151';
+            b.style.borderColor = active ? '#D24C19' : '#d1d5db';
+        });
+        document.querySelectorAll('[data-dnpanel]').forEach(function (p) {
+            p.style.display = p.getAttribute('data-dnpanel') === name ? '' : 'none';
+        });
+    }
+
+    async function dnFetch(url, options) {
+        var res = await fetch(window.APP_BASE + url, Object.assign({
+            headers: Object.assign({ 'Accept': 'application/json' }, (options && options.headers) || {})
+        }, options || {}));
+        var data = await res.json().catch(function () { return {}; });
+        return { ok: res.ok, data: data };
+    }
+
+    function dnCsrf() {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        };
+    }
+
+    async function dnLoadRules() {
+        var r = await dnFetch('/admin/billing/fee-rules');
+        var body = document.getElementById('dn-rules-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#b91c1d;">No se pudieron cargar.</td></tr>';
+            return;
+        }
+        if (!r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin reglas. Creá la primera abajo.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (rule) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td style="padding:8px;border:1px solid #e2e8f0;"></td>'.repeat(0);
+            var cells = [rule.module, rule.country || '—', rule.currency || '—', rule.percent + '%', rule.min_fee, rule.active ? 'Sí' : 'No'];
+            cells.forEach(function (t) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = t;
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = rule.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { dnToggleRule(rule.id, !rule.active); };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnSaveRule() {
+        var body = {
+            module: document.getElementById('dn-rule-module').value,
+            country: document.getElementById('dn-rule-country').value.trim() || null,
+            currency: document.getElementById('dn-rule-currency').value.trim() || null,
+            percent: parseFloat(document.getElementById('dn-rule-percent').value) || 0,
+            min_fee: parseFloat(document.getElementById('dn-rule-min').value) || 0,
+            active: document.getElementById('dn-rule-active').value === '1'
+        };
+        var r = await dnFetch('/admin/billing/fee-rules', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadRules();
+    }
+
+    async function dnToggleRule(id, active) {
+        var r = await dnFetch('/admin/billing/fee-rules/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadRules();
+    }
+
+    async function dnLoadMatrix() {
+        var r = await dnFetch('/admin/billing/company');
+        if (!r.ok || !r.data.success) return;
+        var d = r.data.data || {};
+        var map = {
+            'matrix_AR_CBU': 'dn-mx-ar-cbu', 'matrix_AR_ALIAS': 'dn-mx-ar-alias',
+            'matrix_AR_HOLDER': 'dn-mx-ar-holder', 'matrix_AR_BANK': 'dn-mx-ar-bank',
+            'matrix_ES_IBAN': 'dn-mx-es-iban', 'matrix_ES_HOLDER': 'dn-mx-es-holder',
+            'matrix_ES_BANK': 'dn-mx-es-bank'
+        };
+        Object.keys(map).forEach(function (k) {
+            var el = document.getElementById(map[k]);
+            if (el) el.value = d[k] || '';
+        });
+    }
+
+    async function dnSaveMatrix() {
+        var get = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+        var settings = {
+            'matrix_AR_CBU': get('dn-mx-ar-cbu'),
+            'matrix_AR_ALIAS': get('dn-mx-ar-alias'),
+            'matrix_AR_HOLDER': get('dn-mx-ar-holder'),
+            'matrix_AR_BANK': get('dn-mx-ar-bank'),
+            'matrix_ES_IBAN': get('dn-mx-es-iban'),
+            'matrix_ES_HOLDER': get('dn-mx-es-holder'),
+            'matrix_ES_BANK': get('dn-mx-es-bank')
+        };
+        var r = await dnFetch('/admin/billing/company', { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ settings: settings }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+    }
+
+    async function dnLoadSettlements() {
+        var r = await dnFetch('/admin/billing/settlements?status=pending');
+        var body = document.getElementById('dn-settlements-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin liquidaciones pendientes.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (s) {
+            var tr = document.createElement('tr');
+            [['id', s.id], ['user', (s.user && (s.user.name || s.user.email)) || ('#' + s.user_id)], ['gross', s.gross], ['fee', s.fee], ['net', s.net], ['status', s.status]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = 'Pagar';
+            btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+            btn.onclick = function () {
+                var ref = window.prompt('Comprobante de la transferencia al comercio/prestador:');
+                if (!ref) return;
+                dnPaySettlement(s.id, ref);
+            };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnCreateSettlement() {
+        var ids = document.getElementById('dn-settle-charges').value.split(',').map(function (x) { return parseInt(x.trim(), 10); }).filter(function (x) { return !isNaN(x); });
+        var body = {
+            user_id: parseInt(document.getElementById('dn-settle-user').value, 10),
+            currency: (document.getElementById('dn-settle-currency').value || 'ARS').toUpperCase(),
+            charge_ids: ids,
+            notes: document.getElementById('dn-settle-notes').value.trim() || null
+        };
+        var r = await dnFetch('/admin/billing/settlements', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Creada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-settle-charges').value = ''; dnLoadSettlements(); }
+    }
+
+    async function dnPaySettlement(id, reference) {
+        var r = await dnFetch('/admin/billing/settlements/' + id + '/pay', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({ reference: reference }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Pagada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadSettlements();
+    }
+
+    async function dnCheckDebt() {
+        var box = document.getElementById('dn-debt-result');
+        var uid = document.getElementById('dn-cash-user').value.trim();
+        var cur = (document.getElementById('dn-cash-currency').value || 'ARS').toUpperCase();
+        if (!uid) { box.textContent = 'Ingresá el ID del usuario.'; return; }
+        var r = await dnFetch('/admin/billing/status?user_id=' + encodeURIComponent(uid) + '&currency=' + encodeURIComponent(cur));
+        if (!r.ok || !r.data.success) { box.textContent = 'No se pudo consultar.'; return; }
+        var d = r.data.data;
+        box.textContent = 'Puede operar: ' + (d.can_operate ? 'Sí' : 'No') + ' · Deuda efectivo: ' + d.cash_debt + ' ' + d.currency;
+    }
+
+    async function dnLoadLedger() {
+        var type = document.getElementById('dn-led-type').value;
+        var cur = (document.getElementById('dn-led-currency').value || 'ARS').toUpperCase();
+        var q = '?currency=' + encodeURIComponent(cur) + (type ? '&type=' + encodeURIComponent(type) : '');
+        var r = await dnFetch('/admin/billing/ledger' + q);
+        var body = document.getElementById('dn-ledger-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin movimientos.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (m) {
+            var tr = document.createElement('tr');
+            [[m.id, m.id], ['t', m.type], ['u', (m.user && (m.user.name || m.user.email)) || 'PideAca'], ['a', m.amount + ' ' + m.currency], ['r', (m.reference_type || '-') + ' ' + (m.reference_id || '')], ['d', m.description || '']].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnLoadPlans() {
+        var r = await dnFetch('/admin/billing/plans');
+        var box = document.getElementById('dn-plans-list');
+        if (!box) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            box.textContent = 'Sin planes. Creá el primero abajo.';
+            return;
+        }
+        box.innerHTML = '';
+        r.data.data.forEach(function (p) {
+            var row = document.createElement('div');
+            row.style.cssText = 'border:1px solid #e2e8f0;border-radius:4px;padding:8px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;';
+            var t = document.createElement('span');
+            t.style.cssText = 'font-weight:700;color:#0f172a;';
+            t.textContent = '#' + p.id + ' ' + p.name + ' · $' + p.price + ' ' + p.currency + ' · ' + p.billing_days + 'd + ' + p.grace_days + 'd gracia';
+            row.appendChild(t);
+            var st = document.createElement('span');
+            st.style.cssText = 'font-size:12px;color:' + (p.active ? '#047857' : '#b91c1d') + ';';
+            st.textContent = p.active ? 'Activo' : 'Inactivo';
+            row.appendChild(st);
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = p.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { dnTogglePlan(p.id, !p.active); };
+            row.appendChild(btn);
+            box.appendChild(row);
+        });
+    }
+
+    async function dnSavePlan() {
+        var body = {
+            name: document.getElementById('dn-plan-name').value.trim(),
+            currency: (document.getElementById('dn-plan-currency').value || 'ARS').toUpperCase(),
+            price: parseFloat(document.getElementById('dn-plan-price').value) || 0,
+            billing_days: parseInt(document.getElementById('dn-plan-days').value, 10) || 30,
+            grace_days: parseInt(document.getElementById('dn-plan-grace').value, 10) || 15,
+            active: document.getElementById('dn-plan-active').value === '1'
+        };
+        if (!body.name) { dnMsg('El plan necesita un nombre.', false); return; }
+        var r = await dnFetch('/admin/billing/plans', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-plan-name').value = ''; document.getElementById('dn-plan-price').value = ''; dnLoadPlans(); }
+    }
+
+    async function dnTogglePlan(id, active) {
+        var r = await dnFetch('/admin/billing/plans/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadPlans();
+    }
+
+    async function dnSubscribe() {
+        var body = {
+            user_id: parseInt(document.getElementById('dn-sub-user').value, 10),
+            plan_id: parseInt(document.getElementById('dn-sub-plan').value, 10)
+        };
+        var r = await dnFetch('/admin/billing/subscribe', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Suscripto.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+    }
+
+    function dnInitDinero() {
+        dnSwitchTab('comisiones');
+        dnLoadRules();
+        dnLoadMatrix();
+        dnLoadSettlements();
+        dnLoadPlans();
+    }
+
+    document.addEventListener('click', function (event) {
+        var btn = event.target && event.target.closest ? event.target.closest('[data-dntab]') : null;
+        if (!btn || !document.getElementById('dash-dinero')) return;
+        dnSwitchTab(btn.getAttribute('data-dntab'));
+    });
 
     /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */
     // La Terminal Central muestra el vehículo del perfil como ficha de solo

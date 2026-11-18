@@ -809,6 +809,10 @@
             @include('dashboard.sections.repartidor')
                     @elseif(in_array($page->url, ['/repartidor/reportes', 'repartidor/reportes', 'reportes-repartidor'], true))
             @include('dashboard.sections.reportes-repartidor')
+                    @elseif($page->url === 'dinero')
+            <div id="dash-dinero" class="dash-section" style="display:none;width:100%;">
+                @include('dashboard.sections.dinero')
+            </div>
                     @elseif($page->url)
             @include('dashboard.sections.default')
                     @endif
