@@ -8,6 +8,7 @@
         <button type="button" data-dntab="efectivo" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Efectivo</button>
         <button type="button" data-dntab="conciliacion" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Conciliación</button>
         <button type="button" data-dntab="planes" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Planes Hogar</button>
+        <button type="button" data-dntab="facturas" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Facturas</button>
     </div>
     <div><span class="save-msg" id="dn-msg"></span></div>
 
@@ -119,5 +120,17 @@
             <div><label class="field-label">ID plan</label><input type="number" id="dn-sub-plan" class="field-input" /></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:12px;"><button type="button" onclick="dnSubscribe()" style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;">Suscribir</button></div>
+    </div>
+
+    <div class="dn-panel" data-dnpanel="facturas" style="display:none;">
+        <h4 style="font-size:14px;color:#0f172a;margin:0 0 10px;">Facturas de suscripción</h4>
+        <div class="profile-field-grid">
+            <div><label class="field-label">Estado</label><select id="dn-inv-status" class="field-input"><option value="">Todas</option><option value="pending">Pendiente</option><option value="overdue">Vencida</option><option value="paid">Pagada</option></select></div>
+            <div><label class="field-label">&nbsp;</label><button type="button" onclick="dnLoadInvoices()" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;">Filtrar</button></div>
+        </div>
+        <div style="overflow-x:auto;margin-top:12px;"><table style="width:100%;font-size:12.5px;border-collapse:collapse;">
+            <thead><tr style="background:#f8fafc;text-align:left;"><th style="padding:8px;border:1px solid #e2e8f0;">ID</th><th style="padding:8px;border:1px solid #e2e8f0;">Usuario</th><th style="padding:8px;border:1px solid #e2e8f0;">Monto</th><th style="padding:8px;border:1px solid #e2e8f0;">Vence</th><th style="padding:8px;border:1px solid #e2e8f0;">Estado</th><th style="padding:8px;border:1px solid #e2e8f0;">Acción</th></tr></thead>
+            <tbody id="dn-invoices-body"><tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Cargando…</td></tr></tbody>
+        </table></div>
     </div>
 </div>

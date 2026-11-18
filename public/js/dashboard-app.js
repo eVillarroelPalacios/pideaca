@@ -14401,6 +14401,51 @@
         };
         var r = await dnFetch('/admin/billing/subscribe', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
         dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Suscripto.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadInvoices();
+    }
+
+    async function dnLoadInvoices() {
+        var st = document.getElementById('dn-inv-status').value;
+        var r = await dnFetch('/admin/billing/invoices' + (st ? ('?status=' + encodeURIComponent(st)) : ''));
+        var body = document.getElementById('dn-invoices-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin facturas.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (inv) {
+            var tr = document.createElement('tr');
+            [[inv.id, inv.id], ['u', (inv.user && (inv.user.name || inv.user.email)) || ('#' + inv.user_id)], ['a', inv.amount + ' ' + inv.currency], ['d', inv.due_date || '—'], ['s', inv.status]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            if (inv.status === 'pending' || inv.status === 'overdue') {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'Marcar pagada';
+                btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                btn.onclick = function () {
+                    var ref = window.prompt('Comprobante del pago (opcional):') || '';
+                    dnPayInvoice(inv.id, ref);
+                };
+                act.appendChild(btn);
+            } else {
+                act.textContent = '—';
+            }
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnPayInvoice(id, reference) {
+        var r = await dnFetch('/admin/billing/invoices/' + id + '/pay', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({ reference: reference || null }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Pagada.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadInvoices();
     }
 
     function dnInitDinero() {
@@ -14410,6 +14455,7 @@
         dnLoadCharges();
         dnLoadSettlements();
         dnLoadPlans();
+        dnLoadInvoices();
     }
 
     document.addEventListener('click', function (event) {

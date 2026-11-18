@@ -301,6 +301,87 @@ class AdminBillingController extends Controller
         ]);
     }
 
+    // ---------- Tipos de billetera por país ----------
+
+    public function walletTypes()
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => \App\Models\WalletType::orderBy('country')->orderBy('id')->get()->all(),
+        ]);
+    }
+
+    public function storeWalletType(Request $request)
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'country' => ['required', 'string', 'size:2'],
+            'code' => ['required', 'string', 'max:40'],
+            'name' => ['required', 'string', 'max:100'],
+            'fields' => ['nullable', 'array'],
+            'fields.*' => ['string', 'max:30'],
+            'active' => ['nullable', 'boolean'],
+        ]);
+
+        $exists = \App\Models\WalletType::where('country', strtoupper($data['country']))
+            ->where('code', strtolower(trim((string) $data['code'])))
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe ese tipo para el país.',
+            ], 422);
+        }
+
+        $type = \App\Models\WalletType::create([
+            'country' => strtoupper($data['country']),
+            'code' => strtolower(trim((string) $data['code'])),
+            'name' => trim($data['name']),
+            'fields' => $data['fields'] ?? [],
+            'active' => (bool) ($data['active'] ?? true),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tipo de billetera creado.',
+            'wallet_type' => $type,
+        ], 201);
+    }
+
+    public function updateWalletType(Request $request, \App\Models\WalletType $walletType)
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'name' => ['sometimes', 'string', 'max:100'],
+            'fields' => ['sometimes', 'nullable', 'array'],
+            'fields.*' => ['string', 'max:30'],
+            'active' => ['sometimes', 'boolean'],
+        ]);
+
+        if (isset($data['name'])) {
+            $data['name'] = trim($data['name']);
+        }
+
+        $walletType->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tipo de billetera actualizado.',
+            'wallet_type' => $walletType->fresh(),
+        ]);
+    }
+
     // ---------- Cobros manuales ----------
 
     public function charges(Request $request)
