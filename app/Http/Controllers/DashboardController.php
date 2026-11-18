@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Group;
 use App\Models\Module;
 use App\Models\User;
+use App\Support\ProviderMenuFilter;
 
 class DashboardController extends Controller
 {
@@ -80,6 +81,10 @@ class DashboardController extends Controller
         })->filter(function ($module) {
             return $module->pages->isNotEmpty();
         })->values();
+
+        // Categorías del prestador: oculta módulos de grupos no elegidos.
+        // Se usa el usuario efectivo (gestionado si el Admin lo pide).
+        $modules = ProviderMenuFilter::filter($navUser, $modules);
 
         // Catálogo completo para "Asignar Permisos de Páginas" (el Admin lo
         // necesita aunque su propio navbar esté filtrado por sus páginas).

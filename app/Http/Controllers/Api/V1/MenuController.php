@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Module;
+use App\Support\ProviderMenuFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -54,6 +55,9 @@ class MenuController extends Controller
         })->filter(function ($module) {
             return $module->pages->isNotEmpty();
         })->values();
+
+        // Categorías del prestador: oculta módulos de grupos no elegidos.
+        $modules = ProviderMenuFilter::filter($user, $modules);
 
         // "Administrar" siempre al final, como en el navbar web.
         $modules = $modules->sortBy(function ($module) {
