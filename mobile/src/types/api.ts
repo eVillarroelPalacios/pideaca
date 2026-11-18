@@ -53,6 +53,11 @@ export type SimpleResponse = {
   message: string;
 };
 
+export type AutoApproveResponse = {
+  success: boolean;
+  auto_approve_max: number | null;
+};
+
 export type PayoutAccount = {
   id: number;
   currency: string;
@@ -83,8 +88,7 @@ export type PayoutAccountResponse = {
   can_operate?: boolean;
 };
 
-export type BillingStatusResponse = {
-  success: boolean;
+export type BillingStatusResponse = {  success: boolean;
   data: {
     can_operate: boolean;
     cash_debt: number;
