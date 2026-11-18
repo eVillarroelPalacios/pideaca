@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanySetting;
 use App\Models\PayoutAccount;
 use App\Services\PayoutAccountService;
 use Illuminate\Http\Request;
@@ -57,6 +58,21 @@ class PayoutAccountController extends Controller
             'success' => true,
             'can_operate' => PayoutAccountService::canOperate(Auth::user()),
             'data' => collect($this->wallets->list(Auth::user()))->map(fn ($a) => $this->payload($a))->values()->all(),
+        ]);
+    }
+
+    /**
+     * Datos de la matriz para pagar por transferencia (ver en checkout).
+     */
+    public function matrix()
+    {
+        if ($denied = $this->denied()) {
+            return $denied;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => CompanySetting::orderBy('key')->pluck('value', 'key')->all(),
         ]);
     }
 

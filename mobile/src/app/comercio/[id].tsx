@@ -393,6 +393,7 @@ export default function ComercioCatalogScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<MarketOrder | null>(null);
+  const [transferInfo, setTransferInfo] = useState<string | null>(null);
 
   useEffect(() => {
     if (!valid) {
@@ -711,6 +712,26 @@ export default function ComercioCatalogScreen() {
       setCart([]);
       setNotes('');
       setSuccess(response.order);
+
+      if (paymentMethod === 'transfer') {
+        api.billingStatus()
+          .then((billing) => {
+            const matrix = (billing.data.matrix ?? {}) as Record<string, string | null>;
+            const cbu = matrix.matrix_AR_CBU ?? matrix['matrix_AR_CBU'] ?? null;
+            const alias = matrix.matrix_AR_ALIAS ?? matrix['matrix_AR_ALIAS'] ?? null;
+            const holder = matrix.matrix_AR_HOLDER ?? matrix['matrix_AR_HOLDER'] ?? 'PideAca';
+            setTransferInfo(
+              cbu || alias
+                ? `Transferí a ${holder} · CBU ${cbu ?? '—'}${alias ? ` · Alias ${alias}` : ''}. Usá como referencia el número de pedido ${response.order.order_number}.`
+                : 'Te avisaremos por este medio los datos para transferir.',
+            );
+          })
+          .catch(() => {
+            setTransferInfo('Te avisaremos por este medio los datos para transferir.');
+          });
+      } else {
+        setTransferInfo(null);
+      }
     } catch (caught) {
       setSubmitError(
         firstError(caught, 'No se pudo registrar el pedido. Intentá de nuevo.'),
@@ -773,6 +794,9 @@ export default function ComercioCatalogScreen() {
               Número <Text style={styles.successStrong}>{success.order_number}</Text>
               . El comercio va a confirmar tu pedido.
             </Text>
+            {transferInfo ? (
+              <Text style={styles.successText}>{transferInfo}</Text>
+            ) : null}
             <View style={styles.successTotals}>
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Subtotal</Text>
@@ -798,7 +822,10 @@ export default function ComercioCatalogScreen() {
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => setSuccess(null)}
+              onPress={() => {
+                setSuccess(null);
+                setTransferInfo(null);
+              }}
               style={styles.successPrimary}
             >
               <Text style={styles.successPrimaryText}>Seguir comprando</Text>

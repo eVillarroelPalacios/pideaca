@@ -26,7 +26,7 @@ class CheckoutCharge
             return self::METHOD_CASH;
         }
 
-        if (in_array($m, ['transferencia', 'transferencia_bancaria', 'bank_transfer'], true)) {
+        if (in_array($m, ['transfer', 'transferencia', 'transferencia_bancaria', 'bank_transfer'], true)) {
             return self::METHOD_TRANSFER;
         }
 

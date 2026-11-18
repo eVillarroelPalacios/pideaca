@@ -5330,7 +5330,7 @@
         var total = subtotal + fee;
 
         var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
-            if (key === 'transferencia' || key === 'mercadopago') return '';
+            if (key === 'mercadopago') return '';
             return '<option value="' + key + '"' + (key === keepPayment ? ' selected' : '') + '>'
                 + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
         }).join('');
@@ -5353,9 +5353,10 @@
             + '</div>'
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
-            + '<select id="fd-shop-payment" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+            + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
             + paymentOptions
-            + '</select></div>'
+            + '</select>'
+            + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div></div>'
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nota para el comercio</label>'
             + '<textarea id="fd-shop-notes" rows="2" maxlength="1000" placeholder="Ej: sin cebolla, timbre roto, etc." style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">'
@@ -5481,6 +5482,48 @@
         }
     }
 
+    var FD_MATRIX_CACHE = null;
+
+    function fdShopMatrix(done) {
+        if (FD_MATRIX_CACHE) { done(FD_MATRIX_CACHE); return; }
+        fetch(window.APP_BASE + "/billing/matrix", {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            FD_MATRIX_CACHE = (data && data.success) ? data : null;
+            done(FD_MATRIX_CACHE);
+        })
+        .catch(function () { done(null); });
+    }
+
+    function fdShopPaymentChanged() {
+        var sel = document.getElementById('fd-shop-payment');
+        var box = document.getElementById('fd-shop-transfer-info');
+        if (!sel || !box) return;
+        if (sel.value !== 'transferencia' && sel.value !== 'transferencia_bancaria') {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.style.display = 'block';
+        box.innerHTML = 'Cargando datos para transferir…';
+        fdShopMatrix(function (res) {
+            var m = (res && res.data) || {};
+            var cbu = m.matrix_AR_CBU || m['matrix_AR_CBU'];
+            var alias = m.matrix_AR_ALIAS || m['matrix_AR_ALIAS'];
+            var holder = m.matrix_AR_HOLDER || m['matrix_AR_HOLDER'];
+            if (!cbu && !alias) {
+                box.innerHTML = 'Elegí transferencia y te mostraremos los datos al confirmar el pedido.';
+                return;
+            }
+            box.innerHTML = 'Transferí a <b>' + escapeHtml(holder || 'PideAca')
+                + '</b> · CBU <b>' + escapeHtml(cbu || '—') + '</b>'
+                + (alias ? ' · Alias <b>' + escapeHtml(alias) + '</b>' : '')
+                + '.<br>Usá como referencia el <b>número de pedido</b> que te mostramos al confirmar.';
+        });
+    }
+
     function fdShopSubmit() {
         if (FD_SHOP.busy) return;
 
@@ -5525,6 +5568,7 @@
         };
 
         FD_SHOP.busy = true;
+        FD_SHOP.lastPaymentMethod = payload.payment_method;
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.title = 'Enviando...';
@@ -5562,6 +5606,7 @@
             }
 
             var orderNumber = (res.data.order && res.data.order.order_number) || '';
+            var paidByTransfer = FD_SHOP.lastPaymentMethod === 'transferencia' || FD_SHOP.lastPaymentMethod === 'transferencia_bancaria';
 
             FD_SHOP.cart = [];
             fdShopRenderDelivery();
@@ -5572,6 +5617,7 @@
                 + '<div style="font-size:12px;color:#64748b;">'
                 + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
                 + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
+                + (paidByTransfer ? '<div id="fd-order-transfer-box" style="margin-top:10px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;text-align:left;">Cargando datos para transferir…</div>' : '')
                 + '<button type="button" onclick="fdShopGo(\'mis-pedidos\');" title="Ver mis pedidos" aria-label="Ver mis pedidos" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
                 + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
                 + '</button>'
@@ -5579,6 +5625,25 @@
 
             var cartEl = document.getElementById('fd-shop-cart');
             if (cartEl) cartEl.scrollTop = 0;
+
+            if (paidByTransfer) {
+                fdShopMatrix(function (res) {
+                    var box = document.getElementById('fd-order-transfer-box');
+                    if (!box) return;
+                    var m = (res && res.data) || {};
+                    var cbu = m.matrix_AR_CBU || m['matrix_AR_CBU'];
+                    var alias = m.matrix_AR_ALIAS || m['matrix_AR_ALIAS'];
+                    var holder = m.matrix_AR_HOLDER || m['matrix_AR_HOLDER'];
+                    if (!cbu && !alias) {
+                        box.innerHTML = 'Te avisaremos por este medio los datos para transferir.';
+                        return;
+                    }
+                    box.innerHTML = 'Transferí a <b>' + escapeHtml(holder || 'PideAca')
+                        + '</b> · CBU <b>' + escapeHtml(cbu || '—') + '</b>'
+                        + (alias ? ' · Alias <b>' + escapeHtml(alias) + '</b>' : '')
+                        + '.<br>Usá como referencia el <b>número de pedido ' + escapeHtml(orderNumber || '') + '</b>. Tu pedido queda en preparación al conciliarse el pago.';
+                });
+            }
 
             loadMyOrders();
         })

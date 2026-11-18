@@ -102,6 +102,7 @@ export type BillingStatusResponse = {
         reminders_sent: number;
       } | null;
     } | null;
+    matrix?: Record<string, string | null>;
     fee_rules: {
       id: number;
       module: string;

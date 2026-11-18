@@ -195,7 +195,10 @@ class PayoutAccountsController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => \App\Support\OperatingGate::status($user),
+            'data' => array_merge(
+                \App\Support\OperatingGate::status($user),
+                ['matrix' => \App\Models\CompanySetting::orderBy('key')->pluck('value', 'key')->all()]
+            ),
         ]);
     }
 }
