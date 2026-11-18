@@ -53,6 +53,42 @@ export type SimpleResponse = {
   message: string;
 };
 
+export type PayoutAccount = {
+  id: number;
+  currency: string;
+  label: string | null;
+  holder_name: string;
+  cbu: string | null;
+  alias_cbu: string | null;
+  iban: string | null;
+  bank: string | null;
+  is_default: boolean;
+  is_active: boolean;
+};
+
+export type PayoutAccountsResponse = {
+  success: boolean;
+  can_operate: boolean;
+  data: PayoutAccount[];
+};
+
+export type PayoutAccountResponse = {
+  success: boolean;
+  message: string;
+  account: PayoutAccount;
+  can_operate?: boolean;
+};
+
+export type PayoutAccountPayload = {
+  label?: string;
+  holder_name: string;
+  cbu?: string;
+  alias_cbu?: string;
+  iban?: string;
+  bank?: string;
+  currency?: string;
+};
+
 export type RegisterPayload = {
   name: string;
   email: string;
