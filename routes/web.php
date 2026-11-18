@@ -299,7 +299,7 @@ Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.
 Route::middleware('auth')->group(function () {
     Route::post('/checkout/mercadopago/start', [MercadoPagoCheckoutController::class, 'start']);
 });
-Route::post('/webhooks/mercadopago', [MercadoPagoCheckoutController::class, 'webhook'])->name('checkout.mp.webhook')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::post('/webhooks/mercadopago', [MercadoPagoCheckoutController::class, 'webhook'])->name('checkout.mp.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
 Route::get('/checkout/return', [MercadoPagoCheckoutController::class, 'retorno'])->name('checkout.mp.return');
 
 // Modulo A - Fast Delivery
