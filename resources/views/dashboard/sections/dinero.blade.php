@@ -4,6 +4,7 @@
         <button type="button" data-dntab="comisiones" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #D24C19;background:#D24C19;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Comisiones</button>
         <button type="button" data-dntab="matriz" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Matriz PideAca</button>
         <button type="button" data-dntab="liquidaciones" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Liquidaciones</button>
+        <button type="button" data-dntab="cobros" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Cobros</button>
         <button type="button" data-dntab="efectivo" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Efectivo</button>
         <button type="button" data-dntab="conciliacion" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Conciliación</button>
         <button type="button" data-dntab="planes" class="dn-tab" style="padding:8px 14px;border-radius:4px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;">Planes Hogar</button>
@@ -54,6 +55,24 @@
         <div style="overflow-x:auto;margin-top:12px;"><table style="width:100%;font-size:12.5px;border-collapse:collapse;">
             <thead><tr style="background:#f8fafc;text-align:left;"><th style="padding:8px;border:1px solid #e2e8f0;">ID</th><th style="padding:8px;border:1px solid #e2e8f0;">Usuario</th><th style="padding:8px;border:1px solid #e2e8f0;">Bruto</th><th style="padding:8px;border:1px solid #e2e8f0;">Comisión</th><th style="padding:8px;border:1px solid #e2e8f0;">Neto</th><th style="padding:8px;border:1px solid #e2e8f0;">Estado</th><th style="padding:8px;border:1px solid #e2e8f0;">Acción</th></tr></thead>
             <tbody id="dn-settlements-body"><tr><td colspan="7" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Cargando…</td></tr></tbody>
+        </table></div>
+    </div>
+
+    <div class="dn-panel" data-dnpanel="cobros" style="display:none;">
+        <h4 style="font-size:14px;color:#0f172a;margin:0 0 10px;">Registrar cobro manual</h4>
+        <div class="profile-field-grid">
+            <div><label class="field-label">Módulo</label><select id="dn-ch-module" class="field-input"><option value="mercado">Mercado</option><option value="hogar">Hogar</option></select></div>
+            <div><label class="field-label">Tipo pedido</label><select id="dn-ch-ordertype" class="field-input"><option value="order">Pedido (order)</option><option value="service_order">Servicio (service_order)</option></select></div>
+            <div><label class="field-label">ID pedido</label><input type="number" id="dn-ch-order" class="field-input" min="1" /></div>
+            <div><label class="field-label">Monto</label><input type="number" id="dn-ch-amount" class="field-input" min="1" step="0.01" /></div>
+            <div><label class="field-label">Medio</label><select id="dn-ch-method" class="field-input"><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option></select></div>
+            <div><label class="field-label">Referencia</label><input type="text" id="dn-ch-ref" class="field-input" placeholder="Código / comprobante" /></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px;"><button type="button" onclick="dnRegisterCharge()" style="background:#D24C19;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;">Registrar cobro</button></div>
+        <h4 style="font-size:14px;color:#0f172a;margin:18px 0 10px;">Pendientes de verificación</h4>
+        <div style="overflow-x:auto;"><table style="width:100%;font-size:12.5px;border-collapse:collapse;">
+            <thead><tr style="background:#f8fafc;text-align:left;"><th style="padding:8px;border:1px solid #e2e8f0;">ID</th><th style="padding:8px;border:1px solid #e2e8f0;">Pedido</th><th style="padding:8px;border:1px solid #e2e8f0;">Monto</th><th style="padding:8px;border:1px solid #e2e8f0;">Comisión</th><th style="padding:8px;border:1px solid #e2e8f0;">Medio</th><th style="padding:8px;border:1px solid #e2e8f0;">Acción</th></tr></thead>
+            <tbody id="dn-charges-body"><tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Cargando…</td></tr></tbody>
         </table></div>
     </div>
 

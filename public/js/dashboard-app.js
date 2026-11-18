@@ -14110,8 +14110,62 @@
         });
     }
 
-    async function dnCreateSettlement() {
-        var ids = document.getElementById('dn-settle-charges').value.split(',').map(function (x) { return parseInt(x.trim(), 10); }).filter(function (x) { return !isNaN(x); });
+    async function dnLoadCharges() {
+        var r = await dnFetch('/admin/billing/charges?status=pending_verification');
+        var body = document.getElementById('dn-charges-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin cobros pendientes.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (c) {
+            var tr = document.createElement('tr');
+            [[c.id, c.id], ['o', c.order_type + ' #' + c.order_id], ['a', c.amount], ['f', c.fee], ['m', c.method]].forEach(function (pair) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = pair[1];
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            if (c.method === 'transferencia') {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'Verificar';
+                btn.style.cssText = 'background:#D24C19;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                btn.onclick = function () { dnVerifyCharge(c.id); };
+                act.appendChild(btn);
+            } else {
+                act.textContent = 'Auto (efectivo)';
+            }
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function dnRegisterCharge() {
+        var body = {
+            module: document.getElementById('dn-ch-module').value,
+            order_type: document.getElementById('dn-ch-ordertype').value,
+            order_id: parseInt(document.getElementById('dn-ch-order').value, 10),
+            amount: parseFloat(document.getElementById('dn-ch-amount').value),
+            method: document.getElementById('dn-ch-method').value,
+            reference: document.getElementById('dn-ch-ref').value.trim() || null,
+            currency: 'ARS'
+        };
+        var r = await dnFetch('/admin/billing/charges', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Registrado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) { document.getElementById('dn-ch-order').value = ''; document.getElementById('dn-ch-amount').value = ''; document.getElementById('dn-ch-ref').value = ''; dnLoadCharges(); }
+    }
+
+    async function dnVerifyCharge(id) {
+        var r = await dnFetch('/admin/billing/charges/' + id + '/verify', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({}) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Verificado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) dnLoadCharges();
+    }
+
+    async function dnCreateSettlement() {        var ids = document.getElementById('dn-settle-charges').value.split(',').map(function (x) { return parseInt(x.trim(), 10); }).filter(function (x) { return !isNaN(x); });
         var body = {
             user_id: parseInt(document.getElementById('dn-settle-user').value, 10),
             currency: (document.getElementById('dn-settle-currency').value || 'ARS').toUpperCase(),
@@ -14228,6 +14282,7 @@
         dnSwitchTab('comisiones');
         dnLoadRules();
         dnLoadMatrix();
+        dnLoadCharges();
         dnLoadSettlements();
         dnLoadPlans();
     }

@@ -230,6 +230,9 @@ Route::prefix('admin/billing')->name('admin.billing.')->group(function () {
     Route::get('/invoices', [AdminBillingController::class, 'invoices'])->name('invoices.index');
     Route::post('/invoices/{invoice}/pay', [AdminBillingController::class, 'payInvoice'])->name('invoices.pay');
     Route::post('/subscribe', [AdminBillingController::class, 'subscribe'])->name('subscribe');
+    Route::get('/charges', [AdminBillingController::class, 'charges'])->name('charges.index');
+    Route::post('/charges', [AdminBillingController::class, 'registerCharge'])->name('charges.store');
+    Route::post('/charges/{charge}/verify', [AdminBillingController::class, 'verifyCharge'])->name('charges.verify');
 });
 
 Route::middleware('page:paginas')->group(function () {

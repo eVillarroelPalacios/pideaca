@@ -301,6 +301,94 @@ class AdminBillingController extends Controller
         ]);
     }
 
+    // ---------- Cobros manuales ----------
+
+    public function charges(Request $request)
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        $query = \App\Models\Charge::with('creator:id,name')->orderByDesc('id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('module')) {
+            $query->where('module', $request->input('module'));
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $query->limit(200)->get(),
+        ]);
+    }
+
+    public function registerCharge(Request $request, BillingService $billing)
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        $data = $request->validate([
+            'module' => ['required', 'string', 'in:mercado,hogar'],
+            'order_type' => ['required', 'string', 'in:order,service_order'],
+            'order_id' => ['required', 'integer', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'method' => ['required', 'string', 'in:transferencia,efectivo'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'currency' => ['nullable', 'string', 'size:3'],
+        ]);
+
+        try {
+            $charge = $billing->registerManualCharge(
+                $data['module'],
+                $data['order_type'],
+                (int) $data['order_id'],
+                (float) $data['amount'],
+                $data['method'],
+                $data['reference'] ?? null,
+                strtoupper($data['currency'] ?? 'ARS'),
+                Auth::user()
+            );
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+                'errors' => $e->validator->errors()->toArray(),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cobro registrado.',
+            'charge' => $charge,
+        ], 201);
+    }
+
+    public function verifyCharge(\App\Models\Charge $charge, BillingService $billing)
+    {
+        if ($denied = $this->deny()) {
+            return $denied;
+        }
+
+        try {
+            $charge = $billing->verifyTransferCharge($charge, Auth::user());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cobro verificado.',
+            'charge' => $charge,
+        ]);
+    }
+
     // ---------- Planes y suscripciones Hogar ----------
 
     public function plans()
