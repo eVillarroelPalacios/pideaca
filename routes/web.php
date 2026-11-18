@@ -20,6 +20,7 @@ use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrdenesGestionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PayoutAccountController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
@@ -251,6 +252,13 @@ Route::get('/profile/service-types', [ProfileController::class, 'getServiceTypes
 Route::post('/profile/service-types/toggle', [ProfileController::class, 'toggleServiceType'])->middleware('page:ordenes-servicio')->name('profile.service-types.toggle');
 Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('profile.address.index');
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
+// Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
+Route::get('/profile/payout-accounts', [PayoutAccountController::class, 'index'])->name('profile.payout-accounts.index');
+Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
+Route::put('/profile/payout-accounts/{account}', [PayoutAccountController::class, 'update'])->name('profile.payout-accounts.update');
+Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountController::class, 'setDefault'])->name('profile.payout-accounts.default');
+Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountController::class, 'deactivate'])->name('profile.payout-accounts.deactivate');
+Route::post('/profile/payout-accounts/{account}/reactivate', [PayoutAccountController::class, 'reactivate'])->name('profile.payout-accounts.reactivate');
 Route::get('/countries', [ProfileController::class, 'getCountries'])->name('countries.index');
 Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.index');
 

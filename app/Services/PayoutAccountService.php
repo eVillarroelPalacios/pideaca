@@ -36,7 +36,7 @@ class PayoutAccountService
 
             $attrs['is_default'] = ! $exists;
 
-            return $user->payoutAccounts()->create($attrs);
+            return tap($user->payoutAccounts()->create($attrs), fn ($a) => $a->refresh());
         });
     }
 
