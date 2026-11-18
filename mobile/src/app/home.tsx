@@ -145,6 +145,9 @@ export default function HomeScreen() {
   const [rejectWithdrawalId, setRejectWithdrawalId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [togglingTrusted, setTogglingTrusted] = useState(false);
+  const [autoCap, setAutoCap] = useState('');
+  const [autoCapMsg, setAutoCapMsg] = useState<string | null>(null);
+  const [savingAutoCap, setSavingAutoCap] = useState(false);
 
   // Publicidad.
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -294,6 +297,12 @@ export default function HomeScreen() {
           setProviderWithdrawals((await api.providerWithdrawals()).withdrawals);
         } catch {
           setProviderWithdrawals([]);
+        }
+        try {
+          const cap = await api.providerAutoApprove();
+          setAutoCap(cap.auto_approve_max !== null && cap.auto_approve_max !== undefined ? String(cap.auto_approve_max) : '');
+        } catch {
+          setAutoCap('');
         }
       } else {
         setProviderWithdrawals([]);
@@ -671,6 +680,35 @@ export default function HomeScreen() {
         },
       ],
     );
+  }
+
+  async function handleSaveAutoCap() {
+    const trimmed = autoCap.trim();
+    const value = trimmed === '' ? null : Number(trimmed);
+
+    if (value !== null && (!Number.isFinite(value) || value < 0)) {
+      setAutoCapMsg('Ingresá un tope válido (vacío = todo manual).');
+      return;
+    }
+
+    setSavingAutoCap(true);
+    setAutoCapMsg(null);
+
+    try {
+      const res = await api.updateProviderAutoApprove(value);
+      setAutoCap(
+        res.auto_approve_max !== null && res.auto_approve_max !== undefined
+          ? String(res.auto_approve_max)
+          : '',
+      );
+      setAutoCapMsg('Tope actualizado.');
+    } catch (caught) {
+      setAutoCapMsg(
+        caught instanceof ApiError ? caught.message : 'No pudimos guardar el tope.',
+      );
+    } finally {
+      setSavingAutoCap(false);
+    }
   }
 
   async function submitRejectWithdrawal() {
@@ -1414,6 +1452,20 @@ export default function HomeScreen() {
             <Text style={styles.cardSub}>
               Solicitudes pendientes de tus repartidores. El saldo ya quedó reservado al solicitar: aprobá para confirmar el pago o rechazá para devolverlo a la billetera.
             </Text>
+            <TextField
+              label="Auto-aprobar hasta (vacío = todo manual)"
+              value={autoCap}
+              onChangeText={setAutoCap}
+              keyboardType="numeric"
+              placeholder="Ej: 5000"
+              editable={!savingAutoCap}
+            />
+            {autoCapMsg ? <Text style={styles.cardSub}>{autoCapMsg}</Text> : null}
+            <PrimaryButton
+              title={savingAutoCap ? 'Guardando…' : 'Guardar tope'}
+              onPress={() => void handleSaveAutoCap()}
+              disabled={savingAutoCap}
+            />
             <Text style={styles.sectionLabel}>
               Pendientes: {providerWithdrawals.length}
             </Text>

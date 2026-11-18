@@ -121,6 +121,7 @@ import type {
   PayoutAccountsResponse,
   BillingStatusResponse,
   WalletTypesResponse,
+  AutoApproveResponse,
   ReportComercioHistoryParams,
   ReportComercioHistoryResponse,
   ReportComercioNutritionParams,
@@ -1262,6 +1263,17 @@ export const api = {
 
   providerWithdrawals(): Promise<ProviderWithdrawalsResponse> {
     return request<ProviderWithdrawalsResponse>('/profile/provider/withdrawals');
+  },
+
+  providerAutoApprove(): Promise<AutoApproveResponse> {
+    return request<AutoApproveResponse>('/profile/provider/auto-approve');
+  },
+
+  updateProviderAutoApprove(value: number | null): Promise<AutoApproveResponse> {
+    return request<AutoApproveResponse>('/profile/provider/auto-approve', {
+      method: 'PUT',
+      body: { auto_approve_max: value },
+    });
   },
 
   providerApproveWithdrawal(id: number): Promise<ProviderWithdrawalActionResponse> {
