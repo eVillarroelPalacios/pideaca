@@ -1,9 +1,13 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// Ruta del API dentro del servidor.
+// URL del API en producción: es el equivalente móvil del
+// APP_URL=https://pideaca.com de la web. Los enlaces de recuperación que
+// genera el servidor y los assets salen con ese origen, nunca localhost.
+const PROD_API_URL = 'https://pideaca.com/api/mobile/v1';
+
+// Ruta del API en desarrollo local.
 // En XAMPP el proyecto vive en /pideaca, por eso el prefijo.
-// Si algún día el API queda en la raíz del dominio, cambiá acá.
 const API_PATH = '/pideaca/api/mobile/v1';
 
 const API_TIMEOUT_MS = 20000;
@@ -13,9 +17,13 @@ const API_TIMEOUT_MS = 20000;
  * dispositivo:
  *
  * 1. Si definiste EXPO_PUBLIC_API_URL en mobile/.env, se usa eso.
- * 2. En web usa el mismo host donde corre Expo.
- * 3. En el celular usa la IP de la PC que Metro ya conoce (hostUri).
- * 4. Como último recurso: 10.0.2.2 (emulador Android) o localhost.
+ * 2. En un build de producción (NODE_ENV=production) se usa la URL de
+ *    producción, igual que el APP_URL de la web. Ningún release apunta a
+ *    localhost ni a 10.0.2.2.
+ * 3. En desarrollo web usa el mismo host donde corre Expo.
+ * 4. En desarrollo en el celular usa la IP de la PC que Metro ya conoce
+ *    (hostUri).
+ * 5. Como último recurso: 10.0.2.2 (emulador Android) o localhost.
  *
  * Nota: para que el celular físico llegue a tu PC, Apache debe escuchar en
  * la red y el Firewall de Windows debe permitir el puerto 80.
@@ -25,6 +33,10 @@ function resolveApiBaseUrl(): string {
 
   if (explicit && explicit.trim().length > 0) {
     return explicit.trim().replace(/\/+$/, '');
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return PROD_API_URL;
   }
 
   if (Platform.OS === 'web' && typeof globalThis.window !== 'undefined') {
