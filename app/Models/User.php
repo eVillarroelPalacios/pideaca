@@ -261,6 +261,11 @@ class User extends Authenticatable
         return $this->hasMany(ProviderDriver::class);
     }
 
+    public function membershipSubscription()
+    {
+        return $this->hasOne(MembershipSubscription::class);
+    }
+
     public function payoutAccounts()
     {
         return $this->hasMany(PayoutAccount::class)->latest();

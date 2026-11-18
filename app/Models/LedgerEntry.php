@@ -12,6 +12,7 @@ class LedgerEntry extends Model
     public const TYPE_WALLET_DEBIT = 'wallet_debit';
     public const TYPE_PAYOUT = 'payout';
     public const TYPE_REFUND = 'refund';
+    public const TYPE_COLLECTION = 'collection';
     public const TYPE_SUBSCRIPTION = 'subscription';
 
     protected $fillable = [
