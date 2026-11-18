@@ -183,10 +183,12 @@ type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   auth?: boolean;
+  /** Tiempo maximo de espera; por defecto API_TIMEOUT_MS. */
+  timeoutMs?: number;
 };
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, auth = true } = options;
+  const { method = 'GET', body, auth = true, timeoutMs = API_TIMEOUT_MS } = options;
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -205,7 +207,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   // Evita que la app quede colgada si el servidor no responde.
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
 
@@ -285,6 +287,23 @@ export const api = {
 
   types(): Promise<TypesResponse> {
     return request<TypesResponse>('/auth/types', { auth: false });
+  },
+
+  /**
+   * Recuperacion de contrasena por correo.
+   *
+   * El servidor responde siempre igual (exista o no la cuenta) para no
+   * revelar que correos estan registrados, y envia un enlace valido por
+   * 60 minutos. El envio es sincrono, por eso esta llamada espera mas que
+   * el resto: el SMTP puede tardar decenas de segundos.
+   */
+  forgotPassword(email: string): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/auth/password/forgot', {
+      method: 'POST',
+      auth: false,
+      timeoutMs: 90000,
+      body: { email },
+    });
   },
 
   me(): Promise<MeResponse> {

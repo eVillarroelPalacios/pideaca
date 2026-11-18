@@ -1,6 +1,6 @@
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
@@ -83,15 +83,33 @@ export default function LoginScreen() {
         textContentType="password"
       />
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => setShowPassword((current) => !current)}
-        style={styles.showPassword}
-      >
-        <Text style={styles.showPasswordText}>
-          {showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-        </Text>
-      </Pressable>
+      <View style={styles.helperRow}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setShowPassword((current) => !current)}
+          style={styles.showPassword}
+        >
+          <Text style={styles.showPasswordText}>
+            {showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="link"
+          onPress={() =>
+            // Los tipos de Expo Router viven en .expo/ y se regeneran al
+            // correr `expo start`; hasta entonces la ruta nueva va casteada
+            // (mismo criterio que en _layout.tsx).
+            router.push({
+              pathname: '/forgot-password',
+              params: { email: email.trim() },
+            } as never)
+          }
+          style={styles.forgotPassword}
+        >
+          <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+        </Pressable>
+      </View>
 
       <PrimaryButton
         title="Ingresar"
@@ -104,13 +122,28 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  showPassword: {
-    alignSelf: 'flex-end',
+  helperRow: {
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    justifyContent: 'space-between',
     marginBottom: spacing.lg,
     marginTop: -spacing.sm,
   },
+  showPassword: {
+    paddingVertical: spacing.xs,
+  },
   showPasswordText: {
     color: colors.brandDark,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  forgotPassword: {
+    paddingVertical: spacing.xs,
+  },
+  forgotPasswordText: {
+    color: colors.muted,
     fontSize: 13,
     fontWeight: '600',
   },
