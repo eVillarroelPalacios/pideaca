@@ -261,6 +261,11 @@ class User extends Authenticatable
         return $this->hasMany(ProviderDriver::class);
     }
 
+    public function payoutAccounts()
+    {
+        return $this->hasMany(PayoutAccount::class)->latest();
+    }
+
     public function pushTokens()
     {
         return $this->hasMany(PushToken::class);
