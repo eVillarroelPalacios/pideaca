@@ -8773,7 +8773,7 @@
         sel.innerHTML = '<option value="">-- Seleccionar --</option>';
         if (!countryId) return;
         var csrf = document.querySelector('meta[name="csrf-token"]').content;
-        fetch('window.APP_BASE+"/regions"?country_id=' + countryId, {
+        fetch(window.APP_BASE + "/regions?country_id=" + countryId, {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
         })
         .then(function(r) { return r.json(); })
@@ -10658,7 +10658,7 @@
             sel.innerHTML = '<option value="">-- Seleccionar país primero --</option>';
             return;
         }
-        fetch('window.APP_BASE+"/regions"?country_id=' + countryId, {
+        fetch(window.APP_BASE + "/regions?country_id=" + countryId, {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
@@ -14043,7 +14043,7 @@
             sel.innerHTML = '<option value="">-- Seleccionar país primero --</option>';
             return;
         }
-        fetch('window.APP_BASE+"/regions"?country_id=' + countryId, {
+        fetch(window.APP_BASE + "/regions?country_id=" + countryId, {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
         })
         .then(function(r) { return r.json(); })
