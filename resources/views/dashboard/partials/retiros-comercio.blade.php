@@ -6,7 +6,11 @@
     <p class="pcard-sub">Solicitudes pendientes de tus repartidores (con entregas para tu comercio o en tu lista de confianza). El saldo ya quedó reservado al solicitar: aprobá para confirmar el pago o rechazá para devolverlo a la billetera.</p>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:14px 0;">
         <span class="pcard-sub" style="margin:0;"><strong id="pv-wd-count">0</strong> pendientes</span>
-        
+        <span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#374151;">
+            Auto-aprobar hasta $
+            <input type="number" id="pv-auto-max" min="0" step="0.01" placeholder="Sin tope" style="width:110px;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;" />
+            <button type="button" onclick="pvSaveAutoMax()" style="background:#fff;color:#047857;border:1px solid #a7f3d0;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+        </span>
     </div>
     <div style="overflow-x:auto;">
         <table class="um-table">
@@ -59,6 +63,18 @@
     window.pvWdLoad = function () {
         var tbody = document.getElementById('pv-wd-tbody');
         if (!tbody) return;
+
+        fetch(window.APP_BASE + '/profile/provider/auto-approve', {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(function (r) { return r.json().catch(function () { return null; }); })
+        .then(function (data) {
+            var input = document.getElementById('pv-auto-max');
+            if (input && data && data.success && data.auto_approve_max !== null && data.auto_approve_max !== undefined) {
+                input.value = data.auto_approve_max;
+            }
+        })
+        .catch(function () {});
 
         fetch(endpoint(), { headers: { 'Accept': 'application/json' } })
             .then(function (r) {
@@ -147,6 +163,40 @@
                 msg('Error de conexión.', false);
             });
     }
+
+    window.pvSaveAutoMax = function () {
+        var token = document.querySelector('meta[name="csrf-token"]');
+        var input = document.getElementById('pv-auto-max');
+        var raw = input ? input.value.trim() : '';
+        var body = { auto_approve_max: raw === '' ? null : parseFloat(raw) };
+
+        if (body.auto_approve_max !== null && (isNaN(body.auto_approve_max) || body.auto_approve_max < 0)) {
+            msg('Ingresá un tope válido (0 o vacío = todo manual).', false);
+            return;
+        }
+
+        fetch(window.APP_BASE + '/profile/provider/auto-approve', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token ? token.content : ''
+            },
+            body: JSON.stringify(body)
+        })
+        .then(function (r) {
+            return r.json().catch(function () { return null; }).then(function (data) {
+                return { ok: r.ok, data: data };
+            });
+        })
+        .then(function (res) {
+            var data = res.data;
+            msg((data && data.message) || (res.ok ? 'Tope actualizado.' : 'No se pudo guardar el tope.'), !!(res.ok && data && data.success));
+        })
+        .catch(function () {
+            msg('Error de conexión.', false);
+        });
+    };
 
     window.pvWdApprove = function (id) {
         if (!confirm('¿Confirmás que el pago del retiro ya fue realizado?')) return;

@@ -224,6 +224,58 @@ class ProfileController extends Controller
     }
 
     /**
+     * Tope de auto-aprobación de retiros del comercio.
+     * GET /profile/provider/auto-approve
+     */
+    public function providerAutoApprove()
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $provider = $this->providerForWithdrawals(Auth::user());
+
+        if (! $provider) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'auto_approve_max' => $provider->auto_approve_max !== null ? (float) $provider->auto_approve_max : null,
+        ]);
+    }
+
+    /**
+     * Guarda el tope de auto-aprobación (0 o vacío = todo manual).
+     * PUT /profile/provider/auto-approve
+     */
+    public function updateProviderAutoApprove(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $provider = $this->providerForWithdrawals(Auth::user());
+
+        if (! $provider) {
+            return response()->json(['success' => false, 'message' => 'No tenés permisos para administrar retiros.'], 403);
+        }
+
+        $data = $request->validate([
+            'auto_approve_max' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $provider->auto_approve_max = $data['auto_approve_max'] !== null ? (float) $data['auto_approve_max'] : null;
+        $provider->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tope de auto-aprobación actualizado.',
+            'auto_approve_max' => $provider->auto_approve_max !== null ? (float) $provider->auto_approve_max : null,
+        ]);
+    }
+
+    /**
      * El comercio confirma que ya pagó el retiro al repartidor.
      * POST /profile/provider/withdrawals/{withdrawal}/approve
      */

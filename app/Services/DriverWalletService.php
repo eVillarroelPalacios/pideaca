@@ -71,7 +71,7 @@ class DriverWalletService
                 'description' => 'Solicitud de retiro de saldo',
             ]);
 
-            return DriverWithdrawalRequest::create([
+            $request = DriverWithdrawalRequest::create([
                 'user_id' => $user->id,
                 'wallet_transaction_id' => $transaction->id,
                 'amount' => $amount,
@@ -79,7 +79,53 @@ class DriverWalletService
                 'method' => $method,
                 'notes' => $notes,
             ]);
+
+            $this->tryAutoApprove($request);
+
+            return $request->fresh(['user:id,name,email']);
         });
+    }
+
+    /**
+     * Auto-aprobación por tope del comercio: si algún comercio donde el
+     * repartidor es de confianza tiene tope configurado y cubre el monto,
+     * se aprueba solo al instante (reviewed_by queda en null).
+     */
+    private function tryAutoApprove(DriverWithdrawalRequest $request): void
+    {
+        $providerId = \App\Models\ProviderDriver::where('user_id', $request->user_id)
+            ->where('status', 'active')
+            ->whereHas('provider', function ($q) use ($request) {
+                $q->whereNotNull('auto_approve_max')
+                    ->where('auto_approve_max', '>=', (float) $request->amount);
+            })
+            ->orderBy('provider_id')
+            ->value('provider_id');
+
+        if (! $providerId) {
+            return;
+        }
+
+        $locked = DriverWithdrawalRequest::whereKey($request->getKey())->lockForUpdate()->first();
+
+        if (! $locked || $locked->status !== DriverWithdrawalRequest::STATUS_PENDING) {
+            return;
+        }
+
+        $notes = trim((string) $locked->notes);
+        $notes = trim($notes . ' | Aprobación automática (tope del comercio)');
+
+        $locked->update([
+            'status' => DriverWithdrawalRequest::STATUS_APPROVED,
+            'reviewed_by' => null,
+            'reviewed_at' => now(),
+            'notes' => $notes !== '' ? $notes : null,
+        ]);
+
+        if ($locked->wallet_transaction_id) {
+            WalletTransaction::whereKey($locked->wallet_transaction_id)
+                ->update(['status' => 'completed']);
+        }
     }
 
     public function approve(DriverWithdrawalRequest $request, User $admin): DriverWithdrawalRequest

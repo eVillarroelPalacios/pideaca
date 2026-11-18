@@ -265,6 +265,8 @@ Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->n
 Route::put('/profile/provider', [ProfileController::class, 'updateProvider'])->name('profile.provider.update');
 // Retiros de repartidores del comercio: el titular los aprueba o rechaza.
 Route::get('/profile/provider/withdrawals', [ProfileController::class, 'providerWithdrawals'])->name('profile.provider.withdrawals.index');
+Route::get('/profile/provider/auto-approve', [ProfileController::class, 'providerAutoApprove'])->name('profile.provider.auto-approve.show');
+Route::put('/profile/provider/auto-approve', [ProfileController::class, 'updateProviderAutoApprove'])->name('profile.provider.auto-approve.update');
 Route::post('/profile/provider/withdrawals/{withdrawal}/approve', [ProfileController::class, 'approveProviderWithdrawal'])->name('profile.provider.withdrawals.approve');
 Route::post('/profile/provider/withdrawals/{withdrawal}/reject', [ProfileController::class, 'rejectProviderWithdrawal'])->name('profile.provider.withdrawals.reject');
 Route::get('/profile/services', [ProviderServiceController::class, 'index'])->name('profile.services.index');
