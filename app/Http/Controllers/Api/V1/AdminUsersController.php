@@ -167,6 +167,9 @@ class AdminUsersController extends Controller
                 'password' => Hash::make($data['password']),
                 'user_status_id' => $statusId,
                 'type_user_id' => $principal->type_user_id,
+                // Sin correo propio que verificar: la confianza viene del
+                // titular autenticado que lo crea. Nace verificado.
+                'email_verified_at' => now(),
             ]);
         });
 
