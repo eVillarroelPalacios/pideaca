@@ -233,6 +233,9 @@ Route::prefix('admin/billing')->name('admin.billing.')->group(function () {
     Route::get('/charges', [AdminBillingController::class, 'charges'])->name('charges.index');
     Route::post('/charges', [AdminBillingController::class, 'registerCharge'])->name('charges.store');
     Route::post('/charges/{charge}/verify', [AdminBillingController::class, 'verifyCharge'])->name('charges.verify');
+    Route::get('/wallet-types', [AdminBillingController::class, 'walletTypes'])->name('wallet-types.index');
+    Route::post('/wallet-types', [AdminBillingController::class, 'storeWalletType'])->name('wallet-types.store');
+    Route::put('/wallet-types/{walletType}', [AdminBillingController::class, 'updateWalletType'])->name('wallet-types.update');
 });
 
 Route::middleware('page:paginas')->group(function () {
@@ -279,7 +282,8 @@ Route::get('/profile/address', [ProfileController::class, 'getAddress'])->name('
 Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name('profile.address.update');
 // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
 Route::get('/profile/payout-accounts', [PayoutAccountController::class, 'index'])->name('profile.payout-accounts.index');
-Route::get('/profile/billing/status', [PayoutAccountController::class, 'status'])->name('profile.billing.status');Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
+Route::get('/profile/billing/status', [PayoutAccountController::class, 'status'])->name('profile.billing.status');
+Route::get('/wallet-types', [PayoutAccountController::class, 'types'])->name('wallet-types.index');Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
 Route::put('/profile/payout-accounts/{account}', [PayoutAccountController::class, 'update'])->name('profile.payout-accounts.update');
 Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountController::class, 'setDefault'])->name('profile.payout-accounts.default');
 Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountController::class, 'deactivate'])->name('profile.payout-accounts.deactivate');

@@ -120,6 +120,7 @@ import type {
   PayoutAccountResponse,
   PayoutAccountsResponse,
   BillingStatusResponse,
+  WalletTypesResponse,
   ReportComercioHistoryParams,
   ReportComercioHistoryResponse,
   ReportComercioNutritionParams,
@@ -311,6 +312,10 @@ export const api = {
    */
   payoutAccounts(): Promise<PayoutAccountsResponse> {
     return request<PayoutAccountsResponse>('/profile/payout-accounts');
+  },
+
+  walletTypes(): Promise<WalletTypesResponse> {
+    return request<WalletTypesResponse>('/wallet-types');
   },
 
   createPayoutAccount(payload: PayoutAccountPayload): Promise<PayoutAccountResponse> {

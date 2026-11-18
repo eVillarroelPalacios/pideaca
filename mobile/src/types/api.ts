@@ -56,10 +56,14 @@ export type SimpleResponse = {
 export type PayoutAccount = {
   id: number;
   currency: string;
+  country: string | null;
+  wallet_type_id: number | null;
+  wallet_type: string | null;
   label: string | null;
   holder_name: string;
   cbu: string | null;
   alias_cbu: string | null;
+  account_ref: string | null;
   iban: string | null;
   bank: string | null;
   is_default: boolean;
@@ -112,14 +116,30 @@ export type BillingStatusResponse = {
   };
 };
 
+export type WalletType = {
+  id: number;
+  country: string;
+  code: string;
+  name: string;
+  fields: string[];
+};
+
+export type WalletTypesResponse = {
+  success: boolean;
+  data: WalletType[];
+};
+
 export type PayoutAccountPayload = {
   label?: string;
   holder_name: string;
   cbu?: string;
   alias_cbu?: string;
+  account_ref?: string;
   iban?: string;
   bank?: string;
   currency?: string;
+  country?: string;
+  wallet_type_id?: number;
 };
 
 export type RegisterPayload = {

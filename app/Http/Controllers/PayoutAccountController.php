@@ -18,13 +18,19 @@ class PayoutAccountController extends Controller
 
     private function payload(PayoutAccount $a): array
     {
+        $a->loadMissing('walletType');
+
         return [
             'id' => $a->id,
             'currency' => $a->currency,
+            'country' => $a->country,
+            'wallet_type_id' => $a->wallet_type_id,
+            'wallet_type' => $a->walletType ? $a->walletType->name : null,
             'label' => $a->label,
             'holder_name' => $a->holder_name,
             'cbu' => $a->cbu,
             'alias_cbu' => $a->alias_cbu,
+            'account_ref' => $a->account_ref,
             'iban' => $a->iban,
             'bank' => $a->bank,
             'is_default' => (bool) $a->is_default,
@@ -54,6 +60,21 @@ class PayoutAccountController extends Controller
         ]);
     }
 
+    /**
+     * Catálogo de tipos de billetera por país (para el combo).
+     */
+    public function types()
+    {
+        if ($denied = $this->denied()) {
+            return $denied;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => \App\Models\WalletType::where('active', true)->orderBy('country')->orderBy('id')->get()->all(),
+        ]);
+    }
+
     public function store(Request $request)
     {
         if ($denied = $this->denied()) {
@@ -62,10 +83,13 @@ class PayoutAccountController extends Controller
 
         $request->validate([
             'currency' => ['nullable', 'string', 'size:3'],
+            'country' => ['nullable', 'string', 'size:2'],
+            'wallet_type_id' => ['nullable', 'integer', 'exists:wallet_types,id'],
             'label' => ['nullable', 'string', 'max:100'],
             'holder_name' => ['required', 'string', 'max:255'],
             'cbu' => ['nullable', 'string', 'max:22'],
             'alias_cbu' => ['nullable', 'string', 'max:100'],
+            'account_ref' => ['nullable', 'string', 'max:255'],
             'iban' => ['nullable', 'string', 'max:34'],
             'bank' => ['nullable', 'string', 'max:100'],
         ], [
@@ -74,7 +98,7 @@ class PayoutAccountController extends Controller
 
         try {
             $account = $this->wallets->create(Auth::user(), $request->only([
-                'currency', 'label', 'holder_name', 'cbu', 'alias_cbu', 'iban', 'bank',
+                'currency', 'country', 'wallet_type_id', 'label', 'holder_name', 'cbu', 'alias_cbu', 'account_ref', 'iban', 'bank',
             ]));
         } catch (ValidationException $e) {
             return response()->json([
@@ -107,13 +131,14 @@ class PayoutAccountController extends Controller
             'holder_name' => ['nullable', 'string', 'max:255'],
             'cbu' => ['nullable', 'string', 'max:22'],
             'alias_cbu' => ['nullable', 'string', 'max:100'],
+            'account_ref' => ['nullable', 'string', 'max:255'],
             'iban' => ['nullable', 'string', 'max:34'],
             'bank' => ['nullable', 'string', 'max:100'],
         ]);
 
         try {
             $account = $this->wallets->update(Auth::user(), $account, $request->only([
-                'label', 'holder_name', 'cbu', 'alias_cbu', 'iban', 'bank',
+                'label', 'holder_name', 'cbu', 'alias_cbu', 'account_ref', 'iban', 'bank',
             ]));
         } catch (ValidationException $e) {
             return response()->json([

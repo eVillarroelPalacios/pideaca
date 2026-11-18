@@ -696,11 +696,14 @@
                                         <div id="wallet-operate-banner" style="display:none;font-size:12.5px;padding:9px 12px;border-radius:0;margin-bottom:12px;"></div>
                                         <div id="wallet-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
                                         <div class="profile-field-grid">
-                                            <div><label class="field-label">Etiqueta (ej: Banco X)</label><input type="text" id="wallet-label" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-label-error"></span></div>
+                                            <div><label class="field-label">País</label><select id="wallet-country" class="field-input"><option value="AR">Argentina</option><option value="ES">España</option></select></div>
+                                            <div><label class="field-label">Tipo de billetera</label><select id="wallet-type" class="field-input"><option value="">Cargando…</option></select><span class="err-msg" id="wallet-type-error"></span></div>
+                                            <div><label class="field-label">Etiqueta (opcional)</label><input type="text" id="wallet-label" class="field-input" placeholder="Ej: Banco X" /><span class="err-msg" id="wallet-label-error"></span></div>
                                             <div><label class="field-label">Titular</label><input type="text" id="wallet-holder" class="field-input" placeholder="Nombre del titular" /><span class="err-msg" id="wallet-holder-error"></span></div>
-                                            <div><label class="field-label">CBU (22 dígitos)</label><input type="text" id="wallet-cbu" class="field-input" inputmode="numeric" placeholder="Solo si cobrás por banco" /><span class="err-msg" id="wallet-cbu-error"></span></div>
-                                            <div><label class="field-label">Alias</label><input type="text" id="wallet-alias" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-alias-error"></span></div>
-                                            <div><label class="field-label">IBAN (solo exterior)</label><input type="text" id="wallet-iban" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-iban-error"></span></div>
+                                            <div data-wfield="cbu"><label class="field-label">CBU (22 dígitos)</label><input type="text" id="wallet-cbu" class="field-input" inputmode="numeric" placeholder="Solo si cobrás por banco" /><span class="err-msg" id="wallet-cbu-error"></span></div>
+                                            <div data-wfield="alias"><label class="field-label">Alias</label><input type="text" id="wallet-alias" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-alias-error"></span></div>
+                                            <div data-wfield="ref" style="display:none;"><label class="field-label" id="wallet-ref-label">Referencia</label><input type="text" id="wallet-ref" class="field-input" placeholder="" /><span class="err-msg" id="wallet-ref-error"></span></div>
+                                            <div data-wfield="iban"><label class="field-label">IBAN (solo exterior)</label><input type="text" id="wallet-iban" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-iban-error"></span></div>
                                             <div><label class="field-label">Banco</label><input type="text" id="wallet-bank" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-bank-error"></span></div>
                                         </div>
                                         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
@@ -818,6 +821,10 @@
                     @elseif($page->url === 'dinero')
             <div id="dash-dinero" class="dash-section" style="display:none;width:100%;">
                 @include('dashboard.sections.dinero')
+            </div>
+                    @elseif($page->url === 'billeteras-pais')
+            <div id="dash-billeteras-pais" class="dash-section" style="display:none;width:100%;">
+                @include('dashboard.sections.billeteras-pais')
             </div>
                     @elseif($page->url)
             @include('dashboard.sections.default')

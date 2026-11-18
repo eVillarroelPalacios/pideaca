@@ -5,11 +5,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { AuthScreen } from '@/components/AuthScreen';
+import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
-import type { BillingStatusResponse, PayoutAccount } from '@/types/api';
+import type { BillingStatusResponse, PayoutAccount, WalletType } from '@/types/api';
 import { colors, radius, spacing } from '@/theme';
 
 /**
@@ -33,8 +34,12 @@ export default function BilleteraScreen() {
   const [holder, setHolder] = useState('');
   const [cbu, setCbu] = useState('');
   const [alias, setAlias] = useState('');
+  const [accountRef, setAccountRef] = useState('');
   const [iban, setIban] = useState('');
   const [bank, setBank] = useState('');
+  const [country, setCountry] = useState('AR');
+  const [types, setTypes] = useState<WalletType[]>([]);
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   // Igual que register.tsx: el setState vive en los callbacks, no en el
@@ -56,6 +61,13 @@ export default function BilleteraScreen() {
             : 'No pudimos cargar tus billeteras.',
         );
       });
+
+    api.walletTypes()
+      .then((response) => {
+        if (!active) return;
+        setTypes(response.data);
+      })
+      .catch(() => {});
 
     api.billingStatus()
       .then((response) => {
@@ -88,6 +100,15 @@ export default function BilleteraScreen() {
     return <Redirect href="/login" />;
   }
 
+  const countryTypes = types.filter((t) => t.country === country);
+  const selectedType = countryTypes.find((t) => t.id === selectedTypeId) ?? null;
+  const typeFields: string[] = selectedType?.fields ?? ['holder', 'cbu', 'alias', 'iban', 'bank'];
+  const needsRefLabel = typeFields.includes('email')
+    ? 'Email de la cuenta'
+    : typeFields.includes('phone')
+      ? 'Celular asociado'
+      : 'Referencia';
+
   async function handleSubmit() {
     setError(null);
     setNotice(null);
@@ -98,8 +119,8 @@ export default function BilleteraScreen() {
       return;
     }
 
-    if (!cbu.trim() && !iban.trim()) {
-      setError('Ingresá un CBU o un IBAN.');
+    if (!selectedType) {
+      setError('Elegí el tipo de billetera.');
       return;
     }
 
@@ -107,11 +128,14 @@ export default function BilleteraScreen() {
 
     try {
       const response = await api.createPayoutAccount({
+        wallet_type_id: selectedType.id,
+        country,
         label: label.trim() || undefined,
         holder_name: holder.trim(),
-        cbu: cbu.trim() || undefined,
-        alias_cbu: alias.trim() || undefined,
-        iban: iban.trim() || undefined,
+        cbu: typeFields.includes('cbu') && cbu.trim() ? cbu.trim() : undefined,
+        alias_cbu: typeFields.includes('alias') && alias.trim() ? alias.trim() : undefined,
+        account_ref: (typeFields.includes('email') || typeFields.includes('phone')) && accountRef.trim() ? accountRef.trim() : undefined,
+        iban: typeFields.includes('iban') && iban.trim() ? iban.trim() : undefined,
         bank: bank.trim() || undefined,
       });
       setNotice(response.message);
@@ -119,6 +143,7 @@ export default function BilleteraScreen() {
       setHolder('');
       setCbu('');
       setAlias('');
+      setAccountRef('');
       setIban('');
       setBank('');
       reload();
@@ -217,12 +242,12 @@ export default function BilleteraScreen() {
       {accounts.map((account) => (
         <View key={account.id} style={styles.card}>
           <Text style={styles.cardTitle}>
-            {(account.label || account.bank || account.currency) +
+            {(account.wallet_type ?? account.label ?? account.bank ?? account.currency) +
               (account.is_default ? ' · Predeterminada' : '') +
               (account.is_active ? '' : ' · Inactiva')}
           </Text>
           <Text style={styles.cardSub}>
-            {[account.holder_name, account.cbu ? `CBU ${account.cbu}` : null, account.alias_cbu, account.iban ? `IBAN ${account.iban}` : null]
+            {[account.holder_name, account.cbu ? `CBU ${account.cbu}` : null, account.alias_cbu, account.account_ref, account.iban ? `IBAN ${account.iban}` : null]
               .filter(Boolean)
               .join(' · ')}
           </Text>
@@ -252,6 +277,32 @@ export default function BilleteraScreen() {
 
       <Text style={styles.sectionTitle}>Agregar billetera</Text>
 
+      <ComboField
+        label="País"
+        value={country}
+        options={[
+          { value: 'AR', label: 'Argentina' },
+          { value: 'ES', label: 'España' },
+        ]}
+        onChange={(value) => {
+          setCountry(String(value));
+          setSelectedTypeId(null);
+        }}
+        placeholder="Seleccioná el país"
+      />
+
+      <ComboField
+        label="Tipo de billetera"
+        value={selectedTypeId}
+        options={countryTypes.map((type) => ({
+          value: type.id,
+          label: type.name,
+        }))}
+        onChange={(value) => setSelectedTypeId(typeof value === 'number' ? value : null)}
+        placeholder={countryTypes.length ? 'Seleccioná el tipo' : 'Sin tipos para este país'}
+        error={fieldErrors.wallet_type_id?.[0] ?? null}
+      />
+
       <TextField
         label="Etiqueta (opcional)"
         value={label}
@@ -268,35 +319,54 @@ export default function BilleteraScreen() {
         placeholder="Nombre del titular"
         editable={!submitting}
       />
-      <TextField
-        label="CBU (22 dígitos)"
-        value={cbu}
-        onChangeText={setCbu}
-        error={fieldErrors.cbu?.[0] ?? null}
-        keyboardType="number-pad"
-        placeholder="Solo si cobrás por banco"
-        editable={!submitting}
-      />
-      <TextField
-        label="Alias"
-        value={alias}
-        onChangeText={setAlias}
-        error={fieldErrors.alias_cbu?.[0] ?? null}
-        autoCapitalize="none"
-        autoCorrect={false}
-        placeholder="Opcional"
-        editable={!submitting}
-      />
-      <TextField
-        label="IBAN (solo exterior)"
-        value={iban}
-        onChangeText={setIban}
-        error={fieldErrors.iban?.[0] ?? null}
-        autoCapitalize="characters"
-        autoCorrect={false}
-        placeholder="Opcional"
-        editable={!submitting}
-      />
+      {typeFields.includes('cbu') ? (
+        <TextField
+          label="CBU (22 dígitos)"
+          value={cbu}
+          onChangeText={setCbu}
+          error={fieldErrors.cbu?.[0] ?? null}
+          keyboardType="number-pad"
+          placeholder="Solo si cobrás por banco"
+          editable={!submitting}
+        />
+      ) : null}
+      {typeFields.includes('alias') ? (
+        <TextField
+          label="Alias"
+          value={alias}
+          onChangeText={setAlias}
+          error={fieldErrors.alias_cbu?.[0] ?? null}
+          autoCapitalize="none"
+          autoCorrect={false}
+          placeholder="Opcional"
+          editable={!submitting}
+        />
+      ) : null}
+      {(typeFields.includes('email') || typeFields.includes('phone')) ? (
+        <TextField
+          label={needsRefLabel}
+          value={accountRef}
+          onChangeText={setAccountRef}
+          error={fieldErrors.account_ref?.[0] ?? null}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType={typeFields.includes('phone') ? 'phone-pad' : 'email-address'}
+          placeholder={typeFields.includes('email') ? 'tu@correo.com' : 'Con código de área'}
+          editable={!submitting}
+        />
+      ) : null}
+      {typeFields.includes('iban') ? (
+        <TextField
+          label="IBAN"
+          value={iban}
+          onChangeText={setIban}
+          error={fieldErrors.iban?.[0] ?? null}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          placeholder="Cuenta del exterior"
+          editable={!submitting}
+        />
+      ) : null}
       <TextField
         label="Banco"
         value={bank}

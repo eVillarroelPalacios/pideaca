@@ -12319,6 +12319,7 @@
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
         if (key === 'dinero' && typeof dnInitDinero === 'function') dnInitDinero();
+        if (key === 'billeteras-pais' && typeof wtLoad === 'function') wtLoad();
         if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
@@ -13872,6 +13873,7 @@
             info.children[1].textContent = (a.holder_name || '')
                 + (a.cbu ? ' · CBU ' + a.cbu : '')
                 + (a.alias_cbu ? ' · ' + a.alias_cbu : '')
+                + (a.account_ref ? ' · ' + a.account_ref : '')
                 + (a.iban ? ' · IBAN ' + a.iban : '');
             card.appendChild(info);
 
@@ -13905,19 +13907,96 @@
     }
 
     function loadPayoutAccounts() {
-        fetch(window.APP_BASE+"/profile/payout-accounts", {
+        loadWalletTypes(function () {
+            fetch(window.APP_BASE+"/profile/payout-accounts", {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': walletCsrf() }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                paintOperateBanner(!!(data && data.can_operate));
+                paintPayoutAccounts(data && data.data);
+            })
+            .catch(function () {
+                var box = document.getElementById('wallet-list');
+                if (box) box.innerHTML = '<div style="font-size:12.5px;color:#b91c1d;">No pudimos cargar tus billeteras.</div>';
+            });
+        });
+    }
+
+    var walletTypesCache = null;
+
+    function loadWalletTypes(done) {
+        var sel = document.getElementById('wallet-type');
+        if (!sel) { if (done) done(); return; }
+        var apply = function (list) {
+            walletTypesCache = Array.isArray(list) ? list : [];
+            paintWalletTypes();
+            if (done) done();
+        };
+        if (walletTypesCache) { apply(walletTypesCache); return; }
+        fetch(window.APP_BASE+"/wallet-types", {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': walletCsrf() }
         })
         .then(function (r) { return r.json(); })
-        .then(function (data) {
-            paintOperateBanner(!!(data && data.can_operate));
-            paintPayoutAccounts(data && data.data);
-        })
-        .catch(function () {
-            var box = document.getElementById('wallet-list');
-            if (box) box.innerHTML = '<div style="font-size:12.5px;color:#b91c1d;">No pudimos cargar tus billeteras.</div>';
-        });
+        .then(function (data) { apply(data && data.data); })
+        .catch(function () { apply([]); });
     }
+
+    function paintWalletTypes() {
+        var sel = document.getElementById('wallet-type');
+        var countryEl = document.getElementById('wallet-country');
+        if (!sel || !countryEl) return;
+        var country = countryEl.value || 'AR';
+        var prev = sel.value;
+        sel.innerHTML = '';
+        (walletTypesCache || []).forEach(function (t) {
+            if (String(t.country || '').toUpperCase() !== country) return;
+            var opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.name;
+            sel.appendChild(opt);
+        });
+        if (!sel.options.length) {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Sin tipos para este país';
+            sel.appendChild(opt);
+        } else if (prev) {
+            sel.value = prev;
+        }
+        paintWalletFields();
+    }
+
+    function paintWalletFields() {
+        var sel = document.getElementById('wallet-type');
+        if (!sel) return;
+        var type = null;
+        (walletTypesCache || []).forEach(function (t) {
+            if (String(t.id) === String(sel.value)) type = t;
+        });
+        var fields = (type && type.fields) || ['holder', 'cbu', 'alias', 'iban', 'bank'];
+        var show = function (name, visible) {
+            document.querySelectorAll('[data-wfield="' + name + '"]').forEach(function (el) {
+                el.style.display = visible ? '' : 'none';
+            });
+        };
+        show('cbu', fields.indexOf('cbu') !== -1);
+        show('alias', fields.indexOf('alias') !== -1);
+        show('iban', fields.indexOf('iban') !== -1);
+        var needsRef = fields.indexOf('email') !== -1 || fields.indexOf('phone') !== -1;
+        show('ref', needsRef);
+        var refLabel = document.getElementById('wallet-ref-label');
+        if (refLabel) {
+            refLabel.textContent = fields.indexOf('email') !== -1 ? 'Email de la cuenta' : 'Celular asociado';
+        }
+    }
+
+    document.addEventListener('change', function (event) {
+        var t = event.target;
+        if (!t || !t.id) return;
+        if (t.id === 'wallet-country') paintWalletTypes();
+        if (t.id === 'wallet-type') paintWalletFields();
+    });
 
     function walletFieldError(id, text) {
         var el = document.getElementById(id);
@@ -13934,13 +14013,17 @@
     }
 
     function submitPayoutAccount() {
-        ['wallet-label-error', 'wallet-holder-error', 'wallet-cbu-error', 'wallet-alias-error', 'wallet-iban-error', 'wallet-bank-error'].forEach(function (id) { walletFieldError(id, ''); });
+        ['wallet-label-error', 'wallet-holder-error', 'wallet-cbu-error', 'wallet-alias-error', 'wallet-ref-error', 'wallet-iban-error', 'wallet-bank-error'].forEach(function (id) { walletFieldError(id, ''); });
 
+        var typeSel = document.getElementById('wallet-type');
         var body = {
+            wallet_type_id: typeSel && typeSel.value ? parseInt(typeSel.value, 10) : null,
+            country: (document.getElementById('wallet-country') || {}).value || 'AR',
             label: document.getElementById('wallet-label').value.trim(),
             holder_name: document.getElementById('wallet-holder').value.trim(),
             cbu: document.getElementById('wallet-cbu').value.trim(),
             alias_cbu: document.getElementById('wallet-alias').value.trim(),
+            account_ref: document.getElementById('wallet-ref').value.trim(),
             iban: document.getElementById('wallet-iban').value.trim(),
             bank: document.getElementById('wallet-bank').value.trim()
         };
@@ -13961,7 +14044,7 @@
                 loadPayoutAccounts();
             } else {
                 var errs = (r.data && r.data.errors) || {};
-                var map = { label: 'wallet-label-error', holder_name: 'wallet-holder-error', cbu: 'wallet-cbu-error', alias_cbu: 'wallet-alias-error', iban: 'wallet-iban-error', bank: 'wallet-bank-error' };
+                var map = { label: 'wallet-label-error', holder_name: 'wallet-holder-error', cbu: 'wallet-cbu-error', alias_cbu: 'wallet-alias-error', account_ref: 'wallet-ref-error', iban: 'wallet-iban-error', bank: 'wallet-bank-error', wallet_type_id: 'wallet-type-error' };
                 Object.keys(errs).forEach(function (k) {
                     if (map[k]) walletFieldError(map[k], errs[k][0]);
                 });
@@ -14334,6 +14417,64 @@
         if (!btn || !document.getElementById('dash-dinero')) return;
         dnSwitchTab(btn.getAttribute('data-dntab'));
     });
+
+    /* ---------- Catálogo de billeteras por país ---------- */
+
+    async function wtLoad() {
+        var r = await dnFetch('/admin/billing/wallet-types');
+        var body = document.getElementById('wt-body');
+        if (!body) return;
+        if (!r.ok || !r.data.success || !r.data.data.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin tipos cargados.</td></tr>';
+            return;
+        }
+        body.innerHTML = '';
+        r.data.data.forEach(function (t) {
+            var tr = document.createElement('tr');
+            [t.country, t.name, t.code, (t.fields || []).join(', '), t.active ? 'Sí' : 'No'].forEach(function (v) {
+                var td = document.createElement('td');
+                td.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+                td.textContent = v;
+                tr.appendChild(td);
+            });
+            var act = document.createElement('td');
+            act.style.cssText = 'padding:8px;border:1px solid #e2e8f0;';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = t.active ? 'Desactivar' : 'Activar';
+            btn.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+            btn.onclick = function () { wtToggle(t.id, !t.active); };
+            act.appendChild(btn);
+            tr.appendChild(act);
+            body.appendChild(tr);
+        });
+    }
+
+    async function wtSave() {
+        var fields = document.getElementById('wt-fields').value.split(',').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+        var body = {
+            country: document.getElementById('wt-country').value,
+            code: document.getElementById('wt-code').value.trim().toLowerCase(),
+            name: document.getElementById('wt-name').value.trim(),
+            fields: fields,
+            active: true
+        };
+        if (!body.code || !body.name) { dnMsg('Completá código y nombre.', false); return; }
+        var r = await dnFetch('/admin/billing/wallet-types', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) {
+            document.getElementById('wt-code').value = '';
+            document.getElementById('wt-name').value = '';
+            document.getElementById('wt-fields').value = '';
+            wtLoad();
+        }
+    }
+
+    async function wtToggle(id, active) {
+        var r = await dnFetch('/admin/billing/wallet-types/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
+        if (r.ok) wtLoad();
+    }
 
     /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */
     // La Terminal Central muestra el vehículo del perfil como ficha de solo
