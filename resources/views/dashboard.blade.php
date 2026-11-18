@@ -289,6 +289,7 @@
                             'negocio' => 'Datos del Negocio',
                             'direccion' => 'Mi Dirección',
                             'cuenta' => 'Contraseñas',
+                            'billetera' => 'Billetera',
                             'vehiculo' => 'Mi Vehículo',
                             'repartidores' => 'Repartidores de confianza',
                             'retiros' => 'Retiros de repartidores',
@@ -373,6 +374,10 @@
                             <a href="#" onclick="event.preventDefault();showProfilePanel('cuenta')" class="sidebar-link{{ $perfilPanelInicial === 'cuenta' ? ' active' : '' }}" data-panel="cuenta" id="sidebar-link-cuenta">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                                 <span>Contraseñas</span>
+                            </a>
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('billetera')" class="sidebar-link{{ $perfilPanelInicial === 'billetera' ? ' active' : '' }}" data-panel="billetera" id="sidebar-link-billetera">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/></svg>
+                                <span>Billetera</span>
                             </a>
                         </nav>
                     </aside>
@@ -677,6 +682,26 @@
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="profile-panel{{ $perfilPanelInicial === 'billetera' ? ' active' : '' }}" data-panel="billetera">
+                                    <div class="pcard">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/></svg> Billetera de cobro</h3>
+                                        <div id="wallet-operate-banner" style="display:none;font-size:12.5px;padding:9px 12px;border-radius:0;margin-bottom:12px;"></div>
+                                        <div id="wallet-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+                                        <div class="profile-field-grid">
+                                            <div><label class="field-label">Etiqueta (ej: Banco X)</label><input type="text" id="wallet-label" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-label-error"></span></div>
+                                            <div><label class="field-label">Titular</label><input type="text" id="wallet-holder" class="field-input" placeholder="Nombre del titular" /><span class="err-msg" id="wallet-holder-error"></span></div>
+                                            <div><label class="field-label">CBU (22 dígitos)</label><input type="text" id="wallet-cbu" class="field-input" inputmode="numeric" placeholder="Solo si cobrás por banco" /><span class="err-msg" id="wallet-cbu-error"></span></div>
+                                            <div><label class="field-label">Alias</label><input type="text" id="wallet-alias" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-alias-error"></span></div>
+                                            <div><label class="field-label">IBAN (solo exterior)</label><input type="text" id="wallet-iban" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-iban-error"></span></div>
+                                            <div><label class="field-label">Banco</label><input type="text" id="wallet-bank" class="field-input" placeholder="Opcional" /><span class="err-msg" id="wallet-bank-error"></span></div>
+                                        </div>
+                                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;">
+                                            <span class="save-msg" id="wallet-msg"></span>
+                                            <button type="button" onclick="submitPayoutAccount()" title="Agregar billetera" aria-label="Agregar billetera" style="background:#D24C19;color:#fff;border:none;padding:8px 14px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;">+ Agregar</button>
+                                        </div>
+                                        <p style="font-size:11.5px;line-height:1.5;color:#64748b;margin:12px 0 0;">Necesitás al menos una billetera activa para operar (recibir pedidos, trabajos o repartos). La primera que agregues queda como predeterminada para tus liquidaciones.</p>
                                     </div>
                                 </div>
 

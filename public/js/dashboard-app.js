@@ -12318,6 +12318,7 @@
         }
         if (key === 'direccion') loadAddress();
         if (key === 'repartidores') loadTrustedDrivers();
+        if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
         setProfileSidebarActive(key);
@@ -13770,6 +13771,187 @@
         .catch(function() {
             showMsg('profile-msg', 'Error de conexión.', false);
         });
+    }
+
+    /* ---------- Billetera de cobro (Fase 1) ---------- */
+
+    function walletCsrf() {
+        return document.querySelector('meta[name="csrf-token"]').content;
+    }
+
+    function walletJsonHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': walletCsrf()
+        };
+    }
+
+    function paintOperateBanner(canOperate) {
+        var el = document.getElementById('wallet-operate-banner');
+        if (!el) return;
+        if (canOperate) {
+            el.style.display = 'block';
+            el.style.background = '#ecfdf5';
+            el.style.border = '1px solid #a7f3d0';
+            el.style.color = '#047857';
+            el.textContent = 'Billetera activa: podés operar y recibir liquidaciones.';
+        } else {
+            el.style.display = 'block';
+            el.style.background = '#fef2f2';
+            el.style.border = '1px solid #fecaca';
+            el.style.color = '#b91c1d';
+            el.textContent = 'Agregá al menos una billetera para operar (recibir pedidos, trabajos o repartos).';
+        }
+    }
+
+    function paintPayoutAccounts(list) {
+        var box = document.getElementById('wallet-list');
+        if (!box) return;
+        box.innerHTML = '';
+
+        if (!list || !list.length) {
+            box.innerHTML = '<div style="font-size:12.5px;color:#64748b;">Todavía no cargaste billeteras.</div>';
+            return;
+        }
+
+        list.forEach(function (a) {
+            var card = document.createElement('div');
+            card.style.cssText = 'border:1px solid #e2e8f0;border-radius:4px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;';
+
+            var info = document.createElement('div');
+            info.style.flex = '1';
+            info.style.minWidth = '180px';
+            var title = (a.label || a.bank || a.currency || 'Billetera') + (a.is_default ? ' · Predeterminada' : '') + (a.is_active ? '' : ' · Inactiva');
+            info.innerHTML = '<div style="font-size:13px;font-weight:700;color:#0f172a;"></div>'
+                + '<div style="font-size:12px;color:#64748b;"></div>';
+            info.children[0].textContent = title;
+            info.children[1].textContent = (a.holder_name || '')
+                + (a.cbu ? ' · CBU ' + a.cbu : '')
+                + (a.alias_cbu ? ' · ' + a.alias_cbu : '')
+                + (a.iban ? ' · IBAN ' + a.iban : '');
+            card.appendChild(info);
+
+            if (!a.is_default && a.is_active) {
+                var def = document.createElement('button');
+                def.type = 'button';
+                def.textContent = 'Predeterminada';
+                def.style.cssText = 'background:#fff;color:#D24C19;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+                def.onclick = function () { setDefaultPayoutAccount(a.id); };
+                card.appendChild(def);
+            }
+
+            if (a.is_active) {
+                var off = document.createElement('button');
+                off.type = 'button';
+                off.textContent = 'Desactivar';
+                off.style.cssText = 'background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;';
+                off.onclick = function () { togglePayoutAccount(a.id, 'deactivate'); };
+                card.appendChild(off);
+            } else {
+                var on = document.createElement('button');
+                on.type = 'button';
+                on.textContent = 'Activar';
+                on.style.cssText = 'background:#D24C19;color:#fff;border:1px solid #D24C19;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;';
+                on.onclick = function () { togglePayoutAccount(a.id, 'reactivate'); };
+                card.appendChild(on);
+            }
+
+            box.appendChild(card);
+        });
+    }
+
+    function loadPayoutAccounts() {
+        fetch(window.APP_BASE+"/profile/payout-accounts", {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': walletCsrf() }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            paintOperateBanner(!!(data && data.can_operate));
+            paintPayoutAccounts(data && data.data);
+        })
+        .catch(function () {
+            var box = document.getElementById('wallet-list');
+            if (box) box.innerHTML = '<div style="font-size:12.5px;color:#b91c1d;">No pudimos cargar tus billeteras.</div>';
+        });
+    }
+
+    function walletFieldError(id, text) {
+        var el = document.getElementById(id);
+        var inp = document.getElementById(id.replace('-error', ''));
+        if (text) {
+            el.textContent = text;
+            el.style.display = 'block';
+            if (inp) inp.classList.add('err');
+        } else {
+            el.textContent = '';
+            el.style.display = 'none';
+            if (inp) inp.classList.remove('err');
+        }
+    }
+
+    function submitPayoutAccount() {
+        ['wallet-label-error', 'wallet-holder-error', 'wallet-cbu-error', 'wallet-alias-error', 'wallet-iban-error', 'wallet-bank-error'].forEach(function (id) { walletFieldError(id, ''); });
+
+        var body = {
+            label: document.getElementById('wallet-label').value.trim(),
+            holder_name: document.getElementById('wallet-holder').value.trim(),
+            cbu: document.getElementById('wallet-cbu').value.trim(),
+            alias_cbu: document.getElementById('wallet-alias').value.trim(),
+            iban: document.getElementById('wallet-iban').value.trim(),
+            bank: document.getElementById('wallet-bank').value.trim()
+        };
+
+        if (!body.holder_name) { walletFieldError('wallet-holder-error', 'Ingresá el titular.'); return; }
+        if (!body.cbu && !body.iban) { walletFieldError('wallet-cbu-error', 'Ingresá un CBU o un IBAN.'); return; }
+
+        fetch(window.APP_BASE+"/profile/payout-accounts", {
+            method: 'POST',
+            headers: walletJsonHeaders(),
+            body: JSON.stringify(body)
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (r) {
+            if (r.ok && r.data.success) {
+                ['wallet-label', 'wallet-holder', 'wallet-cbu', 'wallet-alias', 'wallet-iban', 'wallet-bank'].forEach(function (id) { document.getElementById(id).value = ''; });
+                showMsg('wallet-msg', r.data.message, true);
+                loadPayoutAccounts();
+            } else {
+                var errs = (r.data && r.data.errors) || {};
+                var map = { label: 'wallet-label-error', holder_name: 'wallet-holder-error', cbu: 'wallet-cbu-error', alias_cbu: 'wallet-alias-error', iban: 'wallet-iban-error', bank: 'wallet-bank-error' };
+                Object.keys(errs).forEach(function (k) {
+                    if (map[k]) walletFieldError(map[k], errs[k][0]);
+                });
+                if (r.data && r.data.message && !Object.keys(errs).length) showMsg('wallet-msg', r.data.message, false);
+            }
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    function setDefaultPayoutAccount(id) {
+        fetch(window.APP_BASE+"/profile/payout-accounts/" + id + "/default", {
+            method: 'POST',
+            headers: walletJsonHeaders()
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            showMsg('wallet-msg', data.message, !!data.success);
+            loadPayoutAccounts();
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    function togglePayoutAccount(id, action) {
+        fetch(window.APP_BASE+"/profile/payout-accounts/" + id + "/" + action, {
+            method: 'POST',
+            headers: walletJsonHeaders()
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (r) {
+            showMsg('wallet-msg', r.data.message, !!r.ok && !!r.data.success);
+            loadPayoutAccounts();
+        })
+        .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
     }
 
     /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */
