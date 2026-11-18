@@ -11,7 +11,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border:1px solid #e2e8f0;">
                     <tr>
                         <td style="padding:24px 28px 0;">
-                            <img src="{{ asset('images/logo-email.png') }}" alt="PideAca" style="height:52px;width:auto;display:block;" />
+                            <img src="{{ $message->embed(public_path('images/logo-email.png')) }}" alt="PideAca" style="height:52px;width:auto;display:block;" />
                         </td>
                     </tr>
                     <tr>
