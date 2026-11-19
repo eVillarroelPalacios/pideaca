@@ -275,6 +275,18 @@ export default function BilleteraScreen() {
         </View>
       ))}
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>📊 Mi Dinero</Text>
+        <Text style={styles.cardSub}>
+          Tus liquidaciones, cobros y estado de cuenta, igual que el panel web.
+        </Text>
+        <PrimaryButton
+          title="Ver mis liquidaciones y cobros"
+          variant="ghost"
+          onPress={() => router.push('/mi-dinero' as never)}
+        />
+      </View>
+
       <Text style={styles.sectionTitle}>Agregar billetera</Text>
 
       <ComboField

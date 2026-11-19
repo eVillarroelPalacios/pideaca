@@ -215,6 +215,10 @@ Route::prefix('mobile/v1')->group(function () {
         Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
         Route::put('/profile/provider', [ProfileController::class, 'updateProvider']);
         Route::get('/profile/provider/withdrawals', [ProfileController::class, 'providerWithdrawals']);
+        Route::get('/profile/billing/settlements', [ProfileController::class, 'ownSettlements'])
+            ->middleware('throttle:30,1');
+        Route::get('/profile/billing/charges', [ProfileController::class, 'ownCharges'])
+            ->middleware('throttle:30,1');
         Route::get('/profile/provider/auto-approve', [ProfileController::class, 'providerAutoApprove']);
         Route::put('/profile/provider/auto-approve', [ProfileController::class, 'updateProviderAutoApprove']);
         Route::post('/profile/provider/withdrawals/{withdrawal}/approve', [ProfileController::class, 'approveProviderWithdrawal']);

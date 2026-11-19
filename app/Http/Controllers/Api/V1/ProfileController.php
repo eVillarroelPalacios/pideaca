@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\V1\Concerns\ResolvesAccount;
 use App\Http\Controllers\Controller;
+use App\Models\Charge;
 use App\Models\Country;
 use App\Models\DriverWithdrawalRequest;
 use App\Models\Order;
@@ -11,6 +12,7 @@ use App\Models\Provider;
 use App\Models\ProviderDriver;
 use App\Models\ProviderImage;
 use App\Models\Region;
+use App\Models\Settlement;
 use App\Models\User;
 use App\Services\DriverWalletService;
 use Illuminate\Http\JsonResponse;
@@ -327,6 +329,62 @@ class ProfileController extends Controller
             'success' => true,
             'message' => 'Tope de auto-aprobación actualizado.',
             'auto_approve_max' => $provider->auto_approve_max !== null ? (float) $provider->auto_approve_max : null,
+        ]);
+    }
+
+    /**
+     * Mis liquidaciones (solo propias). Espejo de
+     * AdminBillingController@settlements filtrado siempre al autenticado.
+     */
+    public function ownSettlements(Request $request): JsonResponse
+    {
+        $query = Settlement::with('user:id,name,email')
+            ->where('user_id', (int) $request->user()->id)
+            ->orderByDesc('id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $query->limit(100)->get(),
+        ]);
+    }
+
+    /**
+     * Mis cobros (solo propios). Espejo de
+     * AdminBillingController@charges filtrado siempre a los pedidos del
+     * comercio autenticado (provider_id/merchant_id de sus providers).
+     */
+    public function ownCharges(Request $request): JsonResponse
+    {
+        $providerIds = Provider::where('user_id', (int) $request->user()->id)->pluck('id')->all();
+
+        $orderIds = $providerIds
+            ? Order::whereIn('provider_id', $providerIds)->pluck('id')->all()
+            : [];
+        $serviceIds = $providerIds
+            ? \App\Models\ServiceOrder::whereIn('merchant_id', $providerIds)->pluck('id')->all()
+            : [];
+
+        $query = Charge::with('creator:id,name')
+            ->where(function ($q) use ($orderIds, $serviceIds) {
+                $q->where(function ($qq) use ($orderIds) {
+                    $qq->where('order_type', 'order')->whereIn('order_id', $orderIds ?: [0]);
+                })->orWhere(function ($qq) use ($serviceIds) {
+                    $qq->where('order_type', 'service_order')->whereIn('order_id', $serviceIds ?: [0]);
+                });
+            })
+            ->orderByDesc('id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $query->limit(200)->get(),
         ]);
     }
 

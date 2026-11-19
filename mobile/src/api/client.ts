@@ -377,6 +377,21 @@ export const api = {
   },
 
   /**
+   * Mi Dinero del prestador: solo datos propios (el servidor filtra por el
+   * usuario autenticado). Espejo de las pestañas web de liquidaciones,
+   * cobros y estado, sin exponer datos de otros usuarios.
+   */
+  mySettlements(params: { status?: string } = {}): Promise<DineroSettlementsResponse> {
+    const suffix = params.status ? `?status=${encodeURIComponent(params.status)}` : '';
+    return request<DineroSettlementsResponse>(`/profile/billing/settlements${suffix}`);
+  },
+
+  myCharges(params: { status?: string } = {}): Promise<DineroChargesResponse> {
+    const suffix = params.status ? `?status=${encodeURIComponent(params.status)}` : '';
+    return request<DineroChargesResponse>(`/profile/billing/charges${suffix}`);
+  },
+
+  /**
    * Backoffice Dinero (Fase 1-3, solo Admin): mismos endpoints y reglas que
    * la seccion web del panel (`/admin/billing`). El servidor verifica Admin
    * y responde 403 si no lo es.
