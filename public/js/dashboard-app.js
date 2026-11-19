@@ -12320,6 +12320,83 @@
         updateCreateUserBtnVisibility();
     }
 
+    /* ---------- App móvil: checklist de cuenta completa (Fase 2) ---------- */
+
+    function appMovilChecklist() {
+        var prov = (typeof profileProvider !== 'undefined') ? profileProvider : null;
+        var user = (typeof profileData !== 'undefined' && profileData) ? profileData : null;
+        var addr = user ? (user.primary_address || user.primaryAddress || null) : null;
+
+        return [
+            {
+                label: 'Billetera activa para operar',
+                ok: false,
+                pending: 'wallets',
+                panel: 'billetera'
+            },
+            {
+                label: 'Datos del negocio con nombre',
+                ok: !!(prov && prov.business_name && String(prov.business_name).trim() !== ''),
+                panel: 'negocio'
+            },
+            {
+                label: 'Dirección con calle y número',
+                ok: !!(addr && addr.street && addr.number),
+                panel: 'direccion'
+            }
+        ];
+    }
+
+    function appMovilRender(items, canOperate) {
+        var box = document.getElementById('appmovil-checklist');
+        var acts = document.getElementById('appmovil-actions');
+        if (!box) return;
+
+        var full = items.map(function (it) {
+            return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:8px;background:#fff;">'
+                + '<span style="font-weight:800;color:' + (it.ok ? '#047857' : '#b91c1d') + ';">' + (it.ok ? '✓' : '✗') + '</span>'
+                + '<span style="flex:1;font-size:13px;color:#0f172a;">' + it.label + '</span>'
+                + (it.ok ? '' : '<button type="button" onclick="showProfilePanel(\'' + it.panel + '\')" style="background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;color:#0c2a4d;cursor:pointer;">Completar</button>')
+                + '</div>';
+        }).join('');
+
+        box.innerHTML = full;
+
+        if (acts) {
+            if (items.every(function (it) { return it.ok; })) {
+                acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;">Cuenta lista. La descarga de la app se habilita en la próxima fase.</div>';
+            } else {
+                acts.innerHTML = '<p style="font-size:12px;color:#64748b;">Completá los puntos pendientes para habilitar la descarga.</p>';
+            }
+        }
+
+        void canOperate;
+    }
+
+    function appMovilInit() {
+        var box = document.getElementById('appmovil-checklist');
+        if (!box) return;
+        box.innerHTML = '<p style="font-size:13px;color:#64748b;">Cargando…</p>';
+
+        var items = appMovilChecklist();
+
+        fetch(window.APP_BASE + '/profile/billing/status', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            var can = !!(res && res.data && res.data.can_operate);
+            items = items.map(function (it) {
+                if (it.pending === 'wallets') return { label: it.label, ok: can, panel: it.panel };
+                return it;
+            });
+            appMovilRender(items, can);
+        })
+        .catch(function () {
+            appMovilRender(items, false);
+        });
+    }
+
     function setProfileSidebarActive(key) {
         // Limpia el resaltado de todas las opciones y marca solo la
         // correspondiente a la seccion visible (desktop y movil usan
@@ -12394,6 +12471,7 @@
         if (key === 'dinero' && typeof dnInitDinero === 'function') dnInitDinero();
         if (key === 'billeteras-pais' && typeof wtLoad === 'function') wtLoad();
         if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
+        if (key === 'app-movil' && typeof appMovilInit === 'function') appMovilInit();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
         setProfileSidebarActive(key);
