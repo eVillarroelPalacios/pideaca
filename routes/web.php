@@ -212,10 +212,10 @@ Route::middleware('page:usuarios')->group(function () {
     Route::post('/admin/withdrawals/{withdrawal}/reject', [UsuarioController::class, 'rejectWithdrawal'])->name('admin.withdrawals.reject');
 });
 
-// JS servido por PHP: el hosting congela los estaticos subidos por FTPS,
-// asi el navegador siempre recibe el archivo vigente del disco.
+// JS servido por PHP: el hosting sirve los estaticos desde una copia
+// desactualizada del docroot, asi se lee siempre del arbol vivo de la app.
 Route::get('/js/app.js', function () {
-    $path = public_path('js/dashboard-app.js');
+    $path = base_path('public/js/dashboard-app.js');
     abort_unless(is_file($path), 404);
 
     return response()->file($path, ['Content-Type' => 'application/javascript; charset=utf-8']);
