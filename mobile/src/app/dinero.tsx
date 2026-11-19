@@ -116,6 +116,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
 export default function DineroScreen() {
   const { user, isLoading } = useAuth();
   const [tab, setTab] = useState<DineroTab>('comisiones');
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -564,32 +565,27 @@ export default function DineroScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir secciones de Dinero"
+          onPress={() => setDrawerOpen(true)}
+          style={styles.menuButton}
+        >
+          <Text style={styles.menuText}>☰</Text>
+        </Pressable>
+        <View>
+          <Text style={styles.title}>Dinero — backoffice</Text>
+          <Text style={styles.subtitle}>Fase 1: manual · Solo Admin</Text>
+        </View>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Dinero — backoffice</Text>
-        <Text style={styles.subtitle}>Fase 1: manual · Solo Admin</Text>
-
         {error ? <ErrorBanner message={error} /> : null}
         {notice ? (
           <View style={styles.notice}>
             <Text style={styles.noticeText}>{notice}</Text>
           </View>
         ) : null}
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabs}>
-          {TABS.map((t) => (
-            <Pressable
-              key={t.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: tab === t.key }}
-              onPress={() => setTab(t.key)}
-              style={[styles.tab, tab === t.key && styles.tabActive]}
-            >
-              <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
-                {t.label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
 
         {tab === 'comisiones' ? (
           <View>
@@ -856,6 +852,37 @@ export default function DineroScreen() {
           </SectionCard>
         ) : null}
       </ScrollView>
+
+      {drawerOpen ? (
+        <View style={styles.drawerOverlay}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar secciones de Dinero"
+            onPress={() => setDrawerOpen(false)}
+            style={styles.drawerBackdrop}
+          />
+          <View style={styles.drawerPanel}>
+            <Text style={styles.drawerTitle}>Dinero — backoffice</Text>
+            <Text style={styles.drawerSubtitle}>Fase 1: manual · Solo Admin</Text>
+            {TABS.map((t) => (
+              <Pressable
+                key={t.key}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: tab === t.key }}
+                onPress={() => {
+                  setTab(t.key);
+                  setDrawerOpen(false);
+                }}
+                style={[styles.drawerItem, tab === t.key && styles.drawerItemActive]}
+              >
+                <Text style={[styles.drawerText, tab === t.key && styles.drawerTextActive]}>
+                  {t.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -882,27 +909,71 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     marginTop: spacing.xs,
   },
-  tabs: {
-    marginBottom: spacing.lg,
-  },
-  tab: {
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    marginRight: spacing.sm,
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.sm,
   },
-  tabActive: {
-    backgroundColor: colors.brand,
-    borderColor: colors.brand,
+  menuButton: {
+    padding: spacing.xs,
   },
-  tabText: {
+  menuText: {
+    color: colors.text,
+    fontSize: 20,
+  },
+  drawerOverlay: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 10,
+  },
+  drawerBackdrop: {
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  drawerPanel: {
+    backgroundColor: colors.surface,
+    bottom: 0,
+    left: 0,
+    padding: spacing.lg,
+    position: 'absolute',
+    top: 0,
+    width: 260,
+  },
+  drawerTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  drawerSubtitle: {
     color: colors.muted,
-    fontSize: 13,
+    fontSize: 12,
+    marginBottom: spacing.lg,
+    marginTop: spacing.xs,
+  },
+  drawerItem: {
+    borderRadius: radius.md,
+    marginBottom: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  drawerItemActive: {
+    backgroundColor: colors.brand,
+  },
+  drawerText: {
+    color: colors.muted,
+    fontSize: 14,
     fontWeight: '600',
   },
-  tabTextActive: {
+  drawerTextActive: {
     color: colors.surface,
   },
   card: {
