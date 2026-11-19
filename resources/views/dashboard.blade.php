@@ -260,6 +260,8 @@
                         $esPerfilPrestador = strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0;
                         $esPerfilCliente = strcasecmp((string) $user->typeUser?->description, 'Cliente') === 0;
                         $esPerfilRepartidor = strcasecmp((string) $user->typeUser?->description, 'Repartidor') === 0;
+                        // App movil: la seccion de descarga solo existe si se abre desde un telefono Android.
+                        $esAndroid = str_contains(strtolower((string) request()->header('User-Agent', '')), 'android');
                         $perfilDireccion = $user->primaryAddress;
                         $perfilTieneDireccion = $perfilDireccion
                             && trim((string) $perfilDireccion->street) !== ''
@@ -379,6 +381,12 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3"/></svg>
                                 <span>Billetera</span>
                             </a>
+                            @if($esAndroid && ! $esPerfilCliente)
+                            <a href="#" onclick="event.preventDefault();showProfilePanel('app-movil')" class="sidebar-link" data-panel="app-movil" id="sidebar-link-app-movil">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 6v6m0 0-2.5-2.5M12 12l2.5-2.5"/></svg>
+                                <span>App móvil</span>
+                            </a>
+                            @endif
                         </nav>
                     </aside>
 
@@ -713,6 +721,16 @@
                                         <p style="font-size:11.5px;line-height:1.5;color:#64748b;margin:12px 0 0;">Necesitás al menos una billetera activa para operar (recibir pedidos, trabajos o repartos). La primera que agregues queda como predeterminada para tus liquidaciones.</p>
                                     </div>
                                 </div>
+                                @if($esAndroid && ! $esPerfilCliente)
+                                <div class="profile-panel" data-panel="app-movil">
+                                    <div class="pcard">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 6v6m0 0-2.5-2.5M12 12l2.5-2.5"/></svg> App móvil</h3>
+                                        <p style="font-size:13px;color:#64748b;margin:0 0 12px;">Descargá la app en tu teléfono para operar desde donde estés.</p>
+                                        <div><span class="save-msg" id="appmovil-msg"></span></div>
+                                        <div id="appmovil-body"><p style="font-size:13px;color:#64748b;">Disponible próximamente.</p></div>
+                                    </div>
+                                </div>
+                                @endif
 
                             </div>
                         </div>

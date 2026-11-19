@@ -12248,7 +12248,8 @@
         direccion: 'Mi Dirección',
         usuarios: 'Usuarios',
         cuenta: 'Contraseñas',
-        vehiculo: 'Mi Vehículo'
+        vehiculo: 'Mi Vehículo',
+        'app-movil': 'App móvil'
     };
 
     var profileUsuariosActive = false;
