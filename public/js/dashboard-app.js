@@ -14221,8 +14221,33 @@
             bank: document.getElementById('wallet-bank').value.trim()
         };
 
+        // El requisito depende del tipo elegido, igual que el backend
+        // (validateForType): Mercado Pago pide alias, PayPal email, Bizum
+        // celular, transferencia ES pide IBAN, y solo el generico con CBU e
+        // IBAN acepta uno u otro. Asi el error siempre cae en un campo
+        // visible para ese tipo.
+        var selType = null;
+        (walletTypesCache || []).forEach(function (t) { if (String(t.id) === String(typeSel.value)) selType = t; });
+        var typeCode = selType ? String(selType.code || '').toLowerCase() : '';
+        var typeCountry = selType ? String(selType.country || '').toUpperCase() : (((document.getElementById('wallet-country') || {}).value) || 'AR').toUpperCase();
+        var typeFields = (selType && selType.fields) || ['holder', 'cbu', 'alias', 'iban', 'bank'];
+
         if (!body.holder_name) { walletFieldError('wallet-holder-error', 'Ingresá el titular.'); return; }
-        if (!body.cbu && !body.iban) { walletFieldError('wallet-cbu-error', 'Ingresá un CBU o un IBAN.'); return; }
+        if (typeCode === 'mercadopago') {
+            if (!body.alias_cbu) { walletFieldError('wallet-alias-error', 'Ingresá tu alias de Mercado Pago o el CVU.'); return; }
+        } else if (typeCode === 'paypal') {
+            if (!body.account_ref) { walletFieldError('wallet-ref-error', 'Ingresá el email de tu cuenta PayPal.'); return; }
+        } else if (typeCode === 'bizum') {
+            if (!body.account_ref) { walletFieldError('wallet-ref-error', 'Ingresá el celular asociado a Bizum.'); return; }
+        } else if (typeCode === 'transferencia' && typeCountry === 'ES') {
+            if (!body.iban) { walletFieldError('wallet-iban-error', 'Ingresá el IBAN.'); return; }
+        } else if (typeFields.indexOf('cbu') !== -1 && typeFields.indexOf('iban') === -1) {
+            if (!body.cbu) { walletFieldError('wallet-cbu-error', 'Ingresá el CBU (22 dígitos).'); return; }
+        } else if (typeFields.indexOf('iban') !== -1 && typeFields.indexOf('cbu') === -1) {
+            if (!body.iban) { walletFieldError('wallet-iban-error', 'Ingresá el IBAN.'); return; }
+        } else if (!body.cbu && !body.iban) {
+            walletFieldError('wallet-cbu-error', 'Ingresá un CBU o un IBAN.'); return;
+        }
 
         fetch(window.APP_BASE+"/profile/payout-accounts", {
             method: 'POST',
