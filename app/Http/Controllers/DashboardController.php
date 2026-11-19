@@ -105,7 +105,10 @@ class DashboardController extends Controller
             }
         }
 
-        return view('dashboard', [
+        // Panel con sesion: nunca se cachea en el navegador. Asi cada visita
+        // trae el HTML fresco (con los ?v= vigentes) y no quedan vistas
+        // viejas pegadas en moviles.
+        return response()->view('dashboard', [
             'user' => $user,
             'modules' => $modules,
             'footerGroups' => $footerGroups,
@@ -113,6 +116,6 @@ class DashboardController extends Controller
             'permissionModules' => $permissionModules,
             'activeRole' => $activeRole,
             'androidApkUrl' => config('app.android_apk_url'),
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 }
