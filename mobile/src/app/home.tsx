@@ -18,6 +18,7 @@ import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { useManaged } from '@/auth/ManagedContext';
 import { AccountSidebar } from '@/components/AccountSidebar';
+import { BilleteraManager } from '@/components/BilleteraManager';
 import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -1787,12 +1788,13 @@ export default function HomeScreen() {
               <TextField label="Confirmar nueva contraseña" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry error={passwordError} />
               <PrimaryButton title="Guardar contraseña" onPress={() => void handleSavePassword()} loading={savingPassword} />
             </View>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>💳 Billetera de cobro</Text>
-              <Text style={styles.cardSub}>Cuentas donde recibís tus liquidaciones. Necesitás al menos una activa para operar.</Text>
-              <PrimaryButton title="Gestionar billetera" onPress={() => router.push('/billetera' as never)} />
-            </View>
             
+          </View>
+        ) : null}
+
+        {activePanel === 'billetera' ? (
+          <View>
+            <BilleteraManager />
           </View>
         ) : null}
       </ScrollView>

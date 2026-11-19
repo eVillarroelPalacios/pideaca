@@ -19,7 +19,8 @@ export type PanelKey =
   | 'direccion'
   | 'usuarios'
   | 'vehiculo'
-  | 'cuenta';
+  | 'cuenta'
+  | 'billetera';
 
 export type ProfilePanel = {
   key: PanelKey;
@@ -39,6 +40,7 @@ export const PANEL_META: ProfilePanel[] = [
   { key: 'direccion', label: 'Mi Dirección', icon: '📍' },
   { key: 'usuarios', label: 'Usuarios', icon: '👥' },
   { key: 'cuenta', label: 'Contraseñas', icon: '🔐' },
+  { key: 'billetera', label: 'Billetera', icon: '💳' },
 ];
 
 type Options = {
@@ -77,6 +79,9 @@ export function visiblePanels(
       return false;
     }
     if (panel.key === 'cuenta') {
+      return true;
+    }
+    if (panel.key === 'billetera') {
       return true;
     }
     if (panel.key === 'vehiculo') {
