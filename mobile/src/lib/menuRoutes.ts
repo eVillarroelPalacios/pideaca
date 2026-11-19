@@ -38,6 +38,8 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     'administrar::unidades-medida': '/units-of-measure',
     // Administrar: gestion de usuarios de la cuenta.
     'administrar::usuarios': '/users',
+    // Dinero (Módulo D, solo Admin): backoffice de pagos igual al panel web.
+    'dinero::dinero': '/dinero',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',
@@ -103,6 +105,10 @@ export function menuModuleIcon(module: string): string {
 
   if (value === 'administrar') {
     return '⚙️';
+  }
+
+  if (value === 'dinero') {
+    return '💰';
   }
 
   return '📁';

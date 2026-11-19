@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -1431,6 +1432,20 @@ export default function NewRequestScreen() {
 
         const response = await api.createQuote(form);
         orderId = response.data.order.id;
+      }
+
+      const paidWithMp =
+        (orderType === 'EMERGENCY' && paymentMethod === 'mercado_pago') ||
+        (orderType === 'SCHEDULED' && scheduledPaymentMethod.trim() === 'mercado_pago');
+
+      if (paidWithMp) {
+        try {
+          const checkout = await api.startMercadoPagoCheckout('service_order', orderId);
+          await Linking.openURL(checkout.init_point);
+        } catch {
+          // Sin pago iniciado igual vamos al detalle: el pedido ya existe
+          // y el inicio puede reintentarse (reutiliza el cargo pendiente).
+        }
       }
 
       router.replace({

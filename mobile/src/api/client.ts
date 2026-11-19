@@ -120,6 +120,25 @@ import type {
   PayoutAccountResponse,
   PayoutAccountsResponse,
   BillingStatusResponse,
+  DineroChargePayload,
+  DineroChargeResponse,
+  DineroChargesResponse,
+  DineroFeeRulePayload,
+  DineroFeeRuleResponse,
+  DineroFeeRulesResponse,
+  DineroInvoiceResponse,
+  DineroInvoicesResponse,
+  DineroLedgerResponse,
+  DineroMatrix,
+  DineroMatrixResponse,
+  DineroOperatingStatusResponse,
+  DineroPlanPayload,
+  DineroPlanResponse,
+  DineroPlansResponse,
+  DineroSettlementPayload,
+  DineroSettlementResponse,
+  DineroSettlementsResponse,
+  DineroSubscribePayload,
   MercadoPagoCheckoutResponse,
   WalletTypesResponse,
   AutoApproveResponse,
@@ -355,6 +374,146 @@ export const api = {
 
   billingStatus(): Promise<BillingStatusResponse> {
     return request<BillingStatusResponse>('/profile/billing/status');
+  },
+
+  /**
+   * Backoffice Dinero (Fase 1-3, solo Admin): mismos endpoints y reglas que
+   * la seccion web del panel (`/admin/billing`). El servidor verifica Admin
+   * y responde 403 si no lo es.
+   */
+  dineroFeeRules(): Promise<DineroFeeRulesResponse> {
+    return request<DineroFeeRulesResponse>('/admin/billing/fee-rules');
+  },
+
+  dineroCreateFeeRule(payload: DineroFeeRulePayload): Promise<DineroFeeRuleResponse> {
+    return request<DineroFeeRuleResponse>('/admin/billing/fee-rules', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  dineroToggleFeeRule(id: number, active: boolean): Promise<DineroFeeRuleResponse> {
+    return request<DineroFeeRuleResponse>(`/admin/billing/fee-rules/${id}`, {
+      method: 'PUT',
+      body: { active },
+    });
+  },
+
+  dineroMatrix(): Promise<DineroMatrixResponse> {
+    return request<DineroMatrixResponse>('/admin/billing/company');
+  },
+
+  dineroSaveMatrix(settings: DineroMatrix): Promise<DineroMatrixResponse> {
+    return request<DineroMatrixResponse>('/admin/billing/company', {
+      method: 'PUT',
+      body: { settings },
+    });
+  },
+
+  dineroSettlements(params: { status?: string; user_id?: number } = {}): Promise<DineroSettlementsResponse> {
+    const query = new URLSearchParams();
+    if (params.status) query.set('status', params.status);
+    if (params.user_id) query.set('user_id', String(params.user_id));
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return request<DineroSettlementsResponse>(`/admin/billing/settlements${suffix}`);
+  },
+
+  dineroCreateSettlement(payload: DineroSettlementPayload): Promise<DineroSettlementResponse> {
+    return request<DineroSettlementResponse>('/admin/billing/settlements', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  dineroPaySettlement(id: number, reference: string): Promise<DineroSettlementResponse> {
+    return request<DineroSettlementResponse>(`/admin/billing/settlements/${id}/pay`, {
+      method: 'POST',
+      body: { reference },
+    });
+  },
+
+  dineroCancelSettlement(id: number): Promise<DineroSettlementResponse> {
+    return request<DineroSettlementResponse>(`/admin/billing/settlements/${id}/cancel`, {
+      method: 'POST',
+    });
+  },
+
+  dineroCharges(params: { status?: string; module?: string } = {}): Promise<DineroChargesResponse> {
+    const query = new URLSearchParams();
+    if (params.status) query.set('status', params.status);
+    if (params.module) query.set('module', params.module);
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return request<DineroChargesResponse>(`/admin/billing/charges${suffix}`);
+  },
+
+  dineroRegisterCharge(payload: DineroChargePayload): Promise<DineroChargeResponse> {
+    return request<DineroChargeResponse>('/admin/billing/charges', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  dineroVerifyCharge(id: number): Promise<DineroChargeResponse> {
+    return request<DineroChargeResponse>(`/admin/billing/charges/${id}/verify`, {
+      method: 'POST',
+    });
+  },
+
+  dineroLedger(params: { type?: string; currency?: string; user_id?: number } = {}): Promise<DineroLedgerResponse> {
+    const query = new URLSearchParams();
+    if (params.type) query.set('type', params.type);
+    if (params.currency) query.set('currency', params.currency);
+    if (params.user_id) query.set('user_id', String(params.user_id));
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return request<DineroLedgerResponse>(`/admin/billing/ledger${suffix}`);
+  },
+
+  dineroOperatingStatus(user_id: number, currency = 'ARS'): Promise<DineroOperatingStatusResponse> {
+    const query = new URLSearchParams({
+      user_id: String(user_id),
+      currency,
+    });
+    return request<DineroOperatingStatusResponse>(`/admin/billing/status?${query.toString()}`);
+  },
+
+  dineroPlans(): Promise<DineroPlansResponse> {
+    return request<DineroPlansResponse>('/admin/billing/plans');
+  },
+
+  dineroCreatePlan(payload: DineroPlanPayload): Promise<DineroPlanResponse> {
+    return request<DineroPlanResponse>('/admin/billing/plans', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  dineroUpdatePlan(id: number, payload: Partial<DineroPlanPayload>): Promise<DineroPlanResponse> {
+    return request<DineroPlanResponse>(`/admin/billing/plans/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
+  dineroInvoices(params: { status?: string; user_id?: number } = {}): Promise<DineroInvoicesResponse> {
+    const query = new URLSearchParams();
+    if (params.status) query.set('status', params.status);
+    if (params.user_id) query.set('user_id', String(params.user_id));
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return request<DineroInvoicesResponse>(`/admin/billing/invoices${suffix}`);
+  },
+
+  dineroPayInvoice(id: number, reference?: string | null): Promise<DineroInvoiceResponse> {
+    return request<DineroInvoiceResponse>(`/admin/billing/invoices/${id}/pay`, {
+      method: 'POST',
+      body: { reference: reference ?? null },
+    });
+  },
+
+  dineroSubscribe(payload: DineroSubscribePayload): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/admin/billing/subscribe', {
+      method: 'POST',
+      body: payload,
+    });
   },
 
   startMercadoPagoCheckout(

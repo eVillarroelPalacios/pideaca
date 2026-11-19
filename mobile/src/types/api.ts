@@ -2647,3 +2647,205 @@ export type DriverActionResponse = {
   order?: DriverActiveOrder;
   wallet?: { balance: number };
 };
+
+/**
+ * Backoffice Dinero (Fase 1-3): espeja /api/mobile/v1/admin/billing, que a
+ * su vez espeja el panel web. Mismas reglas y validaciones del servidor.
+ */
+export type DineroFeeRule = {
+  id: number;
+  module: string;
+  country: string | null;
+  currency: string | null;
+  percent: number;
+  fixed_fee: number;
+  min_fee: number;
+  active: boolean;
+  valid_from: string | null;
+  valid_to: string | null;
+};
+
+export type DineroFeeRulesResponse = {
+  success: boolean;
+  data: DineroFeeRule[];
+};
+
+export type DineroFeeRuleResponse = {
+  success: boolean;
+  message: string;
+  rule: DineroFeeRule;
+};
+
+export type DineroFeeRulePayload = {
+  module: string;
+  country?: string | null;
+  currency?: string | null;
+  percent: number;
+  fixed_fee?: number;
+  min_fee?: number;
+  active?: boolean;
+};
+
+export type DineroMatrix = Record<string, string | null>;
+
+export type DineroMatrixResponse = {
+  success: boolean;
+  message?: string;
+  data: DineroMatrix;
+};
+
+export type DineroSettlement = {
+  id: number;
+  user_id: number;
+  currency: string;
+  gross: number;
+  fee: number;
+  net: number;
+  status: string;
+  payout_reference: string | null;
+  notes: string | null;
+  created_at: string | null;
+  user?: { id: number; name: string; email: string } | null;
+  items?: Array<{ id: number; amount?: number }>;
+};
+
+export type DineroSettlementsResponse = {
+  success: boolean;
+  data: DineroSettlement[];
+};
+
+export type DineroSettlementResponse = {
+  success: boolean;
+  message: string;
+  settlement: DineroSettlement;
+};
+
+export type DineroSettlementPayload = {
+  user_id: number;
+  currency?: string;
+  charge_ids: number[];
+  notes?: string | null;
+};
+
+export type DineroCharge = {
+  id: number;
+  module: string;
+  order_type: string;
+  order_id: number;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  transaction_reference: string | null;
+  fee: number;
+  net: number;
+  created_at: string | null;
+};
+
+export type DineroChargesResponse = {
+  success: boolean;
+  data: DineroCharge[];
+};
+
+export type DineroChargeResponse = {
+  success: boolean;
+  message: string;
+  charge: DineroCharge;
+};
+
+export type DineroChargePayload = {
+  module: string;
+  order_type: string;
+  order_id: number;
+  amount: number;
+  method: string;
+  reference?: string | null;
+  currency?: string;
+};
+
+export type DineroLedgerEntry = {
+  id: number;
+  user_id: number | null;
+  type: string;
+  currency: string;
+  amount: number;
+  reference_type: string | null;
+  reference_id: number | null;
+  description: string | null;
+  created_at: string | null;
+  user?: { id: number; name: string; email: string } | null;
+};
+
+export type DineroLedgerResponse = {
+  success: boolean;
+  data: DineroLedgerEntry[];
+};
+
+export type DineroPlan = {
+  id: number;
+  module: string;
+  name: string;
+  currency: string;
+  price: number;
+  billing_days: number;
+  grace_days: number;
+  active: boolean;
+};
+
+export type DineroPlansResponse = {
+  success: boolean;
+  data: DineroPlan[];
+};
+
+export type DineroPlanResponse = {
+  success: boolean;
+  message: string;
+  plan: DineroPlan;
+};
+
+export type DineroPlanPayload = {
+  name: string;
+  currency?: string;
+  price: number;
+  billing_days?: number;
+  grace_days?: number;
+  active?: boolean;
+};
+
+export type DineroInvoice = {
+  id: number;
+  user_id: number;
+  amount: number;
+  currency: string;
+  status: string;
+  due_date: string | null;
+  created_at: string | null;
+  user?: { id: number; name: string; email: string } | null;
+};
+
+export type DineroInvoicesResponse = {
+  success: boolean;
+  data: DineroInvoice[];
+};
+
+export type DineroInvoiceResponse = {
+  success: boolean;
+  message: string;
+  invoice: DineroInvoice;
+};
+
+export type DineroSubscribePayload = {
+  user_id: number;
+  plan_id: number;
+};
+
+export type DineroOperatingStatus = {
+  can_operate: boolean;
+  cash_debt: number;
+  currency: string;
+};
+
+export type DineroOperatingStatusResponse = {
+  success: boolean;
+  data: DineroOperatingStatus;
+};

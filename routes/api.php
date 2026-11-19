@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AdminUsersController;
+use App\Http\Controllers\AdminBillingController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\AccountActivationController;
 use App\Http\Controllers\Api\V1\CatalogController;
@@ -168,6 +169,42 @@ Route::prefix('mobile/v1')->group(function () {
         Route::get('/admin-users/{user}/service-types', [AdminUsersController::class, 'serviceTypes'])
             ->middleware('throttle:30,1');
         Route::post('/admin-users/{user}/service-types/toggle', [AdminUsersController::class, 'toggleServiceType']);
+
+        // Backoffice Dinero: mismos endpoints y reglas que la seccion web
+        // (/admin/billing). El propio AdminBillingController verifica Admin.
+        Route::prefix('admin/billing')->group(function () {
+            Route::get('/fee-rules', [AdminBillingController::class, 'feeRules'])
+                ->middleware('throttle:30,1');
+            Route::post('/fee-rules', [AdminBillingController::class, 'storeFeeRule']);
+            Route::put('/fee-rules/{rule}', [AdminBillingController::class, 'updateFeeRule']);
+            Route::get('/company', [AdminBillingController::class, 'companyMatrix'])
+                ->middleware('throttle:30,1');
+            Route::put('/company', [AdminBillingController::class, 'updateCompanyMatrix']);
+            Route::get('/settlements', [AdminBillingController::class, 'settlements'])
+                ->middleware('throttle:30,1');
+            Route::post('/settlements', [AdminBillingController::class, 'createSettlement']);
+            Route::post('/settlements/{settlement}/pay', [AdminBillingController::class, 'paySettlement']);
+            Route::post('/settlements/{settlement}/cancel', [AdminBillingController::class, 'cancelSettlement']);
+            Route::get('/ledger', [AdminBillingController::class, 'ledger'])
+                ->middleware('throttle:30,1');
+            Route::get('/status', [AdminBillingController::class, 'operatingStatus'])
+                ->middleware('throttle:30,1');
+            Route::get('/plans', [AdminBillingController::class, 'plans'])
+                ->middleware('throttle:30,1');
+            Route::post('/plans', [AdminBillingController::class, 'storePlan']);
+            Route::put('/plans/{plan}', [AdminBillingController::class, 'updatePlan']);
+            Route::get('/invoices', [AdminBillingController::class, 'invoices'])
+                ->middleware('throttle:30,1');
+            Route::post('/invoices/{invoice}/pay', [AdminBillingController::class, 'payInvoice']);
+            Route::post('/subscribe', [AdminBillingController::class, 'subscribe']);
+            Route::get('/charges', [AdminBillingController::class, 'charges'])
+                ->middleware('throttle:30,1');
+            Route::post('/charges', [AdminBillingController::class, 'registerCharge']);
+            Route::post('/charges/{charge}/verify', [AdminBillingController::class, 'verifyCharge']);
+            Route::post('/wallet-types', [AdminBillingController::class, 'storeWalletType']);
+            Route::put('/wallet-types/{walletType}', [AdminBillingController::class, 'updateWalletType']);
+        });
+
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::delete('/auth/account', [AuthController::class, 'destroyAccount']);
 
