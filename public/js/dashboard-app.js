@@ -12364,7 +12364,23 @@
 
         if (acts) {
             if (items.every(function (it) { return it.ok; })) {
-                acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;">Cuenta lista. La descarga de la app se habilita en la próxima fase.</div>';
+                var apkUrl = ((acts.dataset && acts.dataset.apkUrl) || '').trim();
+                var phoneDigits = '';
+                try {
+                    var me = (typeof profileData !== 'undefined' && profileData) ? profileData : null;
+                    phoneDigits = String((me && me.phone) || '').replace(/\D/g, '');
+                } catch (e) { phoneDigits = ''; }
+                if (apkUrl) {
+                    var wa = phoneDigits
+                        ? '<a href="https://wa.me/' + phoneDigits + '?text=' + encodeURIComponent('Descargá PideAca: ' + apkUrl) + '" target="_blank" rel="noopener" style="display:inline-block;background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;color:#0c2a4d;text-decoration:none;">Enviarme por WhatsApp</a>'
+                        : '';
+                    acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;margin-bottom:12px;">Cuenta lista. Descargá la app en tu teléfono.</div>'
+                        + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+                        + '<a href="' + apkUrl + '" style="display:inline-block;background:#D24C19;color:#fff;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;">Descargar para Android</a>'
+                        + wa + '</div>';
+                } else {
+                    acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;">Cuenta lista. La descarga estará disponible próximamente.</div>';
+                }
             } else {
                 acts.innerHTML = '<p style="font-size:12px;color:#64748b;">Completá los puntos pendientes para habilitar la descarga.</p>';
             }

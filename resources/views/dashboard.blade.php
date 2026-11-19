@@ -727,7 +727,7 @@
                                         <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 6v6m0 0-2.5-2.5M12 12l2.5-2.5"/></svg> App móvil</h3>
                                         <p style="font-size:13px;color:#64748b;margin:0 0 12px;">Descargá la app en tu teléfono para operar desde donde estés.</p>
                                         <div><span class="save-msg" id="appmovil-msg"></span></div>
-                                        <div id="appmovil-body"><div id="appmovil-checklist"><p style="font-size:13px;color:#64748b;">Cargando…</p></div><div id="appmovil-actions" style="margin-top:12px;"></div></div>
+                                        <div id="appmovil-body"><div id="appmovil-checklist"><p style="font-size:13px;color:#64748b;">Cargando…</p></div><div id="appmovil-actions" style="margin-top:12px;" data-apk-url="{{ $androidApkUrl ?? '' }}"></div></div>
                                     </div>
                                 </div>
                                 @endif

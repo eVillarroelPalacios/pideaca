@@ -54,6 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // APK de Android para la seccion "App movil" del perfil (Fase 3).
+    // Vacio = descarga aun no publicada.
+    'android_apk_url' => env('APP_ANDROID_APK_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

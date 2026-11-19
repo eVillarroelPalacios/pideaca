@@ -112,6 +112,7 @@ class DashboardController extends Controller
             'firstPageUrl' => $firstPageUrl,
             'permissionModules' => $permissionModules,
             'activeRole' => $activeRole,
+            'androidApkUrl' => config('app.android_apk_url'),
         ]);
     }
 }
