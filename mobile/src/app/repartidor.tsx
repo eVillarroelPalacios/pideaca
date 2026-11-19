@@ -24,6 +24,7 @@ import { DriverHeader } from '@/components/DriverHeader';
 import { DriverKpisGrid } from '@/components/DriverKpisGrid';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { API_BASE_URL } from '@/config';
 import { money } from '@/lib/money';
 import { colors, radius, spacing } from '@/theme';
@@ -972,6 +973,18 @@ export default function RepartidorScreen() {
           >
             <Text style={styles.walletButtonText}>Retirar saldo</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.walletHistoryCard}>
+          <Text style={styles.walletHistoryTitle}>Cuentas de cobro</Text>
+          <Text style={styles.walletHint}>
+            CBU, alias o cuenta donde recibís tus retiros. Necesitás al menos una activa para operar.
+          </Text>
+          <PrimaryButton
+            title="Gestionar cuentas de cobro"
+            variant="ghost"
+            onPress={() => router.push('/billetera' as never)}
+          />
         </View>
 
         {withdrawals.length > 0 ? (
