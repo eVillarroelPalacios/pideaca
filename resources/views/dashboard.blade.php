@@ -1018,7 +1018,7 @@ window.APP_BASE = @json(url('/'));
 window.__CSRF_TOKEN = '{{ csrf_token() }}';
 window.__FD_DELIVERY_FEE = {{ (float) config('fastdelivery.delivery_fee') }};
 </script>
-<script src="{{ asset('js/dashboard-app.js') }}"></script>
+<script src="{{ asset('js/dashboard-app.js') }}?v={{ filemtime(public_path('js/dashboard-app.js')) }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof umSnapshotSessionNav === 'function') umSnapshotSessionNav();

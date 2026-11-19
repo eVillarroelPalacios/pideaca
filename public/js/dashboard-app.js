@@ -14158,12 +14158,18 @@
         showMsg('dn-msg', text, !!ok);
     }
 
+    function dnToggleSidebar(force) {
+        var sb = document.getElementById('dn-sidebar');
+        var ov = document.getElementById('dn-sidebar-overlay');
+        if (!sb) return;
+        var open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.style.display = open ? 'block' : 'none';
+    }
+
     function dnSwitchTab(name) {
         document.querySelectorAll('#dn-tabs .dn-tab').forEach(function (b) {
-            var active = b.getAttribute('data-dntab') === name;
-            b.style.background = active ? '#D24C19' : '#fff';
-            b.style.color = active ? '#fff' : '#374151';
-            b.style.borderColor = active ? '#D24C19' : '#d1d5db';
+            b.classList.toggle('active', b.getAttribute('data-dntab') === name);
         });
         document.querySelectorAll('[data-dnpanel]').forEach(function (p) {
             p.style.display = p.getAttribute('data-dnpanel') === name ? '' : 'none';
@@ -14534,6 +14540,7 @@
         var btn = event.target && event.target.closest ? event.target.closest('[data-dntab]') : null;
         if (!btn || !document.getElementById('dash-dinero')) return;
         dnSwitchTab(btn.getAttribute('data-dntab'));
+        dnToggleSidebar(false);
     });
 
     /* ---------- Catálogo de billeteras por país ---------- */
