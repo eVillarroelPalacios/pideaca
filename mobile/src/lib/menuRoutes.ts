@@ -39,7 +39,11 @@ export function menuRouteFor(module: string, url: string | null): string | null 
     // Administrar: gestion de usuarios de la cuenta.
     'administrar::usuarios': '/users',
     // Dinero (Módulo D, solo Admin): backoffice de pagos igual al panel web.
+    // La pagina tambien puede colgar del modulo Administrar.
     'dinero::dinero': '/dinero',
+    'administrar::dinero': '/dinero',
+    // Billeteras por pais (Fase 1, solo Admin): catalogo de tipos.
+    'administrar::billeteras-pais': '/billeteras-pais',
     // Hogar: lo ya construido.
     'hogar::solicitar-servicio': '/providers',
     'hogar::mis-servicios': '/requests',

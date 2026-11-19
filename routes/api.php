@@ -203,6 +203,8 @@ Route::prefix('mobile/v1')->group(function () {
             Route::post('/charges/{charge}/verify', [AdminBillingController::class, 'verifyCharge']);
             Route::post('/wallet-types', [AdminBillingController::class, 'storeWalletType']);
             Route::put('/wallet-types/{walletType}', [AdminBillingController::class, 'updateWalletType']);
+            Route::get('/wallet-types', [AdminBillingController::class, 'walletTypes'])
+                ->middleware('throttle:30,1');
         });
 
         Route::post('/auth/logout', [AuthController::class, 'logout']);

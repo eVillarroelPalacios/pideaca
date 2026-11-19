@@ -127,6 +127,7 @@ export type WalletType = {
   code: string;
   name: string;
   fields: string[];
+  active: boolean;
 };
 
 export type WalletTypesResponse = {

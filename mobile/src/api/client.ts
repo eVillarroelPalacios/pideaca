@@ -524,6 +524,38 @@ export const api = {
     });
   },
 
+  /**
+   * Billeteras por país (Fase 1, solo Admin): catálogo completo de tipos,
+   * igual que la página web (incluye inactivos, a diferencia del combo
+   * público que solo trae activos).
+   */
+  dineroWalletTypes(): Promise<WalletTypesResponse> {
+    return request<WalletTypesResponse>('/admin/billing/wallet-types');
+  },
+
+  dineroCreateWalletType(payload: {
+    country: string;
+    code: string;
+    name: string;
+    fields?: string[];
+    active?: boolean;
+  }): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/admin/billing/wallet-types', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  dineroUpdateWalletType(
+    id: number,
+    payload: { name?: string; fields?: string[]; active?: boolean },
+  ): Promise<SimpleResponse> {
+    return request<SimpleResponse>(`/admin/billing/wallet-types/${id}`, {
+      method: 'PUT',
+      body: payload,
+    });
+  },
+
   dineroSubscribe(payload: DineroSubscribePayload): Promise<SimpleResponse> {
     return request<SimpleResponse>('/admin/billing/subscribe', {
       method: 'POST',
