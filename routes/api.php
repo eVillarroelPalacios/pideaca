@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AdminUsersController;
 use App\Http\Controllers\AdminBillingController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\AccountActivationController;
 use App\Http\Controllers\Api\V1\CatalogController;
@@ -205,6 +206,13 @@ Route::prefix('mobile/v1')->group(function () {
             Route::put('/wallet-types/{walletType}', [AdminBillingController::class, 'updateWalletType']);
             Route::get('/wallet-types', [AdminBillingController::class, 'walletTypes'])
                 ->middleware('throttle:30,1');
+
+            // Retiros de repartidores (admin): mismos que /admin/withdrawals
+            // de la web. El propio UsuarioController exige hasPageUrl('usuarios').
+            Route::get('/driver-withdrawals', [UsuarioController::class, 'pendingWithdrawals'])
+                ->middleware('throttle:30,1');
+            Route::post('/driver-withdrawals/{withdrawal}/approve', [UsuarioController::class, 'approveWithdrawal']);
+            Route::post('/driver-withdrawals/{withdrawal}/reject', [UsuarioController::class, 'rejectWithdrawal']);
         });
 
         Route::post('/auth/logout', [AuthController::class, 'logout']);

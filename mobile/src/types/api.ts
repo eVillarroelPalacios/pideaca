@@ -2850,3 +2850,27 @@ export type DineroOperatingStatusResponse = {
   success: boolean;
   data: DineroOperatingStatus;
 };
+
+export type DineroDriverWithdrawal = {
+  id: number;
+  user_id: number;
+  user: { id: number; name: string; email: string } | null;
+  amount: number;
+  status: string;
+  method: string | null;
+  reference: string | null;
+  notes: string | null;
+  created_at: string | null;
+  reviewed_at: string | null;
+};
+
+export type DineroDriverWithdrawalsResponse = {
+  success: boolean;
+  withdrawals: DineroDriverWithdrawal[];
+};
+
+export type DineroDriverWithdrawalActionResponse = {
+  success: boolean;
+  message: string;
+  withdrawal: DineroDriverWithdrawal;
+};

@@ -20,6 +20,7 @@ import { money } from '@/lib/money';
 import { colors, radius, spacing } from '@/theme';
 import type {
   DineroCharge,
+  DineroDriverWithdrawal,
   DineroFeeRule,
   DineroInvoice,
   DineroLedgerEntry,
@@ -41,7 +42,8 @@ type DineroTab =
   | 'efectivo'
   | 'conciliacion'
   | 'planes'
-  | 'facturas';
+  | 'facturas'
+  | 'retiros';
 
 const TABS: Array<{ key: DineroTab; label: string }> = [
   { key: 'comisiones', label: 'Comisiones' },
@@ -52,6 +54,7 @@ const TABS: Array<{ key: DineroTab; label: string }> = [
   { key: 'conciliacion', label: 'Conciliación' },
   { key: 'planes', label: 'Planes Hogar' },
   { key: 'facturas', label: 'Facturas' },
+  { key: 'retiros', label: 'Retiros' },
 ];
 
 const MODULE_OPTIONS: ComboOption<string>[] = [
@@ -180,6 +183,10 @@ export default function DineroScreen() {
   const [invStatus, setInvStatus] = useState('');
   const [invReference, setInvReference] = useState('');
 
+  // Retiros de repartidores (admin)
+  const [withdrawals, setWithdrawals] = useState<DineroDriverWithdrawal[]>([]);
+  const [withdrawReason, setWithdrawReason] = useState('');
+
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -195,8 +202,9 @@ export default function DineroScreen() {
       api.dineroLedger({ currency: 'ARS' }).catch(() => null),
       api.dineroPlans().catch(() => null),
       api.dineroInvoices().catch(() => null),
+      api.dineroDriverWithdrawals().catch(() => null),
     ])
-      .then(([r, m, s, c, l, p, i]) => {
+      .then(([r, m, s, c, l, p, i, w]) => {
         if (!active) return;
         if (r) setRules(r.data);
         if (m) {
@@ -211,6 +219,7 @@ export default function DineroScreen() {
         if (l) setLedger(l.data);
         if (p) setPlans(p.data);
         if (i) setInvoices(i.data);
+        if (w) setWithdrawals(w.withdrawals);
       })
       .catch((caught: unknown) => {
         if (!active) return;
@@ -273,6 +282,33 @@ export default function DineroScreen() {
       invStatus ? { status: invStatus } : {},
     );
     setInvoices(res.data);
+  }
+
+  async function reloadDriverWithdrawals() {
+    const res = await api.dineroDriverWithdrawals();
+    setWithdrawals(res.withdrawals);
+  }
+
+  async function handleApproveWithdrawal(id: number) {
+    setError(null);
+    try {
+      const res = await api.dineroApproveDriverWithdrawal(id);
+      showNotice(res.message);
+      await reloadDriverWithdrawals();
+    } catch (caught) {
+      setError(firstError(caught, 'No pudimos aprobar el retiro.'));
+    }
+  }
+
+  async function handleRejectWithdrawal(id: number) {
+    setError(null);
+    try {
+      const res = await api.dineroRejectDriverWithdrawal(id, withdrawReason.trim() || null);
+      showNotice(res.message);
+      await reloadDriverWithdrawals();
+    } catch (caught) {
+      setError(firstError(caught, 'No pudimos rechazar el retiro.'));
+    }
   }
 
   async function reloadLedger() {
@@ -373,17 +409,6 @@ export default function DineroScreen() {
       await reloadSettlements();
     } catch (caught) {
       setError(firstError(caught, 'No pudimos pagar la liquidación.'));
-    }
-  }
-
-  async function handleCancelSettlement(id: number) {
-    setError(null);
-    try {
-      const res = await api.dineroCancelSettlement(id);
-      showNotice(res.message);
-      await reloadSettlements();
-    } catch (caught) {
-      setError(firstError(caught, 'No pudimos cancelar la liquidación.'));
     }
   }
 
@@ -642,9 +667,6 @@ export default function DineroScreen() {
                       <View style={styles.actionFlex}>
                         <PrimaryButton title="Pagar" onPress={() => void handlePaySettlement(s.id)} />
                       </View>
-                      <View style={styles.actionFlex}>
-                        <PrimaryButton title="Cancelar" variant="ghost" onPress={() => void handleCancelSettlement(s.id)} />
-                      </View>
                     </View>
                   </View>
                 ))
@@ -793,6 +815,41 @@ export default function DineroScreen() {
                   ) : (
                     <Text style={styles.itemSub}>—</Text>
                   )}
+                </View>
+              ))
+            )}
+          </SectionCard>
+        ) : null}
+
+        {tab === 'retiros' ? (
+          <SectionCard title="Retiros de repartidores pendientes">
+            <TextField
+              label="Motivo del rechazo (opcional)"
+              value={withdrawReason}
+              onChangeText={setWithdrawReason}
+              placeholder="Se usa solo al rechazar"
+            />
+            {withdrawals.length === 0 ? (
+              <Text style={styles.empty}>Sin retiros pendientes.</Text>
+            ) : (
+              withdrawals.map((w) => (
+                <View key={w.id} style={styles.item}>
+                  <Text style={styles.itemTitle}>
+                    #{w.id} · {(w.user && (w.user.name || w.user.email)) || `#${w.user_id}`} · {money(w.amount)}
+                  </Text>
+                  <Text style={styles.itemSub}>
+                    {w.method ?? '—'} · {w.status}
+                    {w.reference ? ` · Comp. ${w.reference}` : ''}
+                    {w.notes ? ` · ${w.notes}` : ''}
+                  </Text>
+                  <View style={styles.actions}>
+                    <View style={styles.actionFlex}>
+                      <PrimaryButton title="Aprobar" onPress={() => void handleApproveWithdrawal(w.id)} />
+                    </View>
+                    <View style={styles.actionFlex}>
+                      <PrimaryButton title="Rechazar" variant="ghost" onPress={() => void handleRejectWithdrawal(w.id)} />
+                    </View>
+                  </View>
                 </View>
               ))
             )}

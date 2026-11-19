@@ -129,6 +129,8 @@ import type {
   DineroInvoiceResponse,
   DineroInvoicesResponse,
   DineroLedgerResponse,
+  DineroDriverWithdrawalActionResponse,
+  DineroDriverWithdrawalsResponse,
   DineroMatrix,
   DineroMatrixResponse,
   DineroOperatingStatusResponse,
@@ -489,6 +491,29 @@ export const api = {
       currency,
     });
     return request<DineroOperatingStatusResponse>(`/admin/billing/status?${query.toString()}`);
+  },
+
+  /**
+   * Retiros de repartidores pendientes (admin). Espeja
+   * /admin/withdrawals de la web: mismo controlador y mismo gate
+   * (hasPageUrl('usuarios')).
+   */
+  dineroDriverWithdrawals(): Promise<DineroDriverWithdrawalsResponse> {
+    return request<DineroDriverWithdrawalsResponse>('/admin/billing/driver-withdrawals');
+  },
+
+  dineroApproveDriverWithdrawal(id: number): Promise<DineroDriverWithdrawalActionResponse> {
+    return request<DineroDriverWithdrawalActionResponse>(
+      `/admin/billing/driver-withdrawals/${id}/approve`,
+      { method: 'POST' },
+    );
+  },
+
+  dineroRejectDriverWithdrawal(id: number, reason?: string | null): Promise<DineroDriverWithdrawalActionResponse> {
+    return request<DineroDriverWithdrawalActionResponse>(
+      `/admin/billing/driver-withdrawals/${id}/reject`,
+      { method: 'POST', body: { reason: reason ?? null } },
+    );
   },
 
   dineroPlans(): Promise<DineroPlansResponse> {
