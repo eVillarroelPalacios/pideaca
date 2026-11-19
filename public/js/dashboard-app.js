@@ -12392,25 +12392,51 @@
     function appMovilInit() {
         var box = document.getElementById('appmovil-checklist');
         if (!box) return;
-        box.innerHTML = '<p style="font-size:13px;color:#64748b;">Cargando…</p>';
 
-        var items = appMovilChecklist();
+        try {
+            box.innerHTML = '<p style="font-size:13px;color:#64748b;">Cargando…</p>';
 
-        fetch(window.APP_BASE + '/profile/billing/status', {
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-            var can = !!(res && res.data && res.data.can_operate);
-            items = items.map(function (it) {
-                if (it.pending === 'wallets') return { label: it.label, ok: can, panel: it.panel };
-                return it;
+            var items = appMovilChecklist();
+            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            var csrf = csrfMeta ? csrfMeta.content : '';
+
+            var controller = null;
+            var signal = null;
+            if (typeof AbortController !== 'undefined') {
+                controller = new AbortController();
+                signal = controller.signal;
+                setTimeout(function () { try { controller.abort(); } catch (e) {} }, 15000);
+            }
+
+            fetch(window.APP_BASE + '/profile/billing/status', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                signal: signal
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                var can = !!(res && res.data && res.data.can_operate);
+                appMovilRender(items.map(function (it) {
+                    if (it.pending === 'wallets') return { label: it.label, ok: can, panel: it.panel };
+                    return it;
+                }), can);
+            })
+            .catch(function () {
+                appMovilRenderError();
             });
-            appMovilRender(items, can);
-        })
-        .catch(function () {
-            appMovilRender(items, false);
-        });
+        } catch (e) {
+            appMovilRenderError();
+        }
+    }
+
+    function appMovilRenderError() {
+        var box = document.getElementById('appmovil-checklist');
+        if (!box) return;
+        box.innerHTML = '<div style="padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;font-size:13px;color:#b91c1d;">'
+            + 'No pudimos cargar tu estado. Revisá tu conexión.'
+            + ' <button type="button" onclick="appMovilInit()" style="margin-left:8px;background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:600;color:#0c2a4d;cursor:pointer;">Reintentar</button>'
+            + '</div>';
+        var acts = document.getElementById('appmovil-actions');
+        if (acts) acts.innerHTML = '';
     }
 
     function setProfileSidebarActive(key) {
