@@ -7,7 +7,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/auth/AuthContext';
 import { ManagedProvider } from '@/auth/ManagedContext';
-import { checkForAppUpdate } from '@/lib/appUpdate';
 import { colors } from '@/theme';
 
 /**
@@ -56,8 +55,17 @@ export default function RootLayout() {
   useNotificationObserver();
 
   // Updates propios (Fase 3, $0): una vez por arranque, maximo 1/dia.
+  // Carga perezosa y diferida a proposito: nada de este chequeo corre en
+  // el arranque en frio. Si el modulo fallara, el layout sigue en pie.
   useEffect(() => {
-    void checkForAppUpdate();
+    const timer = setTimeout(() => {
+      try {
+        void import('@/lib/appUpdate').then((m) => m.checkForAppUpdate());
+      } catch {
+        // Nunca rompe el arranque.
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
