@@ -58,6 +58,15 @@ return [
     // Vacio = descarga aun no publicada.
     'android_apk_url' => env('APP_ANDROID_APK_URL'),
 
+    // Versionado propio de la app Android ($0, sin EAS Update).
+    // El endpoint publico /api/mobile/v1/app/version los expone y la app
+    // los compara con su version instalada para avisar la actualizacion.
+    'android_version_name' => env('APP_ANDROID_VERSION_NAME', '1.0.0'),
+    'android_version_code' => (int) env('APP_ANDROID_VERSION_CODE', 1),
+    // true = la app instalada debe actualizar para seguir operando.
+    'android_mandatory' => filter_var(env('APP_ANDROID_MANDATORY', false), FILTER_VALIDATE_BOOLEAN),
+    'android_release_notes' => env('APP_ANDROID_RELEASE_NOTES', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

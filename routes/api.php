@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\AccountActivationController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
+use App\Http\Controllers\Api\V1\AppVersionController;
 use App\Http\Controllers\Api\V1\CurrenciesController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\GroupStatusesController;
@@ -63,6 +64,11 @@ Route::prefix('mobile/v1')->group(function () {
             'version' => 'v1',
         ]);
     });
+
+    // Versionado propio Android (Fase 3, $0): publico para que la app
+    // instalada pueda chequear actualizaciones sin sesion.
+    Route::get('/app/version', [AppVersionController::class, 'show'])
+        ->middleware('throttle:60,1');
 
     Route::post('/auth/login', [AuthController::class, 'login'])
         ->middleware('throttle:5,1');

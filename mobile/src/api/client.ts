@@ -150,6 +150,7 @@ import type {
   ReportComercioNutritionResponse,
   ReportComercioSavingsResponse,
   ReportComercioSubscriptionsResponse,
+  AppVersionResponse,
   ReportHogarParams,
   ReportHogarResponse,
   ServiceOrderResponse,
@@ -600,6 +601,14 @@ export const api = {
 
   types(): Promise<TypesResponse> {
     return request<TypesResponse>('/auth/types', { auth: false });
+  },
+
+  /**
+   * Versionado propio Android (Fase 3, $0 sin EAS Update).
+   * Publico: la app lo consulta sin sesion al arrancar.
+   */
+  appVersion(): Promise<AppVersionResponse> {
+    return request<AppVersionResponse>('/app/version', { auth: false });
   },
 
   /**

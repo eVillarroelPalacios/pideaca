@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/auth/AuthContext';
 import { ManagedProvider } from '@/auth/ManagedContext';
+import { checkForAppUpdate } from '@/lib/appUpdate';
 import { colors } from '@/theme';
 
 /**
@@ -53,6 +54,11 @@ function useNotificationObserver() {
 
 export default function RootLayout() {
   useNotificationObserver();
+
+  // Updates propios (Fase 3, $0): una vez por arranque, maximo 1/dia.
+  useEffect(() => {
+    void checkForAppUpdate();
+  }, []);
 
   return (
     <SafeAreaProvider>

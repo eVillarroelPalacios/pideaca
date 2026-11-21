@@ -53,6 +53,24 @@ export type SimpleResponse = {
   message: string;
 };
 
+/**
+ * Versionado propio Android (Fase 3, $0): espeja
+ * GET /api/mobile/v1/app/version. apk_url null = aun no publicado.
+ */
+export type AppVersionResponse = {
+  success: boolean;
+  data: {
+    platform: 'android';
+    package: string;
+    version_name: string;
+    version_code: number;
+    apk_url: string | null;
+    apk_published: boolean;
+    mandatory: boolean;
+    release_notes: string;
+  };
+};
+
 export type AutoApproveResponse = {
   success: boolean;
   auto_approve_max: number | null;
