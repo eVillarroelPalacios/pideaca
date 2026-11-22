@@ -14,10 +14,8 @@
       "package": "com.pideaca.app",
       "versionCode": 3,
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#f97316"
       },
       "predictiveBackGestureEnabled": false
     },
