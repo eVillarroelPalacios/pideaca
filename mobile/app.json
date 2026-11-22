@@ -41,6 +41,14 @@
       ],
       "expo-notifications",
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "-keep class androidx.work.** { *; }\n-keep class androidx.room.** { *; }\n-keep class * extends androidx.room.RoomDatabase { *; }\n-keep class androidx.startup.** { *; }"
+          }
+        }
+      ],
+      [
         "expo-audio",
         {
           "microphonePermission": "PideAca necesita acceder a tu micrófono para grabar una nota de voz con el detalle de la urgencia.",
