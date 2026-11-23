@@ -263,6 +263,7 @@ export type PayoutAccount = {
   country: string | null;
   wallet_type_id: number | null;
   wallet_type: string | null;
+  wallet_type_code: string | null;
   label: string | null;
   holder_name: string;
   cbu: string | null;

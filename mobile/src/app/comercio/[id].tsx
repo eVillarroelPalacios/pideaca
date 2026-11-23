@@ -27,6 +27,7 @@ import type {
   MarketProduct,
   MarketProductOptionGroup,
   MarketQuoteResponse,
+  PayoutAccount,
 } from '@/types/api';
 
 const NAVY = '#0c2a4d';
@@ -62,6 +63,21 @@ type NewCartLine = {
 };
 
 type Notice = { text: string; error: boolean };
+
+/** Metodo de checkout segun la cuenta de billetera (sin pedir nada mas). */
+function walletCheckoutMethod(account: PayoutAccount): 'mercadopago' | 'transferencia' | 'efectivo' {
+  const code = (account.wallet_type_code ?? '').toLowerCase();
+
+  if (code.includes('efectivo') || code === 'cash') {
+    return 'efectivo';
+  }
+
+  if (code.includes('mercadopago') || code === 'mp') {
+    return 'mercadopago';
+  }
+
+  return 'transferencia';
+}
 
 /** Mismas opciones de pago que el `<select>` de la web. */
 const PAYMENT_OPTIONS: ComboOption<string>[] = [
@@ -398,6 +414,7 @@ export default function ComercioCatalogScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<MarketOrder | null>(null);
   const [transferInfo, setTransferInfo] = useState<string | null>(null);
+  const [walletAccount, setWalletAccount] = useState<PayoutAccount | null>(null);
 
   // Checkout en dos pasos ("pagar antes de confirmar", igual que la web).
   const [useAltAddress, setUseAltAddress] = useState(false);
@@ -446,8 +463,8 @@ export default function ComercioCatalogScreen() {
 
     let active = true;
 
-    Promise.allSettled([api.marketCatalog(providerId), api.marketAddresses()])
-      .then(([catalogResult, addressResult]) => {
+    Promise.allSettled([api.marketCatalog(providerId), api.marketAddresses(), api.payoutAccounts()])
+      .then(([catalogResult, addressResult, walletResult]) => {
         if (!active) {
           return;
         }
@@ -568,6 +585,19 @@ export default function ComercioCatalogScreen() {
 
           if (primary) {
             setAddressId(primary.id);
+          }
+        }
+
+        // Metodo de pago desde la billetera configurada (si hay cuentas
+        // activas se usa la predeterminada y no se pregunta mas).
+        if (walletResult.status === 'fulfilled') {
+          const actives = walletResult.value.data.filter((item) => item.is_active);
+          const chosen =
+            actives.find((item) => item.is_default) ?? actives[0] ?? null;
+
+          if (chosen) {
+            setWalletAccount(chosen);
+            setPaymentMethod(walletCheckoutMethod(chosen));
           }
         }
       })
@@ -1441,12 +1471,24 @@ export default function ComercioCatalogScreen() {
 
             <View style={styles.payCard}>
               <Text style={styles.payTitle}>PAGO</Text>
-              <ComboField<string>
-                label="Forma de pago"
-                value={paymentMethod}
-                options={PAYMENT_OPTIONS}
-                onChange={setPaymentMethod}
-              />
+              {walletAccount ? (
+                <View style={styles.walletMethodBox}>
+                  <Text style={styles.fieldLabel}>Pagás con</Text>
+                  <Text style={styles.walletMethodText}>
+                    {walletAccount.wallet_type ?? 'Billetera'}
+                    {walletAccount.label ? ` · ${walletAccount.label}` : ''}
+                    {walletAccount.holder_name ? ` (${walletAccount.holder_name})` : ''}
+                    {walletAccount.is_default ? ' · Predeterminada' : ''}
+                  </Text>
+                </View>
+              ) : (
+                <ComboField<string>
+                  label="Forma de pago"
+                  value={paymentMethod}
+                  options={PAYMENT_OPTIONS}
+                  onChange={setPaymentMethod}
+                />
+              )}
               <View style={styles.payTotalRow}>
                 <Text style={styles.payTotalLabel}>Total a pagar:</Text>
                 <Text style={styles.payTotalValue}>{money(total)}</Text>
@@ -2094,6 +2136,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
+  },
+  walletMethodBox: {
+    backgroundColor: '#f8fafc',
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  walletMethodText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
   },
   payTotalRow: {
     alignItems: 'center',

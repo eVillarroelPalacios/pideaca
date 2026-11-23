@@ -5287,6 +5287,41 @@
                 FD_SHOP.addresses = [];
                 fdRenderShopCart();
             });
+        fdShopLoadWalletAccount();
+    }
+
+    /**
+     * Metodo de pago desde la billetera configurada (si hay cuentas
+     * activas se usa la predeterminada y no se pregunta mas).
+     */
+    function fdShopWalletMethod(account) {
+        var code = String((account && account.wallet_type_code) || '').toLowerCase();
+        if (code.indexOf('efectivo') !== -1 || code === 'cash') return 'efectivo';
+        if (code.indexOf('mercadopago') !== -1 || code === 'mp') return 'mercadopago';
+        return 'transferencia';
+    }
+
+    function fdShopLoadWalletAccount() {
+        fetch(window.APP_BASE + '/profile/payout-accounts', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            var list = (data && data.success && Array.isArray(data.data)) ? data.data : [];
+            var actives = list.filter(function (a) { return !!a.is_active; });
+            var chosen = null;
+            for (var i = 0; i < actives.length; i++) {
+                if (actives[i].is_default) { chosen = actives[i]; break; }
+            }
+            if (!chosen) chosen = actives[0] || null;
+
+            if (chosen) {
+                FD_SHOP.walletAccount = chosen;
+                FD_SHOP.paymentMethod = fdShopWalletMethod(chosen);
+                fdShopRenderPay();
+            }
+        })
+        .catch(function () {});
     }
 
     function fdRenderShopCart() {
@@ -5295,9 +5330,6 @@
 
         // Cualquier re-render nace de un cambio del carrito/entrega: el pago
         // procesado queda invalidado.
-        fdShopResetPayment();
-
-        // Cualquier re-render del carrito invalida el pago procesado.
         fdShopResetPayment();
 
         var prevAddress = document.getElementById('fd-shop-address');
@@ -5561,7 +5593,11 @@
 
     function fdShopPaymentMethod() {
         var sel = document.getElementById('fd-shop-payment');
-        return sel ? sel.value : 'efectivo';
+        if (sel && sel.value) {
+            FD_SHOP.paymentMethod = sel.value;
+            return sel.value;
+        }
+        return FD_SHOP.paymentMethod || 'efectivo';
     }
 
     function fdShopRefreshConfirm() {
@@ -5599,19 +5635,35 @@
         var method = fdShopPaymentMethod();
         var current = FD_SHOP.paymentMethod || method || 'efectivo';
         FD_SHOP.paymentMethod = current;
-        var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
-            if (key === 'mercado_pago') return '';
-            return '<option value="' + key + '"' + (key === current ? ' selected' : '') + '>'
-                + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
-        }).join('');
+
+        // Con billetera configurada no se pregunta: se paga con esa cuenta.
+        // Sin cuentas, combo generico como antes.
+        var walletHtml = '';
+        if (FD_SHOP.walletAccount) {
+            var wa = FD_SHOP.walletAccount;
+            var waLabel = (wa.wallet_type || 'Billetera')
+                + (wa.label ? ' · ' + wa.label : '')
+                + (wa.holder_name ? ' (' + wa.holder_name + ')' : '')
+                + (wa.is_default ? ' · Predeterminada' : '');
+            walletHtml = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:8px 10px;margin-bottom:4px;">'
+                + '<div style="font-size:11px;font-weight:600;color:#374151;">Pagás con</div>'
+                + '<div style="font-size:13px;font-weight:700;color:#0f172a;">' + escapeHtml(waLabel) + '</div></div>';
+        } else {
+            var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
+                if (key === 'mercado_pago') return '';
+                return '<option value="' + key + '"' + (key === current ? ' selected' : '') + '>'
+                    + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
+            }).join('');
+            walletHtml = '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
+                + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+                + paymentOptions
+                + '</select>'
+                + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div>';
+        }
 
         var html = '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">'
             + '<div style="font-size:11px;font-weight:800;color:#0c2a4d;letter-spacing:.4px;margin-bottom:8px;">PAGO</div>'
-            + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
-            + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
-            + paymentOptions
-            + '</select>'
-            + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div>'
+            + walletHtml;
             + '<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#0c2a4d;margin:10px 0;">'
             + '<span>Total a pagar:</span><span>' + fdMoney(total) + '</span></div>';
 

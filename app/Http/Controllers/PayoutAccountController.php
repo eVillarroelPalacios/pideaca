@@ -27,6 +27,7 @@ class PayoutAccountController extends Controller
             'country' => $a->country,
             'wallet_type_id' => $a->wallet_type_id,
             'wallet_type' => $a->walletType ? $a->walletType->name : null,
+            'wallet_type_code' => $a->walletType ? $a->walletType->code : null,
             'label' => $a->label,
             'holder_name' => $a->holder_name,
             'cbu' => $a->cbu,
