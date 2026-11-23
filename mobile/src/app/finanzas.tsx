@@ -18,10 +18,8 @@ import { FinancialProductCard } from '@/components/FinancialProductCard';
 import { FinancialRecipeModal } from '@/components/FinancialRecipeModal';
 import { FinancialSupplyCard } from '@/components/FinancialSupplyCard';
 import { FinancialSupplyModal } from '@/components/FinancialSupplyModal';
-import {
-  FinancialTabSelector,
-  type FinancialTab,
-} from '@/components/FinancialTabSelector';
+import type { FinancialTab } from '@/components/FinancialTabSelector';
+import { SectionDrawer } from '@/components/SectionDrawer';
 import { colors, radius, spacing } from '@/theme';
 import type {
   ProviderFinancialHealthResponse,
@@ -72,6 +70,7 @@ export default function FinanzasScreen() {
     null,
   );
   const [active, setActive] = useState<FinancialTab['key']>('productos');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -251,7 +250,31 @@ export default function FinanzasScreen() {
           </Text>
         </View>
 
-        <FinancialTabSelector tabs={TABS} active={active} onChange={setActive} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir secciones de salud financiera"
+          onPress={() => setSidebarOpen(true)}
+          style={styles.sectionsCard}
+        >
+          <View style={styles.sectionsInfo}>
+            <Text style={styles.sectionsLabel}>Sección</Text>
+            <Text style={styles.sectionsValue} numberOfLines={1}>
+              {TABS.find((tab) => tab.key === active)?.icon ?? ''}{' '}
+              {TABS.find((tab) => tab.key === active)?.label ?? ''}
+            </Text>
+          </View>
+          <Text style={styles.sectionsChevron}>›</Text>
+        </Pressable>
+
+        <SectionDrawer
+          visible={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          title="Salud financiera"
+          subtitle="Costo de producción y margen de cada producto"
+          items={TABS}
+          active={active}
+          onSelect={(key) => setActive(key as FinancialTab['key'])}
+        />
 
         <ErrorBanner message={error} />
 
@@ -493,6 +516,27 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: spacing.xs,
   },
+  sectionsCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#e5e7eb',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  sectionsInfo: { flex: 1, minWidth: 0 },
+  sectionsLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  sectionsValue: { color: colors.text, fontSize: 15, fontWeight: '700', marginTop: 2 },
+  sectionsChevron: { color: colors.muted, fontSize: 22, fontWeight: '600' },
   notice: {
     alignItems: 'flex-start',
     borderRadius: radius.md,
