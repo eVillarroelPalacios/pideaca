@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -801,6 +802,34 @@ export default function ComercioCatalogScreen() {
    * pedido, abre la pasarela y espera la acreditación (polling).
    */
   async function handleProceed() {
+    if (paying || submitting) {
+      return;
+    }
+
+    if (cart.length === 0) {
+      setPayError('Agregá al menos un producto antes de continuar.');
+      return;
+    }
+
+    if (deliveryType === 'delivery' && !addressId && !altAddressText) {
+      setPayError('Seleccioná la dirección de entrega o escribí una alternativa.');
+      return;
+    }
+
+    const methodLabel =
+      PAYMENT_OPTIONS.find((option) => option.value === paymentMethod)?.label ?? paymentMethod;
+
+    Alert.alert(
+      'Confirmar pago',
+      `¿Confirmás procesar el pago de ${money(total)} con ${methodLabel}?`,
+      [
+        { text: 'Volver', style: 'cancel' },
+        { text: 'Sí, pagar', onPress: () => void doProceed() },
+      ],
+    );
+  }
+
+  async function doProceed() {
     if (paying || submitting) {
       return;
     }

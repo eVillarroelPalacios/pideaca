@@ -4145,7 +4145,7 @@
 
     // ============ FAST DELIVERY: COMERCIOS Y MIS PEDIDOS DEL CLIENTE ============
 
-    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '', deliveryType: 'delivery', addressId: '', pickupAddress: '', useAltAddress: false, altAddressText: '', paymentReady: false, paying: false, payError: null, payPolling: false, payOrderId: null, payOrderNumber: '', payTotal: 0, payTimer: null };
+    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '', deliveryType: 'delivery', addressId: '', pickupAddress: '', useAltAddress: false, altAddressText: '', paymentMethod: 'efectivo', paymentReady: false, paying: false, payError: null, payPolling: false, payOrderId: null, payOrderNumber: '', payTotal: 0, payTimer: null, transferInfo: null };
     var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'transferencia_bancaria': 'Transferencia bancaria', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
     var fdShopsTimer = null;
     var fdShopsTabActive = 'favorites';
@@ -5302,9 +5302,7 @@
 
         var prevAddress = document.getElementById('fd-shop-address');
         var prevNotes = document.getElementById('fd-shop-notes');
-        var prevPayment = document.getElementById('fd-shop-payment');
         var keepNotes = prevNotes ? prevNotes.value : '';
-        var keepPayment = prevPayment ? prevPayment.value : '';
 
         if (prevAddress && prevAddress.value) FD_SHOP.addressId = String(prevAddress.value);
 
@@ -5347,12 +5345,6 @@
         var fee = isTakeaway ? 0 : Number(FD_SHOP.settings.delivery_fee || 0);
         var total = subtotal + fee;
 
-        var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
-            if (key === 'mercado_pago') return '';
-            return '<option value="' + key + '"' + (key === keepPayment ? ' selected' : '') + '>'
-                + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
-        }).join('');
-
         var units = 0;
         FD_SHOP.cart.forEach(function (line) { units += Number(line.quantity); });
 
@@ -5369,12 +5361,6 @@
             + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#0c2a4d;margin-top:6px;">'
             + '<span>Total estimado</span><span>' + fdMoney(total) + '</span></div>'
             + '</div>'
-            + '<div style="margin-top:10px;">'
-            + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
-            + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
-            + paymentOptions
-            + '</select>'
-            + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div></div>'
             + '<div style="margin-top:10px;">'
             + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nota para el comercio</label>'
             + '<textarea id="fd-shop-notes" rows="2" maxlength="1000" placeholder="Ej: sin cebolla, timbre roto, etc." style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">'
@@ -5611,12 +5597,23 @@
         var fee = FD_SHOP.deliveryType === 'takeaway' ? 0 : Number(FD_SHOP.settings.delivery_fee || 0);
         var total = subtotal + fee;
         var method = fdShopPaymentMethod();
-        var methodLabel = (typeof FD_PAYMENT_METHOD_LABELS !== 'undefined' && FD_PAYMENT_METHOD_LABELS[method]) || method;
+        var current = FD_SHOP.paymentMethod || method || 'efectivo';
+        FD_SHOP.paymentMethod = current;
+        var paymentOptions = Object.keys(FD_PAYMENT_METHOD_LABELS).map(function (key) {
+            if (key === 'mercado_pago') return '';
+            return '<option value="' + key + '"' + (key === current ? ' selected' : '') + '>'
+                + escapeHtml(FD_PAYMENT_METHOD_LABELS[key]) + '</option>';
+        }).join('');
 
         var html = '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">'
             + '<div style="font-size:11px;font-weight:800;color:#0c2a4d;letter-spacing:.4px;margin-bottom:8px;">PAGO</div>'
-            + '<div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:2px;"><span>Forma de pago</span><strong>' + escapeHtml(methodLabel) + '</strong></div>'
-            + '<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#0c2a4d;margin:6px 0 10px;"><span>Total a pagar:</span><span>' + fdMoney(total) + '</span></div>';
+            + '<label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Forma de pago</label>'
+            + '<select id="fd-shop-payment" onchange="fdShopPaymentChanged()" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;background:#fff;outline:none;">'
+            + paymentOptions
+            + '</select>'
+            + '<div id="fd-shop-transfer-info" style="display:none;margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;"></div>'
+            + '<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#0c2a4d;margin:10px 0;">'
+            + '<span>Total a pagar:</span><span>' + fdMoney(total) + '</span></div>';
 
         if (FD_SHOP.payError) {
             html += '<div style="font-size:12px;color:#b91c1d;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:8px 10px;margin-bottom:8px;">' + escapeHtml(FD_SHOP.payError) + '</div>';
@@ -5720,6 +5717,18 @@
         }
 
         FD_SHOP.payError = null;
+
+        var subtotalConfirm = 0;
+        FD_SHOP.cart.forEach(function (line) {
+            subtotalConfirm += Number(line.unit_price + (Number(line.options_extra) || 0)) * Number(line.quantity);
+        });
+        var feeConfirm = FD_SHOP.deliveryType === 'takeaway' ? 0 : Number(FD_SHOP.settings.delivery_fee || 0);
+        var totalConfirm = subtotalConfirm + feeConfirm;
+        var methodLabel = (typeof FD_PAYMENT_METHOD_LABELS !== 'undefined' && FD_PAYMENT_METHOD_LABELS[method]) || method;
+
+        if (!confirm('¿Confirmás procesar el pago de ' + fdMoney(totalConfirm) + ' con ' + methodLabel + '?')) {
+            return;
+        }
 
         if (method === 'efectivo') {
             FD_SHOP.paymentReady = true;
@@ -5868,6 +5877,7 @@
 
     function fdShopPaymentChanged() {
         var sel = document.getElementById('fd-shop-payment');
+        if (sel && sel.value) FD_SHOP.paymentMethod = sel.value;
         var box = document.getElementById('fd-shop-transfer-info');
         fdShopResetPayment();
         if (!sel || !box) return;
