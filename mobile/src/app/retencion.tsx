@@ -16,12 +16,12 @@ import {
   CampaignFormCard,
   type CampaignDraft,
 } from '@/components/CampaignFormCard';
-import {
-  CampaignTabSelector,
-  type CampaignState,
-  type CampaignTab,
+import type {
+  CampaignState,
+  CampaignTab,
 } from '@/components/CampaignTabSelector';
 import { ErrorBanner } from '@/components/ErrorBanner';
+import { SectionDrawer } from '@/components/SectionDrawer';
 import { colors, radius, spacing } from '@/theme';
 import type {
   ProviderMarketingRule,
@@ -173,6 +173,7 @@ export default function RetencionScreen() {
   const [data, setData] = useState<ProviderMarketingRulesResponse | null>(null);
   const [drafts, setDrafts] = useState<Partial<Record<string, CampaignDraft>>>({});
   const [active, setActive] = useState<string>(DEFAULT_TYPES[0]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -445,7 +446,55 @@ export default function RetencionScreen() {
           </Text>
         </View>
 
-        <CampaignTabSelector tabs={tabs} active={activeType} onChange={setActive} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir campañas de retención"
+          onPress={() => setSidebarOpen(true)}
+          style={styles.sectionsCard}
+        >
+          <View style={styles.sectionsInfo}>
+            <Text style={styles.sectionsLabel}>Campaña</Text>
+            <Text style={styles.sectionsValue} numberOfLines={1}>
+              {activeMeta.icon} {activeMeta.title}
+            </Text>
+          </View>
+          <Text style={styles.sectionsChevron}>›</Text>
+        </Pressable>
+
+        <SectionDrawer
+          visible={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          title="Retención"
+          subtitle="Campañas automáticas de fidelización"
+          items={tabs.map((tab) => ({
+            key: tab.type,
+            label: tab.label,
+            icon: tab.icon,
+            dotColor:
+              tab.state === 'active'
+                ? '#047857'
+                : tab.state === 'inactive'
+                  ? '#6b7280'
+                  : '#d97706',
+          }))}
+          active={activeType}
+          onSelect={(key) => setActive(key)}
+        />
+
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#047857' }]} />
+            <Text style={styles.legendText}>Activa</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#6b7280' }]} />
+            <Text style={styles.legendText}>Inactiva</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#d97706' }]} />
+            <Text style={styles.legendText}>Sin configurar</Text>
+          </View>
+        </View>
 
         <ErrorBanner message={error} />
 
@@ -550,6 +599,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
+  sectionsCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: '#e5e7eb',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  sectionsInfo: { flex: 1, minWidth: 0 },
+  sectionsLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  sectionsValue: { color: colors.text, fontSize: 15, fontWeight: '700', marginTop: 2 },
+  sectionsChevron: { color: colors.muted, fontSize: 22, fontWeight: '600' },
+  legend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  legendItem: { alignItems: 'center', flexDirection: 'row', gap: 5 },
+  legendDot: { borderRadius: radius.pill, height: 6, width: 6 },
+  legendText: { color: '#94a3b8', fontSize: 10, fontWeight: '600' },
   loadingCard: {
     alignItems: 'center',
     backgroundColor: colors.surface,

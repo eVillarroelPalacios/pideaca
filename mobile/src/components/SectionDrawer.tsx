@@ -14,6 +14,8 @@ export type SectionDrawerItem = {
   key: string;
   label: string;
   icon: string;
+  /** Color opcional de punto de estado (ej. campanas de retencion). */
+  dotColor?: string;
 };
 
 type Props = {
@@ -99,6 +101,9 @@ export function SectionDrawer({
                   <Text style={[styles.itemText, isActive && styles.itemTextActive]} numberOfLines={2}>
                     {item.label}
                   </Text>
+                  {item.dotColor ? (
+                    <View style={[styles.itemDot, { backgroundColor: item.dotColor }]} />
+                  ) : null}
                   {isActive ? <Text style={styles.itemChevron}>›</Text> : null}
                 </Pressable>
               );
@@ -168,6 +173,7 @@ const styles = StyleSheet.create({
   itemIcon: { fontSize: 18 },
   itemText: { color: colors.muted, flex: 1, fontSize: 13, fontWeight: '600' },
   itemTextActive: { color: colors.text, fontWeight: '800' },
+  itemDot: { borderRadius: radius.pill, height: 8, width: 8 },
   itemChevron: { color: colors.brand, fontSize: 18, fontWeight: '800' },
   closeButton: {
     alignItems: 'center',
