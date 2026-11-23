@@ -153,11 +153,13 @@
                     <div id="fd-shop-cart" style="border-top:1px solid #e5e7eb;padding:14px 18px;background:#f8fafc;"></div>
                     <div id="fd-shop-msg" style="display:none;font-size:12px;font-weight:600;color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:9px 12px;margin:10px 18px 0;"></div>
                     <div id="fd-shop-delivery" style="display:none;padding:12px 18px 0;"></div>
+                    <div id="fd-shop-pay" style="display:none;padding:12px 18px 0;"></div>
                     <div style="padding:12px 18px 16px;">
-                        <button type="button" id="fd-shop-submit" onclick="fdShopSubmit()" title="Confirmar compra" aria-label="Confirmar compra" style="display:none;width:100%;background:#D24C19;color:#fff;border:none;padding:12px 14px;border-radius:4px;cursor:pointer;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(210,76,25,.3);">
+                        <button type="button" id="fd-shop-submit" onclick="fdShopSubmit()" title="Confirmar pedido" aria-label="Confirmar pedido" disabled style="display:none;width:100%;background:#9ca3af;color:#fff;border:none;padding:12px 14px;border-radius:4px;cursor:not-allowed;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <span>Confirmar compra</span>
+                            <span>Confirmar y enviar pedido</span>
                         </button>
+                        <div id="fd-shop-confirm-hint" style="display:none;font-size:11px;color:#6b7280;text-align:center;margin-top:6px;">Primero debés procesar el pago para poder confirmar tu pedido.</div>
                     </div>
                 </div>
             </section>

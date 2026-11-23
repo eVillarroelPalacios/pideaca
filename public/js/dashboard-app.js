@@ -4145,7 +4145,7 @@
 
     // ============ FAST DELIVERY: COMERCIOS Y MIS PEDIDOS DEL CLIENTE ============
 
-    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '', deliveryType: 'delivery', addressId: '', pickupAddress: '' };
+    var FD_SHOP = { providerId: null, providerName: '', catalog: null, cart: [], addresses: null, settings: {}, busy: false, categoryFilter: '', deliveryType: 'delivery', addressId: '', pickupAddress: '', useAltAddress: false, altAddressText: '', paymentReady: false, paying: false, payError: null, payPolling: false, payOrderId: null, payOrderNumber: '', payTotal: 0, payTimer: null };
     var FD_PAYMENT_METHOD_LABELS = { 'efectivo': 'Efectivo', 'transfer': 'Transferencia', 'transferencia': 'Transferencia', 'transferencia_bancaria': 'Transferencia bancaria', 'mercado_pago': 'Mercado Pago', 'mercadopago': 'Mercado Pago' };
     var fdShopsTimer = null;
     var fdShopsTabActive = 'favorites';
@@ -4760,9 +4760,22 @@
     function closeFdShop() {
         var overlay = document.getElementById('fd-shop-overlay');
         if (overlay) overlay.style.display = 'none';
+        if (FD_SHOP.payTimer) {
+            clearInterval(FD_SHOP.payTimer);
+            FD_SHOP.payTimer = null;
+        }
         FD_SHOP.providerId = null;
         FD_SHOP.catalog = null;
         FD_SHOP.cart = [];
+        FD_SHOP.paymentReady = false;
+        FD_SHOP.paying = false;
+        FD_SHOP.payError = null;
+        FD_SHOP.payPolling = false;
+        FD_SHOP.payOrderId = null;
+        FD_SHOP.payOrderNumber = '';
+        FD_SHOP.transferInfo = null;
+        FD_SHOP.useAltAddress = false;
+        FD_SHOP.altAddressText = '';
         fdShopRepeatQueue = null;
         fdShopRenderDelivery();
         fdShopPaintBadge();
@@ -5249,11 +5262,9 @@
         if (!units) {
             badge.style.display = 'none';
             badge.innerHTML = '';
-            if (confirmBtn) {
-                confirmBtn.style.display = 'none';
-                confirmBtn.disabled = false;
-                confirmBtn.title = 'Confirmar compra';
-            }
+            var confirmBtn = document.getElementById('fd-shop-submit');
+            if (confirmBtn) confirmBtn.style.display = 'none';
+            fdShopRefreshConfirm();
             return;
         }
 
@@ -5281,6 +5292,13 @@
     function fdRenderShopCart() {
         var el = document.getElementById('fd-shop-cart');
         if (!el) return;
+
+        // Cualquier re-render nace de un cambio del carrito/entrega: el pago
+        // procesado queda invalidado.
+        fdShopResetPayment();
+
+        // Cualquier re-render del carrito invalida el pago procesado.
+        fdShopResetPayment();
 
         var prevAddress = document.getElementById('fd-shop-address');
         var prevNotes = document.getElementById('fd-shop-notes');
@@ -5363,10 +5381,11 @@
             + escapeHtml(keepNotes) + '</textarea></div>';
 
         var submitBtn = document.getElementById('fd-shop-submit');
-        if (submitBtn && !submitBtn.disabled) {
-            submitBtn.title = 'Confirmar compra · ' + fdMoney(total);
+        if (submitBtn) {
+            submitBtn.title = 'Confirmar y enviar pedido · ' + fdMoney(total);
             submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-                + '<span>Confirmar compra · ' + fdMoney(total) + '</span>';
+                + '<span>Confirmar y enviar pedido · ' + fdMoney(total) + '</span>';
+            fdShopRefreshConfirm();
         }
 
         if (keepNotes) {
@@ -5376,6 +5395,7 @@
 
         fdShopRenderDelivery();
         fdShopPaintBadge();
+        fdShopRenderPay();
     }
 
     function fdShopSetDeliveryType(type) {
@@ -5453,7 +5473,13 @@
                             + (a.is_primary ? ' · principal' : '')
                             + '</option>';
                     }).join('')
-                    + '</select></div>';
+                    + '</select>'
+                    + '<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;font-weight:700;color:#0f172a;cursor:pointer;">'
+                    + '<input type="checkbox" id="fd-shop-alt-check"' + (FD_SHOP.useAltAddress ? ' checked' : '') + ' onchange="fdShopToggleAlt(this.checked)" style="width:16px;height:16px;accent-color:#D24C19;" /> Enviar a una dirección diferente</label>'
+                    + '<div id="fd-shop-alt-wrap" style="margin-top:8px;' + (FD_SHOP.useAltAddress ? '' : 'display:none;') + '">'
+                    + '<label for="fd-shop-alt-text" style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Nueva dirección de entrega (Opcional)</label>'
+                    + '<textarea id="fd-shop-alt-text" rows="3" maxlength="500" placeholder="Ej: Calle falsa 123, Piso 4, dpto B, Ciudad..." oninput="fdShopAltText(this.value)" style="width:100%;padding:7px 9px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;outline:none;resize:vertical;">' + escapeHtml(FD_SHOP.altAddressText || '') + '</textarea></div>'
+                    + '</div>';
             }
         } else {
             html += '<div style="margin-top:9px;padding:9px 11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#475569;display:flex;gap:8px;align-items:flex-start;">'
@@ -5467,6 +5493,349 @@
 
     function fdShopRememberAddress(value) {
         FD_SHOP.addressId = value ? String(value) : '';
+        fdShopResetPayment();
+    }
+
+    function fdShopToggleAlt(on) {
+        FD_SHOP.useAltAddress = !!on;
+        if (!on) FD_SHOP.altAddressText = '';
+        var wrap = document.getElementById('fd-shop-alt-wrap');
+        if (wrap) wrap.style.display = on ? '' : 'none';
+        fdShopResetPayment();
+    }
+
+    function fdShopAltText(value) {
+        FD_SHOP.altAddressText = String(value || '');
+        fdShopResetPayment();
+    }
+
+    function fdShopAltTextValue() {
+        return FD_SHOP.useAltAddress ? String(FD_SHOP.altAddressText || '').trim() : '';
+    }
+
+    /* Crear el pedido (se usa en "Proceder" para MP o en "Confirmar" para el resto). */
+    function fdShopCreateOrder() {
+        var isTakeaway = FD_SHOP.deliveryType === 'takeaway';
+        var addressSel = document.getElementById('fd-shop-address');
+        var altText = fdShopAltTextValue();
+        var addressId = null;
+
+        if (!isTakeaway && !altText) {
+            addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
+        }
+
+        var paymentEl = document.getElementById('fd-shop-payment');
+        var notesEl = document.getElementById('fd-shop-notes');
+
+        return fetch(window.APP_BASE+"/api/orders", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                provider_id: FD_SHOP.providerId,
+                delivery_type: FD_SHOP.deliveryType,
+                address_id: addressId,
+                delivery_address_text: altText !== '' ? altText : null,
+                payment_method: paymentEl ? paymentEl.value : 'efectivo',
+                notes: notesEl ? notesEl.value.trim() : '',
+                items: FD_SHOP.cart.map(function (line) {
+                    return {
+                        product_id: line.product_id,
+                        variant_id: line.variant_id,
+                        quantity: line.quantity,
+                        options: line.options
+                    };
+                })
+            })
+        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
+    }
+
+    /**
+     * El pago debe procesarse antes de confirmar (igual que la app movil).
+     * Cualquier cambio del carrito, entrega, direccion o medio invalida el
+     * pago ya procesado.
+     */
+    function fdShopResetPayment() {
+        if (FD_SHOP.payTimer) {
+            clearInterval(FD_SHOP.payTimer);
+            FD_SHOP.payTimer = null;
+        }
+        FD_SHOP.paymentReady = false;
+        FD_SHOP.paying = false;
+        FD_SHOP.payError = null;
+        FD_SHOP.payPolling = false;
+        FD_SHOP.payOrderId = null;
+        FD_SHOP.payOrderNumber = '';
+        fdShopRefreshConfirm();
+        fdShopRenderPay();
+    }
+
+    function fdShopPaymentMethod() {
+        var sel = document.getElementById('fd-shop-payment');
+        return sel ? sel.value : 'efectivo';
+    }
+
+    function fdShopRefreshConfirm() {
+        var btn = document.getElementById('fd-shop-submit');
+        var hint = document.getElementById('fd-shop-confirm-hint');
+        if (!btn) return;
+        var ready = !!FD_SHOP.paymentReady && FD_SHOP.cart.length > 0 && !FD_SHOP.busy && !FD_SHOP.paying;
+        btn.disabled = !ready;
+        btn.style.background = ready ? '#D24C19' : '#9ca3af';
+        btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+        btn.style.opacity = '1';
+        btn.style.boxShadow = ready ? '0 6px 16px rgba(210,76,25,.3)' : 'none';
+        if (hint) hint.style.display = FD_SHOP.cart.length && !FD_SHOP.paymentReady ? 'block' : 'none';
+    }
+
+    /** Seccion PAGO: total, boton de proceder y estado del pago. */
+    function fdShopRenderPay() {
+        var box = document.getElementById('fd-shop-pay');
+        if (!box) return;
+
+        if (!FD_SHOP.cart.length) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        box.style.display = 'block';
+
+        var subtotal = 0;
+        FD_SHOP.cart.forEach(function (line) {
+            subtotal += Number(line.unit_price + (Number(line.options_extra) || 0)) * Number(line.quantity);
+        });
+        var fee = FD_SHOP.deliveryType === 'takeaway' ? 0 : Number(FD_SHOP.settings.delivery_fee || 0);
+        var total = subtotal + fee;
+        var method = fdShopPaymentMethod();
+        var methodLabel = (typeof FD_PAYMENT_METHOD_LABELS !== 'undefined' && FD_PAYMENT_METHOD_LABELS[method]) || method;
+
+        var html = '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">'
+            + '<div style="font-size:11px;font-weight:800;color:#0c2a4d;letter-spacing:.4px;margin-bottom:8px;">PAGO</div>'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;color:#374151;margin-bottom:2px;"><span>Forma de pago</span><strong>' + escapeHtml(methodLabel) + '</strong></div>'
+            + '<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#0c2a4d;margin:6px 0 10px;"><span>Total a pagar:</span><span>' + fdMoney(total) + '</span></div>';
+
+        if (FD_SHOP.payError) {
+            html += '<div style="font-size:12px;color:#b91c1d;background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:8px 10px;margin-bottom:8px;">' + escapeHtml(FD_SHOP.payError) + '</div>';
+        }
+
+        html += '<button type="button" id="fd-shop-pay-btn" onclick="fdShopProceed()"'
+            + ((FD_SHOP.paying || FD_SHOP.busy) ? ' disabled' : '')
+            + ' style="width:100%;background:#1d4ed8;color:#fff;border:none;padding:11px 12px;border-radius:4px;cursor:' + ((FD_SHOP.paying || FD_SHOP.busy) ? 'wait' : 'pointer') + ';display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;opacity:' + ((FD_SHOP.paying || FD_SHOP.busy) ? '0.65' : '1') + ';">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+            + '<span>' + (FD_SHOP.paying ? 'Procesando pago…' : '🔒 Proceder al pago') + '</span></button>';
+
+        if (FD_SHOP.paymentReady) {
+            html += '<div style="font-size:12px;color:#047857;text-align:center;margin-top:8px;font-weight:600;">Pago listo. Ya podés confirmar tu pedido.</div>';
+        }
+
+        if (FD_SHOP.payPolling) {
+            html += '<div style="text-align:center;margin-top:8px;font-size:12px;color:#374151;">Esperando la acreditación en Mercado Pago…<br><button type="button" onclick="fdShopVerifyPayment()" style="margin-top:6px;background:#fff;color:#0c2a4d;border:1px solid #d1d5db;border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">Verificar ahora</button></div>';
+        }
+
+        if (FD_SHOP.transferInfo) {
+            html += '<div style="margin-top:8px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;">' + FD_SHOP.transferInfo + '</div>';
+        }
+
+        html += '</div>';
+        box.innerHTML = html;
+    }
+
+    function fdShopPaymentStatus(orderId) {
+        return fetch(window.APP_BASE + '/api/orders/' + orderId + '/payment-status', {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
+    }
+
+    function fdShopPollPayment(orderId) {
+        if (FD_SHOP.payTimer) clearInterval(FD_SHOP.payTimer);
+        FD_SHOP.payPolling = true;
+        fdShopRenderPay();
+        FD_SHOP.payTimer = setInterval(function () {
+            fdShopPaymentStatus(orderId).then(function (res) {
+                if (res.ok && res.data && res.data.charge && res.data.charge.paid) {
+                    if (FD_SHOP.payTimer) { clearInterval(FD_SHOP.payTimer); FD_SHOP.payTimer = null; }
+                    FD_SHOP.payPolling = false;
+                    FD_SHOP.paymentReady = true;
+                    fdShopShowMsg('Pago acreditado. Ya podés confirmar tu pedido.', false);
+                    fdShopRefreshConfirm();
+                    fdShopRenderPay();
+                }
+            }).catch(function () {});
+        }, 5000);
+    }
+
+    function fdShopVerifyPayment() {
+        var orderId = FD_SHOP.payOrderId;
+        if (!orderId) return;
+        fdShopPaymentStatus(orderId).then(function (res) {
+            if (res.ok && res.data && res.data.charge && res.data.charge.paid) {
+                if (FD_SHOP.payTimer) { clearInterval(FD_SHOP.payTimer); FD_SHOP.payTimer = null; }
+                FD_SHOP.payPolling = false;
+                FD_SHOP.paymentReady = true;
+                fdShopShowMsg('Pago acreditado. Ya podés confirmar tu pedido.', false);
+                fdShopRefreshConfirm();
+                fdShopRenderPay();
+            } else {
+                FD_SHOP.payError = 'El pago todavía no está acreditado. Si ya pagaste, esperá unos segundos y reintentá.';
+                fdShopRenderPay();
+            }
+        }).catch(function () {
+            FD_SHOP.payError = 'No pudimos verificar el pago. Intentá de nuevo.';
+            fdShopRenderPay();
+        });
+    }
+
+    /**
+     * Paso 1 del checkout ("Proceder al pago"). Efectivo: habilita directo.
+     * Transferencia: muestra los datos y habilita. Mercado Pago: crea el
+     * pedido, abre la pasarela en pestaña nueva y espera la acreditación.
+     */
+    function fdShopProceed() {
+        if (FD_SHOP.paying || FD_SHOP.busy) return;
+        if (!FD_SHOP.cart.length) {
+            fdShopShowMsg('Agregá al menos un producto antes de continuar.', true);
+            return;
+        }
+
+        var isTakeaway = FD_SHOP.deliveryType === 'takeaway';
+        var addressSel = document.getElementById('fd-shop-address');
+        var altText = fdShopAltTextValue();
+        var method = fdShopPaymentMethod();
+
+        if (!isTakeaway && !addressSel && !altText && !(FD_SHOP.addresses && FD_SHOP.addresses.length)) {
+            fdShopShowMsg('Seleccioná la dirección de entrega.', true);
+            return;
+        }
+
+        if (!isTakeaway && !altText) {
+            var addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
+            if (isNaN(addressId)) {
+                fdShopShowMsg('Seleccioná la dirección de entrega o escribí una alternativa.', true);
+                return;
+            }
+        }
+
+        FD_SHOP.payError = null;
+
+        if (method === 'efectivo') {
+            FD_SHOP.paymentReady = true;
+            fdShopShowMsg('Pagás en efectivo al recibir. Ya podés confirmar tu pedido.', false);
+            fdShopRefreshConfirm();
+            fdShopRenderPay();
+            return;
+        }
+
+        if (method === 'transfer' || method === 'transferencia' || method === 'transferencia_bancaria') {
+            FD_SHOP.paying = true;
+            fdShopRenderPay();
+            fdShopShowTransferInfo(function () {
+                FD_SHOP.paying = false;
+                FD_SHOP.paymentReady = true;
+                fdShopShowMsg('Hacé la transferencia con los datos mostrados y confirmá tu pedido.', false);
+                fdShopRefreshConfirm();
+                fdShopRenderPay();
+            });
+            return;
+        }
+
+        if (method === 'mercadopago' || method === 'mercado_pago') {
+            FD_SHOP.paying = true;
+            fdShopRenderPay();
+
+            // Se abre en el gesto del clic (sino el bloqueador de popups lo
+            // frena); cuando llegue el init_point se navega esa misma pestaña.
+            var mpWin = null;
+            try { mpWin = window.open('about:blank', '_blank'); } catch (e) { mpWin = null; }
+
+            fdShopCreateOrder().then(function (res) {
+                if (!res.ok) {
+                    if (mpWin && !mpWin.closed) { try { mpWin.close(); } catch (e2) {} }
+                    var message = (res.data && res.data.message) || 'No se pudo registrar el pedido.';
+                    if (res.data && res.data.errors) {
+                        var firstKey = Object.keys(res.data.errors)[0];
+                        message = res.data.errors[firstKey][0];
+                    }
+                    FD_SHOP.paying = false;
+                    FD_SHOP.payError = message;
+                    fdShopRenderPay();
+                    fdShopShowMsg(message, true);
+                    return null;
+                }
+                return res.data;
+            }).then(function (data) {
+                if (!data) return;
+                var order = data.order || {};
+                FD_SHOP.payOrderId = order.id;
+                FD_SHOP.payOrderNumber = order.order_number || '';
+
+                return fetch(window.APP_BASE + '/checkout/mercadopago/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ order_type: 'order', order_id: order.id })
+                }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+            }).then(function (r) {
+                if (!r) return;
+                FD_SHOP.paying = false;
+
+                if (r.ok && r.data && r.data.init_point) {
+                    FD_SHOP.transferInfo = null;
+                    if (mpWin && !mpWin.closed) {
+                        mpWin.location.href = r.data.init_point;
+                    } else {
+                        window.location.href = r.data.init_point;
+                        return;
+                    }
+                    fdShopShowMsg('Completá el pago en Mercado Pago y volvé a esta pestaña.', false);
+                    fdShopPollPayment(FD_SHOP.payOrderId);
+                } else {
+                    if (mpWin && !mpWin.closed) { try { mpWin.close(); } catch (e2) {} }
+                    FD_SHOP.payError = (r.data && r.data.message) || 'No pudimos iniciar el pago con Mercado Pago.';
+                    fdShopRenderPay();
+                }
+            }).catch(function () {
+                if (mpWin && !mpWin.closed) { try { mpWin.close(); } catch (e2) {} }
+                FD_SHOP.paying = false;
+                FD_SHOP.payError = 'No pudimos conectar con Mercado Pago.';
+                fdShopRenderPay();
+            });
+
+            return;
+        }
+
+        FD_SHOP.payError = 'Elegí un medio de pago válido.';
+        fdShopRenderPay();
+    }
+
+    function fdShopShowTransferInfo(done) {
+        fdShopMatrix(function (res) {
+            var m = (res && res.data) || {};
+            var cbu = m.matrix_AR_CBU || m['matrix_AR_CBU'];
+            var alias = m.matrix_AR_ALIAS || m['matrix_AR_ALIAS'];
+            var holder = m.matrix_AR_HOLDER || m['matrix_AR_HOLDER'] || 'PideAca';
+            var box = document.getElementById('fd-shop-transfer-info');
+            var html = (cbu || alias)
+                ? 'Transferí a <b>' + escapeHtml(holder) + '</b> · CBU <b>' + escapeHtml(cbu || '—') + '</b>'
+                    + (alias ? ' · Alias <b>' + escapeHtml(alias) + '</b>' : '')
+                    + '.<br>Usá como referencia tu nombre y el total del pedido.'
+                : 'Te avisaremos por este medio los datos para transferir.';
+
+            if (box) {
+                box.innerHTML = html;
+                box.style.display = 'block';
+            }
+
+            FD_SHOP.transferInfo = html;
+            fdShopRenderPay();
+            if (done) done();
+        });
     }
 
     function fdShopShowMsg(text, isError) {
@@ -5500,6 +5869,7 @@
     function fdShopPaymentChanged() {
         var sel = document.getElementById('fd-shop-payment');
         var box = document.getElementById('fd-shop-transfer-info');
+        fdShopResetPayment();
         if (!sel || !box) return;
         if (sel.value !== 'transferencia' && sel.value !== 'transferencia_bancaria') {
             box.style.display = 'none';
@@ -5524,8 +5894,29 @@
         });
     }
 
+    /* Pantalla de exito compartida por el flujo normal y el de MP. */
+    function fdShopShowSuccess(orderNumber, paidByTransfer) {
+        FD_SHOP.cart = [];
+        fdShopRenderDelivery();
+        fdShopPaintBadge();
+        document.getElementById('fd-shop-cart').innerHTML =
+            '<div style="text-align:center;padding:6px 0;">'
+            + '<div style="font-size:14px;font-weight:700;color:#047857;margin-bottom:6px;">Pedido registrado</div>'
+            + '<div style="font-size:12px;color:#64748b;">'
+            + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
+            + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
+            + (paidByTransfer ? '<div id="fd-order-transfer-box" style="margin-top:10px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;text-align:left;">Cargando datos para transferir…</div>' : '')
+            + '<button type="button" onclick="fdShopGo(\'mis-pedidos\');" title="Ver mis pedidos" aria-label="Ver mis pedidos" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
+            + '</button>'
+            + '</div>';
+
+        var cartEl = document.getElementById('fd-shop-cart');
+        if (cartEl) cartEl.scrollTop = 0;
+    }
+
     function fdShopSubmit() {
-        if (FD_SHOP.busy) return;
+        if (FD_SHOP.busy || FD_SHOP.paying) return;
 
         if (!FD_SHOP.cart.length) {
             fdShopShowMsg('Agregá al menos un producto antes de confirmar.', true);
@@ -5533,18 +5924,24 @@
         }
 
         var isTakeaway = FD_SHOP.deliveryType === 'takeaway';
+        var altText = fdShopAltTextValue();
         var addressId = null;
 
-        if (!isTakeaway) {
+        if (!isTakeaway && !altText) {
             var addressSel = document.getElementById('fd-shop-address');
             addressId = addressSel ? parseInt(addressSel.value, 10) : NaN;
 
             if (isNaN(addressId)) {
-                fdShopShowMsg('Seleccioná la dirección de entrega.', true);
+                fdShopShowMsg('Seleccioná la dirección de entrega o escribí una alternativa.', true);
                 return;
             }
 
             FD_SHOP.addressId = String(addressId);
+        }
+
+        if (!FD_SHOP.paymentReady) {
+            fdShopShowMsg('Primero debés procesar el pago para poder confirmar tu pedido.', true);
+            return;
         }
 
         var notesEl = document.getElementById('fd-shop-notes');
@@ -5555,6 +5952,7 @@
             provider_id: FD_SHOP.providerId,
             delivery_type: FD_SHOP.deliveryType,
             address_id: addressId,
+            delivery_address_text: altText !== '' ? altText : null,
             payment_method: paymentEl ? paymentEl.value : 'efectivo',
             notes: notesEl ? notesEl.value.trim() : '',
             items: FD_SHOP.cart.map(function (line) {
@@ -5596,42 +5994,69 @@
                 }
                 // Repinta el carrito: conserva dirección/nota/pago y devuelve
                 // el botón con el total por si el usuario reintenta.
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.style.opacity = '1';
-                }
                 fdRenderShopCart();
+                fdShopRefreshConfirm();
                 fdShopShowMsg(message, true);
                 return;
             }
 
-            var orderNumber = (res.data.order && res.data.order.order_number) || '';
-            var paidByTransfer = FD_SHOP.lastPaymentMethod === 'transferencia' || FD_SHOP.lastPaymentMethod === 'transferencia_bancaria';
-            var paidWithMP = FD_SHOP.lastPaymentMethod === 'mercadopago' || FD_SHOP.lastPaymentMethod === 'mercado_pago';
+            var paymentMethod = paymentEl ? paymentEl.value : 'efectivo';
 
-            FD_SHOP.cart = [];
-            fdShopRenderDelivery();
-            fdShopPaintBadge();
-            document.getElementById('fd-shop-cart').innerHTML =
-                '<div style="text-align:center;padding:6px 0;">'
-                + '<div style="font-size:14px;font-weight:700;color:#047857;margin-bottom:6px;">Pedido registrado</div>'
-                + '<div style="font-size:12px;color:#64748b;">'
-                + (orderNumber ? 'Número <b>' + escapeHtml(orderNumber) + '</b>. ' : '')
-                + 'El comercio va a confirmar tu pedido y lo vas a ver en Mis Pedidos.</div>'
-                + (paidByTransfer ? '<div id="fd-order-transfer-box" style="margin-top:10px;font-size:12px;line-height:1.6;color:#0c2a4d;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:9px 12px;text-align:left;">Cargando datos para transferir…</div>' : '')
-                + '<button type="button" onclick="fdShopGo(\'mis-pedidos\');" title="Ver mis pedidos" aria-label="Ver mis pedidos" style="margin-top:10px;background:#0c2a4d;color:#fff;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">'
-                + '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'
-                + '</button>'
-                + '</div>';
+            // Mercado Pago: el pedido ya se creó en "Proceder al pago"; acá
+            // solo se re-verifica la acreditación antes de cerrar la compra.
+            if (paymentMethod === 'mercadopago' || paymentMethod === 'mercado_pago') {
+                if (!FD_SHOP.payOrderId) {
+                    fdShopShowMsg('Primero debés procesar el pago para poder confirmar tu pedido.', true);
+                    return;
+                }
 
-            var cartEl = document.getElementById('fd-shop-cart');
-            if (cartEl) cartEl.scrollTop = 0;
+                FD_SHOP.busy = true;
+                fdShopRefreshConfirm();
 
-            if (paidWithMP) {
-                var mpOrderId = res.data.order && res.data.order.id;
-                fdShopStartMercadoPago(mpOrderId);
+                fdShopPaymentStatus(FD_SHOP.payOrderId).then(function (res) {
+                    FD_SHOP.busy = false;
+
+                    if (!(res.ok && res.data && res.data.charge && res.data.charge.paid)) {
+                        fdShopShowMsg('El pago todavía no está acreditado. Verificá el pago e intentá de nuevo.', true);
+                        fdShopRefreshConfirm();
+                        return;
+                    }
+
+                    if (FD_SHOP.payTimer) { clearInterval(FD_SHOP.payTimer); FD_SHOP.payTimer = null; }
+                    FD_SHOP.payPolling = false;
+                    var orderNumber = FD_SHOP.payOrderNumber || '';
+                    FD_SHOP.payOrderId = null;
+                    FD_SHOP.payOrderNumber = '';
+                    FD_SHOP.useAltAddress = false;
+                    FD_SHOP.altAddressText = '';
+                    FD_SHOP.paymentReady = false;
+                    fdShopShowSuccess(orderNumber, false);
+                    fdShopRefreshConfirm();
+                    fdShopRenderPay();
+                    loadMyOrders();
+                }).catch(function () {
+                    FD_SHOP.busy = false;
+                    fdShopShowMsg('No pudimos verificar el pago. Intentá de nuevo.', true);
+                    fdShopRefreshConfirm();
+                });
+
                 return;
             }
+
+            var orderNumber = (res.data.order && res.data.order.order_number) || '';
+            var paidByTransfer = paymentMethod === 'transferencia' || paymentMethod === 'transferencia_bancaria';
+
+            FD_SHOP.useAltAddress = false;
+            FD_SHOP.altAddressText = '';
+            FD_SHOP.paymentReady = false;
+            FD_SHOP.paying = false;
+            FD_SHOP.payError = null;
+            FD_SHOP.payPolling = false;
+            FD_SHOP.payOrderId = null;
+            FD_SHOP.payOrderNumber = '';
+            fdShopShowSuccess(orderNumber, paidByTransfer);
+            fdShopRefreshConfirm();
+            fdShopRenderPay();
 
             if (paidByTransfer) {
                 fdShopMatrix(function (res) {
@@ -5656,11 +6081,8 @@
         })
         .catch(function () {
             FD_SHOP.busy = false;
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-            }
             fdRenderShopCart();
+            fdShopRefreshConfirm();
             fdShopShowMsg('No se pudo conectar con el servidor.', true);
         });
     }
