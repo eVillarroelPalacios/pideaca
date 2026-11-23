@@ -12877,19 +12877,38 @@
         if (acts) {
             if (items.every(function (it) { return it.ok; })) {
                 var apkUrl = ((acts.dataset && acts.dataset.apkUrl) || '').trim();
-                var phoneDigits = '';
-                try {
-                    var me = (typeof profileData !== 'undefined' && profileData) ? profileData : null;
-                    phoneDigits = String((me && me.phone) || '').replace(/\D/g, '');
-                } catch (e) { phoneDigits = ''; }
+                var apkVersion = ((acts.dataset && acts.dataset.apkVersion) || '').trim();
+                if (!apkVersion && apkUrl) {
+                    var m = apkUrl.match(/pideaca-v([0-9]+\.[0-9]+\.[0-9]+)\.apk/i);
+                    if (m) apkVersion = m[1];
+                }
                 if (apkUrl) {
-                    var wa = phoneDigits
-                        ? '<a href="https://wa.me/' + phoneDigits + '?text=' + encodeURIComponent('Descargá PideAca: ' + apkUrl) + '" target="_blank" rel="noopener" style="display:inline-block;background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;color:#0c2a4d;text-decoration:none;">Enviarme por WhatsApp</a>'
-                        : '';
-                    acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;margin-bottom:12px;">Cuenta lista. Descargá la app en tu teléfono.</div>'
-                        + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-                        + '<a href="' + apkUrl + '" style="display:inline-block;background:#D24C19;color:#fff;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;">Descargar para Android</a>'
-                        + wa + '</div>';
+                    var stepNum = 'display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:9999px;background:#D24C19;color:#fff;font-size:12px;font-weight:800;flex:none;';
+                    var stepBox = 'display:flex;gap:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:4px;margin-bottom:8px;background:#fff;';
+                    var stepText = 'font-size:13px;color:#0f172a;line-height:1.5;';
+                    var stepHint = 'font-size:12px;color:#64748b;line-height:1.5;';
+                    acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;margin-bottom:12px;">Cuenta lista. Instalá la app siguiendo estos pasos.</div>'
+                        + '<div style="' + stepBox + '">'
+                        + '<span style="' + stepNum + '">1</span>'
+                        + '<div style="flex:1;min-width:0;"><div style="' + stepText + '"><strong>Descargá la app</strong>'
+                        + (apkVersion ? ' (versión ' + apkVersion + ')' : '') + '</div>'
+                        + '<div style="margin-top:8px;"><a href="' + apkUrl + '" style="display:inline-block;background:#D24C19;color:#fff;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;">Descargar para Android</a></div></div>'
+                        + '</div>'
+                        + '<div style="' + stepBox + '">'
+                        + '<span style="' + stepNum + '">2</span>'
+                        + '<div style="flex:1;min-width:0;"><div style="' + stepText + '"><strong>Permitila cuando te lo pida</strong></div>'
+                        + '<div style="' + stepHint + '">Al abrir la descarga, Android pide permitir "instalar apps desconocidas" para el navegador. Tocá <strong>Permitir</strong>.</div></div>'
+                        + '</div>'
+                        + '<div style="' + stepBox + '">'
+                        + '<span style="' + stepNum + '">3</span>'
+                        + '<div style="flex:1;min-width:0;"><div style="' + stepText + '"><strong>Abrí el archivo e instalá</strong></div>'
+                        + '<div style="' + stepHint + '">Abrí el archivo descargado y tocá <strong>Instalar</strong>. Si te pide actualizar una versión anterior, aceptá.</div></div>'
+                        + '</div>'
+                        + '<div style="' + stepBox + '">'
+                        + '<span style="' + stepNum + '">4</span>'
+                        + '<div style="flex:1;min-width:0;"><div style="' + stepText + '"><strong>Abrí PideAca e ingresá</strong></div>'
+                        + '<div style="margin-top:8px;"><a href="pideaca://" style="display:inline-block;background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:8px 16px;font-size:13px;font-weight:700;color:#0c2a4d;text-decoration:none;">Abrir PideAca</a></div></div>'
+                        + '</div>';
                 } else {
                     acts.innerHTML = '<div style="padding:10px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;font-size:13px;color:#047857;">Cuenta lista. La descarga estará disponible próximamente.</div>';
                 }

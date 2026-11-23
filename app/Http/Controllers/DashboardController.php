@@ -116,6 +116,7 @@ class DashboardController extends Controller
             'permissionModules' => $permissionModules,
             'activeRole' => $activeRole,
             'androidApkUrl' => config('app.android_apk_url'),
+            'androidApkVersion' => config('app.android_version_name'),
         ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 }
