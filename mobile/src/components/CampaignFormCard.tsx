@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   ComboField,
@@ -71,6 +72,10 @@ function tokensText(tokens: string[]): string {
   return `${tokens.slice(0, -1).join(', ')} y ${tokens[tokens.length - 1]}`;
 }
 
+function missingTokens(value: string, required: string[]): string[] {
+  return required.filter((token) => !value.includes(token));
+}
+
 /**
  * Tarjeta de una campaña de retención.
  *
@@ -93,6 +98,42 @@ export function CampaignFormCard({
   onSave,
 }: Props) {
   const badge = BADGES[state];
+
+  // Guardia de tokens obligatorios (igual que retGuardMessage de la web):
+  // si el texto nuevo pierde un token que el anterior tenia, no se aplica
+  // el cambio y se avisa. Las ediciones alrededor de los tokens siguen
+  // permitidas. Si el texto ya venia sin tokens, se deja editar.
+  const lastValidRef = useRef<string | null>(null);
+  const [guardMessage, setGuardMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (missingTokens(draft.message_template, requiredTokens).length === 0) {
+      lastValidRef.current = draft.message_template;
+      setGuardMessage(null);
+    }
+  }, [draft.message_template, requiredTokens]);
+
+  function handleMessageChange(value: string) {
+    const missing = missingTokens(value, requiredTokens);
+
+    if (missing.length === 0) {
+      lastValidRef.current = value;
+      setGuardMessage(null);
+      onChange({ message_template: value });
+      return;
+    }
+
+    const prev = lastValidRef.current ?? draft.message_template;
+
+    if (missingTokens(prev, requiredTokens).length === 0) {
+      setGuardMessage(
+        `No se pueden borrar ${tokensText(missing)}; esos tokens se completan solos al enviar.`,
+      );
+      return;
+    }
+
+    onChange({ message_template: value });
+  }
 
   return (
     <View
@@ -172,13 +213,16 @@ export function CampaignFormCard({
         <Text style={styles.fieldLabel}>Mensaje</Text>
         <TextInput
           value={draft.message_template}
-          onChangeText={(value) => onChange({ message_template: value })}
+          onChangeText={handleMessageChange}
           multiline
           maxLength={1000}
           textAlignVertical="top"
           style={[styles.input, styles.textarea]}
           accessibilityLabel="Mensaje"
         />
+        {guardMessage ? (
+          <Text style={styles.guardNotice}>{guardMessage}</Text>
+        ) : null}
         <Text style={styles.hint}>
           {
             'Usá {nombre}, {comercio}, {dias} y {cupon}; se completan solos al enviar. '
@@ -301,6 +345,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     marginTop: spacing.xs,
+  },
+  guardNotice: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: '#b91c1c',
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   notice: {
     borderRadius: radius.sm,
