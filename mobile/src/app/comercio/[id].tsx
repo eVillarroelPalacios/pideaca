@@ -1428,31 +1428,6 @@ export default function ComercioCatalogScreen() {
                       />
                     </View>
                   ) : null}
-                  <Pressable
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: useAltAddress }}
-                    accessibilityLabel="Enviar a una dirección diferente"
-                    onPress={() => setUseAltAddress((current) => !current)}
-                    style={styles.altCheck}
-                  >
-                    <Text style={styles.altCheckBox}>{useAltAddress ? '☑' : '☐'}</Text>
-                    <Text style={styles.altCheckText}>Enviar a una dirección diferente</Text>
-                  </Pressable>
-                  {useAltAddress ? (
-                    <View style={styles.altField}>
-                      <Text style={styles.fieldLabel}>Nueva dirección de entrega (Opcional)</Text>
-                      <TextInput
-                        value={altAddress}
-                        onChangeText={setAltAddress}
-                        placeholder="Ej: Calle falsa 123, Piso 4, dpto B, Ciudad..."
-                        placeholderTextColor={colors.muted}
-                        multiline
-                        numberOfLines={3}
-                        maxLength={500}
-                        style={styles.notes}
-                      />
-                    </View>
-                  ) : null}
                 </View>
               ) : (
                 <View style={styles.pickupBox}>
