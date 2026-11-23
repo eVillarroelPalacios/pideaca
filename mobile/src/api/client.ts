@@ -150,6 +150,7 @@ import type {
   ReportComercioNutritionResponse,
   ReportComercioSavingsResponse,
   ReportComercioSubscriptionsResponse,
+  MarketPaymentStatusResponse,
   AppVersionResponse,
   ProviderMarginsResponse,
   ProviderMrrResponse,
@@ -769,6 +770,14 @@ export const api = {
 
   driverLocation(id: number): Promise<MarketDriverLocationResponse> {
     return request<MarketDriverLocationResponse>(`/market/orders/${id}/driver-location`);
+  },
+
+  /**
+   * Estado del pago de un pedido (flujo "pagar antes de confirmar").
+   * Solo el dueno; no muta nada.
+   */
+  marketPaymentStatus(id: number): Promise<MarketPaymentStatusResponse> {
+    return request<MarketPaymentStatusResponse>(`/market/orders/${id}/payment-status`);
   },
 
   marketSubscriptions(): Promise<MarketSubscriptionsResponse> {

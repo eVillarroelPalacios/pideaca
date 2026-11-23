@@ -73,6 +73,7 @@ class Order extends Model
         'provider_id',
         'user_id',
         'address_id',
+        'delivery_address_text',
         'customer_subscription_id',
         'order_number',
         'status',

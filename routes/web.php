@@ -321,6 +321,7 @@ Route::post('/api/orders', [OrderController::class, 'store'])->name('api.orders.
 Route::get('/api/orders/quote', [OrderController::class, 'quote'])->name('api.orders.quote');
 Route::patch('/api/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('api.orders.status');
 Route::get('/api/orders/{order}/driver-location', [OrderController::class, 'driverLocation'])->name('api.orders.driver-location');
+Route::get('/api/orders/{order}/payment-status', [OrderController::class, 'paymentStatus'])->name('api.orders.payment-status');
 Route::post('/api/orders/{order}/rate', [OrderController::class, 'rateOrder'])->name('api.orders.rate');
 Route::get('/api/me/addresses', [AddressController::class, 'mine'])->name('api.me.addresses');
 

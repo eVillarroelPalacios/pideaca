@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\Charge;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemOption;
@@ -407,6 +408,7 @@ class OrderController extends Controller
             'provider_id' => ['required', 'integer', 'exists:providers,id'],
             'delivery_type' => ['nullable', 'string', 'in:'.Order::DELIVERY_TYPE_DELIVERY.','.Order::DELIVERY_TYPE_TAKEAWAY],
             'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'delivery_address_text' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1', 'max:'.config('fastdelivery.max_items_per_order')],
@@ -430,30 +432,38 @@ class OrderController extends Controller
         // El retiro en el local no lleva direccion: el pedido se prepara en el
         // comercio y queda fuera de la cola de repartidores.
         $address = null;
+        // Direccion alternativa en texto libre ("Enviar a una direccion
+        // diferente"): si viene con contenido reemplaza a address_id.
+        $addressText = isset($data['delivery_address_text'])
+            ? trim((string) $data['delivery_address_text'])
+            : '';
 
         if ($deliveryType === Order::DELIVERY_TYPE_DELIVERY) {
-            if (empty($data['address_id'])) {
+            if ($addressText === '' && empty($data['address_id'])) {
                 throw ValidationException::withMessages([
                     'address_id' => 'Selecciona la direccion de entrega.',
                 ]);
             }
 
-            $address = Address::where('id', $data['address_id'])
-                ->where('user_id', $user->id)
-                ->first();
+            if ($addressText === '') {
+                $address = Address::where('id', $data['address_id'])
+                    ->where('user_id', $user->id)
+                    ->first();
 
-            if (! $address) {
-                throw ValidationException::withMessages([
-                    'address_id' => 'La direccion de entrega no pertenece a tu usuario.',
-                ]);
+                if (! $address) {
+                    throw ValidationException::withMessages([
+                        'address_id' => 'La direccion de entrega no pertenece a tu usuario.',
+                    ]);
+                }
             }
         }
 
-        $order = DB::transaction(function () use ($data, $deliveryType, $provider, $user, $address) {
+        $order = DB::transaction(function () use ($data, $deliveryType, $provider, $user, $address, $addressText) {
             $order = Order::create([
                 'provider_id' => $provider->id,
                 'user_id' => $user->id,
                 'address_id' => $address?->id,
+                'delivery_address_text' => $addressText !== '' ? $addressText : null,
                 'order_number' => Order::nextNumber(),
                 'status' => Order::STATUS_PENDING,
                 'delivery_type' => $deliveryType,
@@ -570,6 +580,44 @@ class OrderController extends Controller
             'mode' => $quote['mode'],
             'source' => $quote['source'],
             'estimate' => $this->deliveryFee->estimateFor($provider),
+        ]);
+    }
+
+    /**
+     * Estado del pago de un pedido (para el flujo "pagar antes de
+     * confirmar"). Solo el dueno, el comercio o un Admin. No muta nada.
+     */
+    public function paymentStatus(Request $request, Order $order)
+    {
+        if (! Auth::check()) {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        $user = Auth::user();
+        $isOwner = (int) $order->user_id === (int) $user->id;
+        $isMerchant = $order->provider !== null && (int) $order->provider->user_id === (int) $user->id;
+
+        if (! $isOwner && ! $isMerchant && ! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés acceso a este pedido.',
+            ], 403);
+        }
+
+        $charge = Charge::where('order_type', 'order')
+            ->where('order_id', $order->id)
+            ->latest('id')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'charge' => $charge ? [
+                'id' => $charge->id,
+                'status' => $charge->status,
+                'method' => $charge->method,
+                'amount' => (float) $charge->amount,
+                'paid' => $charge->status === Charge::STATUS_VERIFIED,
+            ] : null,
         ]);
     }
 

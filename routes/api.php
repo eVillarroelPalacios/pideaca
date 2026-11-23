@@ -319,6 +319,8 @@ Route::prefix('mobile/v1')->group(function () {
                 ->middleware('throttle:60,1');
             Route::get('/orders/{order}/driver-location', [MarketController::class, 'driverLocation'])
                 ->middleware('throttle:60,1');
+            Route::get('/orders/{order}/payment-status', [MarketController::class, 'paymentStatus'])
+                ->middleware('throttle:60,1');
             Route::post('/orders/{order}/rate', [MarketController::class, 'rateOrder'])
                 ->middleware('throttle:30,1');
             Route::get('/subscriptions', [MarketController::class, 'subscriptions'])

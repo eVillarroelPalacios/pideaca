@@ -30,6 +30,7 @@ import type {
 
 const NAVY = '#0c2a4d';
 const ACCENT = '#D24C19';
+const GREEN = '#047857';
 
 type DeliveryType = 'delivery' | 'takeaway';
 
@@ -397,6 +398,46 @@ export default function ComercioCatalogScreen() {
   const [success, setSuccess] = useState<MarketOrder | null>(null);
   const [transferInfo, setTransferInfo] = useState<string | null>(null);
 
+  // Checkout en dos pasos ("pagar antes de confirmar", igual que la web).
+  const [useAltAddress, setUseAltAddress] = useState(false);
+  const [altAddress, setAltAddress] = useState('');
+  const [paymentReady, setPaymentReady] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [payPolling, setPayPolling] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<MarketOrder | null>(null);
+  const payTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  /** Texto libre de entrega (si se tilda la direccion alternativa). */
+  const altAddressText = useAltAddress ? altAddress.trim() : '';
+
+  /** Cualquier cambio del pedido invalida el pago ya procesado. */
+  function resetPayment() {
+    if (payTimer.current) {
+      clearInterval(payTimer.current);
+      payTimer.current = null;
+    }
+    setPayPolling(false);
+    setPaymentReady(false);
+    setCreatedOrder(null);
+    setPayError(null);
+  }
+
+  useEffect(() => {
+    resetPayment();
+    setTransferInfo(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentMethod, deliveryType, addressId, altAddress, useAltAddress]);
+
+  useEffect(() => {
+    return () => {
+      if (payTimer.current) {
+        clearInterval(payTimer.current);
+        payTimer.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!valid) {
       return;
@@ -540,15 +581,16 @@ export default function ComercioCatalogScreen() {
     };
   }, [providerId, repeatRaw, valid]);
 
-  // Cotización exacta del envío: se recalcula al elegir dirección. El
-  // backend decide el monto (global, fijo del comercio o por distancia).
+  // Cotización exacta del envío: se recalcula al elegir dirección. Con
+  // dirección alternativa en texto libre no hay coordenadas: se usa la
+  // tarifa plana/global del comercio (igual que el backend).
   const quoteKey =
-    valid && deliveryType === 'delivery' && addressId
+    valid && deliveryType === 'delivery' && addressId && !altAddressText
       ? `${providerId}:${addressId}`
       : null;
 
   useEffect(() => {
-    if (!valid || deliveryType !== 'delivery' || addressId === null) {
+    if (!valid || deliveryType !== 'delivery' || addressId === null || altAddressText !== '') {
       return;
     }
 
@@ -571,7 +613,7 @@ export default function ComercioCatalogScreen() {
     return () => {
       active = false;
     };
-  }, [addressId, deliveryType, providerId, valid]);
+  }, [addressId, altAddressText, deliveryType, providerId, valid]);
 
   const settings = catalog?.settings;
   const maxQuantity = settings?.max_quantity_per_item ?? 20;
@@ -620,6 +662,8 @@ export default function ComercioCatalogScreen() {
       .join(',')}`;
     const existing = cart.find((item) => item.key === key);
 
+    resetPayment();
+
     if (existing) {
       if (existing.quantity + line.quantity > Math.max(maxQuantity, 1)) {
         setNotice({
@@ -653,6 +697,7 @@ export default function ComercioCatalogScreen() {
   }
 
   function changeLineQty(key: string, delta: number) {
+    resetPayment();
     setCart((current) =>
       current.flatMap((line) => {
         if (line.key !== key) {
@@ -672,12 +717,168 @@ export default function ComercioCatalogScreen() {
   }
 
   function removeLine(key: string) {
+    resetPayment();
     setCart((current) => current.filter((line) => line.key !== key));
     setSubmitError(null);
   }
 
+  /** Crea el pedido en el backend (se usa en "Proceder" para MP o en "Confirmar" para el resto). */
+  async function createOrder() {
+    return api.createMarketOrder({
+      provider_id: providerId,
+      delivery_type: deliveryType,
+      address_id: deliveryType === 'delivery' && !altAddressText ? addressId : null,
+      delivery_address_text: altAddressText !== '' ? altAddressText : null,
+      payment_method: paymentMethod,
+      notes: notes.trim() || null,
+      items: cart.map((line) => ({
+        product_id: line.product_id,
+        variant_id: line.variant_id,
+        quantity: line.quantity,
+        options: line.options,
+      })),
+    });
+  }
+
+  function startPayPolling(orderId: number) {
+    if (payTimer.current) {
+      clearInterval(payTimer.current);
+    }
+
+    setPayPolling(true);
+    payTimer.current = setInterval(() => {
+      void (async () => {
+        try {
+          const status = await api.marketPaymentStatus(orderId);
+
+          if (status.charge?.paid) {
+            if (payTimer.current) {
+              clearInterval(payTimer.current);
+              payTimer.current = null;
+            }
+            setPayPolling(false);
+            setPaymentReady(true);
+            setNotice({ text: 'Pago acreditado. Ya podés confirmar tu pedido.', error: false });
+          }
+        } catch {
+          // Se reintenta en el proximo ciclo o con "Verificar ahora".
+        }
+      })();
+    }, 5000);
+  }
+
+  async function verifyPaymentNow() {
+    if (!createdOrder || paying) {
+      return;
+    }
+
+    setPaying(true);
+
+    try {
+      const status = await api.marketPaymentStatus(createdOrder.id);
+
+      if (status.charge?.paid) {
+        if (payTimer.current) {
+          clearInterval(payTimer.current);
+          payTimer.current = null;
+        }
+        setPayPolling(false);
+        setPaymentReady(true);
+        setNotice({ text: 'Pago acreditado. Ya podés confirmar tu pedido.', error: false });
+      } else {
+        setPayError('El pago todavía no está acreditado. Si ya pagaste, esperá unos segundos y reintentá.');
+      }
+    } catch (caught) {
+      setPayError(caught instanceof ApiError ? caught.message : 'No pudimos verificar el pago.');
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  /**
+   * Paso 1 del checkout ("Proceder al pago"). Efectivo: habilita directo.
+   * Transferencia: muestra los datos y habilita. Mercado Pago: crea el
+   * pedido, abre la pasarela y espera la acreditación (polling).
+   */
+  async function handleProceed() {
+    if (paying || submitting) {
+      return;
+    }
+
+    setPayError(null);
+    setSubmitError(null);
+
+    if (cart.length === 0) {
+      setPayError('Agregá al menos un producto antes de continuar.');
+      return;
+    }
+
+    if (deliveryType === 'delivery' && !addressId && !altAddressText) {
+      setPayError('Seleccioná la dirección de entrega o escribí una alternativa.');
+      return;
+    }
+
+    if (paymentMethod === 'efectivo') {
+      setPaymentReady(true);
+      setNotice({ text: 'Pagás en efectivo al recibir. Ya podés confirmar tu pedido.', error: false });
+      return;
+    }
+
+    if (paymentMethod === 'transfer') {
+      setPaying(true);
+
+      try {
+        const billing = await api.billingStatus();
+        const matrix = (billing.data.matrix ?? {}) as Record<string, string | null>;
+        const cbu = matrix.matrix_AR_CBU ?? matrix['matrix_AR_CBU'] ?? null;
+        const alias = matrix.matrix_AR_ALIAS ?? matrix['matrix_AR_ALIAS'] ?? null;
+        const holder = matrix.matrix_AR_HOLDER ?? matrix['matrix_AR_HOLDER'] ?? 'PideAca';
+        setTransferInfo(
+          cbu || alias
+            ? `Transferí a ${holder} · CBU ${cbu ?? '—'}${alias ? ` · Alias ${alias}` : ''}. Usá como referencia tu nombre y el total.`
+            : 'Te avisaremos por este medio los datos para transferir.',
+        );
+        setPaymentReady(true);
+        setNotice({ text: 'Hacé la transferencia con los datos mostrados y confirmá tu pedido.', error: false });
+      } catch {
+        setTransferInfo('Te avisaremos por este medio los datos para transferir.');
+        setPaymentReady(true);
+      } finally {
+        setPaying(false);
+      }
+
+      return;
+    }
+
+    if (paymentMethod === 'mercadopago') {
+      setPaying(true);
+
+      try {
+        const response = await createOrder();
+        const created = response.order;
+        setCreatedOrder(created);
+
+        const checkout = await api.startMercadoPagoCheckout('order', created.id);
+        setTransferInfo(null);
+        await Linking.openURL(checkout.init_point);
+        setNotice({ text: 'Completá el pago en Mercado Pago y volvé a la app.', error: false });
+        startPayPolling(created.id);
+      } catch (caught) {
+        setPayError(
+          caught instanceof ApiError ? caught.message : 'No pudimos iniciar el pago. Intentá de nuevo.',
+        );
+      } finally {
+        setPaying(false);
+      }
+
+      return;
+    }
+
+    setPayError('Elegí un medio de pago válido.');
+  }
+
   async function handleSubmit() {
-    if (submitting) {
+    if (submitting || paying) {
       return;
     }
 
@@ -689,71 +890,68 @@ export default function ComercioCatalogScreen() {
       return;
     }
 
-    if (deliveryType === 'delivery' && !addressId) {
-      setSubmitError('Seleccioná la dirección de entrega.');
+    if (deliveryType === 'delivery' && !addressId && !altAddressText) {
+      setSubmitError('Seleccioná la dirección de entrega o escribí una alternativa.');
+      return;
+    }
+
+    if (!paymentReady) {
+      setSubmitError('Primero debés procesar el pago para poder confirmar tu pedido.');
+      return;
+    }
+
+    // Mercado Pago: el pedido ya se creó en "Proceder al pago"; acá solo
+    // se re-verifica la acreditación antes de cerrar la compra.
+    if (paymentMethod === 'mercadopago') {
+      if (!createdOrder) {
+        setSubmitError('Primero debés procesar el pago para poder confirmar tu pedido.');
+        return;
+      }
+
+      setSubmitting(true);
+
+      try {
+        const status = await api.marketPaymentStatus(createdOrder.id);
+
+        if (!status.charge?.paid) {
+          setSubmitError('El pago todavía no está acreditado. Verificá el pago e intentá de nuevo.');
+          return;
+        }
+
+        if (payTimer.current) {
+          clearInterval(payTimer.current);
+          payTimer.current = null;
+        }
+        setPayPolling(false);
+        setCart([]);
+        setNotes('');
+        setUseAltAddress(false);
+        setAltAddress('');
+        resetPayment();
+        setSuccess(createdOrder);
+      } catch (caught) {
+        setSubmitError(caught instanceof ApiError ? caught.message : 'No pudimos confirmar tu pedido.');
+      } finally {
+        setSubmitting(false);
+      }
+
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await api.createMarketOrder({
-        provider_id: providerId,
-        delivery_type: deliveryType,
-        address_id: deliveryType === 'delivery' ? addressId : null,
-        payment_method: paymentMethod,
-        notes: notes.trim() || null,
-        items: cart.map((line) => ({
-          product_id: line.product_id,
-          variant_id: line.variant_id,
-          quantity: line.quantity,
-          options: line.options,
-        })),
-      });
+      const response = await createOrder();
 
       setCart([]);
       setNotes('');
+      setUseAltAddress(false);
+      setAltAddress('');
+      resetPayment();
       setSuccess(response.order);
-
-      if (paymentMethod === 'mercadopago') {
-        try {
-          const checkout = await api.startMercadoPagoCheckout('order', response.order.id);
-          setTransferInfo(null);
-          await Linking.openURL(checkout.init_point);
-        } catch (caught) {
-          setTransferInfo(
-            caught instanceof ApiError
-              ? caught.message
-              : 'No pudimos iniciar el pago con Mercado Pago.',
-          );
-        }
-
-        return;
-      }
-
-      if (paymentMethod === 'transfer') {
-        api.billingStatus()
-          .then((billing) => {
-            const matrix = (billing.data.matrix ?? {}) as Record<string, string | null>;
-            const cbu = matrix.matrix_AR_CBU ?? matrix['matrix_AR_CBU'] ?? null;
-            const alias = matrix.matrix_AR_ALIAS ?? matrix['matrix_AR_ALIAS'] ?? null;
-            const holder = matrix.matrix_AR_HOLDER ?? matrix['matrix_AR_HOLDER'] ?? 'PideAca';
-            setTransferInfo(
-              cbu || alias
-                ? `Transferí a ${holder} · CBU ${cbu ?? '—'}${alias ? ` · Alias ${alias}` : ''}. Usá como referencia el número de pedido ${response.order.order_number}.`
-                : 'Te avisaremos por este medio los datos para transferir.',
-            );
-          })
-          .catch(() => {
-            setTransferInfo('Te avisaremos por este medio los datos para transferir.');
-          });
-      } else {
-        setTransferInfo(null);
-      }
+      setTransferInfo(null);
     } catch (caught) {
-      setSubmitError(
-        firstError(caught, 'No se pudo registrar el pedido. Intentá de nuevo.'),
-      );
+      setSubmitError(firstError(caught, 'No se pudo registrar el pedido. Intentá de nuevo.'));
     } finally {
       setSubmitting(false);
     }
@@ -1051,15 +1249,6 @@ export default function ComercioCatalogScreen() {
               </View>
 
               <View style={styles.field}>
-                <ComboField<string>
-                  label="Forma de pago"
-                  value={paymentMethod}
-                  options={PAYMENT_OPTIONS}
-                  onChange={setPaymentMethod}
-                />
-              </View>
-
-              <View style={styles.field}>
                 <Text style={styles.fieldLabel}>Nota para el comercio</Text>
                 <TextInput
                   value={notes}
@@ -1155,6 +1344,31 @@ export default function ComercioCatalogScreen() {
                       para poder pedir con envío.
                     </Text>
                   ) : null}
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: useAltAddress }}
+                    accessibilityLabel="Enviar a una dirección diferente"
+                    onPress={() => setUseAltAddress((current) => !current)}
+                    style={styles.altCheck}
+                  >
+                    <Text style={styles.altCheckBox}>{useAltAddress ? '☑' : '☐'}</Text>
+                    <Text style={styles.altCheckText}>Enviar a una dirección diferente</Text>
+                  </Pressable>
+                  {useAltAddress ? (
+                    <View style={styles.altField}>
+                      <Text style={styles.fieldLabel}>Nueva dirección de entrega (Opcional)</Text>
+                      <TextInput
+                        value={altAddress}
+                        onChangeText={setAltAddress}
+                        placeholder="Ej: Calle falsa 123, Piso 4, dpto B, Ciudad..."
+                        placeholderTextColor={colors.muted}
+                        multiline
+                        numberOfLines={3}
+                        maxLength={500}
+                        style={styles.notes}
+                      />
+                    </View>
+                  ) : null}
                 </View>
               ) : (
                 <View style={styles.pickupBox}>
@@ -1171,20 +1385,78 @@ export default function ComercioCatalogScreen() {
               <Text style={styles.submitError}>{submitError}</Text>
             ) : null}
 
+            <View style={styles.payCard}>
+              <Text style={styles.payTitle}>PAGO</Text>
+              <ComboField<string>
+                label="Forma de pago"
+                value={paymentMethod}
+                options={PAYMENT_OPTIONS}
+                onChange={setPaymentMethod}
+              />
+              <View style={styles.payTotalRow}>
+                <Text style={styles.payTotalLabel}>Total a pagar:</Text>
+                <Text style={styles.payTotalValue}>{money(total)}</Text>
+              </View>
+              {payError ? <Text style={styles.payError}>{payError}</Text> : null}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Proceder al pago"
+                disabled={paying || submitting || cart.length === 0}
+                onPress={() => void handleProceed()}
+                style={[
+                  styles.payButton,
+                  (paying || submitting || cart.length === 0) && styles.buttonDisabled,
+                ]}
+              >
+                {paying ? (
+                  <ActivityIndicator color={colors.surface} />
+                ) : (
+                  <Text style={styles.payButtonText}>🔒 Proceder al pago</Text>
+                )}
+              </Pressable>
+              {paymentReady ? (
+                <Text style={styles.payReady}>Pago listo. Ya podés confirmar tu pedido.</Text>
+              ) : null}
+              {payPolling ? (
+                <View style={styles.payPollingRow}>
+                  <Text style={styles.payPollingText}>Esperando la acreditación en Mercado Pago…</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Verificar pago ahora"
+                    onPress={() => void verifyPaymentNow()}
+                    style={styles.verifyButton}
+                  >
+                    <Text style={styles.verifyText}>Verificar ahora</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+              {transferInfo && paymentMethod === 'transfer' ? (
+                <Text style={styles.transferInfo}>{transferInfo}</Text>
+              ) : null}
+            </View>
+
             <Pressable
               accessibilityRole="button"
-              disabled={submitting}
+              disabled={submitting || paying || !paymentReady}
               onPress={() => void handleSubmit()}
-              style={[styles.confirmButton, submitting && styles.buttonDisabled]}
+              style={[
+                styles.confirmButton,
+                (submitting || paying || !paymentReady) && styles.buttonDisabled,
+              ]}
             >
               {submitting ? (
                 <ActivityIndicator color={colors.surface} />
               ) : (
                 <Text style={styles.confirmText}>
-                  🔒 Confirmar compra · {money(total)}
+                  🔒 Confirmar y enviar pedido · {money(total)}
                 </Text>
               )}
             </Pressable>
+            {!paymentReady ? (
+              <Text style={styles.confirmHint}>
+                Primero debés procesar el pago para poder confirmar tu pedido.
+              </Text>
+            ) : null}
           </>
         ) : null}
 
@@ -1733,6 +2005,132 @@ const styles = StyleSheet.create({
     color: '#b45309',
     fontSize: 12,
     marginTop: 6,
+  },
+  altCheck: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingVertical: 4,
+  },
+  altCheckBox: {
+    color: ACCENT,
+    fontSize: 20,
+  },
+  altCheckText: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  altField: {
+    marginTop: spacing.sm,
+  },
+  payCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+  },
+  payTitle: {
+    color: NAVY,
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  payTotalRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  payTotalLabel: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  payTotalValue: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  payError: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca',
+    borderRadius: 4,
+    borderWidth: 1,
+    color: '#b91c1c',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 9,
+  },
+  payButton: {
+    alignItems: 'center',
+    backgroundColor: '#2563eb',
+    borderRadius: 4,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'center',
+    marginTop: spacing.md,
+    minHeight: 46,
+    paddingHorizontal: spacing.lg,
+  },
+  payButtonText: {
+    color: colors.surface,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  payReady: {
+    color: GREEN,
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  payPollingRow: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  payPollingText: {
+    color: colors.muted,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  verifyButton: {
+    borderColor: colors.border,
+    borderRadius: 4,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  verifyText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  transferInfo: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderRadius: 4,
+    borderWidth: 1,
+    color: '#1e40af',
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 9,
+  },
+  confirmHint: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   pickupBox: {
     backgroundColor: '#f8fafc',

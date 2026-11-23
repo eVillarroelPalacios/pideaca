@@ -348,6 +348,7 @@ class MarketController extends Controller
             'provider_id' => ['required', 'integer', 'exists:providers,id'],
             'delivery_type' => ['nullable', 'string', 'in:'.Order::DELIVERY_TYPE_DELIVERY.','.Order::DELIVERY_TYPE_TAKEAWAY],
             'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'delivery_address_text' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1', 'max:'.config('fastdelivery.max_items_per_order')],
@@ -372,29 +373,38 @@ class MarketController extends Controller
 
         $address = null;
 
+        // Direccion alternativa en texto libre ("Enviar a una direccion
+        // diferente"): si viene con contenido reemplaza a address_id.
+        $addressText = isset($data['delivery_address_text'])
+            ? trim((string) $data['delivery_address_text'])
+            : '';
+
         if ($deliveryType === Order::DELIVERY_TYPE_DELIVERY) {
-            if (empty($data['address_id'])) {
+            if ($addressText === '' && empty($data['address_id'])) {
                 throw ValidationException::withMessages([
                     'address_id' => 'Seleccioná la dirección de entrega.',
                 ]);
             }
 
-            $address = Address::where('id', $data['address_id'])
-                ->where('user_id', $user->id)
-                ->first();
+            if ($addressText === '') {
+                $address = Address::where('id', $data['address_id'])
+                    ->where('user_id', $user->id)
+                    ->first();
 
-            if (! $address) {
-                throw ValidationException::withMessages([
-                    'address_id' => 'La dirección de entrega no pertenece a tu usuario.',
-                ]);
+                if (! $address) {
+                    throw ValidationException::withMessages([
+                        'address_id' => 'La dirección de entrega no pertenece a tu usuario.',
+                    ]);
+                }
             }
         }
 
-        $order = DB::transaction(function () use ($data, $deliveryType, $provider, $user, $address) {
+        $order = DB::transaction(function () use ($data, $deliveryType, $provider, $user, $address, $addressText) {
             $order = Order::create([
                 'provider_id' => $provider->id,
                 'user_id' => $user->id,
                 'address_id' => $address?->id,
+                'delivery_address_text' => $addressText !== '' ? $addressText : null,
                 'order_number' => Order::nextNumber(),
                 'status' => Order::STATUS_PENDING,
                 'delivery_type' => $deliveryType,
@@ -475,6 +485,7 @@ class MarketController extends Controller
                 'total' => (float) $order->total,
                 'payment_method' => $order->payment_method,
                 'notes' => $order->notes,
+                'delivery_address_text' => $order->delivery_address_text,
                 'provider' => $order->provider ? [
                     'id' => $order->provider->id,
                     'business_name' => $order->provider->business_name,
@@ -665,6 +676,38 @@ class MarketController extends Controller
             'simulated' => true,
             'map_available' => $mapAvailable,
             'updated_at' => $order->updated_at,
+        ]);
+    }
+
+    /**
+     * Estado del pago de un pedido (para el flujo "pagar antes de
+     * confirmar"). Solo el dueno del pedido. No muta nada.
+     */
+    public function paymentStatus(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || (int) $order->user_id !== (int) $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tenés acceso a este pedido.',
+            ], $user ? 403 : 401);
+        }
+
+        $charge = \App\Models\Charge::where('order_type', 'order')
+            ->where('order_id', $order->id)
+            ->latest('id')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'charge' => $charge ? [
+                'id' => $charge->id,
+                'status' => $charge->status,
+                'method' => $charge->method,
+                'amount' => (float) $charge->amount,
+                'paid' => $charge->status === \App\Models\Charge::STATUS_VERIFIED,
+            ] : null,
         ]);
     }
 

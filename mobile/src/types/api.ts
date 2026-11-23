@@ -1618,6 +1618,7 @@ export type MarketOrderPayload = {
   provider_id: number;
   delivery_type: 'delivery' | 'takeaway';
   address_id?: number | null;
+  delivery_address_text?: string | null;
   payment_method: string;
   notes?: string | null;
   items: MarketOrderItemPayload[];
@@ -1642,8 +1643,20 @@ export type MarketOrder = {
   total: number;
   payment_method: string;
   notes: string | null;
+  delivery_address_text: string | null;
   provider: { id: number; business_name: string } | null;
   items: MarketOrderItem[];
+};
+
+export type MarketPaymentStatusResponse = {
+  success: boolean;
+  charge: {
+    id: number;
+    status: string;
+    method: string;
+    amount: number;
+    paid: boolean;
+  } | null;
 };
 
 export type MarketOrderResponse = {
