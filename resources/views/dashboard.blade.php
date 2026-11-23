@@ -519,7 +519,7 @@
                                     @include('dashboard.partials.repartidores-confianza')
                                 </div>
                                 @endif
-                                @if($user->provider)
+                                @if($user->provider && $esComercio)
                                 <div class="profile-panel" data-panel="retiros">
                                     @include('dashboard.partials.retiros-comercio')
                                 </div>

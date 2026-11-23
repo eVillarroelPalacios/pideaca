@@ -119,6 +119,7 @@ class ProfileController extends Controller
                 'can_see_address' => $canSeeAddress,
                 'can_manage_users' => $canManageUsers,
                 'can_see_trusted_drivers' => $canConfigureBusiness && $provider !== null && \App\Support\ProviderCommerce::isComercio($provider),
+                'can_see_withdrawals' => $canConfigureBusiness && $provider !== null && \App\Support\ProviderCommerce::isComercio($provider),
                 'can_see_service_types' => $canConfigureBusiness && $user->hasPageUrl('ordenes-servicio'),
                 'initial_panel' => $initialPanel,
             ],
@@ -466,7 +467,14 @@ class ProfileController extends Controller
             return null;
         }
 
-        return $user->provider;
+        $provider = $user->provider;
+
+        // Retiros de repartidores: solo comercios (grupo Comercio).
+        if ($provider && ! \App\Support\ProviderCommerce::isComercio($provider)) {
+            return null;
+        }
+
+        return $provider;
     }
 
     private function providerWithdrawalDriverIds(Provider $provider): array

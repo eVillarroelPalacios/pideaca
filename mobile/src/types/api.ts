@@ -1199,6 +1199,7 @@ export type ProfileFlags = {
   can_see_address: boolean;
   can_manage_users: boolean;
   can_see_trusted_drivers: boolean;
+  can_see_withdrawals: boolean;
   can_see_service_types: boolean;
   initial_panel: string;
 };

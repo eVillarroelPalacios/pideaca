@@ -210,6 +210,11 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'Primero debés configurar tu perfil de proveedor.'], 404);
         }
 
+        // Retiros de repartidores: solo comercios (grupo Comercio).
+        if (! \App\Support\ProviderCommerce::isComercio($provider)) {
+            return response()->json(['success' => false, 'message' => 'Los retiros de repartidores están disponibles solo para comercios.'], 403);
+        }
+
         $requests = DriverWithdrawalRequest::with('user:id,name,email')
             ->where('status', DriverWithdrawalRequest::STATUS_PENDING)
             ->whereIn('user_id', $this->providerWithdrawalDriverIds($provider))
@@ -363,7 +368,14 @@ class ProfileController extends Controller
             return null;
         }
 
-        return $user->provider;
+        $provider = $user->provider;
+
+        // Retiros de repartidores: solo comercios (grupo Comercio).
+        if ($provider && ! \App\Support\ProviderCommerce::isComercio($provider)) {
+            return null;
+        }
+
+        return $provider;
     }
 
     /**

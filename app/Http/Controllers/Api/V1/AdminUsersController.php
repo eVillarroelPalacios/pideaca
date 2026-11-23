@@ -591,6 +591,7 @@ class AdminUsersController extends Controller
                 'can_see_address' => $canSeeAddress,
                 'can_manage_users' => $canManageUsers,
                 'can_see_trusted_drivers' => $canConfigureBusiness && $provider !== null && \App\Support\ProviderCommerce::isComercio($provider),
+                'can_see_withdrawals' => $canConfigureBusiness && $provider !== null && \App\Support\ProviderCommerce::isComercio($provider),
                 'can_see_service_types' => $canConfigureBusiness && $user->hasPageUrl('ordenes-servicio'),
                 'initial_panel' => $initialPanel,
             ],

@@ -292,8 +292,9 @@ export default function HomeScreen() {
       } else {
         setTrusted(null);
       }
-      // Retiros de repartidores del comercio: mismo alcance que la web.
-      if (data.flags.can_configure_business && !managedId) {
+      // Retiros de repartidores del comercio: mismo alcance que la web
+      // (solo comercios; el hogar no usa repartidores).
+      if (data.flags.can_configure_business && (data.flags.can_see_withdrawals ?? true) && !managedId) {
         try {
           setProviderWithdrawals((await api.providerWithdrawals()).withdrawals);
         } catch {
@@ -1447,7 +1448,7 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {activePanel === 'retiros' && canConfigureBusiness && !managedId ? (
+        {activePanel === 'retiros' && canConfigureBusiness && (flags?.can_see_withdrawals ?? true) && !managedId ? (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>💸 Retiros de repartidores</Text>
             <Text style={styles.cardSub}>

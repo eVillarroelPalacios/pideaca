@@ -97,7 +97,7 @@ export function visiblePanels(
       return flags.can_see_trusted_drivers;
     }
     if (panel.key === 'retiros') {
-      return flags.can_configure_business;
+      return flags.can_see_withdrawals ?? flags.can_configure_business;
     }
 
     // Negocio, horarios, servicios, publicidad y categorías.
