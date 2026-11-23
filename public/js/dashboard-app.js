@@ -6694,7 +6694,15 @@
     function fdDireccionOcultarNavegacion(ocultar) {
         ['nav .nav-dropdown', 'nav .nav-separator', '#menu-toggle', '#mobile-menu', '.footer-group-icons'].forEach(function (sel) {
             document.querySelectorAll(sel).forEach(function (el) {
-                el.style.display = ocultar ? 'none' : '';
+                // #mobile-menu descansa cerrado (display:none inline): al
+                // desbloquear hay que devolverlo a 'none', no a ''. Con ''
+                // el div vuelve a su display:block por defecto y el menu
+                // movil arranca abierto en responsive.
+                if (el.id === 'mobile-menu') {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = ocultar ? 'none' : '';
+                }
             });
         });
         document.querySelectorAll('nav .nav-link').forEach(function (el) {
