@@ -25,6 +25,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { appendPhoto, pickSingleImage } from '@/lib/media';
+import { resolveAssetUrl } from '@/lib/assets';
 import { money } from '@/lib/money';
 import { PANEL_META, visiblePanels, type PanelKey } from '@/lib/profilePanels';
 import { colors, radius, spacing } from '@/theme';
@@ -152,6 +153,8 @@ export default function HomeScreen() {
 
   // Publicidad.
   const [uploadingImage, setUploadingImage] = useState(false);
+  // Ids de imagenes cuya URL no cargo (se muestra el nombre en su lugar).
+  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
 
   // Dirección.
   const [countries, setCountries] = useState<{ id: number; name: string }[]>([]);
@@ -1550,15 +1553,37 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>🖼️ Publicidad</Text>
             <Text style={styles.cardSub}>Una sola imagen por proveedor (JPG o PNG, hasta 5 MB).</Text>
-            {(provider?.images ?? []).map((image) => (
-              <View key={image.id} style={styles.serviceCard}>
-                <Text style={styles.serviceName}>{image.image_path}</Text>
-                <Text style={styles.serviceDescription}>{image.image_type ?? 'publicidad'}</Text>
-                <Pressable accessibilityRole="button" onPress={() => confirmDeleteImage(image.id)} style={[styles.actionButton, styles.deleteButton]}>
-                  <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
-                </Pressable>
-              </View>
-            ))}
+            {(provider?.images ?? []).map((image) => {
+              // Misma imagen del servidor web (images/publicidad/...):
+              // se conserva el path y solo se adapta el origen al host
+              // de la app. El ?v= invalida el cache al re-subir.
+              const uri = resolveAssetUrl(
+                image.url ?? (image.image_path ? `images/publicidad/${image.image_path}` : null),
+              );
+              const src = uri ? `${uri}${uri.includes('?') ? '&' : '?'}v=${image.id}` : null;
+
+              return (
+                <View key={image.id} style={styles.serviceCard}>
+                  {src && !brokenImages[image.id] ? (
+                    <Image
+                      source={{ uri: src }}
+                      style={styles.adImage}
+                      resizeMode="cover"
+                      accessibilityLabel="Imagen publicitaria"
+                      onError={() =>
+                        setBrokenImages((current) => ({ ...current, [image.id]: true }))
+                      }
+                    />
+                  ) : (
+                    <Text style={styles.serviceName}>{image.image_path}</Text>
+                  )}
+                  <Text style={styles.serviceDescription}>{image.image_type ?? 'publicidad'}</Text>
+                  <Pressable accessibilityRole="button" onPress={() => confirmDeleteImage(image.id)} style={[styles.actionButton, styles.deleteButton]}>
+                    <Text style={[styles.actionText, styles.deleteText]}>Eliminar</Text>
+                  </Pressable>
+                </View>
+              );
+            })}
             {(provider?.images ?? []).length === 0 ? (
               <Text style={styles.emptyText}>No tenés imagen publicitaria cargada.</Text>
             ) : null}
@@ -2166,6 +2191,12 @@ const styles = StyleSheet.create({
   },
   serviceCardSelected: {
     borderColor: colors.brand,
+  },
+  adImage: {
+    borderRadius: radius.sm,
+    height: 180,
+    marginBottom: spacing.sm,
+    width: '100%',
   },
   serviceName: {
     color: colors.text,
