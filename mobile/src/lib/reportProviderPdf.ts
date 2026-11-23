@@ -107,15 +107,24 @@ function bodyHtml(payload: ProviderComercioPdfData): string {
         ]) +
         table(
           ['Producto', 'Precio', 'Costo', 'Margen $', 'Margen %', 'Semáforo', 'Recomendación'],
-          payload.data.products.map((p) => [
-            `<strong>${escapeHtml(p.name ?? '—')}</strong>${p.has_recipe ? '' : '<br><span class="muted">Sin ficha técnica</span>'}`,
-            money(p.sale_price),
-            money(p.production_cost),
-            p.gross_margin_amount === null ? '—' : money(p.gross_margin_amount),
-            p.gross_margin_percent === null ? '—' : `${p.gross_margin_percent}%`,
-            escapeHtml(p.traffic_light_label ?? p.traffic_light),
-            escapeHtml(p.recommendation ?? '—'),
-          ]),
+          payload.data.products.map((p) => {
+            const rec = p.recommendation;
+            const recText =
+              (rec?.note ?? '') +
+              (rec?.suggested_price !== null && rec?.suggested_price !== undefined
+                ? ` Precio sugerido: ${money(rec.suggested_price)}`
+                : '');
+
+            return [
+              `<strong>${escapeHtml(p.name ?? '—')}</strong>${p.has_recipe ? '' : '<br><span class="muted">Sin ficha técnica</span>'}`,
+              money(p.sale_price),
+              money(p.production_cost),
+              p.gross_margin_amount === null ? '—' : money(p.gross_margin_amount),
+              p.gross_margin_percent === null ? '—' : `${p.gross_margin_percent}%`,
+              escapeHtml(p.traffic_light_label ?? p.traffic_light),
+              escapeHtml(recText.trim() === '' ? '—' : recText),
+            ];
+          }),
         )
       );
     }

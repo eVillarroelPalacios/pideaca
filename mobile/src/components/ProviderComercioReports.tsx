@@ -329,7 +329,15 @@ export function ProviderComercioReports() {
                 Margen {p.gross_margin_amount === null ? '—' : money(p.gross_margin_amount)}
                 {p.gross_margin_percent === null ? '' : ` (${p.gross_margin_percent}%)`}
               </Text>
-              {p.recommendation ? <Text style={styles.recommendation}>{p.recommendation}</Text> : null}
+              {p.recommendation?.note ? (
+                <Text style={styles.recommendation}>
+                  {p.recommendation.note}
+                  {p.recommendation.suggested_price !== null &&
+                  p.recommendation.suggested_price !== undefined
+                    ? ` Precio sugerido: ${money(p.recommendation.suggested_price)}`
+                    : ''}
+                </Text>
+              ) : null}
             </View>
           ))
         )}

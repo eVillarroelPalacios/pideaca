@@ -87,7 +87,7 @@ export type ProviderMarginsProduct = {
   has_recipe: boolean;
   traffic_light: 'green' | 'yellow' | 'red' | string;
   traffic_light_label: string | null;
-  recommendation: string | null;
+  recommendation: { suggested_price: number | null; note: string } | null;
 };
 
 export type ProviderMarginsResponse = {
