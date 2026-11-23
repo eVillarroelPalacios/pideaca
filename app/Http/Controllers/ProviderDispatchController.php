@@ -34,6 +34,10 @@ class ProviderDispatchController extends Controller
 
         $provider = $resolved;
 
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
+
         return response()->json([
             'success' => true,
             'provider' => [
@@ -61,6 +65,10 @@ class ProviderDispatchController extends Controller
         }
 
         $provider = $resolved;
+
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
 
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
@@ -102,6 +110,10 @@ class ProviderDispatchController extends Controller
         }
 
         $provider = $resolved;
+
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
 
         $data = $request->validate([
             'user_id' => ['required', 'integer', 'exists:users,id'],
@@ -147,6 +159,10 @@ class ProviderDispatchController extends Controller
         }
 
         $provider = $resolved;
+
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
 
         if ((int) $driver->provider_id !== (int) $provider->id) {
             return response()->json([
@@ -325,5 +341,21 @@ class ProviderDispatchController extends Controller
         }
 
         return $provider;
+    }
+
+    /**
+     * Repartidores de confianza: solo comercios (grupo Comercio). El
+     * prestador de Hogar no usa despacho con repartidores.
+     */
+    private function ensureComercio(Provider $provider): ?JsonResponse
+    {
+        if (\App\Support\ProviderCommerce::isComercio($provider)) {
+            return null;
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Los repartidores de confianza están disponibles solo para comercios.',
+        ], 403);
     }
 }

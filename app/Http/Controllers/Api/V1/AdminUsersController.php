@@ -590,7 +590,7 @@ class AdminUsersController extends Controller
                 'can_configure_business' => $canConfigureBusiness,
                 'can_see_address' => $canSeeAddress,
                 'can_manage_users' => $canManageUsers,
-                'can_see_trusted_drivers' => $canConfigureBusiness && $provider !== null,
+                'can_see_trusted_drivers' => $canConfigureBusiness && $provider !== null && \App\Support\ProviderCommerce::isComercio($provider),
                 'can_see_service_types' => $canConfigureBusiness && $user->hasPageUrl('ordenes-servicio'),
                 'initial_panel' => $initialPanel,
             ],

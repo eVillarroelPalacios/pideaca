@@ -260,6 +260,9 @@
                         $esPerfilPrestador = strcasecmp((string) $user->typeUser?->description, 'Prestador') === 0;
                         $esPerfilCliente = strcasecmp((string) $user->typeUser?->description, 'Cliente') === 0;
                         $esPerfilRepartidor = strcasecmp((string) $user->typeUser?->description, 'Repartidor') === 0;
+                        // Repartidores de confianza: solo comercios (grupo Comercio).
+                        // El prestador de Hogar no ve la seccion.
+                        $esComercio = \App\Support\ProviderCommerce::isComercio($user->provider ?? null);
                         // App movil: la seccion de descarga solo existe si se abre desde un telefono Android.
                         $esAndroid = str_contains(strtolower((string) request()->header('User-Agent', '')), 'android');
                         $perfilDireccion = $user->primaryAddress;
@@ -336,7 +339,7 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085"/></svg>
                                 <span>Mis Servicios</span>
                             </a>
-                            @if($user->provider)
+                            @if($user->provider && $esComercio)
                             <a href="#" onclick="event.preventDefault();showProfilePanel('repartidores')" class="sidebar-link" data-panel="repartidores" id="sidebar-link-repartidores">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 18h6l3-9h3l2 5h2"/><path d="M9 9h5"/><path d="M14 5h3"/></svg>
                                 <span>Repartidores de confianza</span>
@@ -511,10 +514,12 @@
                                     </div>
                                 </div>
 
-                                @if($user->provider)
+                                @if($user->provider && $esComercio)
                                 <div class="profile-panel" data-panel="repartidores">
                                     @include('dashboard.partials.repartidores-confianza')
                                 </div>
+                                @endif
+                                @if($user->provider)
                                 <div class="profile-panel" data-panel="retiros">
                                     @include('dashboard.partials.retiros-comercio')
                                 </div>

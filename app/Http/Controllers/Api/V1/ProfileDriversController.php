@@ -26,6 +26,10 @@ class ProfileDriversController extends Controller
             return $provider;
         }
 
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
+
         return response()->json([
             'success' => true,
             'provider' => [
@@ -44,6 +48,10 @@ class ProfileDriversController extends Controller
 
         if ($provider instanceof JsonResponse) {
             return $provider;
+        }
+
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
         }
 
         $data = $request->validate([
@@ -89,6 +97,10 @@ class ProfileDriversController extends Controller
             'user_id.exists' => 'El repartidor seleccionado no existe.',
         ]);
 
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
+        }
+
         $user = User::with('typeUser')->findOrFail((int) $data['user_id']);
 
         if (! $user->isDriver()) {
@@ -124,6 +136,10 @@ class ProfileDriversController extends Controller
                 'success' => false,
                 'message' => 'Ese repartidor no pertenece a tu lista de confianza.',
             ], 404);
+        }
+
+        if ($denied = $this->ensureComercio($provider)) {
+            return $denied;
         }
 
         $remainingActive = $provider->providerDrivers()
@@ -184,6 +200,22 @@ class ProfileDriversController extends Controller
         }
 
         return $provider;
+    }
+
+    /**
+     * Repartidores de confianza: solo comercios (grupo Comercio). El
+     * prestador de Hogar no usa despacho con repartidores.
+     */
+    private function ensureComercio(Provider $provider): ?JsonResponse
+    {
+        if (\App\Support\ProviderCommerce::isComercio($provider)) {
+            return null;
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Los repartidores de confianza están disponibles solo para comercios.',
+        ], 403);
     }
 
     private function trustedDriversPayload(Provider $provider): array
