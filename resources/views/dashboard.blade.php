@@ -709,7 +709,7 @@
                                         <div id="wallet-operate-banner" style="display:none;font-size:12.5px;padding:9px 12px;border-radius:0;margin-bottom:12px;"></div>
                                         <div id="wallet-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
                                         <div class="profile-field-grid">
-                                            <div><label class="field-label">País</label><select id="wallet-country" class="field-input"><option value="AR">Argentina</option><option value="ES">España</option></select></div>
+                                            <div><label class="field-label">País</label><select id="wallet-country" class="field-input"><option value="AR">Argentina</option><option value="ES">España</option></select><span style="font-size:11px;color:#94a3b8;">Se detecta automáticamente según tu ubicación.</span></div>
                                             <div><label class="field-label">Tipo de billetera</label><select id="wallet-type" class="field-input"><option value="">Cargando…</option></select><span class="err-msg" id="wallet-type-error"></span></div>
                                             <div><label class="field-label">Etiqueta (opcional)</label><input type="text" id="wallet-label" class="field-input" placeholder="Ej: Banco X" /><span class="err-msg" id="wallet-label-error"></span></div>
                                             <div><label class="field-label">Titular</label><input type="text" id="wallet-holder" class="field-input" placeholder="Nombre del titular" /><span class="err-msg" id="wallet-holder-error"></span></div>

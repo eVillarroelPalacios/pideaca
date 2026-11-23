@@ -7,6 +7,7 @@ import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
+import { detectCountry, fallbackCountry, type WalletCountry } from '@/lib/country';
 import type { BillingStatusResponse, PayoutAccount, WalletType } from '@/types/api';
 import { colors, radius, spacing } from '@/theme';
 
@@ -33,10 +34,13 @@ export function BilleteraManager() {
   const [accountRef, setAccountRef] = useState('');
   const [iban, setIban] = useState('');
   const [bank, setBank] = useState('');
-  const [country, setCountry] = useState('AR');
+  const [country, setCountry] = useState<WalletCountry>(fallbackCountry());
   const [types, setTypes] = useState<WalletType[]>([]);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // País automático por ubicación (igual que la web): se detecta solo y
+  // el combo queda desactivado. Sin pedir permisos de ubicación.
 
   // Igual que register.tsx: el setState vive en los callbacks, no en el
   // cuerpo del efecto.
@@ -82,6 +86,26 @@ export function BilleteraManager() {
       active = false;
     };
   }, [reloadKey]);
+
+  // País automático una sola vez al abrir (no depende de reloadKey para
+  // no pisar nada en los reintentos).
+  useEffect(() => {
+    let active = true;
+
+    void detectCountry().then((detected) => {
+      if (!active) return;
+      setCountry((current) => {
+        if (current !== detected) {
+          setSelectedTypeId(null);
+        }
+        return detected;
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function reload() {
     setLoading(true);
@@ -261,12 +285,11 @@ export function BilleteraManager() {
           { value: 'AR', label: 'Argentina' },
           { value: 'ES', label: 'España' },
         ]}
-        onChange={(value) => {
-          setCountry(String(value));
-          setSelectedTypeId(null);
-        }}
+        onChange={() => {}}
         placeholder="Seleccioná el país"
+        disabled
       />
+      <Text style={styles.countryHint}>Se detecta automáticamente según tu ubicación.</Text>
 
       <ComboField
         label="Tipo de billetera"
@@ -435,5 +458,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: spacing.md,
     marginTop: spacing.md,
+  },
+  countryHint: {
+    color: colors.muted,
+    fontSize: 11,
+    marginBottom: spacing.sm,
+    marginTop: 4,
   },
 });

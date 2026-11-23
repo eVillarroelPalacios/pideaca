@@ -6750,14 +6750,47 @@
         return 'Argentina';
     }
 
-    function fdBloquearPais(sel, paisId) {
-        var hidden = document.getElementById('addr-country-id');
-        if (hidden) hidden.value = paisId || '';
+    /**
+     * Ubicacion aproximada por IP (ipapi.co, timeout 4s). Resuelve
+     * {code, name} o null si no se pudo determinar. Sin pedir permisos.
+     */
+    function fdPaisDeUbicacion() {
+        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var timer = controller ? setTimeout(function () { controller.abort(); }, 4000) : null;
+
+        return fetch('https://ipapi.co/json/', {
+            headers: { 'Accept': 'application/json' },
+            signal: controller ? controller.signal : undefined
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (timer) clearTimeout(timer);
+            if (data && data.country_code) {
+                return {
+                    code: String(data.country_code).toUpperCase(),
+                    name: String(data.country_name || data.country || '')
+                };
+            }
+            return null;
+        })
+        .catch(function () {
+            if (timer) clearTimeout(timer);
+            return null;
+        });
+    }
+
+    function fdBloquearSelect(sel) {
         if (!sel) return;
         sel.disabled = true;
         sel.style.cursor = 'not-allowed';
         sel.style.backgroundColor = '#f1f3f5';
         sel.style.color = '#6b7280';
+    }
+
+    function fdBloquearPais(sel, paisId) {
+        var hidden = document.getElementById('addr-country-id');
+        if (hidden) hidden.value = paisId || '';
+        fdBloquearSelect(sel);
     }
 
     function fdSeleccionarPais(sel, nombre) {
@@ -6794,21 +6827,8 @@
             if (!elegido) fdSeleccionarPais(sel, fdPaisAutomatico());
         };
 
-        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        var timer = controller ? setTimeout(function () { controller.abort(); }, 4000) : null;
-
-        fetch('https://ipapi.co/json/', {
-            headers: { 'Accept': 'application/json' },
-            signal: controller ? controller.signal : undefined
-        })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (data) {
-            if (timer) clearTimeout(timer);
-            aplicar((data && (data.country_name || data.country)) || fdPaisAutomatico());
-        })
-        .catch(function () {
-            if (timer) clearTimeout(timer);
-            aplicar(fdPaisAutomatico());
+        fdPaisDeUbicacion().then(function (loc) {
+            aplicar((loc && loc.name) || fdPaisAutomatico());
         });
     }
 
@@ -14121,6 +14141,31 @@
                 var box = document.getElementById('wallet-list');
                 if (box) box.innerHTML = '<div style="font-size:12.5px;color:#b91c1d;">No pudimos cargar tus billeteras.</div>';
             });
+        });
+        walletInitPais();
+    }
+
+    /**
+     * Pais de la billetera: se detecta solo por ubicacion (igual que
+     * Mi Direccion) y el combo queda desactivado. No duplica logica:
+     * reusa fdPaisDeUbicacion/fdPaisAutomatico/fdBloquearSelect.
+     */
+    function walletInitPais() {
+        var sel = document.getElementById('wallet-country');
+        if (!sel) return;
+
+        // Ya fijado: solo repintar tipos con ese pais.
+        if (sel.disabled) {
+            if (typeof paintWalletTypes === 'function') paintWalletTypes();
+            return;
+        }
+
+        fdPaisDeUbicacion().then(function (loc) {
+            var code = (loc && loc.code) || (fdPaisAutomatico() === 'España' ? 'ES' : 'AR');
+            if (code !== 'AR' && code !== 'ES') code = 'AR';
+            sel.value = code;
+            fdBloquearSelect(sel);
+            if (typeof paintWalletTypes === 'function') paintWalletTypes();
         });
     }
 
