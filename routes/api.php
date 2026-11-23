@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
 use App\Http\Controllers\Api\V1\ProfileUsersController;
 use App\Http\Controllers\Api\V1\ProviderCatalogController;
+use App\Http\Controllers\Api\V1\ProviderReportsController;
 use App\Http\Controllers\Api\V1\ProviderCategoryController;
 use App\Http\Controllers\Api\V1\ProviderDispatchController;
 use App\Http\Controllers\Api\V1\ProviderFinancialHealthController;
@@ -460,6 +461,26 @@ Route::prefix('mobile/v1')->group(function () {
                 Route::post('/plans', [ProviderSubscriptionsController::class, 'storePlan']);
                 Route::put('/plans/{plan}', [ProviderSubscriptionsController::class, 'updatePlan']);
                 Route::put('/payments/{payment}', [ProviderSubscriptionsController::class, 'updatePayment']);
+            });
+
+            // Reportes del comercio: espejo movil de /api/v1/provider/reports/*
+            // de la web (mismos JSON que los tabs Rentabilidad, MRR,
+            // Comisiones, Clientes, Campanas, Demanda y Abastecimiento).
+            Route::prefix('reports')->group(function () {
+                Route::get('/margins', [ProviderReportsController::class, 'margins'])
+                    ->middleware('throttle:30,1');
+                Route::get('/mrr', [ProviderReportsController::class, 'mrr'])
+                    ->middleware('throttle:30,1');
+                Route::get('/commission-savings', [ProviderReportsController::class, 'commission'])
+                    ->middleware('throttle:30,1');
+                Route::get('/ltv-risk', [ProviderReportsController::class, 'ltv'])
+                    ->middleware('throttle:30,1');
+                Route::get('/campaigns', [ProviderReportsController::class, 'campaigns'])
+                    ->middleware('throttle:30,1');
+                Route::get('/demand-heatmap', [ProviderReportsController::class, 'demandHeatmap'])
+                    ->middleware('throttle:30,1');
+                Route::get('/stock-forecast', [ProviderReportsController::class, 'stockForecast'])
+                    ->middleware('throttle:30,1');
             });
         });
 

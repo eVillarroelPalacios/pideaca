@@ -71,6 +71,187 @@ export type AppVersionResponse = {
   };
 };
 
+/**
+ * Reportes del comercio (prestador): espejan
+ * GET /api/mobile/v1/provider/reports/*, mismos JSON que los tabs de
+ * Rentabilidad, MRR, Comisiones, Clientes, Campanas, Demanda y
+ * Abastecimiento de la web.
+ */
+export type ProviderMarginsProduct = {
+  product_id: number;
+  name: string | null;
+  sale_price: number;
+  production_cost: number;
+  gross_margin_amount: number | null;
+  gross_margin_percent: number | null;
+  has_recipe: boolean;
+  traffic_light: 'green' | 'yellow' | 'red' | string;
+  traffic_light_label: string | null;
+  recommendation: string | null;
+};
+
+export type ProviderMarginsResponse = {
+  success: boolean;
+  summary: {
+    total_products: number;
+    with_recipe: number;
+    green: number;
+    yellow: number;
+    red: number;
+    average_margin_percent: number | null;
+  };
+  products: ProviderMarginsProduct[];
+};
+
+export type ProviderMrrPlan = {
+  plan_id: number;
+  title: string | null;
+  frequency: string | null;
+  subscribers: number;
+  charge_amount: number;
+  mrr: number;
+};
+
+export type ProviderMrrResponse = {
+  success: boolean;
+  summary: {
+    mrr: number;
+    projection_30_days: number;
+    active_subscribers: number;
+    paused_subscribers: number;
+    payment_failed: number;
+    cancelled_subscribers: number;
+    churn_rate_percent: number;
+    average_ticket: number;
+    collected_in_period: number;
+    period_months: number;
+  };
+  by_plan: ProviderMrrPlan[];
+};
+
+export type ProviderCommissionResponse = {
+  success: boolean;
+  period: { start_date: string; end_date: string };
+  summary: {
+    gross_volume: number;
+    orders_revenue: number;
+    subscriptions_revenue: number;
+    pideaca_commission_percent: number;
+    pideaca_commission_amount: number;
+    traditional_min_percent: number;
+    traditional_min_amount: number;
+    traditional_max_percent: number;
+    traditional_max_amount: number;
+    net_savings_vs_min: number;
+    net_savings_vs_max: number;
+    savings_note: string | null;
+  };
+};
+
+export type ProviderLtvCustomer = {
+  user_id: number;
+  name: string | null;
+  email: string | null;
+  orders_count: number;
+  ltv: number;
+  last_order_at: string | null;
+  days_since_last_order: number | null;
+};
+
+export type ProviderLtvResponse = {
+  success: boolean;
+  summary: {
+    total_customers: number;
+    vip_count: number;
+    at_risk_count: number;
+    inactive_days_threshold: number;
+    vip_ltv_floor: number;
+  };
+  vip_customers: ProviderLtvCustomer[];
+  at_risk_customers: ProviderLtvCustomer[];
+};
+
+export type ProviderCampaignRow = {
+  rule_id: number | null;
+  rule_type: string | null;
+  discount_code: string | null;
+  sent: number;
+  failed: number;
+  converted: number;
+  conversion_rate_percent: number;
+  attributed_sales: number;
+};
+
+export type ProviderCampaignsResponse = {
+  success: boolean;
+  summary: {
+    total_sent: number;
+    total_failed: number;
+    total_converted: number;
+    overall_conversion_rate_percent: number;
+    attributed_sales_total: number;
+  };
+  campaigns: ProviderCampaignRow[];
+};
+
+export type ProviderHeatmapHour = {
+  hour: number;
+  express: number;
+  subscriptions: number;
+  total: number;
+  revenue: number;
+};
+
+export type ProviderHeatmapDay = {
+  day_index: number;
+  day_name: string;
+  total_orders: number;
+  peak_hour: number;
+  peak_hour_orders: number;
+  hours: ProviderHeatmapHour[];
+};
+
+export type ProviderHeatmapResponse = {
+  success: boolean;
+  period: { days: number; from: string; to: string };
+  summary: {
+    total_orders: number;
+    express_orders: number;
+    subscription_orders: number;
+  };
+  heatmap: ProviderHeatmapDay[];
+};
+
+export type ProviderForecastProduct = {
+  product_id: number;
+  name: string | null;
+  quantity: number;
+  subscriptions: number;
+};
+
+export type ProviderForecastSupply = {
+  supply_id: number;
+  name: string | null;
+  unit_symbol: string | null;
+  cost_per_unit: number;
+  quantity_required: number;
+  estimated_cost: number;
+};
+
+export type ProviderForecastResponse = {
+  success: boolean;
+  period: { start_date: string; end_date: string };
+  summary: {
+    active_subscriptions: number;
+    total_deliveries: number;
+    total_products: number;
+    total_supplies: number;
+    estimated_supplies_cost: number;
+  };
+  products: ProviderForecastProduct[];
+  supplies: ProviderForecastSupply[];
+};
+
 export type AutoApproveResponse = {
   success: boolean;
   auto_approve_max: number | null;

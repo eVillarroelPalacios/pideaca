@@ -151,6 +151,13 @@ import type {
   ReportComercioSavingsResponse,
   ReportComercioSubscriptionsResponse,
   AppVersionResponse,
+  ProviderMarginsResponse,
+  ProviderMrrResponse,
+  ProviderCommissionResponse,
+  ProviderLtvResponse,
+  ProviderCampaignsResponse,
+  ProviderHeatmapResponse,
+  ProviderForecastResponse,
   ReportHogarParams,
   ReportHogarResponse,
   ServiceOrderResponse,
@@ -872,6 +879,51 @@ export const api = {
     const suffix = params.month ? `?month=${encodeURIComponent(params.month)}` : '';
 
     return request<ReportComercioNutritionResponse>(`/reports/comercio/nutritional${suffix}`);
+  },
+
+  /**
+   * Reportes del comercio (prestador): espejo movil de
+   * /api/v1/provider/reports/* de la web. Mismos JSON que los tabs de
+   * Rentabilidad, MRR, Comisiones, Clientes, Campanas, Demanda y
+   * Abastecimiento. El servidor exige comercio asociado (403 si no).
+   */
+  providerReportMargins(productId?: number | null): Promise<ProviderMarginsResponse> {
+    const suffix = productId ? `?product_id=${productId}` : '';
+    return request<ProviderMarginsResponse>(`/provider/reports/margins${suffix}`);
+  },
+
+  providerReportMrr(periodMonths?: number | null): Promise<ProviderMrrResponse> {
+    const suffix = periodMonths ? `?period=${periodMonths}` : '';
+    return request<ProviderMrrResponse>(`/provider/reports/mrr${suffix}`);
+  },
+
+  providerReportCommission(params: { start_date?: string; end_date?: string } = {}): Promise<ProviderCommissionResponse> {
+    const query = new URLSearchParams();
+    if (params.start_date) query.set('start_date', params.start_date);
+    if (params.end_date) query.set('end_date', params.end_date);
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+    return request<ProviderCommissionResponse>(`/provider/reports/commission-savings${suffix}`);
+  },
+
+  providerReportLtv(): Promise<ProviderLtvResponse> {
+    return request<ProviderLtvResponse>('/provider/reports/ltv-risk');
+  },
+
+  providerReportCampaigns(): Promise<ProviderCampaignsResponse> {
+    return request<ProviderCampaignsResponse>('/provider/reports/campaigns');
+  },
+
+  providerReportHeatmap(days?: number | null): Promise<ProviderHeatmapResponse> {
+    const suffix = days ? `?days=${days}` : '';
+    return request<ProviderHeatmapResponse>(`/provider/reports/demand-heatmap${suffix}`);
+  },
+
+  providerReportForecast(params: { start_date?: string; end_date?: string } = {}): Promise<ProviderForecastResponse> {
+    const query = new URLSearchParams();
+    if (params.start_date) query.set('start_date', params.start_date);
+    if (params.end_date) query.set('end_date', params.end_date);
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+    return request<ProviderForecastResponse>(`/provider/reports/stock-forecast${suffix}`);
   },
 
   createEmergency(form: FormData): Promise<ServiceOrderResponse> {

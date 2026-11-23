@@ -16,6 +16,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { MonthPickerModal } from '@/components/MonthPickerModal';
+import { ProviderComercioReports } from '@/components/ProviderComercioReports';
 import { money } from '@/lib/money';
 import {
   exportReportComercioPdf,
@@ -729,6 +730,14 @@ export default function ReportsComercioScreen() {
 
   if (loading.savings && !data.savings) {
     return <LoadingScreen message="Cargando reportes del comercio…" />;
+  }
+
+  // Paridad con la web (dashboard/sections/reportes.blade.php): el
+  // Prestador ve los reportes del comercio (7 tabs de Rentabilidad,
+  // MRR, Comisiones, Clientes, Campanas, Demanda y Abastecimiento).
+  // El resto sigue viendo la vista de ahorro del cliente de abajo.
+  if (String(user?.role ?? '').toLowerCase() === 'prestador') {
+    return <ProviderComercioReports />;
   }
 
   const pdfData = currentPdfData();
