@@ -15,6 +15,7 @@ import { ApiError, api } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { SectionDrawer } from '@/components/SectionDrawer';
 import { money } from '@/lib/money';
 import {
   exportProviderComercioPdf,
@@ -194,6 +195,7 @@ export function ProviderComercioReports() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const loaded: Record<ProviderTabKey, boolean> = {
     margins: margins !== null,
@@ -605,30 +607,31 @@ export function ProviderComercioReports() {
         <Text style={styles.subtitle}>Rentabilidad, clientes y operación de tu comercio</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabsTrack}
-        style={styles.tabsScroll}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir secciones de reportes"
+        onPress={() => setSidebarOpen(true)}
+        style={styles.sectionsCard}
       >
-        {TABS.map((tab) => {
-          const active = tab.key === activeTab;
+        <View style={styles.sectionsInfo}>
+          <Text style={styles.sectionsLabel}>Sección</Text>
+          <Text style={styles.sectionsValue} numberOfLines={1}>
+            {TABS.find((tab) => tab.key === activeTab)?.icon ?? ''}{' '}
+            {TABS.find((tab) => tab.key === activeTab)?.label ?? ''}
+          </Text>
+        </View>
+        <Text style={styles.sectionsChevron}>›</Text>
+      </Pressable>
 
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => selectTab(tab.key)}
-              style={[styles.tab, active && styles.tabActive]}
-            >
-              <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                {tab.icon} {tab.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <SectionDrawer
+        visible={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        title="Reportes Comercio"
+        subtitle="Rentabilidad, clientes y operación de tu comercio"
+        items={TABS}
+        active={activeTab}
+        onSelect={(key) => selectTab(key as ProviderTabKey)}
+      />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -676,18 +679,23 @@ const styles = StyleSheet.create({
   title: { color: NAVY, fontSize: 20, fontWeight: '800' },
   subtitle: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 3 },
   tabsScroll: { flexGrow: 0, marginBottom: spacing.md },
-  tabsTrack: { gap: spacing.xs, paddingHorizontal: spacing.lg, paddingVertical: spacing.xs },
-  tab: {
+  sectionsCard: {
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.lg,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
   },
-  tabActive: { backgroundColor: ACCENT, borderColor: ACCENT },
-  tabText: { color: colors.muted, fontSize: 12, fontWeight: '600' },
-  tabTextActive: { color: colors.surface, fontWeight: '800' },
+  sectionsInfo: { flex: 1, minWidth: 0 },
+  sectionsLabel: { color: colors.muted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  sectionsValue: { color: colors.text, fontSize: 15, fontWeight: '700', marginTop: 2 },
+  sectionsChevron: { color: colors.muted, fontSize: 22, fontWeight: '600' },
   scroll: { flex: 1 },
   content: { paddingBottom: spacing.lg, paddingHorizontal: spacing.lg, paddingTop: spacing.xs },
   periodText: { color: colors.muted, fontSize: 12, marginBottom: spacing.md },
