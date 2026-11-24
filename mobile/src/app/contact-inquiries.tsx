@@ -29,6 +29,7 @@ import { colors, radius, spacing } from '@/theme';
 import type { ContactInquiry, ContactInquiryCounts } from '@/types/api';
 
 const PAGE_SIZE = 20;
+const POLL_MS = 8000;
 
 const EMPTY_COUNTS: ContactInquiryCounts = {
   all: 0,
@@ -52,9 +53,11 @@ export default function ContactInquiriesScreen() {
 
   // Descarta respuestas viejas si el usuario cambia de filtro rápido.
   const requestId = useRef(0);
+  // Firma de la primera página: solo repinta el sondeo si algo cambió.
+  const listSig = useRef<string | null>(null);
 
   const fetchPage = useCallback(
-    async (nextPage: number, replace: boolean) => {
+    async (nextPage: number, replace: boolean, silent = false) => {
       const id = ++requestId.current;
 
       try {
@@ -68,6 +71,28 @@ export default function ContactInquiriesScreen() {
           return;
         }
 
+        if (silent && replace && nextPage === 1) {
+          const sig = response.data
+            .map((x) => `${x.id}:${x.status}`)
+            .join('|');
+          setCounts(response.counts);
+          setPage(response.meta.current_page);
+          setLastPage(response.meta.last_page);
+          setTotal(response.meta.total);
+          if (sig === listSig.current) {
+            return;
+          }
+          listSig.current = sig;
+          setItems(response.data);
+          setError(null);
+          return;
+        }
+
+        if (replace && nextPage === 1) {
+          listSig.current = response.data
+            .map((x) => `${x.id}:${x.status}`)
+            .join('|');
+        }
         setItems((current) => (replace ? response.data : [...current, ...response.data]));
         setCounts(response.counts);
         setPage(response.meta.current_page);
@@ -79,6 +104,9 @@ export default function ContactInquiriesScreen() {
           return;
         }
 
+        if (silent) {
+          return;
+        }
         setError(
           caught instanceof ApiError
             ? caught.message
@@ -105,6 +133,21 @@ export default function ContactInquiriesScreen() {
         active = false;
       };
     }, [fetchPage]),
+  );
+
+  // Sondeo en vivo: solo la pantalla enfocada, solo primera página,
+  // y solo repinta si la firma cambió. Pull-to-refresh sigue intacto.
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setInterval(() => {
+        if (page !== 1 || loadingMore || refreshing || visitsVisible) {
+          return;
+        }
+        void fetchPage(1, true, true);
+      }, POLL_MS);
+
+      return () => clearInterval(timer);
+    }, [fetchPage, page, loadingMore, refreshing, visitsVisible]),
   );
 
   async function handleRefresh() {

@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -20,6 +20,7 @@ import { colors, radius, spacing } from '@/theme';
 import type { ServiceOrderItem, ServiceOrderType } from '@/types/api';
 
 const PAGE_SIZE = 15;
+const POLL_MS = 8000;
 
 const TYPE_LABELS: Record<string, string> = {
   EMERGENCY: 'Urgencia',
@@ -81,6 +82,8 @@ export default function ProviderOrdersScreen() {
   const [ratingOrder, setRatingOrder] = useState<ServiceOrderItem | null>(null);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [ratingError, setRatingError] = useState<string | null>(null);
+  // Firma de la primera página: el sondeo solo repinta si algo cambió.
+  const listSig = useRef<string | null>(null);
 
   const fetchPage = useCallback(
     async (nextPage: number, replace: boolean) => {
@@ -170,6 +173,50 @@ export default function ProviderOrdersScreen() {
       active = false;
     };
   }, [scope, statusFilter, typeFilter]);
+
+  // Sondeo en vivo: solo la pantalla enfocada y solo primera página.
+  // Repinta únicamente si la firma (ids + estados) cambió.
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setInterval(() => {
+        if (page !== 1 || loadingMore || refreshing || ratingOrder) {
+          return;
+        }
+        api
+          .providerOrders({
+            per_page: PAGE_SIZE,
+            page: 1,
+            mine: scope === 'MINE' ? true : undefined,
+            ...(statusFilter ? { status: statusFilter } : {}),
+            ...(typeFilter ? { order_type: typeFilter } : {}),
+          })
+          .then((response) => {
+            const list =
+              scope === 'POOL'
+                ? response.data.orders.filter((order) => order.merchant_id === null)
+                : response.data.orders;
+            const sig = list.map((o) => `${o.id}:${o.status}:${o.display_status}:${o.customer_rated}:${o.provider_rated}`).join('|');
+            setCommerceName(response.data.provider.business_name);
+            setBalance(response.data.provider.balance);
+            setTotal(scope === 'POOL' ? list.length : response.meta.total);
+            setStatuses(response.filters.statuses);
+            if (sig === listSig.current) {
+              return;
+            }
+            listSig.current = sig;
+            setOrders(list);
+            setPage(response.meta.current_page);
+            setLastPage(response.meta.last_page);
+            setError(null);
+          })
+          .catch(() => {
+            // El siguiente ciclo reintenta sin interrumpir la lectura.
+          });
+      }, POLL_MS);
+
+      return () => clearInterval(timer);
+    }, [scope, statusFilter, typeFilter, page, loadingMore, refreshing, ratingOrder]),
+  );
 
   function handleScope(next: Scope) {
     setLoading(true);

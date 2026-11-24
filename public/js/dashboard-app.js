@@ -52,6 +52,10 @@
         var target = document.getElementById('dash-' + key);
         if (target) target.style.display = 'block';
 
+        // Auto-refresh selectivo: solo se sondea la seccion visible.
+        // Al cambiar de ventana se detiene el anterior y arranca el nuevo.
+        try { if (typeof fdStartPolling === 'function') fdStartPolling(key); } catch (e) {}
+
         // Cada seccion deja una entrada en el historial: el boton Atras del
         // navegador recorre el panel del usuario en vez de salir al sitio.
         if (!fdSectionPopNav && (!history.state || history.state.fdSection !== key)) {
@@ -7130,6 +7134,7 @@
         'mis-pedidos': function () { loadMyOrders(true); },
         'pedidos': function () { loadProviderOrders(true); },
         'comercios': function () { loadComercios(true); },
+        'consultas-sugerencias': function () { loadContactInquiries(true); },
         'ordenes-gestion': function () { if (window.fdOgLoad) window.fdOgLoad(true); }
     };
     var FD_POLL_MS = 8000;
@@ -12299,11 +12304,16 @@
     var contactInquiryFilter = 'all';
     var contactInquiryDetailId = null;
 
-    function loadContactInquiries() {
-        document.getElementById('ci-loading').innerHTML = '<p style="font-size:13px;color:#6b7280;">Cargando consultas...</p>';
-        document.getElementById('ci-loading').style.display = 'block';
-        document.getElementById('ci-empty').style.display = 'none';
-        document.getElementById('ci-table-wrap').style.display = 'none';
+    function loadContactInquiries(silent) {
+        var loadingEl = document.getElementById('ci-loading');
+        var emptyEl = document.getElementById('ci-empty');
+        var wrapEl = document.getElementById('ci-table-wrap');
+        if (!silent) {
+            loadingEl.innerHTML = '<p style="font-size:13px;color:#6b7280;">Cargando consultas...</p>';
+            loadingEl.style.display = 'block';
+            emptyEl.style.display = 'none';
+            wrapEl.style.display = 'none';
+        }
 
         fetch(window.APP_BASE+"/contact-inquiries", {
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
@@ -12313,10 +12323,25 @@
             if (!Array.isArray(data)) {
                 throw new Error(data && data.message ? data.message : 'No se pudieron cargar las consultas.');
             }
+            if (silent) {
+                // Solo repinta si la ventana visible realmente cambio (ids + estados + updated_at).
+                var sig = data.map(function (x) { return x.id + ':' + x.status + ':' + (x.updated_at || x.created_at || ''); }).join('|');
+                if (sig === loadContactInquiries._sig) return;
+                loadContactInquiries._sig = sig;
+                // No pisar el detalle abierto mientras se edita.
+                if (document.getElementById('ci-detail-overlay').style.display === 'flex') {
+                    allContactInquiries = data;
+                    updateContactInquiryCounts();
+                    return;
+                }
+            } else {
+                loadContactInquiries._sig = data.map(function (x) { return x.id + ':' + x.status + ':' + (x.updated_at || x.created_at || ''); }).join('|');
+            }
             allContactInquiries = data;
             renderContactInquiries();
         })
         .catch(function(error) {
+            if (silent) return;
             document.getElementById('ci-loading').innerHTML = '<p style="font-size:13px;color:#dc2626;">' + escapeHtml(error.message || 'Error al cargar las consultas.') + '</p>';
         });
     }
