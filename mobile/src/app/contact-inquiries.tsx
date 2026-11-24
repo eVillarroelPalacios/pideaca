@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
   FlatList,
+  Modal,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -14,6 +15,8 @@ import { ApiError, api } from '@/api/client';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import {
+  COUNTRY_VISITS_MOCK,
+  COUNTRY_VISITS_TOTAL,
   formatInquiryDate,
   INQUIRY_FILTERS,
   type InquiryFilter,
@@ -45,6 +48,7 @@ export default function ContactInquiriesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visitsVisible, setVisitsVisible] = useState(false);
 
   // Descarta respuestas viejas si el usuario cambia de filtro rápido.
   const requestId = useRef(0);
@@ -147,6 +151,17 @@ export default function ContactInquiriesScreen() {
           style={styles.refreshButton}
         >
           <Text style={styles.refreshText}>Actualizar</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.visitsRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver visitas por país"
+          onPress={() => setVisitsVisible(true)}
+          style={({ pressed }) => [styles.visitsButton, pressed && styles.cardPressed]}
+        >
+          <Text style={styles.visitsButtonText}>🌐 Ver Visitas por País</Text>
         </Pressable>
       </View>
 
@@ -258,6 +273,93 @@ export default function ContactInquiriesScreen() {
           }}
         />
       </View>
+
+      <Modal
+        visible={visitsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setVisitsVisible(false)}
+      >
+        <View style={styles.visitsOverlay}>
+          <View style={styles.visitsCard}>
+            <View style={styles.visitsHeader}>
+              <Text style={styles.visitsTitle}>Estadísticas de Visitas por País</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar estadísticas"
+                onPress={() => setVisitsVisible(false)}
+                style={styles.visitsClose}
+              >
+                <Text style={styles.visitsCloseText}>✕</Text>
+              </Pressable>
+            </View>
+
+            <FlatList
+              data={COUNTRY_VISITS_MOCK}
+              keyExtractor={(item) => item.code}
+              contentContainerStyle={styles.visitsBody}
+              ListHeaderComponent={
+                <View>
+                  <Text style={styles.visitsSubtitle}>Total de visitas registradas en el sitio</Text>
+                  <Text style={styles.visitsTotal}>{COUNTRY_VISITS_TOTAL.toLocaleString('es-AR')}</Text>
+                  <View style={styles.visitsSegments}>
+                    {COUNTRY_VISITS_MOCK.map((item) => (
+                      <View
+                        key={item.code}
+                        style={{ backgroundColor: item.color, flex: item.pct }}
+                      />
+                    ))}
+                  </View>
+                  <View style={styles.visitsMap}>
+                    <Text style={styles.visitsMapLabel}>MAPA MUNDIAL</Text>
+                    <View style={styles.visitsMapBox}>
+                      <View style={[styles.visitsDot, { backgroundColor: '#ea580c', left: '18%', top: '38%' }]} />
+                      <View style={[styles.visitsDot, { backgroundColor: '#0c2a4d', left: '48%', top: '28%' }]} />
+                      <View style={[styles.visitsDot, { backgroundColor: '#1e40af', left: '24%', top: '60%' }]} />
+                      <View style={[styles.visitsDot, { backgroundColor: '#f97316', left: '28%', top: '78%' }]} />
+                      <Text style={[styles.visitsMapTag, { left: '18%', top: '52%' }]}>MX 38%</Text>
+                      <Text style={[styles.visitsMapTag, { left: '48%', top: '42%' }]}>ES 26%</Text>
+                    </View>
+                    <View style={styles.visitsLegend}>
+                      <Text style={styles.visitsLegendText}>● Mayor tráfico</Text>
+                      <Text style={styles.visitsLegendText}>● Tráfico alto</Text>
+                    </View>
+                  </View>
+                </View>
+              }
+              renderItem={({ item }) => (
+                <View>
+                  <View style={styles.visitsBarHead}>
+                    <Text style={styles.visitsCountry}>
+                      {item.flag} {item.name}
+                    </Text>
+                    <Text style={styles.visitsPct}>{item.pct}%</Text>
+                  </View>
+                  <View style={styles.visitsTrack}>
+                    <View
+                      style={[styles.visitsFill, { backgroundColor: item.color, width: `${item.pct}%` }]}
+                    />
+                  </View>
+                  <View style={styles.visitsRowLine}>
+                    <Text style={styles.visitsVisits}>{item.visits.toLocaleString('es-AR')} visitas</Text>
+                  </View>
+                </View>
+              )}
+              ListFooterComponent={
+                <View style={styles.visitsFooter}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setVisitsVisible(false)}
+                    style={styles.visitsCloseButton}
+                  >
+                    <Text style={styles.visitsCloseButtonText}>Cerrar</Text>
+                  </Pressable>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -404,5 +506,167 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingTop: spacing.sm,
     textAlign: 'center',
+  },
+  visitsRow: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  visitsButton: {
+    alignItems: 'center',
+    backgroundColor: '#ea580c',
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  visitsButtonText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  visitsOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  visitsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    maxHeight: '90%',
+    width: '100%',
+  },
+  visitsHeader: {
+    alignItems: 'center',
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: spacing.lg,
+  },
+  visitsTitle: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  visitsClose: {
+    padding: spacing.xs,
+  },
+  visitsCloseText: {
+    color: colors.muted,
+    fontSize: 18,
+  },
+  visitsBody: {
+    padding: spacing.lg,
+  },
+  visitsSubtitle: {
+    color: colors.muted,
+    fontSize: 13,
+  },
+  visitsTotal: {
+    color: colors.text,
+    fontSize: 26,
+    fontWeight: '800',
+    marginVertical: spacing.xs,
+  },
+  visitsSegments: {
+    borderRadius: radius.pill,
+    flexDirection: 'row',
+    height: 10,
+    marginVertical: spacing.sm,
+    overflow: 'hidden',
+  },
+  visitsMap: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  visitsMapLabel: {
+    color: colors.text,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  visitsMapBox: {
+    backgroundColor: '#eef2f7',
+    borderRadius: radius.sm,
+    height: 150,
+    position: 'relative',
+  },
+  visitsDot: {
+    borderRadius: 7,
+    height: 14,
+    position: 'absolute',
+    width: 14,
+  },
+  visitsMapTag: {
+    color: '#0c2a4d',
+    fontSize: 10,
+    fontWeight: '800',
+    position: 'absolute',
+  },
+  visitsLegend: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  visitsLegendText: {
+    color: colors.muted,
+    fontSize: 12,
+  },
+  visitsBarHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  visitsCountry: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  visitsPct: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  visitsTrack: {
+    backgroundColor: colors.border,
+    borderRadius: radius.pill,
+    height: 8,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  visitsFill: {
+    height: 8,
+  },
+  visitsRowLine: {
+    marginTop: 4,
+  },
+  visitsVisits: {
+    color: colors.muted,
+    fontSize: 12,
+  },
+  visitsFooter: {
+    alignItems: 'flex-end',
+    marginTop: spacing.lg,
+  },
+  visitsCloseButton: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: 10,
+  },
+  visitsCloseButtonText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
