@@ -67,6 +67,8 @@ ${smokeRows.map((r) => `<tr><td>${dot(r.ok)}</td><td>dash-${r.section}</td><td>$
   ...r.consoleErrors.map((e) => 'JS: ' + e),
   ...r.pageErrors.map((e) => 'PAGE: ' + e),
   ...r.badRequests,
+  ...(r.badBodies ?? []),
+  ...((r.warnings ?? []).map((w) => '<span style="color:#b45309">AVISO: ' + w + '</span>')),
 ].join('<br>') || 'OK'}</td></tr>`).join('') || '<tr><td colspan="3">Barrido no ejecutado (faltan QA_EMAIL/QA_PASSWORD o Chromium)</td></tr>'}
 </table>
 
