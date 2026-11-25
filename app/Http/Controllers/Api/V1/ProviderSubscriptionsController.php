@@ -241,10 +241,15 @@ class ProviderSubscriptionsController extends Controller
             ->where('paid_at', '>=', $corte30)
             ->sum('delivery_fee');
 
+        // to_char es Postgres; en SQLite (tests) equivale a strftime.
+        // En produccion (Postgres) la rama no cambia.
+        $periodo = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', period_start) as period,"
+            : "to_char(period_start, 'YYYY-MM') as period,";
         $historial = SubscriptionPayment::where('provider_id', $provider->id)
             ->where('period_start', '>=', $inicioMesActual->copy()->subMonths($meses - 1)->toDateString())
             ->selectRaw(
-                "to_char(period_start, 'YYYY-MM') as period,"
+                $periodo
                 ." sum(case when status = 'PAID' then total else 0 end) as collected,"
                 ." sum(case when status = 'PENDING' then total else 0 end) as pending,"
                 ." sum(case when status = 'FAILED' then total else 0 end) as failed,"

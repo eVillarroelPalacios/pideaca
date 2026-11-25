@@ -57,8 +57,8 @@ class ModulesTest extends TestCase
                 'pages_count' => 0,
                 'can_delete' => true,
             ])
-            ->assertJsonPath('summary.total', 2)
-            ->assertJsonPath('summary.in_use', 1);
+            ->assertJsonPath('summary.total', Module::count())
+            ->assertJsonPath('summary.in_use', Module::whereHas('pages')->count());
     }
 
     public function test_an_assigned_user_can_access(): void

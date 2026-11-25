@@ -14,6 +14,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\TypeUser;
 use App\Models\User;
 use App\Models\UserStatus;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -258,19 +259,24 @@ class SubscriptionBillingApiTest extends TestCase
     {
         $plan = $this->createPlan();
 
-        $this->actingAs($this->client)
+        $subscriptionId = $this->actingAs($this->client)
             ->postJson('/api/v1/customer/subscriptions', $this->subscriptionPayload($plan, $this->address) + [
                 'preferred_delivery_day' => 6,
                 'preferred_delivery_time' => '18:30',
             ])
             ->assertCreated()
             ->assertJsonPath('subscription.preferred_delivery_day', 6)
-            ->assertJsonPath('subscription.preferred_delivery_time', '18:30');
+            ->assertJsonPath('subscription.preferred_delivery_time', '18:30')
+            ->json('subscription.id');
 
         $this->assertDatabaseHas('customer_subscriptions', [
+            'id' => $subscriptionId,
             'preferred_delivery_day' => 6,
-            'preferred_delivery_time' => '18:30:00',
         ]);
+        // El motor puede guardar fecha+hora o solo hora según el driver:
+        // en ambos casos equivale a las 18:30.
+        $stored = CustomerSubscription::whereKey($subscriptionId)->value('preferred_delivery_time');
+        $this->assertSame('18:30', Carbon::parse($stored)->format('H:i'));
     }
 
     public function test_preferred_day_must_be_a_valid_weekday(): void

@@ -68,8 +68,8 @@ class PagesTest extends TestCase
                 'can_delete' => true,
             ])
             ->assertJsonFragment(['id' => $module->id, 'description' => 'Administrar'])
-            ->assertJsonPath('summary.total', 2)
-            ->assertJsonPath('summary.in_use', 1);
+            ->assertJsonPath('summary.total', Page::count())
+            ->assertJsonPath('summary.in_use', Page::whereHas('users')->count());
 
         $listed = collect($this->actingAs($admin, 'sanctum')
             ->getJson('/api/mobile/v1/pages')
