@@ -24,8 +24,13 @@ class EstadosDeLosGruposTest extends TestCase
 
         // El rollback de la transaccion no reinicia la secuencia de `users`,
         // asi que se resetea para que el admin sea siempre el usuario id=1
-        // (el seeder asigna la pagina al usuario 1).
-        DB::statement('ALTER SEQUENCE IF EXISTS users_id_seq RESTART WITH 1');
+        // (el seeder asigna la pagina al usuario 1). Portable por driver.
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER SEQUENCE IF EXISTS users_id_seq RESTART WITH 1');
+        } elseif ($driver === 'sqlite') {
+            DB::statement("DELETE FROM sqlite_sequence WHERE name = 'users'");
+        }
 
         // En una base limpia el primer usuario creado es el id=1.
         $this->admin = User::create([

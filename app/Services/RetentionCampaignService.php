@@ -23,6 +23,16 @@ class RetentionCampaignService
     public function __construct(private readonly MarketingMessageSender $sender) {}
 
     /**
+     * Claves "regla:usuario" ya avisadas en ESTA corrida. Es propiedad de
+     * instancia (no static) a proposito: el servicio se resuelve
+     * transitorio por ejecucion, y asi un aviso de una corrida/tests
+     * anterior no silencia los de la siguiente.
+     *
+     * @var array<string, true>
+     */
+    private array $avisadosFueraDeVentana = [];
+
+    /**
      * @return array{
      *     rules: int, sent: int, failed: int, skipped_duplicate: int,
      *     skipped_no_phone: int, skipped_overdue: int, details: array<int, string>
@@ -214,16 +224,14 @@ class RetentionCampaignService
      */
     private function registrarFueraDeVentana(MarketingCampaignRule $rule, int $userId, int $dias): void
     {
-        static $avisados = [];
-
         $clave = $rule->id.':'.$userId;
         $tolerancia = max(0, (int) config('marketing.inactive_grace_days', 0));
 
-        if (isset($avisados[$clave]) || $dias <= (int) $rule->days_inactive + $tolerancia) {
+        if (isset($this->avisadosFueraDeVentana[$clave]) || $dias <= (int) $rule->days_inactive + $tolerancia) {
             return;
         }
 
-        $avisados[$clave] = true;
+        $this->avisadosFueraDeVentana[$clave] = true;
 
         Log::warning(sprintf(
             'Retencion: el usuario %d paso la ventana de la regla %d (%d dias inactivo, la regla pide %d). No se le envio nada.',
