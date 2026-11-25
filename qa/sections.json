@@ -1,0 +1,33 @@
+{
+  "baseUrl": "http://localhost/pideaca/",
+  "sections": [
+    "perfil",
+    "usuarios",
+    "tipo-usuarios",
+    "estados-usuarios",
+    "modulos",
+    "paginas",
+    "grupos",
+    "estados-grupos",
+    "sub-grupos",
+    "consultas-sugerencias",
+    "comercios",
+    "mi-catalogo",
+    "inventario",
+    "unidades-medida",
+    "tipo-monedas",
+    "pedidos",
+    "mis-pedidos",
+    "repartidor",
+    "reportes-repartidor",
+    "ordenes-servicio",
+    "ordenes-gestion",
+    "gestionar-solicitudes",
+    "solicitar-servicio",
+    "mis-servicios",
+    "reportes",
+    "reportes-hogar",
+    "dinero",
+    "billeteras-pais"
+  ]
+}

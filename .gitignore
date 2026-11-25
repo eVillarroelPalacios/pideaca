@@ -24,5 +24,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# Dumps locales con datos reales (hashes) — no subir
+# Dumps locales con datos reales (hashes) ï¿½ no subir
 database_pideaca*.sql
+
+# Artefactos del QA automatico (se regeneran con qa.bat)
+/qa/node_modules
+/qa/logs
