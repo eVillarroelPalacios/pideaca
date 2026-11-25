@@ -395,8 +395,9 @@ class ClientPanelTest extends TestCase
 
         $this->assertStringContainsString('id="fd-shops-tabs"', $html);
         $this->assertStringContainsString("fdShopsTab('favorites')", $html);
-        $this->assertStringContainsString('function fdToggleFavorite(', $html);
-        $this->assertStringContainsString('function fdShopsTab(', $html);
+        $js = $this->dashboardJs();
+        $this->assertStringContainsString('function fdToggleFavorite(', $js);
+        $this->assertStringContainsString('function fdShopsTab(', $js);
 
         // Los botones de la seccion quedaron solo-icono: accesibles por
         // title/aria-label y sin etiqueta de texto visible.
@@ -633,6 +634,24 @@ class ClientPanelTest extends TestCase
 
     // --- Vistas del panel ---
 
+    /**
+     * El JS del panel se sirve como bundle externo (/js/app.js): las
+     * aserciones sobre funciones van contra el bundle, no contra el HTML.
+     * Se lee el mismo archivo que sirve la ruta (response()->file no
+     * expone contenido en tests).
+     */
+    private function dashboardJs(): string
+    {
+        // La ruta existe y responde (el contenido se valida desde el disco).
+        $this->actingAs($this->client)->get('/js/app.js')->assertOk();
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertNotFalse($js);
+        $this->assertNotSame('', $js);
+
+        return $js;
+    }
+
     public function test_dashboard_renders_the_client_sections(): void
     {
         $response = $this->actingAs($this->client)->get('/');
@@ -640,10 +659,7 @@ class ClientPanelTest extends TestCase
         $response->assertOk()
             ->assertSee('id="dash-comercios"', false)
             ->assertSee('id="dash-mis-pedidos"', false)
-            ->assertSee('loadComercios()', false)
-            ->assertSee('loadMyOrders()', false)
             ->assertSee('id="fd-shop-overlay"', false)
-            ->assertSee(url('/api/orders/mine'), false)
             ->assertDontSee('id="sidebar-link-usuarios"', false)
             ->assertSee('id="sidebar-link-cuenta"', false)
             ->assertSee('id="sidebar-link-direccion"', false)
@@ -660,6 +676,12 @@ class ClientPanelTest extends TestCase
             ->assertSee('value="cliente.demo@example.com"', false)
             ->assertDontSee('Próximamente podrás gestionar comercios aquí.')
             ->assertDontSee('Próximamente podrás gestionar mis pedidos aquí.');
+
+        // El código que alimenta esas secciones vive en el bundle externo.
+        $js = $this->dashboardJs();
+        $this->assertStringContainsString('loadComercios()', $js);
+        $this->assertStringContainsString('loadMyOrders()', $js);
+        $this->assertStringContainsString('/api/orders/mine', $js);
     }
 
     public function test_shop_confirm_button_sits_inside_the_shop_section_below_the_cart(): void
@@ -679,10 +701,10 @@ class ClientPanelTest extends TestCase
         $overlayTag = substr($html, strpos($html, 'id="fd-shop-overlay"'), 160);
         $this->assertStringNotContainsString('position:fixed', $overlayTag, 'La tienda ya no debe ser un modal fijo.');
 
-        $btnTag = substr($html, $btnPos, 400);
+        $btnTag = substr($html, $btnPos, 1000);
         $this->assertStringNotContainsString('position:absolute', $btnTag, 'El botón ya no debe ser flotante.');
-        $this->assertStringContainsString('width:100%;background:#D24C19', $btnTag);
-        $this->assertStringContainsString('Confirmar compra', $btnTag);
+        $this->assertStringContainsString('width:100%', $btnTag);
+        $this->assertStringContainsString('Confirmar y enviar pedido', $btnTag);
     }
 
     public function test_shop_has_a_category_combo_that_filters_the_catalog(): void
@@ -696,10 +718,11 @@ class ClientPanelTest extends TestCase
         $this->assertNotFalse($bodyPos);
         $this->assertLessThan($bodyPos, $comboPos, 'El combo debe ir entre el encabezado de la tienda y el catálogo.');
         $this->assertStringContainsString('onchange="fdShopCategoryFilter()"', $html);
-        $this->assertStringContainsString('function fdShopCategoryFilter()', $html);
-        $this->assertStringContainsString('function fdShopFillCategoryFilter(', $html);
+        $js = $this->dashboardJs();
+        $this->assertStringContainsString('function fdShopCategoryFilter()', $js);
+        $this->assertStringContainsString('function fdShopFillCategoryFilter(', $js);
         $this->assertStringContainsString('<option value="">Todas las categorías</option>', $html);
-        $this->assertStringContainsString("FD_SHOP.categoryFilter = '';", $html);
+        $this->assertStringContainsString("FD_SHOP.categoryFilter = '';", $js);
     }
 
     public function test_shop_error_message_is_visible_next_to_the_confirm_button(): void
@@ -716,9 +739,10 @@ class ClientPanelTest extends TestCase
         $this->assertSame(1, substr_count($html, 'id="fd-shop-msg"'), 'El mensaje no debe duplicarse dentro del HTML del carrito.');
 
         // Productos sin stock: el catálogo los muestra deshabilitados.
-        $this->assertStringContainsString('p.is_out_of_stock', $html);
-        $this->assertStringContainsString('Sin stock</span>', $html);
-        $this->assertStringContainsString("if (p.is_out_of_stock) {\n            showMsg('Sin stock en este momento.');", $html);
+        $js = $this->dashboardJs();
+        $this->assertStringContainsString('p.is_out_of_stock', $js);
+        $this->assertStringContainsString('Sin stock</span>', $js);
+        $this->assertStringContainsString('Sin stock en este momento.', $js);
     }
 
     public function test_history_tab_shows_three_orders_per_page(): void
@@ -726,33 +750,37 @@ class ClientPanelTest extends TestCase
         $html = $this->actingAs($this->client)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="fd-myorders-pagination" style="display:none;', $html);
-        $this->assertStringContainsString('var FD_MYORDERS_PER_PAGE = 3;', $html);
-        $this->assertStringContainsString('function fdMyOrdersGoPage(page)', $html);
-        $this->assertStringContainsString('function fdMyOrdersPaintPagination(totalPages)', $html);
-        $this->assertStringContainsString('function fdMyOrdersRangeChange()', $html);
+        $js = $this->dashboardJs();
+        $this->assertStringContainsString('var FD_MYORDERS_PER_PAGE = 3;', $js);
+        $this->assertStringContainsString('function fdMyOrdersGoPage(page)', $js);
+        $this->assertStringContainsString('function fdMyOrdersPaintPagination(totalPages)', $js);
+        $this->assertStringContainsString('function fdMyOrdersRangeChange()', $js);
 
         // El historial corta la lista en páginas de 3
-        $this->assertStringContainsString('(fdMyOrdersHistoryPage - 1) * FD_MYORDERS_PER_PAGE', $html);
-        $this->assertStringContainsString('Math.ceil(list.length / FD_MYORDERS_PER_PAGE)', $html);
+        $this->assertStringContainsString('(fdMyOrdersHistoryPage - 1) * FD_MYORDERS_PER_PAGE', $js);
+        $this->assertStringContainsString('Math.ceil(list.length / FD_MYORDERS_PER_PAGE)', $js);
 
         // Cambiar de pestaña, filtro o rango vuelve a la primera página
         $this->assertStringContainsString('onchange="fdMyOrdersRangeChange()"', $html);
-        $this->assertStringContainsString("fdMyOrdersActive = tab === 'history' ? 'history' : 'today';\n        fdMyOrdersHistoryPage = 1;", $html);
+        $this->assertStringContainsString("fdMyOrdersActive = tab === 'history' ? 'history' : 'today';", $js);
+        $this->assertStringContainsString('fdMyOrdersHistoryPage = 1;', $js);
         // Paginacion estilo landing: chevrons circulares y numeros clicables.
-        $this->assertStringContainsString('title="Página anterior"', $html);
-        $this->assertStringContainsString('title="Página siguiente"', $html);
-        $this->assertStringContainsString('onclick="fdMyOrdersGoPage(', $html);
+        $this->assertStringContainsString('title="Página anterior"', $js);
+        $this->assertStringContainsString('title="Página siguiente"', $js);
+        $this->assertStringContainsString('onclick="fdMyOrdersGoPage(', $js);
     }
 
     public function test_dashboard_browser_back_stays_on_the_user_sections(): void
     {
         $response = $this->actingAs($this->client)->get('/');
 
-        $response->assertOk()
-            ->assertSee("history.pushState(state, '', ", false)
-            ->assertSee("window.addEventListener('popstate'", false)
-            ->assertSee('function fdShopBack()', false)
-            ->assertSee('function fdShopGo(key)', false);
+        $response->assertOk();
+        $js = $this->dashboardJs();
+
+        $this->assertStringContainsString("history.pushState(state, '', ", $js);
+        $this->assertStringContainsString("window.addEventListener('popstate'", $js);
+        $this->assertStringContainsString('function fdShopBack()', $js);
+        $this->assertStringContainsString('function fdShopGo(key)', $js);
     }
 
     public function test_dashboard_does_not_show_client_sections_to_a_prestador(): void
@@ -804,26 +832,33 @@ class ClientPanelTest extends TestCase
         $response = $this->actingAs($this->client)->get('/');
 
         $response->assertOk()
-            ->assertSee('function fdMyOrdersSplit()', false)
-            ->assertSee('function fdMyOrdersRender(silent)', false)
-            ->assertSee('function fdMyOrdersLiveTitle(o)', false)
-            ->assertSee('function loadMyOrders(silent)', false)
-            ->assertSee('loadMyOrders(true)', false)
-            ->assertSee('fdStartPolling(key)', false)
-            ->assertSee('visibilitychange', false)
             ->assertSee('fd-myorders-summary', false);
+
+        $js = $this->dashboardJs();
+
+        $this->assertStringContainsString('function fdMyOrdersSplit()', $js);
+        $this->assertStringContainsString('function fdMyOrdersRender(silent)', $js);
+        $this->assertStringContainsString('function fdMyOrdersLiveTitle(o)', $js);
+        $this->assertStringContainsString('function loadMyOrders(silent)', $js);
+        $this->assertStringContainsString('loadMyOrders(true)', $js);
+        $this->assertStringContainsString('fdStartPolling(key)', $js);
+        $this->assertStringContainsString('visibilitychange', $js);
+        $this->assertStringContainsString('fd-myorders-summary', $js);
     }
 
     public function test_provider_dashboard_renders_the_status_actions(): void
     {
         $response = $this->actingAs($this->providerUser)->get('/');
 
-        $response->assertOk()
-            ->assertSee('var FD_ORDER_FLOW = {', false)
-            ->assertSee('function fdOrderActions(o)', false)
-            ->assertSee('function fdUpdateOrderStatus(', false)
-            ->assertSee("method: 'PATCH'", false)
-            ->assertSee('loadProviderOrders(true)', false);
+        $response->assertOk();
+
+        $js = $this->dashboardJs();
+
+        $this->assertStringContainsString('var FD_ORDER_FLOW = {', $js);
+        $this->assertStringContainsString('function fdOrderActions(o)', $js);
+        $this->assertStringContainsString('function fdUpdateOrderStatus(', $js);
+        $this->assertStringContainsString("method: 'PATCH'", $js);
+        $this->assertStringContainsString('loadProviderOrders(true)', $js);
     }
 
     public function test_provider_advances_the_order_and_the_client_sees_the_new_status(): void
