@@ -113,9 +113,9 @@ class PublicHomeTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk()
-            ->assertSee('Nuestros Servicios')
-            ->assertSee('Descubrí las grandes familias')
-            ->assertDontSee('Auxilio Vial:');
+            ->assertSee('Estructura de Servicios')
+            ->assertSee('Grupo Activo Demo')
+            ->assertDontSee('Grupo Cerrado Demo');
     }
 
     public function test_home_keeps_providers_and_groups_without_status_visible(): void
@@ -175,7 +175,7 @@ class PublicHomeTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('>PD</div>', $html);
-        $this->assertStringContainsString('width:92px;height:92px;', $html);
+        $this->assertStringContainsString('ad-avatar', $html);
         $this->assertStringNotContainsString('images/publicidad/default.jpg', $html);
         $this->assertStringNotContainsString('provider_9999.', $html);
     }
