@@ -141,6 +141,17 @@ class DriverVehicleTest extends TestCase
      */
     public function test_el_repartidor_ve_una_entrada_de_vehiculo_en_el_sidebar_y_el_panel_abre_por_defecto(): void
     {
+        // Con dirección completa el panel inicial es el vehículo; sin ella
+        // la app manda a "Mi Dirección" por diseño (bloqueo de dirección).
+        $pais = \App\Models\Country::create(['name' => 'Argentina', 'iso_code' => 'AR']);
+        \App\Models\Address::create([
+            'user_id' => $this->driver->id,
+            'country_id' => $pais->id,
+            'street' => 'Av. Test',
+            'number' => '100',
+            'is_primary' => true,
+        ]);
+
         $html = $this->actingAs($this->driver)->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('id="sidebar-link-vehiculo"', $html);
