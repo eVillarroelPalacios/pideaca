@@ -190,7 +190,10 @@
                                 @endif
                                 <div class="ad-banner">
                                     @if($provider['banner_url'])
-                                    <img class="ad-avatar-img" src="{{ asset('images/publicidad/' . $provider['banner_url'] . '?v=' . filemtime(public_path('images/publicidad/' . $provider['banner_url']))) }}" alt="{{ $provider['name'] }}" />
+                                    @php
+                                        $bannerPath = public_path('images/publicidad/' . $provider['banner_url']);
+                                    @endphp
+                                    <img class="ad-avatar-img" src="{{ asset('images/publicidad/' . $provider['banner_url'] . (is_file($bannerPath) ? '?v=' . filemtime($bannerPath) : '')) }}" alt="{{ $provider['name'] }}" />
                                     @else
                                     <div class="ad-avatar" style="background:{{ $initialsColor }};">{{ $initials }}</div>
                                     @endif

@@ -491,8 +491,11 @@ class TrustedDriverDispatchTest extends TestCase
             ->assertSee('Agregar repartidor')
             ->assertSee('Lista de confianza')
             ->assertSee('Patente')
-            ->assertSee('Estado')
-            ->assertSee('disable_mode=1', false);
+            ->assertSee('Estado');
+
+        // El modo disable vive en el bundle externo /js/app.js.
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('disable_mode=1', $js);
 
         $this->assertStringNotContainsString('Undefined variable', $response->getContent());
     }
