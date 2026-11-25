@@ -908,7 +908,7 @@ class ServiceOrdersController extends Controller
      */
     private function attachEmergencyMedia(ServiceOrder $order, Request $request): void
     {
-        $destDir = public_path('images/servicios');
+        $destDir = config('bookings.uploads_dir') ?: public_path('images/servicios');
 
         if (! is_dir($destDir)) {
             mkdir($destDir, 0755, true);
@@ -919,14 +919,14 @@ class ServiceOrdersController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = 'urgencia_'.$order->id.'_foto.'.strtolower($file->getClientOriginalExtension());
-            $file->move($destDir, $filename);
+            \App\Support\UploadFiles::move($file, $destDir, $filename);
             $paths['photo_path'] = $filename;
         }
 
         if ($request->hasFile('audio')) {
             $file = $request->file('audio');
             $filename = 'urgencia_'.$order->id.'_audio.'.strtolower($file->getClientOriginalExtension());
-            $file->move($destDir, $filename);
+            \App\Support\UploadFiles::move($file, $destDir, $filename);
             $paths['audio_path'] = $filename;
         }
 
