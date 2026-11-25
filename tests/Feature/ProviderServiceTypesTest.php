@@ -231,6 +231,9 @@ class ProviderServiceTypesTest extends TestCase
 
         $this->assertStringContainsString('id="service-types-list"', $html);
         $this->assertStringContainsString('Tipos de servicio', $html);
-        $this->assertStringContainsString('/profile/service-types', $html);
+
+        // El endpoint se arma en runtime en el bundle externo.
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('/profile/service-types', $js);
     }
 }
