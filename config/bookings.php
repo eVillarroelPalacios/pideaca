@@ -12,11 +12,15 @@ return [
     |                     DEPOSIT; con FULL se cobra el total del servicio.
     | max_quote_photos  : fotos que puede adjuntar el cliente al pedir
     |                     presupuesto (ademas de un video opcional).
+    | uploads_dir       : destino de fotos/videos de presupuestos. Solo los
+    |                     tests lo cambian (temporal fuera del arbol indexado).
     */
     'slot_minutes' => (int) env('BOOKINGS_SLOT_MINUTES', 60),
 
     'deposit_percent' => (float) env('BOOKINGS_DEPOSIT_PERCENT', 50),
 
     'max_quote_photos' => (int) env('BOOKINGS_MAX_QUOTE_PHOTOS', 5),
+
+    'uploads_dir' => env('BOOKINGS_UPLOADS_DIR', null),
 
 ];

@@ -815,7 +815,9 @@ class ServiceBookingController extends Controller
      */
     private function storeQuoteMedia(ServiceOrder $order, Request $request): array
     {
-        $destDir = public_path('images/servicios');
+        // En tests se redirige a un temporal (config bookings.uploads_dir)
+        // para no ensuciar el arbol indexado ni colisionar entre tests.
+        $destDir = config('bookings.uploads_dir') ?: public_path('images/servicios');
 
         if (! is_dir($destDir)) {
             mkdir($destDir, 0755, true);
@@ -829,14 +831,14 @@ class ServiceBookingController extends Controller
             }
 
             $filename = 'quote_'.$order->id.'_foto_'.$i.'.'.strtolower($file->getClientOriginalExtension());
-            $file->move($destDir, $filename);
+            \App\Support\UploadFiles::move($file, $destDir, $filename);
             $adjuntos[] = ['type' => 'photo', 'path' => $filename];
         }
 
         if ($request->hasFile('video')) {
             $file = $request->file('video');
             $filename = 'quote_'.$order->id.'_video.'.strtolower($file->getClientOriginalExtension());
-            $file->move($destDir, $filename);
+            \App\Support\UploadFiles::move($file, $destDir, $filename);
             $adjuntos[] = ['type' => 'video', 'path' => $filename];
         }
 
