@@ -29,8 +29,10 @@ class EnsurePageAccess
 
         // El usuario principal de la cuenta administra implicitamente a sus
         // usuarios secundarios, aunque el tipo de usuario no traiga la pagina
-        // "usuarios" en su plantilla de permisos.
-        if (! $hasAccess && in_array('usuarios', $pages, true) && $user->isAccountPrincipal()) {
+        // "usuarios" en su plantilla de permisos. Se exige que existan
+        // secundarios reales: sin ellos el bypass le regalaba la gestion de
+        // usuarios a cualquier cuenta unipersonal.
+        if (! $hasAccess && in_array('usuarios', $pages, true) && $user->isAccountPrincipal() && $user->hasSecondaryUsers()) {
             $hasAccess = true;
         }
 

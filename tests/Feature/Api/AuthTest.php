@@ -94,6 +94,7 @@ class AuthTest extends TestCase
         UserStatus::create(['status' => 'Activo']);
         config(['catalog.registrable_type_ids' => [$type->id]]);
 
+        // El registro ya no entrega token: exige activar la cuenta primero.
         $this->postJson('/api/mobile/v1/auth/register', [
             'name' => 'Cliente Nuevo',
             'email' => 'Nuevo@Example.com',
@@ -101,17 +102,32 @@ class AuthTest extends TestCase
             'password' => 'secret123',
             'password_confirmation' => 'secret123',
         ])->assertCreated()
-            ->assertJson([
-                'success' => true,
-                'token_type' => 'Bearer',
-            ])
+            ->assertJson(['success' => true])
             ->assertJsonPath('user.email', 'nuevo@example.com')
             ->assertJsonPath('user.role', 'Cliente');
+
+        $user = User::where('email', 'nuevo@example.com')->firstOrFail();
 
         $this->assertDatabaseHas('users', [
             'email' => 'nuevo@example.com',
             'type_user_id' => $type->id,
         ]);
+        $this->assertDatabaseHas('account_activation_requests', [
+            'user_id' => $user->id,
+        ]);
+
+        // Tras activar, el login sí entrega el token Bearer.
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        $token = $this->postJson('/api/mobile/v1/auth/login', [
+            'email' => 'nuevo@example.com',
+            'password' => 'secret123',
+        ])->assertOk()->assertJson([
+            'success' => true,
+            'token_type' => 'Bearer',
+        ])->json('token');
+
+        $this->assertNotEmpty($token);
     }
 
     public function test_register_rejects_a_duplicate_email(): void
@@ -142,6 +158,7 @@ class AuthTest extends TestCase
             'type_user_id' => $type->id,
             'user_status_id' => $status->id,
             'password' => 'secret123',
+            'email_verified_at' => now(),
         ]);
     }
 

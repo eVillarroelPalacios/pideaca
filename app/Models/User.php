@@ -140,6 +140,24 @@ class User extends Authenticatable
     }
 
     /**
+     * Si la cuenta tiene usuarios secundarios (mismo email): solo entonces
+     * el principal necesita administrar usuarios aunque su tipo no traiga
+     * la pagina. Sin secundarios no hay nada que administrar.
+     */
+    public function hasSecondaryUsers(): bool
+    {
+        $email = strtolower(trim((string) $this->email));
+
+        if ($email === '') {
+            return false;
+        }
+
+        return static::whereRaw('LOWER(email) = ?', [$email])
+            ->where('id', '!=', $this->id)
+            ->exists();
+    }
+
+    /**
      * El usuario principal (padre) de la cuenta: el de menor id entre los
      * usuarios que comparten el email de la cuenta.
      */
