@@ -164,8 +164,10 @@ class UnitOfMeasureTest extends TestCase
 
         $response->assertOk()
             ->assertSee('id="dash-unidades-medida"', false)
-            ->assertSee('id="uom-table"', false)
-            ->assertSee('function loadUnitsOfMeasure()', false)
-            ->assertSee('function submitUnit(e)', false);
+            ->assertSee('id="uom-table"', false);
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('function loadUnitsOfMeasure()', $js);
+        $this->assertStringContainsString('function submitUnit(e)', $js);
     }
 }

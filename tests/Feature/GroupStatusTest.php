@@ -192,9 +192,11 @@ class GroupStatusTest extends TestCase
 
         $response->assertOk()
             ->assertSee('id="group-status-select"', false)
-            ->assertSee('id="group-status-error"', false)
-            ->assertSee('loadGroupStatusOptions(', false)
-            ->assertSee('fillGroupStatusSelect(', false)
-            ->assertSee('/group-statuses');
+            ->assertSee('id="group-status-error"', false);
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('loadGroupStatusOptions(', $js);
+        $this->assertStringContainsString('fillGroupStatusSelect(', $js);
+        $this->assertStringContainsString('/group-statuses', $js);
     }
 }

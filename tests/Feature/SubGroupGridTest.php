@@ -39,19 +39,24 @@ class SubGroupGridTest extends TestCase
         $response->assertOk()
             ->assertSee('id="subgroup-group-filter"', false)
             ->assertSee('<option value="">Todos los grupos</option>', false)
-            ->assertSee('function loadSubGroupFilter()', false)
             ->assertSee('id="subgroup-search"', false);
+
+        // El codigo vive en el bundle externo /js/app.js.
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('function loadSubGroupFilter()', $js);
     }
 
     public function test_subgroup_grid_filters_by_text_and_selected_group(): void
     {
         $response = $this->actingAs($this->admin)->get('/');
 
-        $response->assertOk()
-            ->assertSee("document.getElementById('subgroup-group-filter')", false)
-            ->assertSee('String(s.group_id) === groupId', false)
-            ->assertSee('function applySubGroupFilters(', false)
-            ->assertSee('function filterSubGroups()', false);
+        $response->assertOk();
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString("document.getElementById('subgroup-group-filter')", $js);
+        $this->assertStringContainsString('String(s.group_id) === groupId', $js);
+        $this->assertStringContainsString('function applySubGroupFilters(', $js);
+        $this->assertStringContainsString('function filterSubGroups()', $js);
     }
 
     public function test_subgroup_grid_applies_the_filters_when_the_grid_loads(): void
@@ -60,10 +65,12 @@ class SubGroupGridTest extends TestCase
         // la grilla se refrescaba completa ignorando el combo y el buscador.
         $response = $this->actingAs($this->admin)->get('/');
 
-        $response->assertOk()
-            ->assertSee('Promise.all([', false)
-            ->assertSee('applySubGroupFilters(false);', false)
-            ->assertSee('loadSubGroupFilter(),', false);
+        $response->assertOk();
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('Promise.all([', $js);
+        $this->assertStringContainsString('applySubGroupFilters(false);', $js);
+        $this->assertStringContainsString('loadSubGroupFilter(),', $js);
     }
 
     public function test_subgroup_grid_does_not_render_the_group_column(): void

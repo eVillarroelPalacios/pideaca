@@ -119,7 +119,9 @@ class UserStatusTest extends TestCase
 
         $response->assertOk()
             ->assertSee('id="userstatuses-table"', false)
-            ->assertSee('>Usuarios</th>', false)
-            ->assertSee('Number(s.users_count || 0)', false);
+            ->assertSee('>Usuarios</th>', false);
+
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('Number(s.users_count || 0)', $js);
     }
 }
