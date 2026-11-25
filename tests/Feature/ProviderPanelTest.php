@@ -79,6 +79,16 @@ class ProviderPanelTest extends TestCase
         $this->miCatalogoId = $miCatalogo->id;
         $this->pedidosId = $pedidos->id;
 
+        // Con dirección completa el prestador abre en "Datos del Negocio";
+        // sin ella la app lo manda a "Mi Dirección" por diseño.
+        Address::create([
+            'user_id' => $this->owner->id,
+            'country_id' => $country->id,
+            'street' => 'Av. Corrientes',
+            'number' => '1000',
+            'is_primary' => true,
+        ]);
+
         // Un comercio ajeno, para probar que no se filtra
         $otherOwner = User::create([
             'name' => 'Otro Comercio',
@@ -425,24 +435,26 @@ class ProviderPanelTest extends TestCase
         $response->assertSee('data-provider-id="'.$this->provider->id.'"', false);
 
         // Está cableado al controlador: el dispatcher dispara los loaders
-        $response->assertSee('loadProviderCatalog()', false);
-        $response->assertSee('loadProviderOrders()', false);
-        $response->assertSee(url('/api/providers'), false);
-        $response->assertSee("'/catalog'", false);
-        $response->assertSee("'/orders?'", false);
+        // (código en el bundle externo /js/app.js).
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('loadProviderCatalog()', $js);
+        $this->assertStringContainsString('loadProviderOrders()', $js);
+        $this->assertStringContainsString('/api/providers', $js);
+        $this->assertStringContainsString("'/catalog'", $js);
+        $this->assertStringContainsString("'/orders?'", $js);
 
         // Rango de fechas y paginación del listado de pedidos
         $response->assertSee('id="fd-orders-date-from"', false);
         $response->assertSee('id="fd-orders-date-to"', false);
         $response->assertSee('id="fd-orders-pagination"', false);
-        $response->assertSee('function fdOrdersRangeChange()', false);
-        $response->assertSee('function fdOrdersGoPage(step)', false);
+        $this->assertStringContainsString('function fdOrdersRangeChange()', $js);
+        $this->assertStringContainsString('function fdOrdersGoPage(step)', $js);
 
         // Mi catálogo pagina los productos de a 10 y los reagrupa por categoría
         $response->assertSee('id="fd-catalog-pagination"', false);
-        $response->assertSee('function fdCatGoPage(step)', false);
-        $response->assertSee('function fdCatPaintPagination()', false);
-        $response->assertSee('var FD_CAT_PER_PAGE = 10;', false);
+        $this->assertStringContainsString('function fdCatGoPage(step)', $js);
+        $this->assertStringContainsString('function fdCatPaintPagination()', $js);
+        $this->assertStringContainsString('var FD_CAT_PER_PAGE = 10;', $js);
 
         // Mi Perfil: el enlace "Usuarios" del sidebar no se oculta a los prestadores
         $response->assertSee('id="sidebar-link-usuarios"', false);
@@ -472,28 +484,30 @@ class ProviderPanelTest extends TestCase
         $this->assertStringContainsString("onclick=\"fdOrdersTab('history')\"", $html);
 
         // Las pestañas se filtran en el servidor, con contadores y paginación
-        $this->assertStringContainsString('function fdOrdersPaintTabs()', $html);
-        $this->assertStringContainsString('function fdOrdersTab(tab)', $html);
-        $this->assertStringContainsString('function fdOrdersRender(silent)', $html);
-        $this->assertStringContainsString('function fdOrdersGoPage(step)', $html);
-        $this->assertStringContainsString('function fdOrdersPaintPagination()', $html);
-        $this->assertStringContainsString('function fdOrdersRangeChange()', $html);
-        $this->assertStringContainsString("var fdOrdersActive = 'today';", $html);
-        $this->assertStringContainsString("fdOrdersActive = tab === 'history' ? 'history' : 'today';", $html);
-        $this->assertStringContainsString("'tab=' + encodeURIComponent(fdOrdersActive)", $html);
-        $this->assertStringContainsString("'date_from=' + encodeURIComponent(fdOrdersDateFrom())", $html);
-        $this->assertStringContainsString("'date_to=' + encodeURIComponent(fdOrdersDateTo())", $html);
-        $this->assertStringContainsString("'page=' + fdOrdersPage", $html);
+        // (código en el bundle externo /js/app.js).
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('function fdOrdersPaintTabs()', $js);
+        $this->assertStringContainsString('function fdOrdersTab(tab)', $js);
+        $this->assertStringContainsString('function fdOrdersRender(silent)', $js);
+        $this->assertStringContainsString('function fdOrdersGoPage(step)', $js);
+        $this->assertStringContainsString('function fdOrdersPaintPagination()', $js);
+        $this->assertStringContainsString('function fdOrdersRangeChange()', $js);
+        $this->assertStringContainsString("var fdOrdersActive = 'today';", $js);
+        $this->assertStringContainsString("fdOrdersActive = tab === 'history' ? 'history' : 'today';", $js);
+        $this->assertStringContainsString("'tab=' + encodeURIComponent(fdOrdersActive)", $js);
+        $this->assertStringContainsString("'date_from=' + encodeURIComponent(fdOrdersDateFrom())", $js);
+        $this->assertStringContainsString("'date_to=' + encodeURIComponent(fdOrdersDateTo())", $js);
+        $this->assertStringContainsString("'page=' + fdOrdersPage", $js);
 
         // El rango de fechas vive solo en la pestaña de historial
-        $this->assertStringContainsString('function fdOrdersPaintRange()', $html);
-        $this->assertStringContainsString("fdOrdersActive === 'history' ? 'flex' : 'none'", $html);
-        $this->assertStringContainsString("if (fdOrdersActive === 'history' && fdOrdersRangeActive())", $html);
+        $this->assertStringContainsString('function fdOrdersPaintRange()', $js);
+        $this->assertStringContainsString("fdOrdersActive === 'history' ? 'flex' : 'none'", $js);
+        $this->assertStringContainsString("if (fdOrdersActive === 'history' && fdOrdersRangeActive())", $js);
 
         // Los contadores de cada pestaña se pintan con los totales del servidor
-        $this->assertStringContainsString('fdOrdersCounts = Object.assign({ today: 0, history: 0', $html);
-        $this->assertStringContainsString("document.getElementById('fd-orders-count-' + key)", $html);
-        $this->assertStringContainsString('badge.textContent = count;', $html);
+        $this->assertStringContainsString('fdOrdersCounts = Object.assign({ today: 0, history: 0', $js);
+        $this->assertStringContainsString("document.getElementById('fd-orders-count-' + key)", $js);
+        $this->assertStringContainsString('badge.textContent = count;', $js);
     }
 
     public function test_dashboard_hides_the_prestador_sections_from_a_cliente(): void
