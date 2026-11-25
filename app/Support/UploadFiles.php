@@ -18,9 +18,10 @@ class UploadFiles
 
         for ($i = 0; $i < $tries; $i++) {
             try {
-                if (is_file($target)) {
-                    @unlink($target);
-                }
+                // Sin unlink previo: el rename sobrescribe directo. Borrar
+                // antes crea una ventana donde Windows niega recrear el
+                // archivo si otro proceso aun lo tiene abierto.
+                clearstatcache(true, $target);
                 $file->move($destDir, $filename);
 
                 return;
