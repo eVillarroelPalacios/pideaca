@@ -229,9 +229,11 @@ class CommerceModulePagesUiTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         // La tarjeta del comercio pasa id y nombre a la suscripcion
-        $this->assertStringContainsString('function fdSubscribeToProvider(providerId, providerName)', $html);
-        $this->assertStringContainsString("fdSubscribeToProvider(' + Number(p.id) + ',&quot;'", $html);
-        $this->assertStringContainsString("openSubNewForm(Number(providerId), providerName || '')", $html);
+        // (funciones en el bundle externo /js/app.js).
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $this->assertStringContainsString('function fdSubscribeToProvider(providerId, providerName)', $js);
+        $this->assertStringContainsString("fdSubscribeToProvider(' + Number(p.id) + ',&quot;'", $js);
+        $this->assertStringContainsString("openSubNewForm(Number(providerId), providerName || '')", $js);
 
         // El combo de comercios queda fijo con el nombre del comercio elegido
         $this->assertStringContainsString('function openSubNewForm(preselectProviderId, preselectProviderName)', $html);
@@ -264,10 +266,12 @@ class CommerceModulePagesUiTest extends TestCase
         // El desbloqueo ocurre antes de que la tarjeta vuelva a fijarlo:
         // fdSubscribeToProvider primero muestra la seccion (desbloquea) y
         // recien despues llama a openSubNewForm (fija y bloquea).
-        $fnPos = strpos($html, 'function fdSubscribeToProvider');
+        // (funcion en el bundle externo /js/app.js).
+        $js = file_get_contents(base_path('public/js/dashboard-app.js'));
+        $fnPos = strpos($js, 'function fdSubscribeToProvider');
         $this->assertNotFalse($fnPos);
-        $sectionCall = strpos($html, "showDashSection('mis-suscripciones');", $fnPos);
-        $openCall = strpos($html, 'openSubNewForm(Number(providerId)', $fnPos);
+        $sectionCall = strpos($js, "showDashSection('mis-suscripciones');", $fnPos);
+        $openCall = strpos($js, 'openSubNewForm(Number(providerId)', $fnPos);
         $this->assertNotFalse($sectionCall);
         $this->assertNotFalse($openCall);
         $this->assertLessThan($openCall, $sectionCall);
