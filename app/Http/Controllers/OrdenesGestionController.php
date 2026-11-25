@@ -177,18 +177,20 @@ class OrdenesGestionController extends Controller
             ->when($quick === 'week', fn ($query) => $query->where('created_at', '>=', Carbon::today()->subDays(6)))
             ->when($quick === 'month', fn ($query) => $query->where('created_at', '>=', Carbon::today()->subDays(29)))
             ->when($search !== '', function ($query) use ($search) {
-                $needle = '%'.$search.'%';
+                // Búsqueda insensible a mayúsculas en cualquier motor:
+                // ilike solo existe en Postgres; LOWER+LIKE equivale.
+                $needle = '%'.mb_strtolower($search).'%';
 
                 $query->where(function ($inner) use ($needle, $search) {
                     $inner->where('service_orders.id', ctype_digit($search) ? (int) $search : -1)
                         ->orWhereHas('customer', fn ($customer) => $customer
-                            ->where('name', 'ilike', $needle)
-                            ->orWhere('email', 'ilike', $needle)
-                            ->orWhere('phone', 'ilike', $needle))
+                            ->whereRaw('LOWER(name) LIKE ?', [$needle])
+                            ->orWhereRaw('LOWER(email) LIKE ?', [$needle])
+                            ->orWhereRaw('LOWER(phone) LIKE ?', [$needle]))
                         ->orWhereHas('subGroup', fn ($subgroup) => $subgroup
-                            ->where('description', 'ilike', $needle))
-                        ->orWhere('address_street', 'ilike', $needle)
-                        ->orWhere('description', 'ilike', $needle);
+                            ->whereRaw('LOWER(description) LIKE ?', [$needle]))
+                        ->orWhereRaw('LOWER(address_street) LIKE ?', [$needle])
+                        ->orWhereRaw('LOWER(description) LIKE ?', [$needle]);
                 });
             });
     }
@@ -214,16 +216,18 @@ class OrdenesGestionController extends Controller
             ->when($quick === 'week', fn ($query) => $query->where('created_at', '>=', Carbon::today()->subDays(6)))
             ->when($quick === 'month', fn ($query) => $query->where('created_at', '>=', Carbon::today()->subDays(29)))
             ->when($search !== '', function ($query) use ($search) {
-                $needle = '%'.$search.'%';
+                // Búsqueda insensible a mayúsculas en cualquier motor:
+                // ilike solo existe en Postgres; LOWER+LIKE equivale.
+                $needle = '%'.mb_strtolower($search).'%';
 
                 $query->where(function ($inner) use ($needle, $search) {
                     $inner->where('orders.id', ctype_digit($search) ? (int) $search : -1)
-                        ->orWhere('order_number', 'ilike', $needle)
+                        ->orWhereRaw('LOWER(order_number) LIKE ?', [$needle])
                         ->orWhereHas('user', fn ($user) => $user
-                            ->where('name', 'ilike', $needle)
-                            ->orWhere('email', 'ilike', $needle)
-                            ->orWhere('phone', 'ilike', $needle))
-                        ->orWhere('notes', 'ilike', $needle);
+                            ->whereRaw('LOWER(name) LIKE ?', [$needle])
+                            ->orWhereRaw('LOWER(email) LIKE ?', [$needle])
+                            ->orWhereRaw('LOWER(phone) LIKE ?', [$needle]))
+                        ->orWhereRaw('LOWER(notes) LIKE ?', [$needle]);
                 });
             })
             ->with([

@@ -264,8 +264,8 @@ class OrdenesGestionTest extends TestCase
         $this->assertStringContainsString('id="dash-ordenes-gestion"', $html);
         $this->assertStringContainsString("showDashSection('ordenes-gestion')", $html);
         $this->assertStringContainsString('/api/v1/provider/ordenes-gestion', $html);
-        $this->assertStringContainsString('id="fd-og-search"', $html);
-        $this->assertStringContainsString('Buscar por cliente o ID...', $html);
+        $this->assertStringContainsString('id="fd-og-client-filter"', $html);
+        $this->assertStringContainsString('Buscar o elegir cliente...', $html);
         $this->assertStringContainsString('Filtros rápidos', $html);
         $this->assertStringContainsString('Todas las órdenes', $html);
         // Sin las paginas viejas asignadas no se dibujan secciones duplicadas.
