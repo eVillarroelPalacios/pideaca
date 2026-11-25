@@ -30,6 +30,6 @@ class AccountActivationMail extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'emails.account-activation');
+        return new Content(view: 'emails.account-activation', text: 'emails.account-activation-text');
     }
 }

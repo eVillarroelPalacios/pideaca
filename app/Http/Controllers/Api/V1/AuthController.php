@@ -172,7 +172,7 @@ class AuthController extends Controller
         // Sin token: la app muestra el aviso de revisar el correo.
         return response()->json([
             'success' => true,
-            'message' => 'Te enviamos un correo para activar tu cuenta. Revisá tu bandeja de entrada.',
+            'message' => 'Te enviamos un correo para activar tu cuenta. Revisá tu bandeja de entrada y la carpeta de spam.',
             'user' => $this->userPayload($user),
         ], 201);
     }

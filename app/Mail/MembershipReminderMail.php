@@ -35,6 +35,6 @@ class MembershipReminderMail extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'emails.membership-reminder');
+        return new Content(view: 'emails.membership-reminder', text: 'emails.membership-reminder-text');
     }
 }
