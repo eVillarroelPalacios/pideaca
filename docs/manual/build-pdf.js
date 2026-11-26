@@ -87,9 +87,17 @@ const chapters = [
   'web/23-billeteras.md',
   'web/24-gestionar-solicitudes.md',
   'web/25-solicitar-servicio.md',
+  'web/26-catalogos-base.md',
+  'web/27-tipos-estados.md',
+  'web/28-mis-servicios.md',
+  'web/29-reportes-hogar-repartidor.md',
+  'flujos/23-retiros-dinero.md',
+  'flujos/24-suscripciones.md',
   'movil/30-consultas.md',
   'movil/31-my-orders.md',
   'movil/32-provider-orders.md',
+  'movil/33-comercios.md',
+  'movil/34-billetera.md',
 ];
 
 const sections = chapters.map((f) => {

@@ -26,8 +26,16 @@ Idioma: español. Fuentes versionadas junto al código.
 19. `web/23-billeteras.md` — Ventana web: Billeteras por país.
 20. `web/24-gestionar-solicitudes.md` — Ventana web: Gestionar Solicitudes.
 21. `web/25-solicitar-servicio.md` — Ventana web: Solicitudes (buscar prestador).
-22. `movil/31-my-orders.md` — Pantalla móvil: Mis Pedidos.
-23. `movil/32-provider-orders.md` — Pantalla móvil: Trabajos del proveedor.
+22. `web/26-catalogos-base.md` — Catálogos base: Grupos, Módulos y Páginas.
+23. `web/27-tipos-estados.md` — Catálogos: Tipos, Monedas, Unidades y Estados.
+24. `web/28-mis-servicios.md` — Ventana web: Mis Servicios.
+25. `web/29-reportes-hogar-repartidor.md` — Reportes Hogar y Repartidor.
+26. `flujos/23-retiros-dinero.md` — Flujo transversal: retiros y dinero.
+27. `flujos/24-suscripciones.md` — Flujo transversal: suscripciones.
+28. `movil/31-my-orders.md` — Pantalla móvil: Mis Pedidos.
+29. `movil/32-provider-orders.md` — Pantalla móvil: Trabajos del proveedor.
+30. `movil/33-comercios.md` — Pantalla móvil: Comercios.
+31. `movil/34-billetera.md` — Pantalla móvil: Billetera.
 
 > Cada capítulo incluye captura real generada por el robot QA (`qa/`).
 > Para regenerar el PDF: `node docs/manual/build-pdf.js` (requiere Chrome).
