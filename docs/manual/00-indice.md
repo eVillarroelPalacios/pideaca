@@ -21,6 +21,13 @@ Idioma: español. Fuentes versionadas junto al código.
 14. `flujos/21-compra-mercado.md` — Flujo transversal: compra en Mercado.
 15. `flujos/22-despacho-reparto.md` — Flujo transversal: despacho y reparto.
 16. `movil/30-consultas.md` — Pantalla móvil: Consultas.
+17. `web/21-perfil.md` — Ventana web: Mi Perfil (detalle).
+18. `web/22-reportes.md` — Ventana web: Reportes.
+19. `web/23-billeteras.md` — Ventana web: Billeteras por país.
+20. `web/24-gestionar-solicitudes.md` — Ventana web: Gestionar Solicitudes.
+21. `web/25-solicitar-servicio.md` — Ventana web: Solicitudes (buscar prestador).
+22. `movil/31-my-orders.md` — Pantalla móvil: Mis Pedidos.
+23. `movil/32-provider-orders.md` — Pantalla móvil: Trabajos del proveedor.
 
 > Cada capítulo incluye captura real generada por el robot QA (`qa/`).
 > Para regenerar el PDF: `node docs/manual/build-pdf.js` (requiere Chrome).

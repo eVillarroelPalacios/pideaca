@@ -82,7 +82,14 @@ const chapters = [
   'flujos/20-registro-activacion.md',
   'flujos/21-compra-mercado.md',
   'flujos/22-despacho-reparto.md',
+  'web/21-perfil.md',
+  'web/22-reportes.md',
+  'web/23-billeteras.md',
+  'web/24-gestionar-solicitudes.md',
+  'web/25-solicitar-servicio.md',
   'movil/30-consultas.md',
+  'movil/31-my-orders.md',
+  'movil/32-provider-orders.md',
 ];
 
 const sections = chapters.map((f) => {
