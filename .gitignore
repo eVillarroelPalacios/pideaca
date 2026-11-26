@@ -30,3 +30,5 @@ database_pideaca*.sql
 # Artefactos del QA automatico (se regeneran con qa.bat)
 /qa/node_modules
 /qa/logs
+
+docs/manual/manual.html
