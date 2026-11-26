@@ -346,7 +346,7 @@ class ServiceBookingFlowTest extends TestCase
         $adjuntos = ServiceQuote::query()->firstOrFail()->attachments();
 
         foreach ($adjuntos as $adjunto) {
-            $this->assertFileExists(public_path('images/servicios/'.$adjunto['path']));
+            $this->assertFileExists($this->qaUploadsDir().'/'.$adjunto['path']);
         }
 
         $tipos = collect($adjuntos)->pluck('type');

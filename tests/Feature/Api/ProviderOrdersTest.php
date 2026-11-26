@@ -324,7 +324,7 @@ class ProviderOrdersTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.order.status', 'COMPLETED');
 
-        $this->assertFileExists(public_path('images/servicios/'.$order->fresh()->completion_photo_path));
+        $this->assertFileExists($this->qaUploadsDir().'/'.$order->fresh()->completion_photo_path);
     }
 
     public function test_customer_approves_estimate_and_confirms_release(): void

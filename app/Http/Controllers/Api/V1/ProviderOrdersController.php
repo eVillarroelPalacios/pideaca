@@ -499,7 +499,7 @@ class ProviderOrdersController extends Controller
         ]);
 
         try {
-            $destDir = public_path('images/servicios');
+            $destDir = config('bookings.uploads_dir') ?: public_path('images/servicios');
 
             if (! is_dir($destDir)) {
                 mkdir($destDir, 0755, true);
@@ -507,7 +507,7 @@ class ProviderOrdersController extends Controller
 
             $file = $request->file('photo');
             $filename = 'completada_'.$serviceOrder->id.'_foto.'.strtolower($file->getClientOriginalExtension());
-            $file->move($destDir, $filename);
+            \App\Support\UploadFiles::move($file, $destDir, $filename);
 
             DB::transaction(function () use ($serviceOrder, $filename) {
                 $serviceOrder->status = ServiceOrder::STATUS_COMPLETED;

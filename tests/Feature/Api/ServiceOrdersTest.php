@@ -135,7 +135,7 @@ class ServiceOrdersTest extends TestCase
         $this->assertSame($client->id, $order->customer_id);
         $this->assertNull($order->merchant_id);
         $this->assertNotEmpty($order->photo_path);
-        $this->assertFileExists(public_path('images/servicios/'.$order->photo_path));
+        $this->assertFileExists($this->qaUploadsDir().'/'.$order->photo_path);
     }
 
     public function test_emergency_to_a_direct_provider_assigns_it(): void

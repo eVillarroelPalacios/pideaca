@@ -193,7 +193,7 @@ class ServiceCompletionEscrowRatingTest extends TestCase
         $this->assertSame('COMPLETED', $orden->status);
         $this->assertNotNull($orden->completed_at);
         $this->assertNotNull($orden->completion_photo_path);
-        $this->assertFileExists(public_path('images/servicios/'.$orden->completion_photo_path));
+        $this->assertFileExists($this->qaUploadsDir().'/'.$orden->completion_photo_path);
     }
 
     public function test_completar_rechazado_por_estado_o_cotizacion_pendiente(): void
@@ -503,7 +503,7 @@ class ServiceCompletionEscrowRatingTest extends TestCase
 
         $this->assertDatabaseCount('service_ratings', 2);
         $this->assertNotNull($orden->fresh()->completion_photo_path);
-        $this->assertFileExists(public_path('images/servicios/'.$orden->fresh()->completion_photo_path));
+        $this->assertFileExists($this->qaUploadsDir().'/'.$orden->fresh()->completion_photo_path);
     }
 
     // ------------------------------------------------------------- helpers

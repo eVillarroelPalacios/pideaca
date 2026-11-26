@@ -231,8 +231,8 @@ class ServiceEmergencyFlowTest extends TestCase
 
         $this->assertNotNull($orden->photo_path);
         $this->assertNotNull($orden->audio_path);
-        $this->assertFileExists(public_path('images/servicios/'.$orden->photo_path));
-        $this->assertFileExists(public_path('images/servicios/'.$orden->audio_path));
+        $this->assertFileExists($this->qaUploadsDir().'/'.$orden->photo_path);
+        $this->assertFileExists($this->qaUploadsDir().'/'.$orden->audio_path);
     }
 
     public function test_crea_urgencia_sin_ubicacion_y_sin_usar_la_direccion_del_perfil(): void
