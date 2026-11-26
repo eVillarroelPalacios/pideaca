@@ -69,7 +69,13 @@ function mdToHtml(md) {
 const chapters = [
   '01-mapa-general.md',
   'web/10-consultas-sugerencias.md',
+  'web/11-usuarios.md',
+  'web/12-pedidos.md',
+  'web/13-mis-pedidos.md',
+  'web/14-repartidor.md',
+  'web/15-dinero.md',
   'flujos/20-registro-activacion.md',
+  'flujos/21-compra-mercado.md',
   'movil/30-consultas.md',
 ];
 
