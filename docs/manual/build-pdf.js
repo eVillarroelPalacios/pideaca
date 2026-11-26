@@ -74,8 +74,14 @@ const chapters = [
   'web/13-mis-pedidos.md',
   'web/14-repartidor.md',
   'web/15-dinero.md',
+  'web/16-comercios.md',
+  'web/17-mi-catalogo.md',
+  'web/18-inventario.md',
+  'web/19-ordenes-servicio.md',
+  'web/20-ordenes-gestion.md',
   'flujos/20-registro-activacion.md',
   'flujos/21-compra-mercado.md',
+  'flujos/22-despacho-reparto.md',
   'movil/30-consultas.md',
 ];
 
