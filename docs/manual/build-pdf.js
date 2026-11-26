@@ -98,6 +98,11 @@ const chapters = [
   'movil/32-provider-orders.md',
   'movil/33-comercios.md',
   'movil/34-billetera.md',
+  'movil/35-menu.md',
+  'movil/36-providers.md',
+  'movil/37-repartidor.md',
+  'movil/38-dinero.md',
+  'movil/39-mi-dinero.md',
 ];
 
 const sections = chapters.map((f) => {

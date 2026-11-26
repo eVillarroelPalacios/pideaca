@@ -36,6 +36,11 @@ Idioma: español. Fuentes versionadas junto al código.
 29. `movil/32-provider-orders.md` — Pantalla móvil: Trabajos del proveedor.
 30. `movil/33-comercios.md` — Pantalla móvil: Comercios.
 31. `movil/34-billetera.md` — Pantalla móvil: Billetera.
+32. `movil/35-menu.md` — Pantalla móvil: Menú principal y Mi Perfil.
+33. `movil/36-providers.md` — Pantalla móvil: Prestadores (Solicitudes).
+34. `movil/37-repartidor.md` — Pantalla móvil: Repartidor (Terminal Central).
+35. `movil/38-dinero.md` — Pantalla móvil: Dinero (backoffice, solo Admin).
+36. `movil/39-mi-dinero.md` — Pantalla móvil: Mi Dinero.
 
 > Cada capítulo incluye captura real generada por el robot QA (`qa/`).
 > Para regenerar el PDF: `node docs/manual/build-pdf.js` (requiere Chrome).
