@@ -1066,6 +1066,7 @@ window.__FD_DELIVERY_FEE = {{ (float) config('fastdelivery.delivery_fee') }};
             if (key === 'unidades-medida') loadUnitsOfMeasure();
             if (key === 'tipo-monedas') loadCurrencies();
             if (key === 'consultas-sugerencias') loadContactInquiries();
+            if (key === 'billeteras-pais' && typeof wtLoad === 'function') wtLoad();
             if (key === 'tipo-usuarios') loadTypeUsers();
             if (key === 'usuarios') { loadUsers(); }
             if (key === 'paginas') loadPages();

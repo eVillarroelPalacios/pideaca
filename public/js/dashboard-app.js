@@ -15272,10 +15272,36 @@
 
     /* ---------- Catálogo de billeteras por país ---------- */
 
+    function wtMsg(text, ok) {
+        var el = document.getElementById('wt-msg');
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = ok ? '#059669' : '#dc2626';
+        el.style.display = 'inline';
+        clearTimeout(el._t);
+        el._t = setTimeout(function() { el.style.display = 'none'; }, 4000);
+    }
+
+    function wtFirstError(data) {
+        if (data && data.errors) {
+            var keys = Object.keys(data.errors);
+            if (keys.length && data.errors[keys[0]] && data.errors[keys[0]].length) {
+                return data.errors[keys[0]][0];
+            }
+        }
+        return (data && data.message) ? data.message : null;
+    }
+
     async function wtLoad() {
-        var r = await dnFetch('/admin/billing/wallet-types');
         var body = document.getElementById('wt-body');
         if (!body) return;
+        var r;
+        try {
+            r = await dnFetch('/admin/billing/wallet-types');
+        } catch (e) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#b91c1d;">No se pudo conectar con el servidor. <button type="button" onclick="wtLoad()" style="background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">Reintentar</button></td></tr>';
+            return;
+        }
         if (!r.ok || !r.data.success || !r.data.data.length) {
             body.innerHTML = '<tr><td colspan="6" style="padding:8px;border:1px solid #e2e8f0;color:#64748b;">Sin tipos cargados.</td></tr>';
             return;
@@ -15311,10 +15337,17 @@
             fields: fields,
             active: true
         };
-        if (!body.code || !body.name) { dnMsg('Completá código y nombre.', false); return; }
-        var r = await dnFetch('/admin/billing/wallet-types', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
-        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Guardado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
-        if (r.ok) {
+        if (!body.code || !body.name) { wtMsg('Completá código y nombre.', false); return; }
+        var r;
+        try {
+            r = await dnFetch('/admin/billing/wallet-types', { method: 'POST', headers: dnCsrf(), body: JSON.stringify(body) });
+        } catch (e) {
+            wtMsg('No se pudo conectar con el servidor. Intentá de nuevo.', false);
+            return;
+        }
+        var ok = !!(r.ok && r.data && r.data.success);
+        wtMsg(wtFirstError(r.data) || (ok ? 'Guardado.' : 'Error al guardar.'), ok);
+        if (ok) {
             document.getElementById('wt-code').value = '';
             document.getElementById('wt-name').value = '';
             document.getElementById('wt-fields').value = '';
@@ -15323,9 +15356,16 @@
     }
 
     async function wtToggle(id, active) {
-        var r = await dnFetch('/admin/billing/wallet-types/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
-        dnMsg(r.data && r.data.message ? r.data.message : (r.ok ? 'Actualizado.' : 'Error.'), !!(r.ok && r.data && r.data.success));
-        if (r.ok) wtLoad();
+        var r;
+        try {
+            r = await dnFetch('/admin/billing/wallet-types/' + id, { method: 'PUT', headers: dnCsrf(), body: JSON.stringify({ active: active }) });
+        } catch (e) {
+            wtMsg('No se pudo conectar con el servidor. Intentá de nuevo.', false);
+            return;
+        }
+        var ok = !!(r.ok && r.data && r.data.success);
+        wtMsg(wtFirstError(r.data) || (ok ? 'Actualizado.' : 'Error al actualizar.'), ok);
+        if (ok) wtLoad();
     }
 
     /* ── Vehículo del repartidor: ficha en la Terminal Central + Perfil ── */
