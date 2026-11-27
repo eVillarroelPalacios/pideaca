@@ -56,6 +56,8 @@ import type {
   ModulePayload,
   ModuleResponse,
   ModulesResponse,
+  MpConnectUrlResponse,
+  MpSellerStatusResponse,
   NotificationResponse,
   NotificationsResponse,
   PagePayload,
@@ -1152,6 +1154,20 @@ export const api = {
     return request<ContactInquiryVisitStatsResponse>('/contact-inquiries/visits-stats', {
       // Agregados pesados (paises + serie diaria): margen extra en redes lentas.
       timeoutMs: 60000,
+    });
+  },
+
+  mpSellerStatus(): Promise<MpSellerStatusResponse> {
+    return request<MpSellerStatusResponse>('/checkout/mercadopago/seller-status');
+  },
+
+  mpConnectUrl(): Promise<MpConnectUrlResponse> {
+    return request<MpConnectUrlResponse>('/checkout/mercadopago/connect-url');
+  },
+
+  mpDisconnect(): Promise<SimpleResponse> {
+    return request<SimpleResponse>('/checkout/mercadopago/disconnect', {
+      method: 'DELETE',
     });
   },
 

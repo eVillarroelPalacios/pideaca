@@ -44,6 +44,10 @@ return [
         'public_key' => env('MP_PUBLIC_KEY'),
         'webhook_secret' => env('MP_WEBHOOK_SECRET'),
         'base_url' => env('MP_BASE_URL', 'https://api.mercadopago.com'),
+        // OAuth Marketplace (split automático): credenciales de LA APP de
+        // PideAca en developers.mercadopago.com (no del vendedor).
+        'app_id' => env('MP_APP_ID'),
+        'client_secret' => env('MP_CLIENT_SECRET'),
     ],
 
     'slack' => [

@@ -5,10 +5,15 @@ import { ApiError, api } from '@/api/client';
 import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { MpConnectCard } from '@/components/MpConnectCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { detectCountry, fallbackCountry, type WalletCountry } from '@/lib/country';
-import type { BillingStatusResponse, PayoutAccount, WalletType } from '@/types/api';
+import type {
+  BillingStatusResponse,
+  PayoutAccount,
+  WalletType,
+} from '@/types/api';
 import { colors, radius, spacing } from '@/theme';
 
 /**
@@ -209,6 +214,8 @@ export function BilleteraManager() {
             : 'Agregá al menos una billetera para operar (recibir pedidos, trabajos o repartos).'}
         </Text>
       </View>
+
+      <MpConnectCard />
 
       {billing && billing.cash_debt < 0 ? (
         <View style={[styles.banner, styles.bannerAlert]} accessibilityRole="alert">

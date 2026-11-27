@@ -2,21 +2,22 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AdminBillingController;
-use App\Http\Controllers\AdvertisingController;
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AccountActivationController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactInquiryController;
 use App\Http\Controllers\CurrencyController;
-use App\Http\Controllers\MercadoPagoCheckoutController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryOrderController;
+use App\Http\Controllers\DiagnosticoVistasController;
 use App\Http\Controllers\EstadosDeLosGruposController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\MercadoPagoCheckoutController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrdenesGestionController;
@@ -29,11 +30,8 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ProviderDispatchController;
 use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\RecipeController;
-use App\Http\Controllers\ReporteHogarController;
 use App\Http\Controllers\ReportController;
-
-use App\Http\Controllers\DeliveryOrderController;
-use App\Http\Controllers\DiagnosticoVistasController;
+use App\Http\Controllers\ReporteHogarController;
 use Illuminate\Http\Request;
 
 // Rutas de Reportes Hogar (Servicios)
@@ -84,6 +82,7 @@ use App\Http\Controllers\UnitOfMeasureController;
 use App\Http\Controllers\UserStatusController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VariantController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 // Raiz del proyecto: es el panel del usuario cuando hay sesion iniciada y la
@@ -296,7 +295,8 @@ Route::put('/profile/address', [ProfileController::class, 'saveAddress'])->name(
 Route::get('/profile/payout-accounts', [PayoutAccountController::class, 'index'])->name('profile.payout-accounts.index');
 Route::get('/billing/matrix', [PayoutAccountController::class, 'matrix'])->name('billing.matrix');
 Route::get('/profile/billing/status', [PayoutAccountController::class, 'status'])->name('profile.billing.status');
-Route::get('/wallet-types', [PayoutAccountController::class, 'types'])->name('wallet-types.index');Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
+Route::get('/wallet-types', [PayoutAccountController::class, 'types'])->name('wallet-types.index');
+Route::post('/profile/payout-accounts', [PayoutAccountController::class, 'store'])->name('profile.payout-accounts.store');
 Route::put('/profile/payout-accounts/{account}', [PayoutAccountController::class, 'update'])->name('profile.payout-accounts.update');
 Route::post('/profile/payout-accounts/{account}/default', [PayoutAccountController::class, 'setDefault'])->name('profile.payout-accounts.default');
 Route::post('/profile/payout-accounts/{account}/deactivate', [PayoutAccountController::class, 'deactivate'])->name('profile.payout-accounts.deactivate');
@@ -307,8 +307,13 @@ Route::get('/regions', [ProfileController::class, 'getRegions'])->name('regions.
 // Checkout Mercado Pago (Fase 3, cuenta única recaudadora).
 Route::middleware('auth')->group(function () {
     Route::post('/checkout/mercadopago/start', [MercadoPagoCheckoutController::class, 'start']);
+    // Conexión OAuth del vendedor (split automático).
+    Route::get('/billetera/mercadopago/connect', [MercadoPagoCheckoutController::class, 'connect'])->name('checkout.mp.seller-connect');
+    Route::get('/billetera/mercadopago/status', [MercadoPagoCheckoutController::class, 'sellerStatus'])->name('checkout.mp.seller-status');
+    Route::post('/billetera/mercadopago/disconnect', [MercadoPagoCheckoutController::class, 'disconnect'])->name('checkout.mp.seller-disconnect');
 });
-Route::post('/webhooks/mercadopago', [MercadoPagoCheckoutController::class, 'webhook'])->name('checkout.mp.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
+Route::get('/billetera/mercadopago/callback', [MercadoPagoCheckoutController::class, 'callback'])->name('checkout.mp.seller-callback');
+Route::post('/webhooks/mercadopago', [MercadoPagoCheckoutController::class, 'webhook'])->name('checkout.mp.webhook')->withoutMiddleware([ValidateCsrfToken::class]);
 Route::get('/checkout/return', [MercadoPagoCheckoutController::class, 'retorno'])->name('checkout.mp.return');
 
 // Modulo A - Fast Delivery

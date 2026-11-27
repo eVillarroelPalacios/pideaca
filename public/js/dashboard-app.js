@@ -13069,6 +13069,7 @@
         if (key === 'dinero' && typeof dnInitDinero === 'function') dnInitDinero();
         if (key === 'billeteras-pais' && typeof wtLoad === 'function') wtLoad();
         if (key === 'billetera' && typeof loadPayoutAccounts === 'function') loadPayoutAccounts();
+        if (key === 'billetera' && typeof mpSellerLoad === 'function') mpSellerLoad();
         if (key === 'app-movil' && typeof appMovilInit === 'function') appMovilInit();
         if (key === 'retiros' && typeof pvWdLoad === 'function') pvWdLoad();
         if (key === 'imagenes' && typeof loadProviderImages === 'function') loadProviderImages();
@@ -14877,6 +14878,36 @@
             loadPayoutAccounts();
         })
         .catch(function () { showMsg('wallet-msg', 'Error de conexión.', false); });
+    }
+
+    /* ---------- Mercado Pago conectado (split automático) ---------- */
+
+    async function mpSellerLoad() {
+        var statusEl = document.getElementById('mp-connect-status');
+        var btnConnect = document.getElementById('mp-connect-btn');
+        var btnDisconnect = document.getElementById('mp-disconnect-btn');
+        if (!statusEl) return;
+        try {
+            var r = await dnFetch('/billetera/mercadopago/status');
+            var connected = !!(r.ok && r.data && r.data.data && r.data.data.connected);
+            var mpUser = (r.data && r.data.data && r.data.data.mp_user_id) || null;
+            statusEl.textContent = connected
+                ? 'Conectada' + (mpUser ? ' (MP ' + mpUser + ')' : '') + '. Los cobros con Mercado Pago entran directo a tu cuenta.'
+                : 'Sin conectar. Conectá tu cuenta para cobrar directo con Mercado Pago.';
+            statusEl.style.color = connected ? '#059669' : '#64748b';
+            if (btnConnect) btnConnect.style.display = connected ? 'none' : '';
+            if (btnDisconnect) btnDisconnect.style.display = connected ? '' : 'none';
+        } catch (e) {
+            statusEl.textContent = 'No se pudo verificar el estado.';
+            statusEl.style.color = '#b91c1d';
+        }
+    }
+
+    async function mpSellerDisconnect() {
+        try {
+            await dnFetch('/billetera/mercadopago/disconnect', { method: 'POST', headers: dnCsrf(), body: JSON.stringify({}) });
+        } catch (e) {}
+        mpSellerLoad();
     }
 
     /* ---------- Backoffice Dinero (Fase 1) ---------- */

@@ -729,6 +729,15 @@
                                         </div>
                                         <p style="font-size:11.5px;line-height:1.5;color:#64748b;margin:12px 0 0;">Necesitás al menos una billetera activa para operar (recibir pedidos, trabajos o repartos). La primera que agregues queda como predeterminada para tus liquidaciones.</p>
                                     </div>
+                                    <div class="pcard" style="margin-top:12px;">
+                                        <h3 class="pcard-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e85d04" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Cobros directos con Mercado Pago</h3>
+                                        <p style="font-size:12.5px;color:#64748b;margin:0 0 10px;">Conectá tu cuenta para que los cobros con Mercado Pago entren directo a vos: PideAca descuenta solo su comisión (split automático).</p>
+                                        <p id="mp-connect-status" style="font-size:13px;font-weight:600;color:#64748b;margin:0 0 10px;">Verificando…</p>
+                                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                            <a id="mp-connect-btn" href="{{ url('/billetera/mercadopago/connect') }}" style="background:#009ee3;color:#fff;border:none;padding:8px 14px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;">Conectar Mercado Pago</a>
+                                            <button type="button" id="mp-disconnect-btn" onclick="mpSellerDisconnect()" style="display:none;background:#fff;color:#374151;border:1px solid #d1d5db;padding:8px 14px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;">Desconectar</button>
+                                        </div>
+                                    </div>
                                 </div>
                                 @if($esAndroid && ! $esPerfilCliente)
                                 <div class="profile-panel" data-panel="app-movil">

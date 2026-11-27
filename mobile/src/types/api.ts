@@ -756,6 +756,23 @@ export type ContactInquiryVisitStatsResponse = {
   data: VisitStats;
 };
 
+export type MpSellerStatus = {
+  connected: boolean;
+  mp_user_id: string | null;
+};
+
+export type MpSellerStatusResponse = {
+  success: boolean;
+  data: MpSellerStatus;
+};
+
+export type MpConnectUrlResponse = {
+  success: boolean;
+  data: {
+    url: string;
+  };
+};
+
 export type GroupStatusItem = {
   id: number;
   description: string;

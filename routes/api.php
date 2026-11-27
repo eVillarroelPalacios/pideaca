@@ -257,6 +257,13 @@ Route::prefix('mobile/v1')->group(function () {
         Route::post('/checkout/mercadopago/start', [MercadoPagoCheckoutController::class, 'start'])
             ->middleware('throttle:10,1');
 
+        // Conexión OAuth del vendedor (split automático): estado + desconexión.
+        Route::get('/checkout/mercadopago/connect-url', [MercadoPagoCheckoutController::class, 'connectUrl'])
+            ->middleware('throttle:10,1');
+        Route::get('/checkout/mercadopago/seller-status', [MercadoPagoCheckoutController::class, 'sellerStatus']);
+        Route::delete('/checkout/mercadopago/disconnect', [MercadoPagoCheckoutController::class, 'disconnect'])
+            ->middleware('throttle:10,1');
+
         // Billeteras de cobro (Fase 1): CRUD propio + default + activar/desactivar.
         Route::get('/profile/payout-accounts', [PayoutAccountsController::class, 'index']);
         Route::get('/profile/billing/status', [PayoutAccountsController::class, 'status']);
