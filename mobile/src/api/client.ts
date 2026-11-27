@@ -15,6 +15,7 @@ import type {
   ContactInquiriesResponse,
   ContactInquiryResponse,
   ContactInquiryStatus,
+  ContactInquiryVisitStatsResponse,
   CountriesResponse,
   CurrencyPayload,
   CurrencyResponse,
@@ -1145,6 +1146,13 @@ export const api = {
 
   contactInquiry(id: number): Promise<ContactInquiryResponse> {
     return request<ContactInquiryResponse>(`/contact-inquiries/${id}`);
+  },
+
+  contactInquiryVisitStats(): Promise<ContactInquiryVisitStatsResponse> {
+    return request<ContactInquiryVisitStatsResponse>('/contact-inquiries/visits-stats', {
+      // Agregados pesados (paises + serie diaria): margen extra en redes lentas.
+      timeoutMs: 60000,
+    });
   },
 
   updateContactInquiryStatus(

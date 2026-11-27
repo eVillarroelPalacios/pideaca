@@ -101,6 +101,42 @@ class SiteVisitsStatsTest extends TestCase
         $this->assertNull($response->original->getData()['visitStats'] ?? null);
     }
 
+    public function test_api_rechaza_stats_sin_token(): void
+    {
+        $this->getJson('/api/mobile/v1/contact-inquiries/visits-stats')
+            ->assertStatus(401);
+    }
+
+    public function test_api_rechaza_stats_sin_la_pagina(): void
+    {
+        $user = $this->makeUser('Cliente');
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/mobile/v1/contact-inquiries/visits-stats')
+            ->assertStatus(403);
+    }
+
+    public function test_api_devuelve_stats_reales_con_la_pagina_asignada(): void
+    {
+        $user = $this->makeUser('Cliente');
+        $user->pages()->sync([$this->consultsPage()->id]);
+
+        $this->makeVisit('10.1.0.1', 'MX', 'México', today()->toDateString());
+        $this->makeVisit('10.1.0.2', 'AR', 'Argentina', today()->toDateString());
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/mobile/v1/contact-inquiries/visits-stats')
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $data = $response->json('data');
+        $this->assertSame(2, $data['total']);
+        $this->assertSame(2, $data['today']);
+        $this->assertSame(['MX', 'AR'], array_column($data['ranges']['d7']['countries'], 'code'));
+        $this->assertSame([50, 50], array_column($data['ranges']['d7']['countries'], 'pct'));
+        $this->assertCount(7, $data['ranges']['d7']['days']);
+    }
+
     private function makeVisit(string $ip, string $code, string $name, string $day): SiteVisit
     {
         return SiteVisit::create([

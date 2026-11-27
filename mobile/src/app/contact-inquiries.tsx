@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -15,8 +15,7 @@ import { ApiError, api } from '@/api/client';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import {
-  COUNTRY_VISITS_MOCK,
-  COUNTRY_VISITS_TOTAL,
+  type CountryVisit,
   formatInquiryDate,
   INQUIRY_FILTERS,
   type InquiryFilter,
@@ -24,9 +23,15 @@ import {
   inquiryStatusStyle,
   inquiryTypeLabel,
   inquiryTypeStyle,
+  VISIT_RANGE_OPTIONS,
+  type VisitRangeKey,
 } from '@/lib/contactInquiries';
 import { colors, radius, spacing } from '@/theme';
-import type { ContactInquiry, ContactInquiryCounts } from '@/types/api';
+import type {
+  ContactInquiry,
+  ContactInquiryCounts,
+  VisitStats,
+} from '@/types/api';
 
 const PAGE_SIZE = 20;
 const POLL_MS = 8000;
@@ -37,6 +42,21 @@ const EMPTY_COUNTS: ContactInquiryCounts = {
   in_progress: 0,
   resolved: 0,
 };
+
+/** Posiciones fijas del mapa esquemático para los 4 países top. */
+type VisitMapSlot = {
+  left: `${number}%`;
+  top: `${number}%`;
+  tagLeft?: `${number}%`;
+  tagTop?: `${number}%`;
+};
+
+const VISIT_MAP_SLOTS: VisitMapSlot[] = [
+  { left: '18%', top: '38%', tagLeft: '18%', tagTop: '52%' },
+  { left: '48%', top: '28%', tagLeft: '48%', tagTop: '42%' },
+  { left: '24%', top: '60%' },
+  { left: '28%', top: '78%' },
+];
 
 export default function ContactInquiriesScreen() {
   const [items, setItems] = useState<ContactInquiry[]>([]);
@@ -50,6 +70,70 @@ export default function ContactInquiriesScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visitsVisible, setVisitsVisible] = useState(false);
+  const [visitStats, setVisitStats] = useState<VisitStats | null>(null);
+  const [visitRange, setVisitRange] = useState<VisitRangeKey>('d7');
+  const [visitLoading, setVisitLoading] = useState(false);
+  const [visitError, setVisitError] = useState<string | null>(null);
+
+  // Estadísticas reales (misma fuente que el modal web). Se recargan
+  // cada vez que se abre el modal. Los setState viven en los callbacks
+  // (regla react-hooks/set-state-in-effect).
+  const loadVisitStats = useCallback(async () => {
+    setVisitLoading(true);
+    setVisitError(null);
+
+    try {
+      const response = await api.contactInquiryVisitStats();
+      setVisitStats(response.data);
+    } catch (caught) {
+      setVisitError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'No pudimos cargar las estadísticas.',
+      );
+    } finally {
+      setVisitLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!visitsVisible) {
+      return;
+    }
+
+    let active = true;
+
+    api
+      .contactInquiryVisitStats()
+      .then((response) => {
+        if (active) {
+          setVisitStats(response.data);
+        }
+      })
+      .catch((caught: unknown) => {
+        if (active) {
+          setVisitError(
+            caught instanceof ApiError
+              ? caught.message
+              : 'No pudimos cargar las estadísticas.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setVisitLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [visitsVisible]);
+
+  const visitRangeData = visitStats?.ranges[visitRange] ?? { countries: [], days: [] };
+  const visitRangeCountries: CountryVisit[] = visitRangeData.countries;
+  const visitRangeDays = visitRangeData.days;
+  const visitDayMax = Math.max(1, ...visitRangeDays.map((day) => day.visits));
 
   // Descarta respuestas viejas si el usuario cambia de filtro rápido.
   const requestId = useRef(0);
@@ -201,7 +285,11 @@ export default function ContactInquiriesScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Ver visitas por país"
-          onPress={() => setVisitsVisible(true)}
+          onPress={() => {
+            setVisitLoading(true);
+            setVisitError(null);
+            setVisitsVisible(true);
+          }}
           style={({ pressed }) => [styles.visitsButton, pressed && styles.cardPressed]}
         >
           <Text style={styles.visitsButtonText}>🌐 Ver Visitas por País</Text>
@@ -337,37 +425,127 @@ export default function ContactInquiriesScreen() {
               </Pressable>
             </View>
 
+            {visitLoading && !visitStats ? (
+              <LoadingScreen message="Cargando estadísticas…" />
+            ) : visitError && !visitStats ? (
+              <View style={styles.visitsBody}>
+                <ErrorBanner message={visitError} />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => void loadVisitStats()}
+                  style={styles.visitsRetryButton}
+                >
+                  <Text style={styles.visitsRetryText}>Reintentar</Text>
+                </Pressable>
+              </View>
+            ) : (
             <FlatList
-              data={COUNTRY_VISITS_MOCK}
+              data={visitRangeCountries}
               keyExtractor={(item) => item.code}
               contentContainerStyle={styles.visitsBody}
               ListHeaderComponent={
                 <View>
-                  <Text style={styles.visitsSubtitle}>Total de visitas registradas en el sitio</Text>
-                  <Text style={styles.visitsTotal}>{COUNTRY_VISITS_TOTAL.toLocaleString('es-AR')}</Text>
+                  <View style={styles.visitsKpis}>
+                    <View style={styles.visitsKpi}>
+                      <Text style={styles.visitsKpiLabel}>Total</Text>
+                      <Text style={styles.visitsKpiValue}>{(visitStats?.total ?? 0).toLocaleString('es-AR')}</Text>
+                    </View>
+                    <View style={styles.visitsKpi}>
+                      <Text style={styles.visitsKpiLabel}>Promedio/día</Text>
+                      <Text style={styles.visitsKpiValue}>{(visitStats?.dailyAvg ?? 0).toLocaleString('es-AR')}</Text>
+                    </View>
+                    <View style={styles.visitsKpi}>
+                      <Text style={styles.visitsKpiLabel}>Hoy</Text>
+                      <Text style={styles.visitsKpiValue}>{(visitStats?.today ?? 0).toLocaleString('es-AR')}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.visitsRangeRow}>
+                    {VISIT_RANGE_OPTIONS.map((option) => {
+                      const active = visitRange === option.value;
+
+                      return (
+                        <Pressable
+                          key={option.value}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: active }}
+                          onPress={() => setVisitRange(option.value)}
+                          style={[styles.filterChip, active && styles.filterChipActive]}
+                        >
+                          <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                            {option.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                   <View style={styles.visitsSegments}>
-                    {COUNTRY_VISITS_MOCK.map((item) => (
+                    {visitRangeCountries.map((item) => (
                       <View
                         key={item.code}
-                        style={{ backgroundColor: item.color, flex: item.pct }}
+                        style={{ backgroundColor: item.color, flex: Math.max(item.pct, 1) }}
                       />
                     ))}
                   </View>
                   <View style={styles.visitsMap}>
                     <Text style={styles.visitsMapLabel}>MAPA MUNDIAL</Text>
                     <View style={styles.visitsMapBox}>
-                      <View style={[styles.visitsDot, { backgroundColor: '#ea580c', left: '18%', top: '38%' }]} />
-                      <View style={[styles.visitsDot, { backgroundColor: '#0c2a4d', left: '48%', top: '28%' }]} />
-                      <View style={[styles.visitsDot, { backgroundColor: '#1e40af', left: '24%', top: '60%' }]} />
-                      <View style={[styles.visitsDot, { backgroundColor: '#f97316', left: '28%', top: '78%' }]} />
-                      <Text style={[styles.visitsMapTag, { left: '18%', top: '52%' }]}>MX 38%</Text>
-                      <Text style={[styles.visitsMapTag, { left: '48%', top: '42%' }]}>ES 26%</Text>
+                      {visitRangeCountries.slice(0, 4).map((item, index) => (
+                        <View
+                          key={item.code}
+                          style={[
+                            styles.visitsDot,
+                            {
+                              backgroundColor: item.color,
+                              left: VISIT_MAP_SLOTS[index].left,
+                              top: VISIT_MAP_SLOTS[index].top,
+                            },
+                          ]}
+                        />
+                      ))}
+                      {visitRangeCountries.slice(0, 2).map((item, index) => (
+                        <Text
+                          key={item.code}
+                          style={[
+                            styles.visitsMapTag,
+                            {
+                              left: VISIT_MAP_SLOTS[index].tagLeft,
+                              top: VISIT_MAP_SLOTS[index].tagTop,
+                            },
+                          ]}
+                        >
+                          {item.code} {item.pct}%
+                        </Text>
+                      ))}
                     </View>
                     <View style={styles.visitsLegend}>
                       <Text style={styles.visitsLegendText}>● Mayor tráfico</Text>
                       <Text style={styles.visitsLegendText}>● Tráfico alto</Text>
                     </View>
                   </View>
+                  <Text style={[styles.visitsMapLabel, { marginTop: spacing.md }]}>VISITAS POR DÍA</Text>
+                  <View style={styles.visitsDailyRow}>
+                    {visitRangeDays.map((day, index) => (
+                      <View key={`${day.label}-${index}`} style={styles.visitsDayCol}>
+                        <View
+                          style={[
+                            styles.visitsDayBar,
+                            {
+                              backgroundColor: day.visits > 0 ? '#ea580c' : colors.border,
+                              height: Math.max(2, Math.round((day.visits / visitDayMax) * 56)),
+                            },
+                          ]}
+                        />
+                        <Text style={styles.visitsDayLabel}>
+                          {visitRangeDays.length <= 10 || index % 5 === 0 ? day.label : ' '}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              }
+              ListEmptyComponent={
+                <View style={styles.empty}>
+                  <Text style={styles.emptyTitle}>Aún no hay visitas registradas.</Text>
                 </View>
               }
               renderItem={({ item }) => (
@@ -384,7 +562,7 @@ export default function ContactInquiriesScreen() {
                     />
                   </View>
                   <View style={styles.visitsRowLine}>
-                    <Text style={styles.visitsVisits}>{item.visits.toLocaleString('es-AR')} visitas</Text>
+                    <Text style={styles.visitsVisits}>{item.visits.toLocaleString('es-AR')} visitas · ~{item.dailyAvg.toLocaleString('es-AR')}/día</Text>
                   </View>
                 </View>
               )}
@@ -400,6 +578,7 @@ export default function ContactInquiriesScreen() {
                 </View>
               }
             />
+            )}
           </View>
         </View>
       </Modal>
@@ -662,6 +841,72 @@ const styles = StyleSheet.create({
   visitsLegendText: {
     color: colors.muted,
     fontSize: 12,
+  },
+  visitsKpis: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  visitsKpi: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    padding: 10,
+  },
+  visitsKpiLabel: {
+    color: colors.muted,
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  visitsKpiValue: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  visitsRangeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  visitsDailyRow: {
+    alignItems: 'flex-end',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 96,
+    padding: spacing.sm,
+  },
+  visitsDayCol: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  visitsDayBar: {
+    borderRadius: 4,
+    width: 8,
+  },
+  visitsDayLabel: {
+    color: colors.muted,
+    fontSize: 7,
+    marginTop: 2,
+  },
+  visitsRetryButton: {
+    backgroundColor: colors.brand,
+    borderRadius: radius.md,
+    marginTop: spacing.md,
+    paddingVertical: 10,
+  },
+  visitsRetryText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   visitsBarHead: {
     flexDirection: 'row',

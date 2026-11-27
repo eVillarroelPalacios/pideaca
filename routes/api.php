@@ -1,34 +1,26 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\AdminUsersController;
 use App\Http\Controllers\AdminBillingController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\Auth\AccountActivationController;
+use App\Http\Controllers\Api\V1\AdminUsersController;
+use App\Http\Controllers\Api\V1\AppVersionController;
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\ContactInquiriesController;
-use App\Http\Controllers\Api\V1\AppVersionController;
 use App\Http\Controllers\Api\V1\CurrenciesController;
 use App\Http\Controllers\Api\V1\DriverController;
-use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\GroupsController;
+use App\Http\Controllers\Api\V1\GroupStatusesController;
 use App\Http\Controllers\Api\V1\MarketController;
 use App\Http\Controllers\Api\V1\MarketReportsController;
 use App\Http\Controllers\Api\V1\MenuController;
-use App\Http\Controllers\MercadoPagoCheckoutController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\PagesController;
 use App\Http\Controllers\Api\V1\PayoutAccountsController;
-use App\Http\Controllers\Api\V1\SubGroupsController;
-use App\Http\Controllers\Api\V1\TypeUsersController;
-use App\Http\Controllers\Api\V1\UnitsOfMeasureController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileDriversController;
 use App\Http\Controllers\Api\V1\ProfileServicesController;
 use App\Http\Controllers\Api\V1\ProfileUsersController;
 use App\Http\Controllers\Api\V1\ProviderCatalogController;
-use App\Http\Controllers\Api\V1\ProviderReportsController;
 use App\Http\Controllers\Api\V1\ProviderCategoryController;
 use App\Http\Controllers\Api\V1\ProviderDispatchController;
 use App\Http\Controllers\Api\V1\ProviderFinancialHealthController;
@@ -36,13 +28,21 @@ use App\Http\Controllers\Api\V1\ProviderInventoryController;
 use App\Http\Controllers\Api\V1\ProviderMarketingController;
 use App\Http\Controllers\Api\V1\ProviderOptionController;
 use App\Http\Controllers\Api\V1\ProviderOrdersController;
+use App\Http\Controllers\Api\V1\ProviderReportsController;
 use App\Http\Controllers\Api\V1\ProviderSubscriptionsController;
 use App\Http\Controllers\Api\V1\ProviderUnitController;
 use App\Http\Controllers\Api\V1\ProviderVariantController;
 use App\Http\Controllers\Api\V1\PushController;
 use App\Http\Controllers\Api\V1\ReportsController;
 use App\Http\Controllers\Api\V1\ServiceOrdersController;
+use App\Http\Controllers\Api\V1\SubGroupsController;
+use App\Http\Controllers\Api\V1\TypeUsersController;
+use App\Http\Controllers\Api\V1\UnitsOfMeasureController;
 use App\Http\Controllers\Api\V1\UserStatusesController;
+use App\Http\Controllers\Auth\AccountActivationController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\MercadoPagoCheckoutController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,6 +94,9 @@ Route::prefix('mobile/v1')->group(function () {
         Route::get('/menu', [MenuController::class, 'index'])
             ->middleware('throttle:30,1');
         Route::get('/contact-inquiries', [ContactInquiriesController::class, 'index'])
+            ->middleware('throttle:30,1');
+        // Antes de show: si no, el binding captura "visits-stats" como id.
+        Route::get('/contact-inquiries/visits-stats', [ContactInquiriesController::class, 'visitsStats'])
             ->middleware('throttle:30,1');
         Route::get('/contact-inquiries/{contactInquiry}', [ContactInquiriesController::class, 'show']);
         Route::post('/contact-inquiries/{contactInquiry}/status', [ContactInquiriesController::class, 'updateStatus']);

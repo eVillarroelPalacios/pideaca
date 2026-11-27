@@ -720,6 +720,42 @@ export type UpdateContactInquiryStatusResponse = {
   contact_inquiry: ContactInquiry;
 };
 
+export type VisitCountryStat = {
+  code: string;
+  name: string;
+  flag: string;
+  color: string;
+  visits: number;
+  pct: number;
+  dailyAvg: number;
+};
+
+export type VisitDayStat = {
+  label: string;
+  visits: number;
+};
+
+export type VisitStatsRange = {
+  countries: VisitCountryStat[];
+  days: VisitDayStat[];
+};
+
+export type VisitStats = {
+  total: number;
+  today: number;
+  dailyAvg: number;
+  ranges: {
+    today: VisitStatsRange;
+    d7: VisitStatsRange;
+    d30: VisitStatsRange;
+  };
+};
+
+export type ContactInquiryVisitStatsResponse = {
+  success: boolean;
+  data: VisitStats;
+};
+
 export type GroupStatusItem = {
   id: number;
   description: string;

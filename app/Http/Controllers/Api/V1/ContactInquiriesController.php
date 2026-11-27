@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactInquiry;
+use App\Support\SiteVisitStats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -88,6 +89,21 @@ class ContactInquiriesController extends Controller
                 'contact_inquiry' => $this->payload($contactInquiry),
                 'statuses' => self::STATUSES,
             ],
+        ]);
+    }
+
+    /**
+     * Estadisticas reales de visitas (misma fuente que el modal web).
+     */
+    public function visitsStats(Request $request): JsonResponse
+    {
+        if ($error = $this->denyUnlessAllowed($request)) {
+            return $error;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => SiteVisitStats::summary(),
         ]);
     }
 

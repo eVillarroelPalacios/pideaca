@@ -92,9 +92,18 @@ export function replyMailto(email: string, type: string | null | undefined): str
   return `mailto:${email}?subject=${subject}`;
 }
 
+/** Rango del modal de visitas (igual que los filtros de la web). */
+export type VisitRangeKey = 'today' | 'd7' | 'd30';
+
+export const VISIT_RANGE_OPTIONS: { value: VisitRangeKey; label: string }[] = [
+  { value: 'today', label: 'Hoy' },
+  { value: 'd7', label: 'Últimos 7 días' },
+  { value: 'd30', label: 'Mensual' },
+];
+
 /**
- * Mock de visitas por país (misma estructura que la web).
- * Para datos reales, reemplazar por la respuesta del endpoint cuando exista.
+ * Visita por país (misma estructura que la web).
+ * Para datos reales se usa el endpoint visits-stats.
  */
 export type CountryVisit = {
   code: string;
@@ -103,17 +112,5 @@ export type CountryVisit = {
   visits: number;
   pct: number;
   color: string;
+  dailyAvg: number;
 };
-
-export const COUNTRY_VISITS_MOCK: CountryVisit[] = [
-  { code: 'MX', name: 'México', flag: '🇲🇽', visits: 1240, pct: 38, color: '#ea580c' },
-  { code: 'ES', name: 'España', flag: '🇪🇸', visits: 860, pct: 26, color: '#0c2a4d' },
-  { code: 'AR', name: 'Argentina', flag: '🇦🇷', visits: 540, pct: 17, color: '#f97316' },
-  { code: 'CO', name: 'Colombia', flag: '🇨🇴', visits: 320, pct: 10, color: '#1e40af' },
-  { code: 'OT', name: 'Otros', flag: '🌍', visits: 300, pct: 9, color: '#9ca3af' },
-];
-
-export const COUNTRY_VISITS_TOTAL = COUNTRY_VISITS_MOCK.reduce(
-  (sum, item) => sum + item.visits,
-  0,
-);
