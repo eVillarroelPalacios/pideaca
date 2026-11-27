@@ -25,3 +25,9 @@ Schedule::command('membership:daily')
     ->dailyAt('07:00')
     ->withoutOverlapping()
     ->description('Emite facturas Hogar, avisa mora y suspende impagas');
+
+// Visitas al sitio: completa el pais de las filas pendientes por lotes.
+Schedule::command('visits:geolocate')
+    ->hourly()
+    ->withoutOverlapping()
+    ->description('Geolocaliza por lotes las visitas sin pais registrado');

@@ -19,9 +19,13 @@ gestiona con estados: **Nueva → En proceso → Resuelta**.
 ## Estadísticas de visitas por país
 
 El botón naranja **"Ver Visitas por País"** (arriba a la derecha) abre un
-modal con dona por país, barras de progreso, lista con bandera/visitas/% y
-mapa mundial. Hoy usa datos de ejemplo; para conectarlo a datos reales basta
-enviar `$countryVisits` desde el controlador con la misma estructura.
+modal con KPIs (total histórico, promedio diario, visitas de hoy), filtros
+Hoy / Últimos 7 días / Mensual, dona por país, barras de progreso, lista
+con bandera/visitas/%/promedio diario, mapa mundial y gráfico de barras
+SVG con las visitas por día. Los datos son reales: el middleware
+`TrackSiteVisit` registra una visita única por IP y día en `site_visits`
+(solo landing de invitados), y `DashboardController` envía `$visitStats`
+agrupado por país y por día.
 
 ## Detrás de escena (referencia técnica)
 

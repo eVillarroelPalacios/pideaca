@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsurePageAccess;
+use App\Http\Middleware\TrackSiteVisit;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'page' => EnsurePageAccess::class,
         ]);
 
+        // Visitas unicas a la landing (invitados, GET /). El middleware
+        // mismo filtra bots y escribe un solo INSERT IGNORE.
+        $middleware->appendToGroup('web', [
+            TrackSiteVisit::class,
+        ]);
+
         // La app no tiene pagina /login: el formulario vive en el home.
         // Sin esto, un invitado en cualquier ruta "auth" revienta con
         // "Route [login] not defined" en vez de volver al inicio.
@@ -30,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return $request->is('api/*') || $request->expectsJson();
         });
 
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,

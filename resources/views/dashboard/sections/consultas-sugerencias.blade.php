@@ -1,14 +1,21 @@
 @php
-    // Mock data: reemplazar luego por datos reales desde el controlador / base de datos.
-    // Estructura: code, name, flag (emoji), visits, pct, color (tema: azul oscuro + naranja).
-    $countryVisits = $countryVisits ?? [
-        ['code' => 'MX', 'name' => 'México', 'flag' => '🇲🇽', 'visits' => 1240, 'pct' => 38, 'color' => '#ea580c'],
-        ['code' => 'ES', 'name' => 'España', 'flag' => '🇪🇸', 'visits' => 860, 'pct' => 26, 'color' => '#0c2a4d'],
-        ['code' => 'AR', 'name' => 'Argentina', 'flag' => '🇦🇷', 'visits' => 540, 'pct' => 17, 'color' => '#f97316'],
-        ['code' => 'CO', 'name' => 'Colombia', 'flag' => '🇨🇴', 'visits' => 320, 'pct' => 10, 'color' => '#1e40af'],
-        ['code' => 'OT', 'name' => 'Otros', 'flag' => '🌍', 'visits' => 300, 'pct' => 9, 'color' => '#9ca3af'],
-    ];
-    $countryVisitsTotal = collect($countryVisits)->sum('visits');
+    // Estadisticas reales desde DashboardController ($visitStats). Fallback
+    // a vacio si la seccion se renderiza sin esas variables.
+    $visitStats = $visitStats ?? ['total' => 0, 'today' => 0, 'dailyAvg' => 0, 'ranges' => []];
+    $visitRanges = $visitStats['ranges'] ?? [];
+    $visitDefault = $visitRanges['d7'] ?? ['countries' => [], 'days' => []];
+    $visitCountries = $visitDefault['countries'] ?? [];
+    $visitDonut = 'conic-gradient(#e5e7eb 0% 100%)';
+    if (! empty($visitCountries)) {
+        $visitStops = [];
+        $visitAcc = 0;
+        foreach ($visitCountries as $vc) {
+            $visitFrom = $visitAcc;
+            $visitAcc += (int) $vc['pct'];
+            $visitStops[] = $vc['color'].' '.$visitFrom.'% '.$visitAcc.'%';
+        }
+        $visitDonut = 'conic-gradient('.implode(', ', $visitStops).')';
+    }
 @endphp
             <section id="dash-consultas-sugerencias" class="dash-section" style="display:none;max-width:1200px;margin:24px auto;padding:0 20px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -127,6 +134,11 @@
                 .ci-bar > div { height:100%; border-radius:9999px; }
                 .ci-country-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f3f4f6; font-size:13px; }
                 .ci-country-row:last-child { border-bottom:none; }
+                .ci-kpi { flex:1 1 140px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; }
+                .ci-kpi-label { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px; margin:0 0 2px; }
+                .ci-kpi-value { font-size:22px; font-weight:800; color:#0c2a4d; margin:0; }
+                .ci-filter { padding:6px 12px; border:1px solid #d1d5db; border-radius:9999px; background:#fff; color:#374151; font-size:12px; font-weight:600; cursor:pointer; }
+                .ci-filter.ci-active { background:#0c2a4d; border-color:#0c2a4d; color:#fff; }
             </style>
             <div id="ci-visits-overlay" onclick="if(event.target===this)closeCountryVisitsModal()">
                 <div class="ci-visits-card" role="dialog" aria-modal="true" aria-label="Estadísticas de Visitas por País">
@@ -136,26 +148,38 @@
                     </div>
                     <div class="ci-visits-grid">
                         <div>
-                            <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">Total de visitas registradas en el sitio</p>
-                            <p style="font-size:26px;font-weight:800;color:#0c2a4d;margin:0 0 14px;">{{ number_format($countryVisitsTotal) }}</p>
-                            <div class="ci-donut"><div class="ci-donut-center"><span style="font-size:22px;font-weight:800;color:#0c2a4d;">100%</span><span style="font-size:11px;color:#6b7280;">visitas</span></div></div>
-                            <div style="margin:16px 0 6px;display:flex;flex-direction:column;gap:10px;">
-                                @foreach($countryVisits as $c)
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                        <div class="ci-kpi"><p class="ci-kpi-label">Total de visitas</p><p class="ci-kpi-value" id="ci-kpi-total">{{ number_format($visitStats['total'] ?? 0) }}</p></div>
+                        <div class="ci-kpi"><p class="ci-kpi-label">Promedio diario</p><p class="ci-kpi-value" id="ci-kpi-avg">{{ number_format($visitStats['dailyAvg'] ?? 0) }}</p></div>
+                        <div class="ci-kpi"><p class="ci-kpi-label">Visitas de hoy</p><p class="ci-kpi-value" id="ci-kpi-today">{{ number_format($visitStats['today'] ?? 0) }}</p></div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" role="group" aria-label="Rango de visitas">
+                        <button type="button" class="ci-filter" data-range="today" onclick="ciSetVisitRange('today')">Hoy</button>
+                        <button type="button" class="ci-filter ci-active" data-range="d7" onclick="ciSetVisitRange('d7')">Últimos 7 días</button>
+                        <button type="button" class="ci-filter" data-range="d30" onclick="ciSetVisitRange('d30')">Mensual</button>
+                    </div>
+                    <div class="ci-donut" id="ci-visits-donut" style="background:{{ $visitDonut }};"><div class="ci-donut-center"><span style="font-size:22px;font-weight:800;color:#0c2a4d;">100%</span><span style="font-size:11px;color:#6b7280;">visitas</span></div></div>
+                            <div id="ci-visits-bars" style="margin:16px 0 6px;display:flex;flex-direction:column;gap:10px;">
+                                @forelse($visitCountries as $c)
                                 <div>
-                                    <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;"><span>{{ $c['flag'] }} {{ $c['name'] }}</span><span>{{ $c['pct'] }}%</span></div>
+                                    <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;"><span>{{ $c['flag'] }} {{ $c['name'] }}</span><span>{{ $c['pct'] }}% ({{ number_format($c['visits']) }} · ~{{ number_format($c['dailyAvg']) }}/día)</span></div>
                                     <div class="ci-bar"><div style="width:{{ $c['pct'] }}%;background:{{ $c['color'] }};"></div></div>
                                 </div>
-                                @endforeach
+                                @empty
+                                <p style="font-size:13px;color:#6b7280;">Aún no hay visitas registradas.</p>
+                                @endforelse
                             </div>
-                            <div style="margin-top:8px;">
-                                @foreach($countryVisits as $c)
+                            <div id="ci-visits-rows" style="margin-top:8px;">
+                                @forelse($visitCountries as $c)
                                 <div class="ci-country-row">
                                     <span style="font-size:18px;">{{ $c['flag'] }}</span>
                                     <span style="flex:1;font-weight:600;color:#1f2937;">{{ $c['name'] }}</span>
-                                    <span style="color:#6b7280;">{{ number_format($c['visits']) }} visitas</span>
+                                    <span style="color:#6b7280;">{{ number_format($c['visits']) }} visitas · ~{{ number_format($c['dailyAvg']) }}/día</span>
                                     <span style="min-width:44px;text-align:right;font-weight:700;color:#0c2a4d;">{{ $c['pct'] }}%</span>
                                 </div>
-                                @endforeach
+                                @empty
+                                <p style="font-size:13px;color:#6b7280;">Aún no hay visitas registradas.</p>
+                                @endforelse
                             </div>
                         </div>
                         <div>
@@ -183,10 +207,10 @@
                                         <circle cx="100" cy="135" r="8" fill="#1e40af" opacity=".95"><title>Colombia</title></circle>
                                     </g>
                                     <g font-family="sans-serif" font-size="10" font-weight="bold" fill="#0c2a4d">
-                                        <text x="80" y="112" text-anchor="middle">MX 38%</text>
-                                        <text x="200" y="86" text-anchor="middle">ES 26%</text>
-                                        <text x="118" y="192" text-anchor="middle">AR 17%</text>
-                                        <text x="100" y="152" text-anchor="middle">CO 10%</text>
+                                        <text id="ci-map-l0" x="80" y="112" text-anchor="middle">{{ ($visitCountries[0]['code'] ?? '—').' '.($visitCountries[0]['pct'] ?? 0).'%' }}</text>
+                                        <text id="ci-map-l1" x="200" y="86" text-anchor="middle">{{ ($visitCountries[1]['code'] ?? '—').' '.($visitCountries[1]['pct'] ?? 0).'%' }}</text>
+                                        <text id="ci-map-l2" x="118" y="192" text-anchor="middle">{{ ($visitCountries[2]['code'] ?? '—').' '.($visitCountries[2]['pct'] ?? 0).'%' }}</text>
+                                        <text id="ci-map-l3" x="100" y="152" text-anchor="middle">{{ ($visitCountries[3]['code'] ?? '—').' '.($visitCountries[3]['pct'] ?? 0).'%' }}</text>
                                     </g>
                                 </svg>
                                 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:#374151;">
@@ -195,7 +219,27 @@
                                     <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#cbd5e1;margin-right:4px;"></span>Base</span>
                                 </div>
                             </div>
-                            <p style="font-size:12px;color:#6b7280;margin:10px 0 0;">Datos de ejemplo (mock). Para conectar a la base real, reemplazar el bloque <code>$countryVisits</code> por la variable enviada desde el controlador.</p>
+                            <p style="font-size:12px;font-weight:700;color:#0c2a4d;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Visitas por día</p>
+                            <div id="ci-visits-daily" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:10px 8px 4px;">
+                                @php
+                                    $visitDays = $visitDefault['days'] ?? [];
+                                    $visitMax = max(1, (int) collect($visitDays)->max('visits'));
+                                    $visitW = 300; $visitH = 110; $visitBase = 88;
+                                @endphp
+                                <svg viewBox="0 0 {{ $visitW }} {{ $visitH }}" style="width:100%;height:auto;display:block;" role="img" aria-label="Visitas por día">
+                                    @foreach($visitDays as $i => $d)
+                                        @php
+                                            $bw = $visitW / max(1, count($visitDays));
+                                            $bx = $i * $bw + 2;
+                                            $bh = $visitMax > 0 ? max(2, round($d['visits'] / $visitMax * 64)) : 2;
+                                        @endphp
+                                        <rect x="{{ $bx }}" y="{{ $visitBase - $bh }}" width="{{ max(2, $bw - 4) }}" height="{{ $bh }}" rx="2" fill="#ea580c"><title>{{ $d['label'] }}: {{ $d['visits'] }} visitas</title></rect>
+                                        @if(count($visitDays) <= 10 || $i % 5 === 0)
+                                        <text x="{{ $bx + max(2, $bw - 4) / 2 }}" y="{{ $visitH - 4 }}" text-anchor="middle" font-size="8" fill="#64748b">{{ $d['label'] }}</text>
+                                        @endif
+                                    @endforeach
+                                </svg>
+                            </div>
                         </div>
                     </div>
                     <div style="padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;">
@@ -207,4 +251,39 @@
                 function openCountryVisitsModal(){ var m=document.getElementById('ci-visits-overlay'); if(m){ m.classList.add('ci-open'); document.body.style.overflow='hidden'; } }
                 function closeCountryVisitsModal(){ var m=document.getElementById('ci-visits-overlay'); if(m){ m.classList.remove('ci-open'); document.body.style.overflow=''; } }
                 document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeCountryVisitsModal(); } });
+                var CI_VISITS = @json($visitRanges);
+                function ciFmt(n){ try { return Number(n).toLocaleString('es'); } catch(e){ return n; } }
+                function ciVisitBars(days){
+                    var W=300,H=110,base=88,n=Math.max(1,days.length),bw=W/n,max=1,i;
+                    for(i=0;i<days.length;i++){ if(days[i].visits>max){ max=days[i].visits; } }
+                    var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;" role="img" aria-label="Visitas por día">';
+                    for(i=0;i<days.length;i++){
+                        var bx=(i*bw+2).toFixed(1),bh=Math.max(2,Math.round(days[i].visits/max*64)),by=base-bh,bwid=Math.max(2,bw-4);
+                        s+='<rect x="'+bx+'" y="'+by+'" width="'+bwid.toFixed(1)+'" height="'+bh+'" rx="2" fill="#ea580c"><title>'+days[i].label+': '+days[i].visits+' visitas</title></rect>';
+                        if(n<=10||i%5===0){ s+='<text x="'+(parseFloat(bx)+bwid/2).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="8" fill="#64748b">'+days[i].label+'</text>'; }
+                    }
+                    return s+'</svg>';
+                }
+                function ciSetVisitRange(key){
+                    var r=(CI_VISITS&&CI_VISITS[key])?CI_VISITS[key]:{countries:[],days:[]};
+                    var btns=document.querySelectorAll('#ci-visits-overlay .ci-filter'),i;
+                    for(i=0;i<btns.length;i++){ btns[i].classList.toggle('ci-active',btns[i].getAttribute('data-range')===key); }
+                    var stops=[],acc=0,html='',rows='';
+                    for(i=0;i<r.countries.length;i++){
+                        var c=r.countries[i],from=acc; acc+=c.pct;
+                        stops.push(c.color+' '+from+'% '+acc+'%');
+                        html+='<div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;"><span>'+c.flag+' '+c.name+'</span><span>'+c.pct+'% ('+ciFmt(c.visits)+' · ~'+ciFmt(c.dailyAvg)+'/día)</span></div><div class="ci-bar"><div style="width:'+c.pct+'%;background:'+c.color+';"></div></div></div>';
+                        rows+='<div class="ci-country-row"><span style="font-size:18px;">'+c.flag+'</span><span style="flex:1;font-weight:600;color:#1f2937;">'+c.name+'</span><span style="color:#6b7280;">'+ciFmt(c.visits)+' visitas · ~'+ciFmt(c.dailyAvg)+'/día</span><span style="min-width:44px;text-align:right;font-weight:700;color:#0c2a4d;">'+c.pct+'%</span></div>';
+                    }
+                    if(!r.countries.length){ html='<p style="font-size:13px;color:#6b7280;">Aún no hay visitas registradas.</p>'; rows=html; }
+                    var donut=document.getElementById('ci-visits-donut');
+                    if(donut){ donut.style.background=r.countries.length?('conic-gradient('+stops.join(', ')+')'):'conic-gradient(#e5e7eb 0% 100%)'; }
+                    var bars=document.getElementById('ci-visits-bars'); if(bars){ bars.innerHTML=html; }
+                    var list=document.getElementById('ci-visits-rows'); if(list){ list.innerHTML=rows; }
+                    var daily=document.getElementById('ci-visits-daily'); if(daily){ daily.innerHTML=ciVisitBars(r.days||[]); }
+                    for(i=0;i<4;i++){
+                        var lab=document.getElementById('ci-map-l'+i);
+                        if(lab){ lab.textContent=r.countries[i]?(r.countries[i].code+' '+r.countries[i].pct+'%'):'—'; }
+                    }
+                }
             </script>
