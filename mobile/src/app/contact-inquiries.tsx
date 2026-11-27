@@ -26,6 +26,7 @@ import {
   VISIT_RANGE_OPTIONS,
   type VisitRangeKey,
 } from '@/lib/contactInquiries';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type {
   ContactInquiry,
@@ -271,6 +272,7 @@ export default function ContactInquiriesScreen() {
           <Text style={styles.backText}>‹ Atrás</Text>
         </Pressable>
         <Text style={styles.title}>Consultas</Text>
+        <HelpButton screen="contact-inquiries" />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Actualizar consultas"

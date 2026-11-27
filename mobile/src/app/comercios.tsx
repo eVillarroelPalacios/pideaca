@@ -20,6 +20,7 @@ import { NewSubscriptionModal } from '@/components/NewSubscriptionModal';
 import { ShopFilterModal } from '@/components/ShopFilterModal';
 import type { ShopFilterMode } from '@/components/ShopFilterModal';
 import { getCurrentCoords } from '@/lib/media';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type { MarketShop } from '@/types/api';
 
@@ -329,6 +330,7 @@ export default function ComerciosScreen() {
           <Text style={styles.title}>Comercios</Text>
           <Text style={styles.subtitle}>{summary}</Text>
         </View>
+        <HelpButton screen="comercios" />
         <View style={styles.headerSpacer} />
       </View>
 

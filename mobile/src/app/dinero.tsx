@@ -17,6 +17,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { TextField } from '@/components/TextField';
 import { money } from '@/lib/money';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type {
   DineroCharge,
@@ -578,6 +579,7 @@ export default function DineroScreen() {
           <Text style={styles.title}>Dinero — backoffice</Text>
           <Text style={styles.subtitle}>Fase 1: manual · Solo Admin</Text>
         </View>
+        <HelpButton screen="dinero" />
       </View>
       <ScrollView contentContainerStyle={styles.container}>
         {error ? <ErrorBanner message={error} /> : null}

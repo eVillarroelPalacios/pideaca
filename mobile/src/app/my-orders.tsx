@@ -25,6 +25,7 @@ import {
   matchesOrderSearch,
   orderDay,
 } from '@/lib/orderTracking';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type { MarketMyOrder } from '@/types/api';
 
@@ -348,7 +349,10 @@ export default function MyOrdersScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.eyebrow}>SEGUIMIENTO DE PEDIDOS</Text>
-          <Text style={styles.title}>Mis Pedidos</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.title}>Mis Pedidos</Text>
+            <HelpButton screen="my-orders" />
+          </View>
 
           <View style={styles.summaryRow}>
             {activeCount > 0 ? (

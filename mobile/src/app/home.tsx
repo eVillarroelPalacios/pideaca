@@ -28,6 +28,7 @@ import { appendPhoto, pickSingleImage } from '@/lib/media';
 import { resolveAssetUrl } from '@/lib/assets';
 import { money } from '@/lib/money';
 import { PANEL_META, visiblePanels, type PanelKey } from '@/lib/profilePanels';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type {
   AccountUsersResponse,
@@ -1199,6 +1200,7 @@ export default function HomeScreen() {
           />
           <Text style={styles.brand}>Mi Perfil</Text>
         </View>
+        <HelpButton screen="home" />
         <Pressable accessibilityRole="button" onPress={() => void signOut()} style={styles.logout}>
           <Text style={styles.logoutText}>Salir</Text>
         </Pressable>

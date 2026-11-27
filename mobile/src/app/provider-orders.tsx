@@ -16,6 +16,7 @@ import { ComboField } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { RatingModal } from '@/components/RatingModal';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type { ServiceOrderItem, ServiceOrderType } from '@/types/api';
 
@@ -321,6 +322,7 @@ export default function ProviderOrdersScreen() {
           <Text style={styles.backText}>‹ Atrás</Text>
         </Pressable>
         <Text style={styles.title}>Mi comercio</Text>
+        <HelpButton screen="provider-orders" />
         <View style={styles.headerSpacer} />
       </View>
 

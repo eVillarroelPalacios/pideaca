@@ -39,6 +39,10 @@
                         <span style="font-size:10px;color:rgba(255,255,255,0.7);">{{ $user->email }}</span>
                     </div>
                 </div>
+                <button type="button" onclick="openDashHelp()" title="Ayuda en línea" aria-label="Ayuda en línea" style="padding:4px 12px;color:white;font-size:13px;font-weight:600;border-radius:4px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #ffffff;font-size:11px;font-weight:800;">?</span>
+                    Ayuda
+                </button>
                 <script>console.log("NAVBAR_MODULOS_FILTRADOS:", @json($modules->map(function ($m) { return ['modulo' => $m->description, 'paginas' => $m->pages->pluck('description')->values()]; })->values()));</script>
                 @foreach($modules->sortBy(function ($m) { return $m->description === 'Administrar' ? 1 : 0; }) as $module)
                 <div class="nav-separator" style="width:1px;height:20px;background:rgba(255,255,255,0.4);"></div>
@@ -1042,6 +1046,7 @@ window.__CSRF_TOKEN = '{{ csrf_token() }}';
 window.__FD_DELIVERY_FEE = {{ (float) config('fastdelivery.delivery_fee') }};
 </script>
 <script src="{{ url('js/app.js') }}?v={{ filemtime(public_path('js/dashboard-app.js')) }}"></script>
+<script src="{{ url('js/dashboard-help.js') }}?v={{ filemtime(public_path('js/dashboard-help.js')) }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof umSnapshotSessionNav === 'function') umSnapshotSessionNav();

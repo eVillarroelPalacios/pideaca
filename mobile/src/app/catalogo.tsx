@@ -26,6 +26,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { ProductFormModal } from '@/components/ProductFormModal';
 import { VariantsModal } from '@/components/VariantsModal';
 import { money } from '@/lib/money';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type {
   ProviderCatalogCategory,
@@ -653,6 +654,7 @@ export default function CatalogoScreen() {
               {providerName}
             </Text>
           </View>
+          <HelpButton screen="catalogo" />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Abrir secciones del catálogo"

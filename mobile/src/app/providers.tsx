@@ -17,6 +17,7 @@ import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { ProviderAdCard } from '@/components/ProviderAdCard';
 import { getCurrentCoords } from '@/lib/media';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type { ProviderCard, ProvidersParams } from '@/types/api';
 
@@ -393,6 +394,7 @@ export default function ProvidersScreen() {
           <Text style={styles.title}>Solicitudes</Text>
           <Text style={styles.subtitle}>{summary}</Text>
         </View>
+        <HelpButton screen="providers" />
         <View style={styles.headerSpacer} />
       </View>
 

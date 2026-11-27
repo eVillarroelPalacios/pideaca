@@ -27,6 +27,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { API_BASE_URL } from '@/config';
 import { money } from '@/lib/money';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type {
   DriverActiveOrder,
@@ -822,13 +823,16 @@ export default function RepartidorScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.topBar}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={styles.backText}>‹ Atrás</Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Text style={styles.backText}>‹ Atrás</Text>
+            </Pressable>
+            <HelpButton screen="repartidor" />
+          </View>
         </View>
 
         <DriverHeader

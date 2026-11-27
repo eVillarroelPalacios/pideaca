@@ -419,6 +419,18 @@ export default function MenuScreen() {
                 </View>
               ))
             )}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Ayuda</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Abrir ayuda en línea"
+                onPress={() => router.push('/ayuda')}
+                style={styles.row}
+              >
+                <Text style={styles.rowIcon}>❓</Text>
+                <Text style={styles.rowText}>Ayuda en línea</Text>
+              </Pressable>
+            </View>
           </ScrollView>
         )}
 

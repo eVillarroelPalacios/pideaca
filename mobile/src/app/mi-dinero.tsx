@@ -9,6 +9,7 @@ import { ComboField, type ComboOption } from '@/components/ComboField';
 import { ErrorBanner } from '@/components/ErrorBanner';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { money } from '@/lib/money';
+import { HelpButton } from '@/components/HelpButton';
 import { colors, radius, spacing } from '@/theme';
 import type { DineroCharge, DineroSettlement } from '@/types/api';
 
@@ -125,7 +126,10 @@ export default function MiDineroScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Mi Dinero</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.title}>Mi Dinero</Text>
+          <HelpButton screen="mi-dinero" />
+        </View>
         <Text style={styles.subtitle}>
           Tus liquidaciones, cobros y estado de cuenta.
         </Text>
